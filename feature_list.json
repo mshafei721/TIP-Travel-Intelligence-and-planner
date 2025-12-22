@@ -1,0 +1,1009 @@
+{
+  "project": "TIP - Travel Intelligence & Planner",
+  "version": "1.0.0",
+  "total_phases": 15,
+  "total_features": 134,
+  "phases": [
+    {
+      "phase": 0,
+      "name": "Research & Planning",
+      "description": "Comprehensive research and architectural planning before development",
+      "features": [
+        {
+          "id": "P0-F1",
+          "name": "Research GitHub repos for patterns",
+          "description": "Analyze awesome-llm-apps and scraping-apis-for-devs for reusable patterns",
+          "passes": true,
+          "priority": "critical"
+        },
+        {
+          "id": "P0-F2",
+          "name": "Decide on weather API provider",
+          "description": "Research and select between OpenWeatherMap, WeatherAPI, Visual Crossing",
+          "passes": true,
+          "priority": "high"
+        },
+        {
+          "id": "P0-F3",
+          "name": "Decide on currency API provider",
+          "description": "Research and select between Fixer.io, ExchangeRate-API, Open Exchange Rates",
+          "passes": true,
+          "priority": "high"
+        },
+        {
+          "id": "P0-F4",
+          "name": "Decide on flight API provider",
+          "description": "Research and select between Amadeus, Skyscanner, Serpapi",
+          "passes": true,
+          "priority": "high"
+        },
+        {
+          "id": "P0-F5",
+          "name": "Decide on visa data source",
+          "description": "Research Sherpa API, IATA Travel Centre, official embassy scraping",
+          "passes": true,
+          "priority": "critical"
+        },
+        {
+          "id": "P0-F6",
+          "name": "Decide on map provider",
+          "description": "Choose between Mapbox and Google Maps based on pricing and features",
+          "passes": true,
+          "priority": "medium"
+        },
+        {
+          "id": "P0-F7",
+          "name": "Decide on cloud infrastructure",
+          "description": "Select backend hosting (AWS/Railway/Render), Redis hosting, deployment strategy",
+          "passes": false,
+          "priority": "high"
+        },
+        {
+          "id": "P0-F8",
+          "name": "Design database schema",
+          "description": "Create detailed Postgres schema for Users, Trips, AgentJobs, ReportSections, etc.",
+          "passes": false,
+          "priority": "critical"
+        },
+        {
+          "id": "P0-F9",
+          "name": "Design API contracts",
+          "description": "Define REST API endpoints, request/response schemas, error formats",
+          "passes": false,
+          "priority": "critical"
+        },
+        {
+          "id": "P0-F10",
+          "name": "Create design system specification",
+          "description": "Define colors, typography, component library, responsive breakpoints",
+          "passes": false,
+          "priority": "medium"
+        },
+        {
+          "id": "P0-F11",
+          "name": "Document user flows",
+          "description": "Create flow diagrams for auth, trip creation, report generation, errors, data lifecycle",
+          "passes": false,
+          "priority": "high"
+        },
+        {
+          "id": "P0-F12",
+          "name": "Research Firecrawl API",
+          "description": "Understand Firecrawl pricing, capabilities, and integration patterns",
+          "passes": false,
+          "priority": "high"
+        },
+        {
+          "id": "P0-F13",
+          "name": "Set up project structure",
+          "description": "Create directory structure, init.ps1, documentation skeleton",
+          "passes": true,
+          "priority": "critical"
+        },
+        {
+          "id": "P0-F14",
+          "name": "Initialize git repository",
+          "description": "Create git repo, .gitignore, initial commit",
+          "passes": false,
+          "priority": "critical"
+        },
+        {
+          "id": "P0-F15",
+          "name": "Create comprehensive documentation",
+          "description": "Write comprehensive_plan.md, data_models.md, api_contracts.md, design_system.md, services_config.md",
+          "passes": false,
+          "priority": "critical"
+        }
+      ]
+    },
+    {
+      "phase": 1,
+      "name": "Foundation",
+      "description": "Set up core infrastructure, authentication, and database",
+      "features": [
+        {
+          "id": "P1-F1",
+          "name": "Set up Supabase project",
+          "description": "Create Supabase project, configure settings, get API keys",
+          "passes": false,
+          "priority": "critical"
+        },
+        {
+          "id": "P1-F2",
+          "name": "Configure Supabase Auth",
+          "description": "Enable email/password and Google OAuth authentication",
+          "passes": false,
+          "priority": "critical"
+        },
+        {
+          "id": "P1-F3",
+          "name": "Create database tables",
+          "description": "Create Users, Trips, AgentJobs, ReportSections, SourceReferences, DeletionSchedule tables",
+          "passes": false,
+          "priority": "critical"
+        },
+        {
+          "id": "P1-F4",
+          "name": "Implement Row-Level Security",
+          "description": "Configure RLS policies for user data isolation",
+          "passes": false,
+          "priority": "critical"
+        },
+        {
+          "id": "P1-F5",
+          "name": "Set up Next.js frontend project",
+          "description": "Initialize Next.js with TypeScript, Tailwind CSS, shadcn/ui",
+          "passes": false,
+          "priority": "critical"
+        },
+        {
+          "id": "P1-F6",
+          "name": "Set up FastAPI backend project",
+          "description": "Initialize FastAPI with Python, create basic structure",
+          "passes": false,
+          "priority": "critical"
+        },
+        {
+          "id": "P1-F7",
+          "name": "Configure Redis instance",
+          "description": "Set up Redis for caching and Celery backend",
+          "passes": false,
+          "priority": "critical"
+        },
+        {
+          "id": "P1-F8",
+          "name": "Set up Celery workers",
+          "description": "Configure Celery for async task processing",
+          "passes": false,
+          "priority": "critical"
+        },
+        {
+          "id": "P1-F9",
+          "name": "Create Docker Compose for local dev",
+          "description": "Set up docker-compose.yml for Redis and local services",
+          "passes": false,
+          "priority": "medium"
+        },
+        {
+          "id": "P1-F10",
+          "name": "Implement basic auth flow backend",
+          "description": "Create Supabase auth integration in FastAPI",
+          "passes": false,
+          "priority": "critical"
+        },
+        {
+          "id": "P1-F11",
+          "name": "Create user registration/login UI",
+          "description": "Build auth pages in Next.js with Supabase client",
+          "passes": false,
+          "priority": "high"
+        },
+        {
+          "id": "P1-F12",
+          "name": "Set up CI/CD pipeline basics",
+          "description": "Create GitHub Actions workflows for testing and linting",
+          "passes": false,
+          "priority": "medium"
+        }
+      ]
+    },
+    {
+      "phase": 2,
+      "name": "Orchestrator Agent",
+      "description": "Build the central orchestrator that coordinates all other agents",
+      "features": [
+        {
+          "id": "P2-F1",
+          "name": "Design orchestrator architecture",
+          "description": "Define orchestrator's responsibilities, agent graph, execution order",
+          "passes": false,
+          "priority": "critical"
+        },
+        {
+          "id": "P2-F2",
+          "name": "Implement agent base class",
+          "description": "Create BaseAgent with common methods for all agents",
+          "passes": false,
+          "priority": "critical"
+        },
+        {
+          "id": "P2-F3",
+          "name": "Create orchestrator agent",
+          "description": "Implement OrchestratorAgent with dependency management",
+          "passes": false,
+          "priority": "critical"
+        },
+        {
+          "id": "P2-F4",
+          "name": "Implement agent state management",
+          "description": "Track agent execution status, failures, retries",
+          "passes": false,
+          "priority": "high"
+        },
+        {
+          "id": "P2-F5",
+          "name": "Create job queue system",
+          "description": "Implement Celery tasks for agent execution",
+          "passes": false,
+          "priority": "critical"
+        },
+        {
+          "id": "P2-F6",
+          "name": "Implement progress tracking",
+          "description": "Real-time progress updates for frontend",
+          "passes": false,
+          "priority": "high"
+        },
+        {
+          "id": "P2-F7",
+          "name": "Build error handling framework",
+          "description": "Implement retry logic, fallbacks, circuit breakers",
+          "passes": false,
+          "priority": "critical"
+        },
+        {
+          "id": "P2-F8",
+          "name": "Write orchestrator tests",
+          "description": "Unit and integration tests for orchestrator",
+          "passes": false,
+          "priority": "high"
+        }
+      ]
+    },
+    {
+      "phase": 3,
+      "name": "Visa & Entry Agent",
+      "description": "Build the visa requirement determination agent (CRITICAL)",
+      "features": [
+        {
+          "id": "P3-F1",
+          "name": "Implement Visa Agent core logic",
+          "description": "Create VisaAgent class with requirement determination",
+          "passes": false,
+          "priority": "critical"
+        },
+        {
+          "id": "P3-F2",
+          "name": "Integrate visa data API",
+          "description": "Connect to Sherpa API or IATA Travel Centre",
+          "passes": false,
+          "priority": "critical"
+        },
+        {
+          "id": "P3-F3",
+          "name": "Implement visa classification",
+          "description": "Determine visa type (visa-free, eVisa, visa on arrival, visa required)",
+          "passes": false,
+          "priority": "critical"
+        },
+        {
+          "id": "P3-F4",
+          "name": "Add source attribution",
+          "description": "Link to official government/embassy sources only",
+          "passes": false,
+          "priority": "critical"
+        },
+        {
+          "id": "P3-F5",
+          "name": "Implement confidence scoring",
+          "description": "Calculate and output confidence score (0-100)",
+          "passes": false,
+          "priority": "critical"
+        },
+        {
+          "id": "P3-F6",
+          "name": "Add disclaimer generation",
+          "description": "Generate explicit disclaimers for visa information",
+          "passes": false,
+          "priority": "critical"
+        },
+        {
+          "id": "P3-F7",
+          "name": "Write Visa Agent unit tests",
+          "description": "Test visa determination logic with mock data",
+          "passes": false,
+          "priority": "high"
+        },
+        {
+          "id": "P3-F8",
+          "name": "Write Visa Agent integration tests",
+          "description": "Test with real API (rate-limited)",
+          "passes": false,
+          "priority": "high"
+        }
+      ]
+    },
+    {
+      "phase": 4,
+      "name": "Country Intelligence Agent",
+      "description": "Build the country information and intelligence agent",
+      "features": [
+        {
+          "id": "P4-F1",
+          "name": "Implement Country Agent core logic",
+          "description": "Create CountryAgent class",
+          "passes": false,
+          "priority": "high"
+        },
+        {
+          "id": "P4-F2",
+          "name": "Integrate country data API",
+          "description": "Use REST Countries API or similar for basic data",
+          "passes": false,
+          "priority": "high"
+        },
+        {
+          "id": "P4-F3",
+          "name": "Implement flag and basic info retrieval",
+          "description": "Get country flag, population, political system",
+          "passes": false,
+          "priority": "medium"
+        },
+        {
+          "id": "P4-F4",
+          "name": "Add religion and demographics data",
+          "description": "Retrieve religious demographics",
+          "passes": false,
+          "priority": "medium"
+        },
+        {
+          "id": "P4-F5",
+          "name": "Implement safety intelligence",
+          "description": "Get safety ratings and stability notes",
+          "passes": false,
+          "priority": "high"
+        },
+        {
+          "id": "P4-F6",
+          "name": "Add news scraping",
+          "description": "Use Firecrawl to get latest country news",
+          "passes": false,
+          "priority": "medium"
+        },
+        {
+          "id": "P4-F7",
+          "name": "Write Country Agent tests",
+          "description": "Unit and integration tests",
+          "passes": false,
+          "priority": "medium"
+        }
+      ]
+    },
+    {
+      "phase": 5,
+      "name": "Weather Agent",
+      "description": "Build the weather intelligence agent",
+      "features": [
+        {
+          "id": "P5-F1",
+          "name": "Implement Weather Agent core logic",
+          "description": "Create WeatherAgent class",
+          "passes": false,
+          "priority": "high"
+        },
+        {
+          "id": "P5-F2",
+          "name": "Integrate weather API",
+          "description": "Connect to Visual Crossing or selected weather API",
+          "passes": false,
+          "priority": "high"
+        },
+        {
+          "id": "P5-F3",
+          "name": "Implement forecast retrieval",
+          "description": "Get 15-day forecast for trip dates",
+          "passes": false,
+          "priority": "high"
+        },
+        {
+          "id": "P5-F4",
+          "name": "Add historical averages",
+          "description": "Get historical weather data for context",
+          "passes": false,
+          "priority": "medium"
+        },
+        {
+          "id": "P5-F5",
+          "name": "Implement climate warnings",
+          "description": "Detect and flag extreme weather conditions",
+          "passes": false,
+          "priority": "high"
+        },
+        {
+          "id": "P5-F6",
+          "name": "Write Weather Agent tests",
+          "description": "Unit and integration tests",
+          "passes": false,
+          "priority": "medium"
+        }
+      ]
+    },
+    {
+      "phase": 6,
+      "name": "Currency & Budget Agent",
+      "description": "Build the currency conversion and budget intelligence agent",
+      "features": [
+        {
+          "id": "P6-F1",
+          "name": "Implement Currency Agent core logic",
+          "description": "Create CurrencyAgent class",
+          "passes": false,
+          "priority": "high"
+        },
+        {
+          "id": "P6-F2",
+          "name": "Integrate currency API",
+          "description": "Connect to Fixer.io or selected currency API",
+          "passes": false,
+          "priority": "high"
+        },
+        {
+          "id": "P6-F3",
+          "name": "Implement live exchange rates",
+          "description": "Get real-time exchange rates",
+          "passes": false,
+          "priority": "high"
+        },
+        {
+          "id": "P6-F4",
+          "name": "Calculate daily cost estimates",
+          "description": "Estimate daily expenses based on destination",
+          "passes": false,
+          "priority": "high"
+        },
+        {
+          "id": "P6-F5",
+          "name": "Implement budget analysis",
+          "description": "Calculate budget utilization and overspend risk",
+          "passes": false,
+          "priority": "high"
+        },
+        {
+          "id": "P6-F6",
+          "name": "Write Currency Agent tests",
+          "description": "Unit and integration tests",
+          "passes": false,
+          "priority": "medium"
+        }
+      ]
+    },
+    {
+      "phase": 7,
+      "name": "Culture & Law Agent",
+      "description": "Build the cultural etiquette and legal information agent",
+      "features": [
+        {
+          "id": "P7-F1",
+          "name": "Implement Culture Agent core logic",
+          "description": "Create CultureAgent class",
+          "passes": false,
+          "priority": "high"
+        },
+        {
+          "id": "P7-F2",
+          "name": "Scrape cultural etiquette data",
+          "description": "Use Firecrawl to gather cultural norms",
+          "passes": false,
+          "priority": "high"
+        },
+        {
+          "id": "P7-F3",
+          "name": "Implement religious norms detection",
+          "description": "Identify important religious practices",
+          "passes": false,
+          "priority": "high"
+        },
+        {
+          "id": "P7-F4",
+          "name": "Add unusual laws scraping",
+          "description": "Scrape and highlight unusual or strict laws",
+          "passes": false,
+          "priority": "high"
+        },
+        {
+          "id": "P7-F5",
+          "name": "Implement risk flagging",
+          "description": "Flag high-risk violations prominently",
+          "passes": false,
+          "priority": "critical"
+        },
+        {
+          "id": "P7-F6",
+          "name": "Write Culture Agent tests",
+          "description": "Unit and integration tests",
+          "passes": false,
+          "priority": "medium"
+        }
+      ]
+    },
+    {
+      "phase": 8,
+      "name": "Food Agent",
+      "description": "Build the culinary intelligence agent",
+      "features": [
+        {
+          "id": "P8-F1",
+          "name": "Implement Food Agent core logic",
+          "description": "Create FoodAgent class",
+          "passes": false,
+          "priority": "medium"
+        },
+        {
+          "id": "P8-F2",
+          "name": "Scrape national dishes and drinks",
+          "description": "Get national dish, drink, and specialties",
+          "passes": false,
+          "priority": "medium"
+        },
+        {
+          "id": "P8-F3",
+          "name": "Add food safety notes",
+          "description": "Provide food safety information",
+          "passes": false,
+          "priority": "medium"
+        },
+        {
+          "id": "P8-F4",
+          "name": "Integrate restaurant recommendations",
+          "description": "Get top-rated restaurants using Maps API",
+          "passes": false,
+          "priority": "medium"
+        },
+        {
+          "id": "P8-F5",
+          "name": "Add map links for restaurants",
+          "description": "Generate clickable Mapbox links",
+          "passes": false,
+          "priority": "low"
+        },
+        {
+          "id": "P8-F6",
+          "name": "Write Food Agent tests",
+          "description": "Unit and integration tests",
+          "passes": false,
+          "priority": "low"
+        }
+      ]
+    },
+    {
+      "phase": 9,
+      "name": "Attractions Agent",
+      "description": "Build the attractions and experiences agent",
+      "features": [
+        {
+          "id": "P9-F1",
+          "name": "Implement Attractions Agent core logic",
+          "description": "Create AttractionsAgent class",
+          "passes": false,
+          "priority": "high"
+        },
+        {
+          "id": "P9-F2",
+          "name": "Integrate attractions data API",
+          "description": "Use Maps API or scraping for attractions",
+          "passes": false,
+          "priority": "high"
+        },
+        {
+          "id": "P9-F3",
+          "name": "Implement attraction categorization",
+          "description": "Categorize by interest (museums, nature, etc.)",
+          "passes": false,
+          "priority": "medium"
+        },
+        {
+          "id": "P9-F4",
+          "name": "Add visit duration estimates",
+          "description": "Estimate time needed for each attraction",
+          "passes": false,
+          "priority": "medium"
+        },
+        {
+          "id": "P9-F5",
+          "name": "Implement entry cost scraping",
+          "description": "Get entry prices where available",
+          "passes": false,
+          "priority": "medium"
+        },
+        {
+          "id": "P9-F6",
+          "name": "Add crowd indicators",
+          "description": "Show peak times and crowd levels",
+          "passes": false,
+          "priority": "low"
+        },
+        {
+          "id": "P9-F7",
+          "name": "Write Attractions Agent tests",
+          "description": "Unit and integration tests",
+          "passes": false,
+          "priority": "medium"
+        }
+      ]
+    },
+    {
+      "phase": 10,
+      "name": "Itinerary Agent",
+      "description": "Build the smart itinerary builder agent (depends on all previous agents)",
+      "features": [
+        {
+          "id": "P10-F1",
+          "name": "Implement Itinerary Agent core logic",
+          "description": "Create ItineraryAgent class",
+          "passes": false,
+          "priority": "critical"
+        },
+        {
+          "id": "P10-F2",
+          "name": "Implement day-by-day scheduling",
+          "description": "Create daily itinerary structure",
+          "passes": false,
+          "priority": "critical"
+        },
+        {
+          "id": "P10-F3",
+          "name": "Add weather-aware scheduling",
+          "description": "Schedule indoor/outdoor activities based on weather",
+          "passes": false,
+          "priority": "high"
+        },
+        {
+          "id": "P10-F4",
+          "name": "Implement logical city sequencing",
+          "description": "Order cities optimally",
+          "passes": false,
+          "priority": "high"
+        },
+        {
+          "id": "P10-F5",
+          "name": "Add budget alignment",
+          "description": "Ensure itinerary fits within budget",
+          "passes": false,
+          "priority": "high"
+        },
+        {
+          "id": "P10-F6",
+          "name": "Implement pace adjustment",
+          "description": "Adjust itinerary density based on user preference",
+          "passes": false,
+          "priority": "medium"
+        },
+        {
+          "id": "P10-F7",
+          "name": "Make itinerary editable",
+          "description": "Allow users to modify itinerary blocks",
+          "passes": false,
+          "priority": "medium"
+        },
+        {
+          "id": "P10-F8",
+          "name": "Write Itinerary Agent tests",
+          "description": "Unit and integration tests",
+          "passes": false,
+          "priority": "high"
+        }
+      ]
+    },
+    {
+      "phase": 11,
+      "name": "Flight Agent",
+      "description": "Build the flight intelligence agent",
+      "features": [
+        {
+          "id": "P11-F1",
+          "name": "Implement Flight Agent core logic",
+          "description": "Create FlightAgent class",
+          "passes": false,
+          "priority": "high"
+        },
+        {
+          "id": "P11-F2",
+          "name": "Integrate flight price API",
+          "description": "Connect to Amadeus or Skyscanner API",
+          "passes": false,
+          "priority": "high"
+        },
+        {
+          "id": "P11-F3",
+          "name": "Implement real-time price discovery",
+          "description": "Get live flight prices",
+          "passes": false,
+          "priority": "high"
+        },
+        {
+          "id": "P11-F4",
+          "name": "Add direct vs transit comparisons",
+          "description": "Compare direct and connecting flights",
+          "passes": false,
+          "priority": "medium"
+        },
+        {
+          "id": "P11-F5",
+          "name": "Implement airline reliability notes",
+          "description": "Add airline ratings and notes",
+          "passes": false,
+          "priority": "low"
+        },
+        {
+          "id": "P11-F6",
+          "name": "Add booking links",
+          "description": "Generate links to aggregators",
+          "passes": false,
+          "priority": "medium"
+        },
+        {
+          "id": "P11-F7",
+          "name": "Write Flight Agent tests",
+          "description": "Unit and integration tests",
+          "passes": false,
+          "priority": "medium"
+        }
+      ]
+    },
+    {
+      "phase": 12,
+      "name": "Trip Creation & Input Validation",
+      "description": "Build the trip creation flow and input validation",
+      "features": [
+        {
+          "id": "P12-F1",
+          "name": "Design trip creation form UI",
+          "description": "Create multi-step or single-page form",
+          "passes": false,
+          "priority": "high"
+        },
+        {
+          "id": "P12-F2",
+          "name": "Implement input validation",
+          "description": "Validate all required fields",
+          "passes": false,
+          "priority": "critical"
+        },
+        {
+          "id": "P12-F3",
+          "name": "Add date validation",
+          "description": "Ensure dates are future dates",
+          "passes": false,
+          "priority": "high"
+        },
+        {
+          "id": "P12-F4",
+          "name": "Implement budget validation",
+          "description": "Ensure budget is numeric and positive",
+          "passes": false,
+          "priority": "high"
+        },
+        {
+          "id": "P12-F5",
+          "name": "Create trip submission API",
+          "description": "Backend endpoint to create trip and queue agents",
+          "passes": false,
+          "priority": "critical"
+        },
+        {
+          "id": "P12-F6",
+          "name": "Write trip creation tests",
+          "description": "E2E tests for trip creation flow",
+          "passes": false,
+          "priority": "high"
+        }
+      ]
+    },
+    {
+      "phase": 13,
+      "name": "Report Generation & Display",
+      "description": "Build the interactive report UI and PDF export",
+      "features": [
+        {
+          "id": "P13-F1",
+          "name": "Design report data structure",
+          "description": "Define JSON schema for aggregated report",
+          "passes": false,
+          "priority": "critical"
+        },
+        {
+          "id": "P13-F2",
+          "name": "Implement report aggregator",
+          "description": "Combine all agent outputs into cohesive report",
+          "passes": false,
+          "priority": "critical"
+        },
+        {
+          "id": "P13-F3",
+          "name": "Create interactive web report UI",
+          "description": "Build report display with shadcn/ui components",
+          "passes": false,
+          "priority": "high"
+        },
+        {
+          "id": "P13-F4",
+          "name": "Build section navigation",
+          "description": "Create nav for jumping between report sections",
+          "passes": false,
+          "priority": "medium"
+        },
+        {
+          "id": "P13-F5",
+          "name": "Implement expandable cards",
+          "description": "Make sections expandable/collapsible",
+          "passes": false,
+          "priority": "medium"
+        },
+        {
+          "id": "P13-F6",
+          "name": "Add map embeds",
+          "description": "Embed Mapbox maps for locations",
+          "passes": false,
+          "priority": "medium"
+        },
+        {
+          "id": "P13-F7",
+          "name": "Implement tooltips for warnings",
+          "description": "Add hover tooltips for critical info",
+          "passes": false,
+          "priority": "medium"
+        },
+        {
+          "id": "P13-F8",
+          "name": "Create PDF export functionality",
+          "description": "Server-side HTML to PDF rendering",
+          "passes": false,
+          "priority": "high"
+        },
+        {
+          "id": "P13-F9",
+          "name": "Style report for print",
+          "description": "Optimize PDF styling",
+          "passes": false,
+          "priority": "medium"
+        },
+        {
+          "id": "P13-F10",
+          "name": "Implement partial results rendering",
+          "description": "Show results as agents complete",
+          "passes": false,
+          "priority": "high"
+        }
+      ]
+    },
+    {
+      "phase": 14,
+      "name": "Data Lifecycle Management",
+      "description": "Implement auto-deletion and data retention policies",
+      "features": [
+        {
+          "id": "P14-F1",
+          "name": "Implement auto-deletion scheduler",
+          "description": "Create Celery task to schedule trip deletion",
+          "passes": false,
+          "priority": "critical"
+        },
+        {
+          "id": "P14-F2",
+          "name": "Create deletion notification system",
+          "description": "Email users before trip data deletion",
+          "passes": false,
+          "priority": "high"
+        },
+        {
+          "id": "P14-F3",
+          "name": "Build manual delete functionality",
+          "description": "Allow users to delete trips early",
+          "passes": false,
+          "priority": "high"
+        },
+        {
+          "id": "P14-F4",
+          "name": "Add data retention policy UI",
+          "description": "Show users when their data will be deleted",
+          "passes": false,
+          "priority": "medium"
+        },
+        {
+          "id": "P14-F5",
+          "name": "Implement cleanup jobs",
+          "description": "System-enforced cleanup cron jobs",
+          "passes": false,
+          "priority": "critical"
+        },
+        {
+          "id": "P14-F6",
+          "name": "Create audit logs",
+          "description": "Log all data deletion events",
+          "passes": false,
+          "priority": "high"
+        }
+      ]
+    },
+    {
+      "phase": 15,
+      "name": "Polish & Production",
+      "description": "Final polish, production deployment, and monitoring",
+      "features": [
+        {
+          "id": "P15-F1",
+          "name": "Performance optimization",
+          "description": "Optimize frontend and backend performance",
+          "passes": false,
+          "priority": "high"
+        },
+        {
+          "id": "P15-F2",
+          "name": "Security audit",
+          "description": "Conduct security review and penetration testing",
+          "passes": false,
+          "priority": "critical"
+        },
+        {
+          "id": "P15-F3",
+          "name": "GDPR compliance verification",
+          "description": "Ensure all GDPR requirements are met",
+          "passes": false,
+          "priority": "critical"
+        },
+        {
+          "id": "P15-F4",
+          "name": "Implement rate limiting",
+          "description": "Add rate limiting to prevent abuse",
+          "passes": false,
+          "priority": "high"
+        },
+        {
+          "id": "P15-F5",
+          "name": "Set up monitoring and alerting",
+          "description": "Configure error tracking and uptime monitoring",
+          "passes": false,
+          "priority": "high"
+        },
+        {
+          "id": "P15-F6",
+          "name": "Production deployment",
+          "description": "Deploy to production environment",
+          "passes": false,
+          "priority": "critical"
+        },
+        {
+          "id": "P15-F7",
+          "name": "Documentation finalization",
+          "description": "Complete all user and developer documentation",
+          "passes": false,
+          "priority": "medium"
+        },
+        {
+          "id": "P15-F8",
+          "name": "User acceptance testing",
+          "description": "Conduct UAT with real users",
+          "passes": false,
+          "priority": "high"
+        }
+      ]
+    }
+  ],
+  "notes": [
+    "Phase 0 is research and planning - completed before coding begins",
+    "Each feature must pass tests before marking 'passes': true",
+    "Critical features block progress to next phase",
+    "Agent phases (3-11) can potentially be parallelized after Phase 2",
+    "All features require code review before completion"
+  ]
+}
