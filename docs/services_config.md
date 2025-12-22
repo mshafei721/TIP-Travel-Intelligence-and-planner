@@ -199,22 +199,23 @@ Return Error with Confidence = 0
   - [Connect to Amadeus travel APIs](https://developers.amadeus.com/)
 
 ### 8. Map Provider - Mapbox
-- **Status**: ⏳ Decision Made
+- **Status**: ✅ **Decision Made** (see [DR-002](decisions/DR-002-map-provider.md))
 - **Purpose**: Interactive maps, POI data, navigation links, geocoding
-- **Plan**: Free tier (50K map loads/mo) → Pay-as-you-go
+- **Selected Provider**: **Mapbox** (93% cheaper than Google Maps at scale)
+- **Rationale**: Offline capabilities, custom styling, better pricing, travel-focused
+- **MVP Plan**: Free tier (50K map loads/month)
+- **Production Plan**: Pay-as-you-go ($0.50/1K loads = ~$25-50/month)
 - **Rate Limits**: Free: 50K web loads/mo, 25K mobile users/mo
 - **Features**: Offline maps, custom styling, 3D views, geocoding API
 - **Configuration Required**:
   - [ ] Sign up for Mapbox
   - [ ] Get API access token
   - [ ] Test geocoding and map embed
+  - [ ] Test offline map downloads
 - **Env Vars**: `MAPBOX_API_KEY`
-- **Alternatives**: Google Maps (more POI data, but expensive)
 - **Documentation**: https://docs.mapbox.com/
 - **API Endpoint**: `https://api.mapbox.com/`
-- **Sources**:
-  - [Mapbox vs. Google Maps API: 2026 comparison](https://radar.com/blog/mapbox-vs-google-maps-api)
-  - [Mapbox API vs Google Maps API for app development in 2025](https://volpis.com/blog/mapbox-vs-google-maps-api-for-app-development/)
+- **Decision Record**: [DR-002: Map Provider](decisions/DR-002-map-provider.md)
 
 ---
 
@@ -258,24 +259,26 @@ Return Error with Confidence = 0
   - [ ] Set up custom domain
 - **Documentation**: https://vercel.com/docs
 
-### 12. Railway / Render (Backend Hosting - MVP)
-- **Status**: ⏳ Decision Made
+### 12. Render (Backend Hosting - MVP)
+- **Status**: ✅ **Decision Made** (see [DR-001](decisions/DR-001-backend-hosting.md))
 - **Purpose**: Host FastAPI backend, Celery workers
-- **Options**:
-  - **Railway**: $5/mo, easy setup, good for MVP
-  - **Render**: Free tier available, good for MVP
-- **Decision**: Start with Render (free tier), migrate to Railway or AWS as needed
+- **Selected Platform**: **Render**
+- **Rationale**: Built-in worker support, predictable pricing, free tier for MVP
+- **MVP Plan**: Render Free Tier (Phases 1-11)
+- **Production Plan**: Render Starter ($7 web + $7 worker = $14/month)
 - **Configuration Required**:
-  - [ ] Deploy FastAPI to Render
-  - [ ] Deploy Celery worker to Render
+  - [ ] Create Render account
+  - [ ] Deploy FastAPI as Web Service (free tier)
+  - [ ] Deploy Celery worker as Background Worker (free tier)
   - [ ] Configure environment variables
 - **Documentation**: https://render.com/docs
+- **Decision Record**: [DR-001: Backend Hosting](decisions/DR-001-backend-hosting.md)
 
 ### 13. AWS (Production - Future)
 - **Status**: 🔍 Future Consideration
 - **Purpose**: Production-grade hosting with full control
 - **Services**: EC2 (FastAPI), ECS/Fargate (containers), ElastiCache (Redis), S3 (PDFs)
-- **Plan**: Migrate from Railway/Render once MVP is validated
+- **Plan**: Migrate from Render once MVP is validated and traffic exceeds Render capacity
 - **Configuration Required**: TBD
 
 ---
