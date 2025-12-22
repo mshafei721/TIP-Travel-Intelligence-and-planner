@@ -19,8 +19,8 @@ TIP is a **decision-grade travel intelligence system** that provides travelers w
 
 | Phase | Name | Features | Status |
 |-------|------|----------|---------|
-| 0 | Research & Planning | 15 | 53% Complete |
-| 1 | Foundation | 12 | Not Started |
+| 0 | Research & Planning | 15 | 73% Complete |
+| 1 | Foundation | 13 | Not Started |
 | 2 | Orchestrator Agent | 8 | Not Started |
 | 3 | Visa & Entry Agent | 8 | Not Started |
 | 4 | Country Intelligence Agent | 7 | Not Started |
@@ -36,7 +36,7 @@ TIP is a **decision-grade travel intelligence system** that provides travelers w
 | 14 | Data Lifecycle | 6 | Not Started |
 | 15 | Polish & Production | 8 | Not Started |
 
-**Total**: 134 features across 15 phases
+**Total**: 135 features across 15 phases
 
 ---
 
@@ -76,7 +76,11 @@ TIP is a **decision-grade travel intelligence system** that provides travelers w
 - **Orchestration**: CrewAI
 - **Primary LLM**: OpenAI GPT-4 Turbo
 - **Fallback LLM**: Anthropic Claude 3.5 Sonnet
-- **Scraping**: Firecrawl (structured extraction)
+- **Scraping** (Hybrid 4-Layer):
+  - Layer 1: Custom Playwright scrapers (self-hosted, cost control)
+  - Layer 2: Apify actors (TripAdvisor, News, battle-tested)
+  - Layer 3: Firecrawl (critical visa data backup only)
+  - [Source: scraping-apis-for-devs research]
 
 ### External APIs
 - **Weather**: Visual Crossing
@@ -342,13 +346,21 @@ Trip Created → Auto-deletion Scheduled (end_date + 7 days) → Email Notificat
 ## Cost Management
 
 ### MVP Phase (Free Tiers + Minimal Paid)
-- **Target**: < $150/mo
-- **Strategy**: Max out free tiers, cache aggressively, rate limit users
+- **Target**: ~$75/mo (revised down from $110/mo due to hybrid scraping strategy)
+- **Breakdown**:
+  - Scraping (Custom + Apify + Firecrawl): $15/mo
+  - APIs (Weather, Currency, Maps): Free tiers
+  - Fixer.io: $10/mo
+  - OpenAI: ~$50/mo
+  - Infrastructure: Free tiers (Supabase, Redis, Vercel, Render)
+- **Strategy**: Max out free tiers, cache aggressively, rate limit users, use custom scrapers as primary
 
 ### Production Phase
-- **Target**: < $500/mo (for first 1K users)
+- **Target**: ~$541/mo (for first 1K users)
+- **Key Change**: Hybrid scraping adds reliability with 4-layer fallback for comparable cost
 - **Revenue Model**: Freemium (3 reports/mo free → $9.99/mo unlimited)
 - **Break-even**: ~100 paid users
+- **See**: docs/services_config.md for detailed breakdown
 
 ---
 

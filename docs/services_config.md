@@ -41,18 +41,85 @@ This document tracks all external services, APIs, and third-party integrations f
 - **Pricing**: Free tier: 10K commands/day
 - **Documentation**: https://upstash.com/docs/redis
 
-### 3. Firecrawl (Web Scraping)
-- **Status**: ⏳ Decision Made
-- **Purpose**: Structured web scraping for visa info, cultural data, news
-- **Plan**: Starter plan ($49/mo) → Growth as needed
-- **Rate Limits**: Starter: 500 credits/mo
+### 3. Web Scraping (Hybrid Multi-Layer Strategy)
+
+**REVISED STRATEGY** (2025-12-22): After analyzing [scraping-apis-for-devs](https://github.com/cporter202/scraping-apis-for-devs), we're using a hybrid approach with 4-layer fallback for reliability and cost optimization.
+
+#### Layer 1: Custom Playwright Scrapers (Primary)
+- **Status**: ⏳ To Be Built in Phase 1
+- **Purpose**: Self-hosted scrapers for common patterns (embassy sites, government pages)
+- **Tech**: Playwright (Python) + Beautiful Soup
+- **Cost**: Only server compute time (~$10/mo)
+- **Why**: Full control, no per-run fees, customizable for our specific needs
 - **Configuration Required**:
-  - [ ] Sign up for Firecrawl
+  - [ ] Build scraper framework in Phase 1
+  - [ ] Implement rate limiting and retry logic
+  - [ ] Add proxy rotation (optional)
+- **Code Location**: `backend/app/scrapers/`
+
+#### Layer 2: Apify Actors (Battle-Tested Fallbacks)
+- **Status**: ⏳ Decision Made
+- **Purpose**: Production-ready scrapers for specialized data
+- **Plan**: Free tier ($5/mo credits) → Pay-per-use
+- **Rate Limits**: Varies by actor
+- **Specific Actors to Use**:
+  - **TripAdvisor Scraper**: Restaurants, attractions, reviews
+  - **Google News Scraper**: Country news and updates
+  - **Web Scraper**: Complex JS-heavy sites
+  - **Booking.com Scraper**: Accommodation data (if needed)
+- **Configuration Required**:
+  - [ ] Sign up for Apify
   - [ ] Get API key
-  - [ ] Test scraping endpoints
+  - [ ] Test TripAdvisor and News scrapers
+- **Env Vars**: `APIFY_API_KEY`
+- **Documentation**: https://docs.apify.com/
+- **Pricing**: $5/mo free tier → $39/mo Starter plan ([source](https://apify.com/pricing))
+- **Sources**:
+  - [Apify Pricing 2025](https://apify.com/pricing)
+  - [Firecrawl vs. Apify: 2025 guide](https://blog.apify.com/firecrawl-vs-apify/)
+
+#### Layer 3: Firecrawl (Critical Backup Only)
+- **Status**: ⏳ Decision Made (Backup Only)
+- **Purpose**: Mission-critical visa data when Sherpa API unavailable
+- **Plan**: Free tier → Starter ($49/mo) only if heavily used
+- **Rate Limits**: Free tier limits vary
+- **Use Cases**:
+  - Embassy visa pages (when Sherpa/IATA unavailable)
+  - Government sites with complex authentication
+  - Sites that block Apify/custom scrapers
+- **Configuration Required**:
+  - [ ] Sign up for Firecrawl (Phase 3 - Visa Agent)
+  - [ ] Get API key
+  - [ ] Test embassy site scraping
 - **Env Vars**: `FIRECRAWL_API_KEY`
-- **Alternatives**: Apify, Scrapy Cloud, Crawlbase
 - **Documentation**: https://docs.firecrawl.dev
+
+#### Scraping Execution Flow
+```
+Agent Needs Data
+    ↓
+Try Official API (Sherpa, Mapbox, etc.)
+    ↓ If unavailable/fails
+Try Custom Playwright Scraper
+    ↓ If fails (JS-heavy/blocked)
+Try Apify Actor
+    ↓ If fails AND critical data
+Try Firecrawl
+    ↓ If all fail
+Return Error with Confidence = 0
+```
+
+#### Agent-Specific Scraping Strategy
+
+| Agent | Layer 1 (Custom) | Layer 2 (Apify) | Layer 3 (Firecrawl) |
+|-------|------------------|-----------------|---------------------|
+| **Visa** | Embassy sites | Web Scraper | Critical backup |
+| **Country** | Government sites | Google News Scraper | Skip |
+| **Culture** | Law databases | Web Scraper | Skip |
+| **Food** | Tourism sites | TripAdvisor Scraper | Skip |
+| **Attractions** | Tourism sites | TripAdvisor Scraper | Skip |
+
+**Cost Optimization**: By using custom scrapers as primary and Apify as fallback, we reduce costs from $49/mo (Firecrawl only) to ~$15-25/mo (custom + Apify free tier + minimal Firecrawl).
 
 ---
 
@@ -243,7 +310,8 @@ This document tracks all external services, APIs, and third-party integrations f
 
 ### Phase 3 (Visa Agent) - Before Building Agent
 - [ ] Sherpa API: Get access OR
-- [ ] Firecrawl: Configure for embassy scraping
+- [ ] Apify: Get API key for Web Scraper
+- [ ] Firecrawl: Configure for embassy scraping (backup only)
 
 ### Phase 4-11 (Other Agents) - Before Building Each Agent
 - [ ] Visual Crossing: Get API key (Weather Agent)
@@ -267,7 +335,11 @@ This document tracks all external services, APIs, and third-party integrations f
 ### MVP Phase (Phases 1-14)
 - Supabase: Free tier
 - Redis (Upstash): Free tier
-- Firecrawl: $49/mo
+- **Scraping** (Hybrid):
+  - Custom Playwright: ~$10/mo (server compute)
+  - Apify: $5/mo (free tier credits)
+  - Firecrawl: $0 (use only if needed)
+  - **Subtotal: ~$15/mo**
 - Visual Crossing: Free tier (1K records/day)
 - Fixer.io: $10/mo (Basic plan)
 - Skyscanner: Free tier
@@ -275,21 +347,25 @@ This document tracks all external services, APIs, and third-party integrations f
 - OpenAI: ~$50/mo (estimated)
 - Vercel: Free tier
 - Render: Free tier
-- **Total: ~$110/mo**
+- **Total: ~$75/mo** (down from $110/mo)
 
 ### Production Phase (Phase 15+)
 - Supabase: Pro $25/mo
 - Upstash: $10/mo
-- Firecrawl: $99/mo (Growth)
+- **Scraping** (Hybrid):
+  - Custom Playwright: ~$15/mo (scaled server)
+  - Apify: ~$30/mo (pay-per-use for actors)
+  - Firecrawl: ~$20/mo (occasional use for critical visa data)
+  - **Subtotal: ~$65/mo**
 - Visual Crossing: $35/mo
 - Fixer.io: $40/mo (Professional)
-- Amadeus: Custom pricing
+- Amadeus: Custom pricing (~$50/mo estimated)
 - Mapbox: $50/mo (estimated)
 - OpenAI: ~$200/mo (scaled usage)
 - Vercel: $20/mo (Pro)
 - Railway: $20/mo
 - Sentry: $26/mo
-- **Total: ~$525/mo**
+- **Total: ~$541/mo** (comparable to original $525/mo, but with 4-layer fallback reliability)
 
 ---
 
@@ -298,5 +374,7 @@ This document tracks all external services, APIs, and third-party integrations f
 - Free tiers prioritized for MVP to minimize upfront costs
 - Production migration plan ensures scalability
 - Monitor API usage closely during MVP phase to avoid overages
+- **Scraping Strategy Revised (2025-12-22)**: Switched to hybrid approach (Custom + Apify + Firecrawl) for better cost optimization and reliability
+- Research sources: [scraping-apis-for-devs](https://github.com/cporter202/scraping-apis-for-devs), [Apify Pricing](https://apify.com/pricing), [Firecrawl vs Apify](https://blog.apify.com/firecrawl-vs-apify/)
 
 Last Updated: 2025-12-22

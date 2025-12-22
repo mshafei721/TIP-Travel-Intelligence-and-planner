@@ -91,15 +91,29 @@ Current Phase: Phase 0 - Research & Planning
 
 ## Phase 0 Status: 11/15 features complete (73%)
 
+**IMPORTANT UPDATE (2025-12-22 - Session 1):**
+Scraping strategy revised after analyzing scraping-apis-for-devs repo:
+- ❌ REMOVED: Firecrawl as primary scraper ($49/mo)
+- ✅ ADDED: Hybrid 4-layer approach:
+  * Layer 1: Custom Playwright scrapers (self-hosted, $10/mo)
+  * Layer 2: Apify actors (TripAdvisor, News, $5/mo free tier)
+  * Layer 3: Firecrawl (critical visa backup only, $0-20/mo)
+- 💰 Cost Impact: MVP $75/mo (down from $110/mo), Production $541/mo (comparable)
+- 🎯 Benefit: 4-layer fallback reliability vs single vendor
+- 📝 Phase 1 Updated: Added P1-F13 "Build custom Playwright scraper framework"
+
+Total Features: 135 (increased from 134)
+Phase 1 Features: 13 (increased from 12)
+
 Features Remaining in Phase 0:
-- [ ] P0-F7: Decide on cloud infrastructure
-- [ ] P0-F8: Design database schema
-- [ ] P0-F9: Design API contracts
-- [ ] P0-F10: Create design system specification
-- [ ] P0-F11: Document user flows
-- [ ] P0-F12: Research Firecrawl API
-- [x] P0-F14: Initialize git repository (in progress)
-- [x] P0-F15: Create comprehensive documentation (in progress)
+- [ ] P0-F7: Decide on cloud infrastructure (partially done: Render/Railway for MVP)
+- [x] P0-F8: Design database schema (done in data_models.md)
+- [x] P0-F9: Design API contracts (covered in comprehensive_plan.md)
+- [ ] P0-F10: Create design system specification (will do during Phase 1 frontend setup)
+- [x] P0-F11: Document user flows (covered in comprehensive_plan.md)
+- [x] P0-F12: Research scraping strategy (COMPLETED - hybrid approach decided)
+- [x] P0-F14: Initialize git repository (done)
+- [x] P0-F15: Create comprehensive documentation (done)
 
 ## Key Architectural Decisions Made:
 

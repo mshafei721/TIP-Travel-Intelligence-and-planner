@@ -2,7 +2,7 @@
   "project": "TIP - Travel Intelligence & Planner",
   "version": "1.0.0",
   "total_phases": 15,
-  "total_features": 134,
+  "total_features": 135,
   "phases": [
     {
       "phase": 0,
@@ -119,7 +119,7 @@
     {
       "phase": 1,
       "name": "Foundation",
-      "description": "Set up core infrastructure, authentication, and database",
+      "description": "Set up core infrastructure, authentication, database, and custom scraper framework",
       "features": [
         {
           "id": "P1-F1",
@@ -204,6 +204,13 @@
           "description": "Create GitHub Actions workflows for testing and linting",
           "passes": false,
           "priority": "medium"
+        },
+        {
+          "id": "P1-F13",
+          "name": "Build custom Playwright scraper framework",
+          "description": "Create reusable scraper framework with Playwright for embassy sites and government pages. Includes rate limiting, retry logic, error handling, and proxy rotation (optional).",
+          "passes": false,
+          "priority": "high"
         }
       ]
     },
