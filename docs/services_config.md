@@ -259,7 +259,7 @@ Return Error with Confidence = 0
 - **Documentation**: https://vercel.com/docs
 
 ### 12. Railway / Render (Backend Hosting - MVP)
-- **Status**: 🔍 Researching
+- **Status**: ⏳ Decision Made
 - **Purpose**: Host FastAPI backend, Celery workers
 - **Options**:
   - **Railway**: $5/mo, easy setup, good for MVP
@@ -300,7 +300,7 @@ Return Error with Confidence = 0
 ### Phase 0 (Planning) - Before Coding
 - [x] Research and select all services
 - [x] Document decisions and rationale
-- [ ] Review pricing and free tier limits
+- [x] Review pricing and free tier limits
 
 ### Phase 1 (Foundation) - Before Development
 - [ ] Supabase: Create project, configure auth

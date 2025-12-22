@@ -19,7 +19,7 @@ TIP is a **decision-grade travel intelligence system** that provides travelers w
 
 | Phase | Name | Features | Status |
 |-------|------|----------|---------|
-| 0 | Research & Planning | 15 | 73% Complete |
+| 0 | Research & Planning | 15 | 100% Complete ✅ |
 | 1 | Foundation | 13 | Not Started |
 | 2 | Orchestrator Agent | 8 | Not Started |
 | 3 | Visa & Entry Agent | 8 | Not Started |
@@ -36,7 +36,7 @@ TIP is a **decision-grade travel intelligence system** that provides travelers w
 | 14 | Data Lifecycle | 6 | Not Started |
 | 15 | Polish & Production | 8 | Not Started |
 
-**Total**: 135 features across 15 phases
+**Total**: 127 features across 16 phases
 
 ---
 
@@ -96,7 +96,7 @@ TIP is a **decision-grade travel intelligence system** that provides travelers w
 
 ### Deployment
 - **Frontend**: Vercel
-- **Backend (MVP)**: Render or Railway
+- **Backend (MVP)**: Render
 - **Backend (Prod)**: AWS (EC2, ECS, ElastiCache)
 - **Redis**: Upstash (serverless) or AWS ElastiCache
 - **CI/CD**: GitHub Actions

@@ -1,8 +1,8 @@
 {
   "project": "TIP - Travel Intelligence & Planner",
   "version": "1.0.0",
-  "total_phases": 15,
-  "total_features": 135,
+  "total_phases": 16,
+  "total_features": 127,
   "phases": [
     {
       "phase": 0,
