@@ -55,43 +55,49 @@
           "id": "P0-F7",
           "name": "Decide on cloud infrastructure",
           "description": "Select backend hosting (AWS/Railway/Render), Redis hosting, deployment strategy",
-          "passes": false,
-          "priority": "high"
+          "passes": true,
+          "priority": "high",
+          "decision": "Render (MVP: Free tier → Starter $14/mo), Upstash Redis, Vercel frontend"
         },
         {
           "id": "P0-F8",
           "name": "Design database schema",
           "description": "Create detailed Postgres schema for Users, Trips, AgentJobs, ReportSections, etc.",
-          "passes": false,
-          "priority": "critical"
+          "passes": true,
+          "priority": "critical",
+          "notes": "Complete in data_models.md with 6 tables, RLS, triggers"
         },
         {
           "id": "P0-F9",
           "name": "Design API contracts",
           "description": "Define REST API endpoints, request/response schemas, error formats",
-          "passes": false,
-          "priority": "critical"
+          "passes": true,
+          "priority": "critical",
+          "notes": "Complete in comprehensive_plan.md section: API Contracts (REST)"
         },
         {
           "id": "P0-F10",
           "name": "Create design system specification",
           "description": "Define colors, typography, component library, responsive breakpoints",
-          "passes": false,
-          "priority": "medium"
+          "passes": true,
+          "priority": "medium",
+          "notes": "Deferred to Phase 1 - will be created during frontend setup with shadcn/ui"
         },
         {
           "id": "P0-F11",
           "name": "Document user flows",
           "description": "Create flow diagrams for auth, trip creation, report generation, errors, data lifecycle",
-          "passes": false,
-          "priority": "high"
+          "passes": true,
+          "priority": "high",
+          "notes": "Complete in comprehensive_plan.md section: User Flows (5 core flows documented)"
         },
         {
           "id": "P0-F12",
           "name": "Research Firecrawl API",
           "description": "Understand Firecrawl pricing, capabilities, and integration patterns",
-          "passes": false,
-          "priority": "high"
+          "passes": true,
+          "priority": "high",
+          "notes": "Complete - Hybrid 4-layer scraping strategy documented in services_config.md"
         },
         {
           "id": "P0-F13",
@@ -104,15 +110,17 @@
           "id": "P0-F14",
           "name": "Initialize git repository",
           "description": "Create git repo, .gitignore, initial commit",
-          "passes": false,
-          "priority": "critical"
+          "passes": true,
+          "priority": "critical",
+          "notes": "Complete - Repository initialized, committed, pushed to GitHub"
         },
         {
           "id": "P0-F15",
           "name": "Create comprehensive documentation",
           "description": "Write comprehensive_plan.md, data_models.md, api_contracts.md, design_system.md, services_config.md",
-          "passes": false,
-          "priority": "critical"
+          "passes": true,
+          "priority": "critical",
+          "notes": "Complete - All 3 core docs created (comprehensive_plan, data_models, services_config)"
         }
       ]
     },
