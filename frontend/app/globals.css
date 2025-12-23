@@ -1,0 +1,134 @@
+@import "tailwindcss";
+
+/*
+  TIP - Travel Intelligence & Planner
+  Design System: Blue (primary), Amber (secondary), Slate (neutral)
+  Typography: DM Sans (headings & body), IBM Plex Mono (code)
+*/
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  /* Font families - DM Sans for clean, geometric type */
+  --font-display: "DM Sans", system-ui, sans-serif;
+  --font-body: "DM Sans", system-ui, sans-serif;
+  --font-sans: "DM Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+/* Shadcn/UI theme integration */
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
+/*
+  Light theme - TIP Design System
+  Primary: Blue, Secondary: Amber, Neutral: Slate
+*/
+:root {
+  --radius: 0.5rem;
+
+  /* Backgrounds & Foregrounds - Slate palette */
+  --background: #ffffff;
+  --foreground: #0f172a; /* slate-900 */
+  --card: #ffffff;
+  --card-foreground: #0f172a; /* slate-900 */
+  --popover: #ffffff;
+  --popover-foreground: #0f172a; /* slate-900 */
+
+  /* Primary - Blue */
+  --primary: #2563eb; /* blue-600 */
+  --primary-foreground: #ffffff;
+
+  /* Secondary - Amber */
+  --secondary: #f59e0b; /* amber-500 */
+  --secondary-foreground: #78350f; /* amber-900 */
+
+  /* Muted - Slate for subdued elements */
+  --muted: #f1f5f9; /* slate-100 */
+  --muted-foreground: #64748b; /* slate-500 */
+
+  /* Accent - Lighter Blue */
+  --accent: #dbeafe; /* blue-100 */
+  --accent-foreground: #1e40af; /* blue-800 */
+
+  /* Destructive - Rose */
+  --destructive: #dc2626; /* red-600 */
+  --destructive-foreground: #ffffff;
+
+  /* Borders & Inputs - Slate */
+  --border: #e2e8f0; /* slate-200 */
+  --input: #e2e8f0; /* slate-200 */
+  --ring: #3b82f6; /* blue-500 */
+}
+
+/*
+  Dark theme - TIP Design System
+  Maintains Blue/Amber identity with dark backgrounds
+*/
+.dark {
+  --background: #020617; /* slate-950 */
+  --foreground: #f8fafc; /* slate-50 */
+  --card: #0f172a; /* slate-900 */
+  --card-foreground: #f8fafc; /* slate-50 */
+  --popover: #0f172a; /* slate-900 */
+  --popover-foreground: #f8fafc; /* slate-50 */
+
+  /* Primary - Blue (adjusted for dark) */
+  --primary: #3b82f6; /* blue-500 */
+  --primary-foreground: #eff6ff; /* blue-50 */
+
+  /* Secondary - Amber (adjusted for dark) */
+  --secondary: #fbbf24; /* amber-400 */
+  --secondary-foreground: #451a03; /* amber-950 */
+
+  /* Muted - Dark Slate */
+  --muted: #1e293b; /* slate-800 */
+  --muted-foreground: #94a3b8; /* slate-400 */
+
+  /* Accent - Darker Blue */
+  --accent: #1e40af; /* blue-800 */
+  --accent-foreground: #dbeafe; /* blue-100 */
+
+  /* Destructive - Rose */
+  --destructive: #f87171; /* red-400 */
+  --destructive-foreground: #450a0a; /* red-950 */
+
+  /* Borders & Inputs - Dark Slate */
+  --border: #334155; /* slate-700 */
+  --input: #334155; /* slate-700 */
+  --ring: #60a5fa; /* blue-400 */
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+/* Utility class for smooth color transitions */
+* {
+  @apply border-border;
+}
