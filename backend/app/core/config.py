@@ -39,6 +39,11 @@ class Settings(BaseSettings):
     GDPR_ENABLED: bool = True
     LOG_LEVEL: str = "INFO"
 
+    # Feature Flags
+    FEATURE_DASHBOARD_HOME: bool = True
+    FEATURE_RECOMMENDATIONS: bool = True
+    FEATURE_ANALYTICS: bool = True
+
     @property
     def cors_origins_list(self) -> List[str]:
         """Parse CORS origins from comma-separated string"""
