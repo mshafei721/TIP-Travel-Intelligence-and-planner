@@ -20,3 +20,4 @@
 20. for scraping apis you can use this repo: https://github.com/cporter202/scraping-apis-for-devs
 21. all external services to be confirgured by user before it is integrated: example; if supabase is required user should provide the keys in advance in the .env file (interact with user until it is complete)
 don't use "&& dir /b" use "&& ls" or "&& ls -la"
+23. don't use "Remove-Item" when deleting a folder as this is not a command in powershell
