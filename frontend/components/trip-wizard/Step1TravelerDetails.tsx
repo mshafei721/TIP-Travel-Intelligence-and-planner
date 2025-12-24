@@ -107,10 +107,7 @@ export default function Step1TravelerDetails({ data, onChange }: Step1Props) {
             type="text"
             value={data.name}
             onChange={(e) => updateField('name', e.target.value)}
-            className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700
-                     bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100
-                     focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                     transition-all duration-200"
+            className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
             placeholder="John Smith"
           />
         </div>
@@ -130,11 +127,7 @@ export default function Step1TravelerDetails({ data, onChange }: Step1Props) {
                   setErrors((prev) => ({ ...prev, email: 'Invalid email format' }))
                 }
               }}
-              className={`w-full px-4 py-3 rounded-lg border
-                       ${errors.email ? 'border-red-500' : 'border-slate-300 dark:border-slate-700'}
-                       bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100
-                       focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                       transition-all duration-200`}
+              className={`w-full px-4 py-3 rounded-lg border ${errors.email ? 'border-red-500' : 'border-slate-300 dark:border-slate-700'} bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200`}
               placeholder="john@example.com"
             />
             {errors.email && (
@@ -152,10 +145,7 @@ export default function Step1TravelerDetails({ data, onChange }: Step1Props) {
               max="120"
               value={data.age || ''}
               onChange={(e) => updateField('age', e.target.value ? parseInt(e.target.value) : undefined)}
-              className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700
-                       bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100
-                       focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                       transition-all duration-200"
+              className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
               placeholder="30"
             />
           </div>
@@ -170,10 +160,7 @@ export default function Step1TravelerDetails({ data, onChange }: Step1Props) {
             <select
               value={data.nationality}
               onChange={(e) => updateField('nationality', e.target.value)}
-              className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700
-                       bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100
-                       focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                       transition-all duration-200"
+              className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
             >
               <option value="">Select country...</option>
               {COUNTRIES.map((country) => (
@@ -189,10 +176,7 @@ export default function Step1TravelerDetails({ data, onChange }: Step1Props) {
             <select
               value={data.residenceCountry}
               onChange={(e) => updateField('residenceCountry', e.target.value)}
-              className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700
-                       bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100
-                       focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                       transition-all duration-200"
+              className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
             >
               <option value="">Select country...</option>
               {COUNTRIES.map((country) => (
@@ -212,10 +196,7 @@ export default function Step1TravelerDetails({ data, onChange }: Step1Props) {
               type="text"
               value={data.originCity}
               onChange={(e) => updateField('originCity', e.target.value)}
-              className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700
-                       bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100
-                       focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                       transition-all duration-200"
+              className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
               placeholder="New York"
             />
           </div>
@@ -227,10 +208,7 @@ export default function Step1TravelerDetails({ data, onChange }: Step1Props) {
             <select
               value={data.residencyStatus}
               onChange={(e) => updateField('residencyStatus', e.target.value as TravelerDetails['residencyStatus'])}
-              className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700
-                       bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100
-                       focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                       transition-all duration-200"
+              className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
             >
               <option value="">Select status...</option>
               {RESIDENCY_STATUS.map((status) => (
@@ -251,10 +229,7 @@ export default function Step1TravelerDetails({ data, onChange }: Step1Props) {
             max="20"
             value={data.partySize}
             onChange={(e) => updateField('partySize', parseInt(e.target.value) || 1)}
-            className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700
-                     bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100
-                     focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                     transition-all duration-200"
+            className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
           />
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-500">
             Including yourself
@@ -276,10 +251,7 @@ export default function Step1TravelerDetails({ data, onChange }: Step1Props) {
                     max="120"
                     value={age || ''}
                     onChange={(e) => updatePartyAge(index, parseInt(e.target.value) || 0)}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700
-                             bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100
-                             focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                             transition-all duration-200"
+                    className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                     placeholder={`Person ${index + 2}`}
                   />
                 </div>
@@ -299,12 +271,7 @@ export default function Step1TravelerDetails({ data, onChange }: Step1Props) {
                 key={pref}
                 type="button"
                 onClick={() => toggleContactPref(pref)}
-                className={`px-4 py-2 rounded-lg border-2 font-medium transition-all duration-200
-                         ${
-                           data.contactPreferences.includes(pref)
-                             ? 'border-blue-600 bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400'
-                             : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300'
-                         }`}
+                className={`px-4 py-2 rounded-lg border-2 font-medium transition-all duration-200 ${data.contactPreferences.includes(pref) ? 'border-blue-600 bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400' : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300'}`}
               >
                 {pref}
               </button>

@@ -116,13 +116,7 @@ export default function Step4Preferences({ data, onChange }: Step4Props) {
                 key={style.value}
                 type="button"
                 onClick={() => updateField('travelStyle', style.value as TripPreferences['travelStyle'])}
-                className={`p-5 rounded-xl border-2 transition-all duration-300
-                         hover:shadow-lg hover:scale-105
-                         ${
-                           data.travelStyle === style.value
-                             ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/30 shadow-lg shadow-amber-500/20'
-                             : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800'
-                         }`}
+                className={`p-5 rounded-xl border-2 transition-all duration-300 hover:shadow-lg hover:scale-105 ${data.travelStyle === style.value ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/30 shadow-lg shadow-amber-500/20' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800'}`}
               >
                 <div className="text-3xl mb-2">{style.icon}</div>
                 <div className="font-semibold text-slate-900 dark:text-slate-100 mb-1">
@@ -150,13 +144,7 @@ export default function Step4Preferences({ data, onChange }: Step4Props) {
                 key={interest.value}
                 type="button"
                 onClick={() => toggleInterest(interest.value)}
-                className={`p-4 rounded-xl border-2 transition-all duration-200
-                         flex flex-col items-center gap-2
-                         ${
-                           data.interests.includes(interest.value)
-                             ? 'border-blue-600 bg-blue-50 dark:bg-blue-950/30 shadow-md'
-                             : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300'
-                         }`}
+                className={`p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2 ${data.interests.includes(interest.value) ? 'border-blue-600 bg-blue-50 dark:bg-blue-950/30 shadow-md' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300'}`}
               >
                 <div className="text-3xl">{interest.icon}</div>
                 <div className="font-medium text-sm text-slate-900 dark:text-slate-100">
@@ -185,12 +173,7 @@ export default function Step4Preferences({ data, onChange }: Step4Props) {
                 key={restriction}
                 type="button"
                 onClick={() => toggleDietary(restriction)}
-                className={`px-4 py-2 rounded-full border-2 font-medium transition-all duration-200
-                         ${
-                           data.dietaryRestrictions.includes(restriction)
-                             ? 'border-green-600 bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-400'
-                             : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300'
-                         }`}
+                className={`px-4 py-2 rounded-full border-2 font-medium transition-all duration-200 ${data.dietaryRestrictions.includes(restriction) ? 'border-green-600 bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-400' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300'}`}
               >
                 {restriction}
                 {data.dietaryRestrictions.includes(restriction) && (
@@ -213,10 +196,7 @@ export default function Step4Preferences({ data, onChange }: Step4Props) {
             value={data.accessibilityNeeds}
             onChange={(e) => updateField('accessibilityNeeds', e.target.value)}
             rows={4}
-            className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700
-                     bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100
-                     focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                     transition-all duration-200 resize-none"
+            className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
             placeholder="Please describe any mobility needs, visual/hearing requirements, or other accessibility considerations..."
           />
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-500">
@@ -226,9 +206,7 @@ export default function Step4Preferences({ data, onChange }: Step4Props) {
 
         {/* Summary of selections */}
         {(data.travelStyle || data.interests.length > 0 || data.dietaryRestrictions.length > 0) && (
-          <div className="bg-gradient-to-br from-slate-50 to-blue-50/30 dark:from-slate-800/50 dark:to-blue-950/20
-                        border border-slate-200 dark:border-slate-700 rounded-xl p-6
-                        animate-slideInUp" style={{ animationDelay: '200ms' }}>
+          <div className="bg-gradient-to-br from-slate-50 to-blue-50/30 dark:from-slate-800/50 dark:to-blue-950/20 border border-slate-200 dark:border-slate-700 rounded-xl p-6 animate-slideInUp" style={{ animationDelay: '200ms' }}>
             <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2">
               <span className="text-lg">✨</span>
               Your Travel Profile

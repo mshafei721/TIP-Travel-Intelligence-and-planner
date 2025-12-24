@@ -9,8 +9,7 @@ export default function AutoSaveIndicator({ show }: AutoSaveIndicatorProps) {
 
   return (
     <div className="fixed bottom-8 right-8 z-50 animate-slideInRight">
-      <div className="bg-green-600 text-white px-5 py-3 rounded-xl shadow-xl
-                    flex items-center gap-3 border border-green-500">
+      <div className="bg-green-600 text-white px-5 py-3 rounded-xl shadow-xl flex items-center gap-3 border border-green-500">
         <svg
           className="w-5 h-5 animate-checkmark"
           fill="none"

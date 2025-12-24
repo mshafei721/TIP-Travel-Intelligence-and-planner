@@ -37,17 +37,7 @@ export default function StepIndicator({ currentStep, totalSteps }: StepIndicator
               {/* Step node */}
               <div className="flex flex-col items-center">
                 <div
-                  className={`
-                    relative w-10 h-10 rounded-full flex items-center justify-center
-                    transition-all duration-500 ease-out
-                    ${
-                      isCompleted
-                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30'
-                        : isCurrent
-                        ? 'bg-amber-500 text-white shadow-xl shadow-amber-500/40 scale-110'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-600'
-                    }
-                  `}
+                  className={`relative w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500 ease-out ${isCompleted ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : isCurrent ? 'bg-amber-500 text-white shadow-xl shadow-amber-500/40 scale-110' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-600'}`}
                 >
                   {isCompleted ? (
                     <svg
@@ -75,14 +65,7 @@ export default function StepIndicator({ currentStep, totalSteps }: StepIndicator
 
                 {/* Step label */}
                 <div
-                  className={`
-                    mt-3 text-xs font-medium tracking-wide transition-colors
-                    ${
-                      isCompleted || isCurrent
-                        ? 'text-slate-900 dark:text-slate-100'
-                        : 'text-slate-500 dark:text-slate-600'
-                    }
-                  `}
+                  className={`mt-3 text-xs font-medium tracking-wide transition-colors ${isCompleted || isCurrent ? 'text-slate-900 dark:text-slate-100' : 'text-slate-500 dark:text-slate-600'}`}
                 >
                   {stepLabels[index]}
                 </div>
@@ -102,17 +85,7 @@ export default function StepIndicator({ currentStep, totalSteps }: StepIndicator
           return (
             <div
               key={step}
-              className={`
-                w-8 h-8 rounded-full flex items-center justify-center text-xs font-mono font-semibold
-                transition-all duration-500
-                ${
-                  isCompleted
-                    ? 'bg-blue-600 text-white'
-                    : isCurrent
-                    ? 'bg-amber-500 text-white scale-125'
-                    : 'bg-slate-200 dark:bg-slate-800 text-slate-400'
-                }
-              `}
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-mono font-semibold transition-all duration-500 ${isCompleted ? 'bg-blue-600 text-white' : isCurrent ? 'bg-amber-500 text-white scale-125' : 'bg-slate-200 dark:bg-slate-800 text-slate-400'}`}
             >
               {isCompleted ? (
                 <svg className="w-4 h-4" fill="none" strokeWidth="2.5" stroke="currentColor" viewBox="0 0 24 24">

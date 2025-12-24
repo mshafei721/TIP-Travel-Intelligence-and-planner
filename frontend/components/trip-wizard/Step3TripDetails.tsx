@@ -105,10 +105,7 @@ export default function Step3TripDetails({ data, onChange }: Step3Props) {
                 updateField('departureDate', e.target.value)
                 setTimeout(validateDates, 100)
               }}
-              className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700
-                       bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100
-                       focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                       transition-all duration-200"
+              className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
             />
           </div>
 
@@ -124,11 +121,7 @@ export default function Step3TripDetails({ data, onChange }: Step3Props) {
                 updateField('returnDate', e.target.value)
                 setTimeout(validateDates, 100)
               }}
-              className={`w-full px-4 py-3 rounded-lg border
-                       ${errors.returnDate ? 'border-red-500' : 'border-slate-300 dark:border-slate-700'}
-                       bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100
-                       focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                       transition-all duration-200`}
+              className={`w-full px-4 py-3 rounded-lg border ${errors.returnDate ? 'border-red-500' : 'border-slate-300 dark:border-slate-700'} bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200`}
             />
             {errors.returnDate && (
               <p className="mt-1 text-sm text-red-600">{errors.returnDate}</p>
@@ -138,8 +131,7 @@ export default function Step3TripDetails({ data, onChange }: Step3Props) {
 
         {/* Duration display */}
         {duration && (
-          <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900
-                        rounded-lg p-4 flex items-center gap-3 animate-slideInUp"
+          <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 rounded-lg p-4 flex items-center gap-3 animate-slideInUp"
                style={{ animationDelay: '50ms' }}>
             <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white text-xl">
               📅
@@ -168,10 +160,7 @@ export default function Step3TripDetails({ data, onChange }: Step3Props) {
                 step="100"
                 value={data.budget || ''}
                 onChange={(e) => updateField('budget', parseFloat(e.target.value) || 0)}
-                className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700
-                         bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100
-                         focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                         transition-all duration-200"
+                className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                 placeholder="5000"
               />
             </div>
@@ -179,10 +168,7 @@ export default function Step3TripDetails({ data, onChange }: Step3Props) {
               <select
                 value={data.currency}
                 onChange={(e) => updateField('currency', e.target.value as TripDetails['currency'])}
-                className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700
-                         bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100
-                         focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                         transition-all duration-200"
+                className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
               >
                 {CURRENCIES.map((currency) => (
                   <option key={currency.code} value={currency.code}>
@@ -199,8 +185,7 @@ export default function Step3TripDetails({ data, onChange }: Step3Props) {
 
         {/* Budget breakdown (if budget is set) */}
         {data.budget > 0 && duration && (
-          <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4 grid grid-cols-3 gap-4
-                        animate-slideInUp" style={{ animationDelay: '150ms' }}>
+          <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4 grid grid-cols-3 gap-4 animate-slideInUp" style={{ animationDelay: '150ms' }}>
             <div className="text-center">
               <div className="text-xs text-slate-500 dark:text-slate-500 mb-1">Per Day</div>
               <div className="font-mono font-semibold text-slate-900 dark:text-slate-100">
@@ -235,13 +220,7 @@ export default function Step3TripDetails({ data, onChange }: Step3Props) {
                 key={purpose.value}
                 type="button"
                 onClick={() => updateField('tripPurpose', purpose.value as TripDetails['tripPurpose'])}
-                className={`p-4 rounded-xl border-2 transition-all duration-200 text-left
-                         hover:shadow-md
-                         ${
-                           data.tripPurpose === purpose.value
-                             ? 'border-blue-600 bg-blue-50 dark:bg-blue-950/30 shadow-md'
-                             : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300'
-                         }`}
+                className={`p-4 rounded-xl border-2 transition-all duration-200 text-left hover:shadow-md ${data.tripPurpose === purpose.value ? 'border-blue-600 bg-blue-50 dark:bg-blue-950/30 shadow-md' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300'}`}
               >
                 <div className="text-2xl mb-2">{purpose.icon}</div>
                 <div className="font-semibold text-slate-900 dark:text-slate-100 mb-0.5">

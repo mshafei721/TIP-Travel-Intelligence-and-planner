@@ -92,12 +92,10 @@ export default function Step2Destination({ data, onChange }: Step2Props) {
         <button
           type="button"
           onClick={toggleMultiCity}
-          className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-200
-                   ${isMultiCity ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-700'}`}
+          className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-200 ${isMultiCity ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-700'}`}
         >
           <span
-            className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform duration-200
-                     ${isMultiCity ? 'translate-x-6' : 'translate-x-1'}`}
+            className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform duration-200 ${isMultiCity ? 'translate-x-6' : 'translate-x-1'}`}
           />
         </button>
       </div>
@@ -107,15 +105,11 @@ export default function Step2Destination({ data, onChange }: Step2Props) {
         {data.map((destination, index) => (
           <div
             key={index}
-            className="relative bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-800/50
-                     border border-slate-200 dark:border-slate-700 rounded-xl p-6
-                     shadow-sm hover:shadow-md transition-all duration-300
-                     animate-slideInUp"
+            className="relative bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 animate-slideInUp"
             style={{ animationDelay: `${index * 50}ms` }}
           >
             {/* Destination number badge */}
-            <div className="absolute -top-3 -left-3 w-8 h-8 rounded-full bg-amber-500 text-white
-                          flex items-center justify-center font-bold text-sm shadow-lg">
+            <div className="absolute -top-3 -left-3 w-8 h-8 rounded-full bg-amber-500 text-white flex items-center justify-center font-bold text-sm shadow-lg">
               {index + 1}
             </div>
 
@@ -124,8 +118,7 @@ export default function Step2Destination({ data, onChange }: Step2Props) {
               <button
                 type="button"
                 onClick={() => removeDestination(index)}
-                className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-red-500 text-white
-                         flex items-center justify-center shadow-lg hover:bg-red-600 transition-colors"
+                className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center shadow-lg hover:bg-red-600 transition-colors"
                 title="Remove destination"
               >
                 <svg className="w-4 h-4" fill="none" strokeWidth="2.5" stroke="currentColor" viewBox="0 0 24 24">
@@ -144,10 +137,7 @@ export default function Step2Destination({ data, onChange }: Step2Props) {
                   type="text"
                   value={destination.country}
                   onChange={(e) => updateDestination(index, 'country', e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700
-                           bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100
-                           focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                           transition-all duration-200"
+                  className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                   placeholder="e.g., Japan"
                   list={`countries-${index}`}
                 />
@@ -167,10 +157,7 @@ export default function Step2Destination({ data, onChange }: Step2Props) {
                   type="text"
                   value={destination.city}
                   onChange={(e) => updateDestination(index, 'city', e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700
-                           bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100
-                           focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                           transition-all duration-200"
+                  className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                   placeholder="e.g., Tokyo"
                   list={`cities-${index}`}
                 />
@@ -198,9 +185,7 @@ export default function Step2Destination({ data, onChange }: Step2Props) {
                         updateDestination(index, 'country', dest.country)
                         updateDestination(index, 'city', dest.city)
                       }}
-                      className="px-3 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700
-                               text-slate-700 dark:text-slate-300 rounded-full hover:border-blue-500 hover:text-blue-600
-                               dark:hover:text-blue-400 transition-colors"
+                      className="px-3 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-full hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                     >
                       {dest.city}, {dest.country}
                     </button>
@@ -217,10 +202,7 @@ export default function Step2Destination({ data, onChange }: Step2Props) {
         <button
           type="button"
           onClick={addDestination}
-          className="w-full py-4 border-2 border-dashed border-slate-300 dark:border-slate-700
-                   rounded-xl text-slate-600 dark:text-slate-400 hover:border-blue-500
-                   hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200
-                   flex items-center justify-center gap-2 font-medium group"
+          className="w-full py-4 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl text-slate-600 dark:text-slate-400 hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 flex items-center justify-center gap-2 font-medium group"
         >
           <svg
             className="w-5 h-5 group-hover:scale-110 transition-transform"

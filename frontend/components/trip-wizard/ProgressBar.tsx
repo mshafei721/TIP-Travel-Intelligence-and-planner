@@ -10,9 +10,7 @@ export default function ProgressBar({ progress }: ProgressBarProps) {
       {/* Progress bar container */}
       <div className="h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden shadow-inner">
         <div
-          className="h-full bg-gradient-to-r from-blue-600 via-blue-500 to-amber-500
-                     transition-all duration-700 ease-out rounded-full
-                     shadow-lg shadow-blue-500/20"
+          className="h-full bg-gradient-to-r from-blue-600 via-blue-500 to-amber-500 transition-all duration-700 ease-out rounded-full shadow-lg shadow-blue-500/20"
           style={{ width: `${progress}%` }}
         >
           {/* Shimmer effect */}
