@@ -1,0 +1,186 @@
+# ==============================================
+# GitHub Actions: Backend CI/CD Pipeline
+# ==============================================
+# Runs on: push to main, pull requests
+# Tests: Unit + Integration (with Redis)
+# Coverage: Enforces >80% code coverage
+# Linting: Ruff for code quality
+
+name: Backend CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-ci.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'backend/**'
+
+jobs:
+  # ==============================================
+  # Job 1: Linting and Code Quality
+  # ==============================================
+  lint:
+    name: Lint Backend Code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          pip install ruff black
+
+      - name: Run Ruff linter
+        run: |
+          cd backend
+          ruff check app/ --output-format=github
+
+      - name: Check code formatting with Black
+        run: |
+          cd backend
+          black --check app/
+
+  # ==============================================
+  # Job 2: Unit Tests
+  # ==============================================
+  test:
+    name: Unit Tests (Python 3.12)
+    runs-on: ubuntu-latest
+
+    services:
+      # Redis service for Celery tests
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          pip install -r requirements.txt
+
+      - name: Run tests with coverage
+        env:
+          REDIS_URL: redis://localhost:6379
+          CELERY_BROKER_URL: redis://localhost:6379/0
+          CELERY_RESULT_BACKEND: redis://localhost:6379/0
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_JWT_SECRET: ${{ secrets.SUPABASE_JWT_SECRET }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SECRET_KEY: test-secret-key-for-ci-only
+        run: |
+          cd backend
+          pytest tests/ -v --cov=app --cov-report=term --cov-report=xml --cov-fail-under=80
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./backend/coverage.xml
+          flags: backend
+          name: backend-coverage
+          fail_ci_if_error: false
+
+  # ==============================================
+  # Job 3: Docker Build Validation
+  # ==============================================
+  docker:
+    name: Validate Docker Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Validate docker-compose.yml
+        run: |
+          docker-compose config > /dev/null
+
+      - name: Build backend Docker image
+        run: |
+          cd backend
+          docker build -t tip-backend:test .
+
+      - name: Test Docker image
+        run: |
+          docker run --rm tip-backend:test python -c "import app; print('Backend imports successful')"
+
+  # ==============================================
+  # Job 4: Security Scanning
+  # ==============================================
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: './backend'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  # ==============================================
+  # Job 5: Type Checking (Optional)
+  # ==============================================
+  typecheck:
+    name: Type Checking with mypy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          pip install mypy types-redis types-python-dateutil
+
+      - name: Run mypy
+        run: |
+          cd backend
+          mypy app/ --ignore-missing-imports
+        continue-on-error: true  # Don't fail CI on type errors (for now)

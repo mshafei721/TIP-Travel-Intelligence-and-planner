@@ -1,0 +1,142 @@
+# ==============================================
+# GitHub Actions: Full Stack CI/CD Pipeline
+# ==============================================
+# Runs on: push to main, pull requests
+# Combines: Backend + Frontend + Docker validation
+
+name: Full Stack CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  # ==============================================
+  # Job 1: Detect Changes
+  # ==============================================
+  changes:
+    name: Detect Changed Files
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+      docker: ${{ steps.filter.outputs.docker }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check for changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+              - 'requirements.txt'
+              - 'docker-compose.yml'
+            frontend:
+              - 'frontend/**'
+              - 'package.json'
+            docker:
+              - 'docker-compose.yml'
+              - 'backend/Dockerfile'
+              - '.dockerignore'
+
+  # ==============================================
+  # Job 2: Backend Pipeline (Conditional)
+  # ==============================================
+  backend:
+    name: Backend CI/CD
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
+    uses: ./.github/workflows/backend-ci.yml
+    secrets: inherit
+
+  # ==============================================
+  # Job 3: Frontend Pipeline (Conditional)
+  # ==============================================
+  frontend:
+    name: Frontend CI/CD
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
+    uses: ./.github/workflows/frontend-ci.yml
+    secrets: inherit
+
+  # ==============================================
+  # Job 4: Integration Tests (Full Stack)
+  # ==============================================
+  integration:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+    if: |
+      always() &&
+      (needs.backend.result == 'success' || needs.backend.result == 'skipped') &&
+      (needs.frontend.result == 'success' || needs.frontend.result == 'skipped')
+
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Compose
+        run: |
+          docker-compose config > /dev/null
+          echo "✅ Docker Compose configuration is valid"
+
+      - name: Start services
+        run: |
+          docker-compose up -d redis
+          sleep 5
+
+      - name: Test Redis connection
+        run: |
+          docker-compose exec -T redis redis-cli ping
+
+      - name: Stop services
+        run: |
+          docker-compose down
+
+  # ==============================================
+  # Job 5: Summary
+  # ==============================================
+  summary:
+    name: CI/CD Summary
+    runs-on: ubuntu-latest
+    needs: [backend, frontend, integration]
+    if: always()
+    steps:
+      - name: Check all jobs
+        run: |
+          echo "Backend: ${{ needs.backend.result }}"
+          echo "Frontend: ${{ needs.frontend.result }}"
+          echo "Integration: ${{ needs.integration.result }}"
+
+      - name: Report success
+        if: |
+          needs.backend.result == 'success' &&
+          needs.frontend.result == 'success' &&
+          needs.integration.result == 'success'
+        run: |
+          echo "✅ All CI/CD checks passed!"
+
+      - name: Report failure
+        if: |
+          needs.backend.result == 'failure' ||
+          needs.frontend.result == 'failure' ||
+          needs.integration.result == 'failure'
+        run: |
+          echo "❌ CI/CD checks failed"
+          exit 1
