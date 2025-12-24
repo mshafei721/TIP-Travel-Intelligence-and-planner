@@ -1,20 +1,40 @@
-export default function ForgotPasswordPage() {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-950">
-      <div className="w-full max-w-md space-y-8 rounded-lg border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">
-            Reset Password
-          </h1>
-          <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
-            Enter your email to receive reset instructions
-          </p>
-        </div>
+'use client'
 
-        <div className="mt-8">
-          <p className="text-center text-sm text-slate-600 dark:text-slate-400">
-            Password reset form placeholder - will be implemented in Milestone 2
-          </p>
+import { useState } from 'react'
+import { PasswordResetRequestForm } from '@/components/auth'
+import { requestPasswordReset } from '@/lib/auth/actions'
+
+export default function ForgotPasswordPage() {
+  const [isLoading, setIsLoading] = useState(false)
+  const [emailSent, setEmailSent] = useState(false)
+
+  const handleRequestReset = async (email: string) => {
+    setIsLoading(true)
+
+    try {
+      const result = await requestPasswordReset(email)
+
+      if (!result.error) {
+        setEmailSent(true)
+      }
+    } catch (err) {
+      // Even on error, show success message for security
+      // (don't reveal whether email exists)
+      setEmailSent(true)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
+      <div className="w-full max-w-md space-y-8">
+        <div className="rounded-lg border border-slate-200 bg-white p-8 shadow-sm">
+          <PasswordResetRequestForm
+            onRequestReset={handleRequestReset}
+            isLoading={isLoading}
+            emailSent={emailSent}
+          />
         </div>
       </div>
     </div>
