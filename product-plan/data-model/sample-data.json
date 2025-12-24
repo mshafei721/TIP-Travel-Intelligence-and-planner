@@ -1,0 +1,516 @@
+{
+  "users": [
+    {
+      "id": "user-001",
+      "email": "sarah.chen@example.com",
+      "name": "Sarah Chen",
+      "avatarUrl": "https://i.pravatar.cc/150?img=1",
+      "authProvider": "google",
+      "emailVerified": true,
+      "createdAt": "2025-01-15T10:30:00Z",
+      "updatedAt": "2025-12-20T14:22:00Z"
+    },
+    {
+      "id": "user-002",
+      "email": "alex.kumar@example.com",
+      "name": "Alex Kumar",
+      "authProvider": "email",
+      "emailVerified": true,
+      "createdAt": "2025-02-10T08:15:00Z",
+      "updatedAt": "2025-12-22T09:45:00Z"
+    }
+  ],
+  "travelerProfiles": [
+    {
+      "id": "profile-001",
+      "userId": "user-001",
+      "nationality": "US",
+      "residencyCountry": "US",
+      "residencyStatus": "citizen",
+      "dateOfBirth": "1990-05-15",
+      "travelStyle": "balanced",
+      "dietaryRestrictions": ["vegetarian"],
+      "accessibilityNeeds": null,
+      "createdAt": "2025-01-15T10:35:00Z",
+      "updatedAt": "2025-06-10T12:00:00Z"
+    },
+    {
+      "id": "profile-002",
+      "userId": "user-002",
+      "nationality": "IN",
+      "residencyCountry": "CA",
+      "residencyStatus": "permanent_resident",
+      "dateOfBirth": "1988-09-22",
+      "travelStyle": "packed",
+      "dietaryRestrictions": [],
+      "accessibilityNeeds": null,
+      "createdAt": "2025-02-10T08:20:00Z",
+      "updatedAt": "2025-11-05T16:30:00Z"
+    }
+  ],
+  "trips": [
+    {
+      "id": "trip-001",
+      "userId": "user-001",
+      "title": "Tokyo & Kyoto Adventure",
+      "status": "completed",
+      "travelerDetails": {
+        "name": "Sarah Chen",
+        "email": "sarah.chen@example.com",
+        "age": 35,
+        "nationality": "US",
+        "residencyCountry": "US",
+        "residencyStatus": "citizen",
+        "originCity": "San Francisco",
+        "partySize": 2,
+        "companionAges": [32]
+      },
+      "destinations": [
+        {
+          "id": "dest-001",
+          "country": "Japan",
+          "city": "Tokyo",
+          "order": 1
+        },
+        {
+          "id": "dest-002",
+          "country": "Japan",
+          "city": "Kyoto",
+          "order": 2
+        }
+      ],
+      "tripDetails": {
+        "departureDate": "2026-03-15",
+        "returnDate": "2026-03-25",
+        "budget": 5000,
+        "budgetCurrency": "USD",
+        "purpose": "tourism"
+      },
+      "preferences": {
+        "travelStyle": "balanced",
+        "interests": ["culture", "food", "temples", "photography"],
+        "dietaryRestrictions": ["vegetarian"],
+        "accessibilityNeeds": null
+      },
+      "createdAt": "2025-12-01T09:00:00Z",
+      "updatedAt": "2025-12-15T14:30:00Z",
+      "autoDeleteAt": "2026-04-01T00:00:00Z"
+    },
+    {
+      "id": "trip-002",
+      "userId": "user-002",
+      "title": "Paris City Break",
+      "status": "processing",
+      "travelerDetails": {
+        "name": "Alex Kumar",
+        "email": "alex.kumar@example.com",
+        "age": 37,
+        "nationality": "IN",
+        "residencyCountry": "CA",
+        "residencyStatus": "permanent_resident",
+        "originCity": "Toronto",
+        "partySize": 1,
+        "companionAges": []
+      },
+      "destinations": [
+        {
+          "id": "dest-003",
+          "country": "France",
+          "city": "Paris",
+          "order": 1
+        }
+      ],
+      "tripDetails": {
+        "departureDate": "2026-05-10",
+        "returnDate": "2026-05-17",
+        "budget": 3500,
+        "budgetCurrency": "CAD",
+        "purpose": "tourism"
+      },
+      "preferences": {
+        "travelStyle": "packed",
+        "interests": ["museums", "art", "architecture", "nightlife"],
+        "dietaryRestrictions": [],
+        "accessibilityNeeds": null
+      },
+      "createdAt": "2025-12-20T11:30:00Z",
+      "updatedAt": "2025-12-22T16:45:00Z",
+      "autoDeleteAt": "2026-05-24T00:00:00Z"
+    },
+    {
+      "id": "trip-003",
+      "userId": "user-001",
+      "title": "Morocco Desert & Coast",
+      "status": "draft",
+      "travelerDetails": {
+        "name": "Sarah Chen",
+        "email": "sarah.chen@example.com",
+        "age": 35,
+        "nationality": "US",
+        "residencyCountry": "US",
+        "residencyStatus": "citizen",
+        "originCity": "San Francisco",
+        "partySize": 4,
+        "companionAges": [32, 8, 6]
+      },
+      "destinations": [
+        {
+          "id": "dest-004",
+          "country": "Morocco",
+          "city": "Marrakech",
+          "order": 1
+        },
+        {
+          "id": "dest-005",
+          "country": "Morocco",
+          "city": "Essaouira",
+          "order": 2
+        }
+      ],
+      "tripDetails": {
+        "departureDate": "2026-07-01",
+        "returnDate": "2026-07-14",
+        "budget": 8000,
+        "budgetCurrency": "USD",
+        "purpose": "tourism"
+      },
+      "preferences": {
+        "travelStyle": "relaxed",
+        "interests": ["culture", "beaches", "food", "family_activities"],
+        "dietaryRestrictions": ["vegetarian", "no_spicy"],
+        "accessibilityNeeds": "stroller_friendly"
+      },
+      "createdAt": "2025-12-22T13:15:00Z",
+      "updatedAt": "2025-12-22T13:15:00Z",
+      "autoDeleteAt": null
+    }
+  ],
+  "agentJobs": [
+    {
+      "id": "job-001",
+      "tripId": "trip-001",
+      "agentType": "visa",
+      "status": "completed",
+      "startedAt": "2025-12-01T09:05:00Z",
+      "completedAt": "2025-12-01T09:05:30Z",
+      "retryCount": 0,
+      "confidenceScore": 0.98,
+      "errorMessage": null,
+      "result": {
+        "visaType": "visa_free",
+        "maxStayDays": 90,
+        "passportValidity": "6 months"
+      }
+    },
+    {
+      "id": "job-002",
+      "tripId": "trip-001",
+      "agentType": "weather",
+      "status": "completed",
+      "startedAt": "2025-12-01T09:05:30Z",
+      "completedAt": "2025-12-01T09:06:00Z",
+      "retryCount": 0,
+      "confidenceScore": 0.85,
+      "errorMessage": null,
+      "result": {
+        "averageTempCelsius": 12,
+        "conditions": "partly_cloudy"
+      }
+    },
+    {
+      "id": "job-003",
+      "tripId": "trip-001",
+      "agentType": "itinerary",
+      "status": "completed",
+      "startedAt": "2025-12-01T09:10:00Z",
+      "completedAt": "2025-12-01T09:12:30Z",
+      "retryCount": 0,
+      "confidenceScore": 0.92,
+      "errorMessage": null,
+      "result": {
+        "daysPlanned": 10,
+        "activitiesCount": 28
+      }
+    },
+    {
+      "id": "job-004",
+      "tripId": "trip-002",
+      "agentType": "visa",
+      "status": "running",
+      "startedAt": "2025-12-22T16:46:00Z",
+      "completedAt": null,
+      "retryCount": 0,
+      "confidenceScore": null,
+      "errorMessage": null,
+      "result": null
+    }
+  ],
+  "reportSections": [
+    {
+      "id": "section-001",
+      "tripId": "trip-001",
+      "sectionType": "visa",
+      "title": "Visa & Entry Requirements",
+      "content": {
+        "visaType": "visa_free",
+        "visaName": "Visa-Free Entry",
+        "maxStayDays": 90,
+        "processingTime": null,
+        "cost": null,
+        "requiredDocuments": [
+          "Valid passport",
+          "Proof of onward travel",
+          "Sufficient funds for stay"
+        ],
+        "entryConditions": [
+          "Tourism or business purposes only",
+          "No employment permitted",
+          "Must not overstay 90-day limit"
+        ],
+        "transitRequirements": null,
+        "passportValidity": "Valid for at least 6 months beyond entry date",
+        "disclaimer": "Visa requirements can change. Always verify with official sources before travel."
+      },
+      "confidenceLevel": "high",
+      "sources": [
+        {
+          "id": "source-001",
+          "url": "https://www.mofa.go.jp/j_info/visit/visa/index.html",
+          "title": "Ministry of Foreign Affairs of Japan - Visa Information",
+          "sourceType": "government",
+          "lastVerified": "2025-11-30T00:00:00Z"
+        }
+      ],
+      "generatedAt": "2025-12-01T09:05:30Z"
+    },
+    {
+      "id": "section-002",
+      "tripId": "trip-001",
+      "sectionType": "weather",
+      "title": "Weather Forecast",
+      "content": {
+        "destinations": [
+          {
+            "city": "Tokyo",
+            "averageHigh": 14,
+            "averageLow": 6,
+            "precipitation": 55,
+            "conditions": "Mild, occasional rain",
+            "packingRecommendations": [
+              "Light jacket",
+              "Umbrella",
+              "Layered clothing"
+            ]
+          },
+          {
+            "city": "Kyoto",
+            "averageHigh": 13,
+            "averageLow": 5,
+            "precipitation": 60,
+            "conditions": "Cool, possible showers",
+            "packingRecommendations": [
+              "Waterproof jacket",
+              "Comfortable walking shoes",
+              "Warm layers"
+            ]
+          }
+        ]
+      },
+      "confidenceLevel": "medium",
+      "sources": [
+        {
+          "id": "source-002",
+          "url": "https://www.jma.go.jp/jma/indexe.html",
+          "title": "Japan Meteorological Agency",
+          "sourceType": "official",
+          "lastVerified": "2025-12-01T00:00:00Z"
+        }
+      ],
+      "generatedAt": "2025-12-01T09:06:00Z"
+    },
+    {
+      "id": "section-003",
+      "tripId": "trip-001",
+      "sectionType": "itinerary",
+      "title": "Your 10-Day Itinerary",
+      "content": {
+        "style": "balanced",
+        "days": [
+          {
+            "dayNumber": 1,
+            "date": "2026-03-15",
+            "city": "Tokyo",
+            "items": [
+              {
+                "id": "item-001",
+                "type": "attraction",
+                "name": "Senso-ji Temple",
+                "description": "Tokyo's oldest temple with beautiful architecture",
+                "startTime": "09:00",
+                "duration": 120,
+                "cost": { "amount": 0, "currency": "JPY" }
+              }
+            ]
+          }
+        ],
+        "totalEstimatedCost": {
+          "amount": 3200,
+          "currency": "USD"
+        }
+      },
+      "confidenceLevel": "high",
+      "sources": [],
+      "generatedAt": "2025-12-01T09:12:30Z"
+    }
+  ],
+  "travelReports": [
+    {
+      "id": "report-001",
+      "tripId": "trip-001",
+      "title": "Tokyo & Kyoto Adventure - Travel Intelligence Report",
+      "summary": {
+        "destination": "Tokyo, Kyoto (Japan)",
+        "dates": "March 15-25, 2026",
+        "visaStatus": "Visa-free entry for 90 days",
+        "weatherSummary": "Mild spring weather, 12-14°C, occasional rain",
+        "totalBudget": {
+          "amount": 5000,
+          "currency": "USD"
+        }
+      },
+      "sections": [
+        {
+          "id": "section-001",
+          "tripId": "trip-001",
+          "sectionType": "visa",
+          "title": "Visa & Entry Requirements",
+          "content": {},
+          "confidenceLevel": "high",
+          "sources": [],
+          "generatedAt": "2025-12-01T09:05:30Z"
+        }
+      ],
+      "generatedAt": "2025-12-01T09:15:00Z",
+      "expiresAt": "2026-04-01T00:00:00Z"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "notif-001",
+      "userId": "user-001",
+      "type": "report_completed",
+      "title": "Your travel report is ready!",
+      "message": "Your Tokyo & Kyoto Adventure report has been generated and is ready to view.",
+      "read": true,
+      "tripId": "trip-001",
+      "createdAt": "2025-12-01T09:15:00Z"
+    },
+    {
+      "id": "notif-002",
+      "userId": "user-001",
+      "type": "deletion_reminder",
+      "title": "Trip data will be deleted in 7 days",
+      "message": "Your trip 'Tokyo & Kyoto Adventure' will be automatically deleted on April 1, 2026. Download your report if you want to keep it.",
+      "read": false,
+      "tripId": "trip-001",
+      "createdAt": "2026-03-25T00:00:00Z"
+    },
+    {
+      "id": "notif-003",
+      "userId": "user-002",
+      "type": "report_completed",
+      "title": "Report generation in progress",
+      "message": "We're generating your Paris City Break report. This usually takes 2-3 minutes.",
+      "read": false,
+      "tripId": "trip-002",
+      "createdAt": "2025-12-22T16:45:30Z"
+    }
+  ],
+  "deletionSchedules": [
+    {
+      "id": "del-001",
+      "tripId": "trip-001",
+      "userId": "user-001",
+      "scheduledAt": "2026-04-01T00:00:00Z",
+      "status": "pending",
+      "executedAt": null
+    },
+    {
+      "id": "del-002",
+      "tripId": "trip-002",
+      "userId": "user-002",
+      "scheduledAt": "2026-05-24T00:00:00Z",
+      "status": "pending",
+      "executedAt": null
+    }
+  ],
+  "tripTemplates": [
+    {
+      "id": "template-001",
+      "userId": "user-001",
+      "name": "Family Trip Template",
+      "description": "Quick template for family trips with kids",
+      "travelerDetails": {
+        "name": "Sarah Chen",
+        "email": "sarah.chen@example.com",
+        "nationality": "US",
+        "residencyCountry": "US",
+        "residencyStatus": "citizen",
+        "originCity": "San Francisco",
+        "partySize": 4,
+        "companionAges": [32, 8, 6]
+      },
+      "destinations": null,
+      "preferences": {
+        "travelStyle": "relaxed",
+        "interests": ["family_activities", "beaches", "culture"],
+        "dietaryRestrictions": ["vegetarian", "no_spicy"],
+        "accessibilityNeeds": "stroller_friendly"
+      },
+      "createdAt": "2025-10-15T14:00:00Z",
+      "updatedAt": "2025-12-22T13:10:00Z"
+    }
+  ],
+  "userStatistics": [
+    {
+      "userId": "user-001",
+      "totalTrips": 3,
+      "countriesVisited": 2,
+      "destinationsExplored": 5,
+      "activeTrips": 2
+    },
+    {
+      "userId": "user-002",
+      "totalTrips": 1,
+      "countriesVisited": 0,
+      "destinationsExplored": 1,
+      "activeTrips": 1
+    }
+  ],
+  "recommendedDestinations": [
+    {
+      "id": "rec-001",
+      "country": "Portugal",
+      "cities": ["Lisbon", "Porto"],
+      "imageUrl": "https://images.unsplash.com/photo-1555881400-74d7acaacd8b",
+      "reason": "Based on your interest in culture and food",
+      "estimatedDays": "7-10 days",
+      "estimatedBudget": {
+        "amount": 2500,
+        "currency": "USD"
+      }
+    },
+    {
+      "id": "rec-002",
+      "country": "Thailand",
+      "cities": ["Bangkok", "Chiang Mai"],
+      "imageUrl": "https://images.unsplash.com/photo-1528181304800-259b08848526",
+      "reason": "Great for families with cultural experiences",
+      "estimatedDays": "10-14 days",
+      "estimatedBudget": {
+        "amount": 4000,
+        "currency": "USD"
+      }
+    }
+  ]
+}

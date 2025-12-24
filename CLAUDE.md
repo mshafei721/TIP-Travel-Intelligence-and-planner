@@ -1,7 +1,7 @@
 1. use frontend-design skill when dealing with UI or frontend of this project
 2. use https://github.com/Shubhamsaboo/awesome-llm-apps as the source for agent implementations to guide you in the development of the app you can search other implementation in the internet as well as how to deploy these agents and backend infrastructure
 3. use cost effective cheap alternatives for the external services 
-4. always web research, explore the code base, plan, discuss with user before implementation 
+4. always use ref mcp to Code snippets → Context7, Web search → Exa, Web scraping → Firecrawl, Private code search → GitHub, and explore the code base, plan, discuss with user before implementation 
 5. the frontend has been completed by another developer in folder --> 
 6. make sure you don't break the working application, always question yourself before writing code
 7. check for dependencies and which files are going to be affected by your development of the code

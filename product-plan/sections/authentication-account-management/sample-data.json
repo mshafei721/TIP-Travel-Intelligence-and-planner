@@ -1,0 +1,139 @@
+{
+  "_meta": {
+    "models": {
+      "user": "A traveler who creates an account to generate travel intelligence reports. Authenticates via email/password or Google OAuth and owns all trips, profiles, and notifications.",
+      "session": "Represents an active user session with expiry tracking for session management.",
+      "notification": "System notifications for users including deletion reminders, report completion alerts, and other important updates."
+    },
+    "relationships": [
+      "Each User can have multiple active Sessions across different devices",
+      "Each Session belongs to one User and tracks authentication state",
+      "Each User can have multiple Notifications for various system events"
+    ]
+  },
+  "users": [
+    {
+      "id": "usr-001",
+      "email": "sarah.chen@example.com",
+      "displayName": "Sarah Chen",
+      "authProvider": "google",
+      "emailVerified": true,
+      "createdAt": "2024-11-15T10:30:00Z",
+      "lastLoginAt": "2025-12-22T14:20:00Z",
+      "profileImageUrl": "https://lh3.googleusercontent.com/a/default-user"
+    },
+    {
+      "id": "usr-002",
+      "email": "james.wilson@example.com",
+      "displayName": "James Wilson",
+      "authProvider": "email",
+      "emailVerified": true,
+      "createdAt": "2024-10-05T08:15:00Z",
+      "lastLoginAt": "2025-12-21T09:45:00Z",
+      "profileImageUrl": null
+    },
+    {
+      "id": "usr-003",
+      "email": "maria.garcia@example.com",
+      "displayName": "Maria Garcia",
+      "authProvider": "email",
+      "emailVerified": false,
+      "createdAt": "2025-12-23T16:00:00Z",
+      "lastLoginAt": "2025-12-23T16:00:00Z",
+      "profileImageUrl": null
+    },
+    {
+      "id": "usr-004",
+      "email": "akiko.tanaka@example.com",
+      "displayName": "Akiko Tanaka",
+      "authProvider": "google",
+      "emailVerified": true,
+      "createdAt": "2024-09-20T12:00:00Z",
+      "lastLoginAt": "2025-12-20T18:30:00Z",
+      "profileImageUrl": "https://lh3.googleusercontent.com/a/akiko-profile"
+    },
+    {
+      "id": "usr-005",
+      "email": "david.brown@example.com",
+      "displayName": null,
+      "authProvider": "email",
+      "emailVerified": true,
+      "createdAt": "2025-12-18T07:20:00Z",
+      "lastLoginAt": "2025-12-22T11:10:00Z",
+      "profileImageUrl": null
+    }
+  ],
+  "sessions": [
+    {
+      "id": "ses-001",
+      "userId": "usr-001",
+      "createdAt": "2025-12-22T14:20:00Z",
+      "expiresAt": "2025-12-23T14:20:00Z",
+      "lastActivityAt": "2025-12-23T10:30:00Z",
+      "deviceInfo": "Chrome 120 on macOS",
+      "ipAddress": "192.168.1.100"
+    },
+    {
+      "id": "ses-002",
+      "userId": "usr-002",
+      "createdAt": "2025-12-21T09:45:00Z",
+      "expiresAt": "2025-12-24T09:45:00Z",
+      "lastActivityAt": "2025-12-23T08:15:00Z",
+      "deviceInfo": "Safari 17 on iPhone",
+      "ipAddress": "192.168.1.101"
+    },
+    {
+      "id": "ses-003",
+      "userId": "usr-003",
+      "createdAt": "2025-12-23T16:00:00Z",
+      "expiresAt": "2025-12-24T16:00:00Z",
+      "lastActivityAt": "2025-12-23T16:05:00Z",
+      "deviceInfo": "Firefox 121 on Windows",
+      "ipAddress": "192.168.1.102"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "ntf-001",
+      "userId": "usr-001",
+      "type": "email_verification",
+      "title": "Verify your email",
+      "message": "Please verify your email address to complete your account setup.",
+      "read": true,
+      "createdAt": "2024-11-15T10:30:00Z"
+    },
+    {
+      "id": "ntf-002",
+      "userId": "usr-002",
+      "type": "password_changed",
+      "title": "Password updated",
+      "message": "Your password was successfully changed.",
+      "read": true,
+      "createdAt": "2025-12-10T14:20:00Z"
+    },
+    {
+      "id": "ntf-003",
+      "userId": "usr-003",
+      "type": "email_verification",
+      "title": "Verify your email",
+      "message": "Please verify your email address to complete your account setup.",
+      "read": false,
+      "createdAt": "2025-12-23T16:00:00Z"
+    },
+    {
+      "id": "ntf-004",
+      "userId": "usr-001",
+      "type": "session_expiry_warning",
+      "title": "Session expiring soon",
+      "message": "Your session will expire in 5 minutes. Click to extend your session.",
+      "read": false,
+      "createdAt": "2025-12-23T10:25:00Z"
+    }
+  ],
+  "authState": {
+    "loginAttempts": 0,
+    "lockedUntil": null,
+    "passwordResetTokenSent": false,
+    "emailVerificationTokenSent": false
+  }
+}

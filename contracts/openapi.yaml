@@ -1,0 +1,984 @@
+openapi: 3.1.0
+info:
+  title: TIP API
+  version: 0.1.0
+  description: Travel Intelligence and Planner API.
+  x-backward-compat: "Initial v1. Additive changes only; breaking changes require a new major version."
+servers:
+  - url: https://api.example.com
+security:
+  - bearerAuth: []
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, version]
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  version:
+                    type: string
+                    example: 0.1.0
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /trips:
+    get:
+      summary: List trips
+      parameters:
+        - in: query
+          name: status
+          schema:
+            $ref: '#/components/schemas/TripStatus'
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - in: query
+          name: cursor
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Trip list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TripListResponse'
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create trip (draft or submit)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TripCreateRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Trip'
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /trips/{tripId}:
+    parameters:
+      - in: path
+        name: tripId
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      summary: Get trip
+      responses:
+        '200':
+          description: Trip detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Trip'
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      summary: Update trip (draft)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TripUpdateRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Trip'
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete trip
+      responses:
+        '204':
+          description: Deleted
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /trips/{tripId}/status:
+    get:
+      summary: Get trip generation status
+      responses:
+        '200':
+          description: Status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TripStatusResponse'
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /trips/{tripId}/jobs:
+    get:
+      summary: List agent jobs
+      responses:
+        '200':
+          description: Job list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentJobListResponse'
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /trips/{tripId}/jobs/{agentType}/retry:
+    post:
+      summary: Retry agent job
+      parameters:
+        - in: path
+          name: agentType
+          required: true
+          schema:
+            $ref: '#/components/schemas/AgentType'
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentJob'
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /trips/{tripId}/report:
+    get:
+      summary: Get full report
+      responses:
+        '200':
+          description: Report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TravelReport'
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /trips/{tripId}/report/{sectionType}:
+    get:
+      summary: Get report section
+      parameters:
+        - in: path
+          name: sectionType
+          required: true
+          schema:
+            $ref: '#/components/schemas/ReportSectionType'
+      responses:
+        '200':
+          description: Section
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportSection'
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /trips/{tripId}/report/pdf:
+    post:
+      summary: Generate PDF and return download URL
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportPdfResponse'
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /profile:
+    get:
+      summary: Get user profile
+      responses:
+        '200':
+          description: Profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileResponse'
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      summary: Update user profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfileUpdateRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileResponse'
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /templates:
+    get:
+      summary: List trip templates
+      responses:
+        '200':
+          description: Template list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateListResponse'
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create trip template
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TemplateCreateRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TripTemplate'
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /templates/{templateId}:
+    parameters:
+      - in: path
+        name: templateId
+        required: true
+        schema:
+          type: string
+          format: uuid
+    patch:
+      summary: Update trip template
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TemplateUpdateRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TripTemplate'
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete trip template
+      responses:
+        '204':
+          description: Deleted
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /notifications:
+    get:
+      summary: List notifications
+      responses:
+        '200':
+          description: Notification list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationListResponse'
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /notifications/{notificationId}:
+    parameters:
+      - in: path
+        name: notificationId
+        required: true
+        schema:
+          type: string
+          format: uuid
+    patch:
+      summary: Update notification (mark read)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [read]
+              properties:
+                read:
+                  type: boolean
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          example: INVALID_REQUEST
+        message:
+          type: string
+        details:
+          type: object
+    ErrorResponse:
+      type: object
+      required: [requestId, error]
+      properties:
+        requestId:
+          type: string
+        error:
+          $ref: '#/components/schemas/Error'
+    TripStatus:
+      type: string
+      enum: [draft, pending, processing, completed, failed]
+    AgentType:
+      type: string
+      enum: [visa, country, weather, currency, culture, food, attractions, itinerary, flight]
+    AgentJobStatus:
+      type: string
+      enum: [queued, running, completed, failed, skipped, retrying]
+    ReportSectionType:
+      type: string
+      enum: [visa, destination, itinerary, flight, summary]
+    ConfidenceLevel:
+      type: string
+      enum: [high, medium, low]
+    Destination:
+      type: object
+      required: [id, country, city, order]
+      properties:
+        id:
+          type: string
+          format: uuid
+        country:
+          type: string
+        city:
+          type: string
+        order:
+          type: integer
+    TravelerDetails:
+      type: object
+      required: [name, email, nationality, residencyCountry, residencyStatus, originCity, partySize]
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        age:
+          type: integer
+        nationality:
+          type: string
+        residencyCountry:
+          type: string
+        residencyStatus:
+          type: string
+        originCity:
+          type: string
+        partySize:
+          type: integer
+        companionAges:
+          type: array
+          items:
+            type: integer
+    TripDetails:
+      type: object
+      required: [departureDate, returnDate, budget, budgetCurrency, purpose]
+      properties:
+        departureDate:
+          type: string
+          format: date
+        returnDate:
+          type: string
+          format: date
+        budget:
+          type: number
+        budgetCurrency:
+          type: string
+        purpose:
+          type: string
+          enum: [tourism, business, visiting_family, education, other]
+    TripPreferences:
+      type: object
+      required: [travelStyle, interests, dietaryRestrictions]
+      properties:
+        travelStyle:
+          type: string
+          enum: [relaxed, balanced, packed, budget]
+        interests:
+          type: array
+          items:
+            type: string
+        dietaryRestrictions:
+          type: array
+          items:
+            type: string
+        accessibilityNeeds:
+          type: string
+    Trip:
+      type: object
+      required: [id, userId, title, status, travelerDetails, destinations, tripDetails, preferences, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        status:
+          $ref: '#/components/schemas/TripStatus'
+        travelerDetails:
+          $ref: '#/components/schemas/TravelerDetails'
+        destinations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Destination'
+        tripDetails:
+          $ref: '#/components/schemas/TripDetails'
+        preferences:
+          $ref: '#/components/schemas/TripPreferences'
+        autoDeleteAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    TripCreateRequest:
+      type: object
+      required: [title, travelerDetails, destinations, tripDetails, preferences]
+      properties:
+        title:
+          type: string
+        travelerDetails:
+          $ref: '#/components/schemas/TravelerDetails'
+        destinations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Destination'
+        tripDetails:
+          $ref: '#/components/schemas/TripDetails'
+        preferences:
+          $ref: '#/components/schemas/TripPreferences'
+        submit:
+          type: boolean
+          description: When true, queue report generation.
+    TripUpdateRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        travelerDetails:
+          $ref: '#/components/schemas/TravelerDetails'
+        destinations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Destination'
+        tripDetails:
+          $ref: '#/components/schemas/TripDetails'
+        preferences:
+          $ref: '#/components/schemas/TripPreferences'
+        status:
+          $ref: '#/components/schemas/TripStatus'
+    TripListItem:
+      type: object
+      required: [id, destination, startDate, endDate, status, createdAt, deletionDate]
+      properties:
+        id:
+          type: string
+          format: uuid
+        destination:
+          type: string
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [upcoming, in-progress, completed]
+        createdAt:
+          type: string
+          format: date-time
+        deletionDate:
+          type: string
+          format: date-time
+    TripListResponse:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/TripListItem'
+        nextCursor:
+          type: string
+    AgentJob:
+      type: object
+      required: [id, tripId, agentType, status, retryCount]
+      properties:
+        id:
+          type: string
+          format: uuid
+        tripId:
+          type: string
+          format: uuid
+        agentType:
+          $ref: '#/components/schemas/AgentType'
+        status:
+          $ref: '#/components/schemas/AgentJobStatus'
+        startedAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+        retryCount:
+          type: integer
+        confidenceScore:
+          type: number
+        errorMessage:
+          type: string
+        result:
+          type: object
+    AgentJobListResponse:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentJob'
+    SourceReference:
+      type: object
+      required: [id, url, title, sourceType, lastVerified]
+      properties:
+        id:
+          type: string
+          format: uuid
+        url:
+          type: string
+          format: uri
+        title:
+          type: string
+        sourceType:
+          type: string
+          enum: [government, embassy, official, third_party]
+        lastVerified:
+          type: string
+          format: date-time
+    ReportSection:
+      type: object
+      required: [id, tripId, sectionType, title, content, confidenceLevel, sources, generatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        tripId:
+          type: string
+          format: uuid
+        sectionType:
+          $ref: '#/components/schemas/ReportSectionType'
+        title:
+          type: string
+        content:
+          type: object
+        confidenceLevel:
+          $ref: '#/components/schemas/ConfidenceLevel'
+        sources:
+          type: array
+          items:
+            $ref: '#/components/schemas/SourceReference'
+        generatedAt:
+          type: string
+          format: date-time
+    ReportSummary:
+      type: object
+      required: [destination, dates, visaStatus, weatherSummary, totalBudget]
+      properties:
+        destination:
+          type: string
+        dates:
+          type: string
+        visaStatus:
+          type: string
+        weatherSummary:
+          type: string
+        totalBudget:
+          type: object
+          required: [amount, currency]
+          properties:
+            amount:
+              type: number
+            currency:
+              type: string
+    TravelReport:
+      type: object
+      required: [id, tripId, title, summary, sections, generatedAt, expiresAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        tripId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        summary:
+          $ref: '#/components/schemas/ReportSummary'
+        sections:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReportSection'
+        generatedAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+    ProgressStage:
+      type: object
+      required: [name, status, message]
+      properties:
+        name:
+          type: string
+        status:
+          type: string
+          enum: [pending, in-progress, completed, failed]
+        message:
+          type: string
+    ProgressState:
+      type: object
+      required: [percentage, currentStage, stages]
+      properties:
+        percentage:
+          type: integer
+        currentStage:
+          type: string
+        stages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProgressStage'
+        estimatedTimeRemaining:
+          type: integer
+    TripStatusResponse:
+      type: object
+      required: [status]
+      properties:
+        status:
+          $ref: '#/components/schemas/TripStatus'
+        progress:
+          $ref: '#/components/schemas/ProgressState'
+    ReportPdfResponse:
+      type: object
+      required: [url, expiresAt]
+      properties:
+        url:
+          type: string
+          format: uri
+        expiresAt:
+          type: string
+          format: date-time
+    UserProfile:
+      type: object
+      required: [id, email, name, authProvider, emailVerified, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        avatarUrl:
+          type: string
+        authProvider:
+          type: string
+          enum: [email, google]
+        emailVerified:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    TravelerProfile:
+      type: object
+      required: [id, userId, nationality, residencyCountry, residencyStatus, travelStyle, dietaryRestrictions, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        nationality:
+          type: string
+        residencyCountry:
+          type: string
+        residencyStatus:
+          type: string
+        dateOfBirth:
+          type: string
+          format: date
+        travelStyle:
+          type: string
+          enum: [relaxed, balanced, packed, budget]
+        dietaryRestrictions:
+          type: array
+          items:
+            type: string
+        accessibilityNeeds:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    NotificationSettings:
+      type: object
+      required: [deletionReminders, reportCompletion, productUpdates]
+      properties:
+        deletionReminders:
+          type: boolean
+        reportCompletion:
+          type: boolean
+        productUpdates:
+          type: boolean
+    ProfileResponse:
+      type: object
+      required: [user, travelerProfile, notificationSettings]
+      properties:
+        user:
+          $ref: '#/components/schemas/UserProfile'
+        travelerProfile:
+          $ref: '#/components/schemas/TravelerProfile'
+        notificationSettings:
+          $ref: '#/components/schemas/NotificationSettings'
+    ProfileUpdateRequest:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/UserProfile'
+        travelerProfile:
+          $ref: '#/components/schemas/TravelerProfile'
+        notificationSettings:
+          $ref: '#/components/schemas/NotificationSettings'
+    TripTemplate:
+      type: object
+      required: [id, userId, name, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        travelerDetails:
+          $ref: '#/components/schemas/TravelerDetails'
+        destinations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Destination'
+        preferences:
+          $ref: '#/components/schemas/TripPreferences'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    TemplateCreateRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        travelerDetails:
+          $ref: '#/components/schemas/TravelerDetails'
+        destinations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Destination'
+        preferences:
+          $ref: '#/components/schemas/TripPreferences'
+    TemplateUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        travelerDetails:
+          $ref: '#/components/schemas/TravelerDetails'
+        destinations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Destination'
+        preferences:
+          $ref: '#/components/schemas/TripPreferences'
+    TemplateListResponse:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/TripTemplate'
+    Notification:
+      type: object
+      required: [id, userId, type, title, message, read, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [report_completed, deletion_reminder, deletion_warning, system_update]
+        title:
+          type: string
+        message:
+          type: string
+        read:
+          type: boolean
+        tripId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+    NotificationListResponse:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notification'
