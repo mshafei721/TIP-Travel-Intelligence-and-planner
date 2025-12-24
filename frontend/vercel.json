@@ -39,7 +39,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://tip-backend.railway.app/api/:path*"
+      "destination": "https://tip-travel-intelligence-and-planner-production.up.railway.app/api/:path*"
     }
   ]
 }
