@@ -1,18 +1,6 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": ".next",
   "framework": "nextjs",
-  "installCommand": "npm install",
-  "devCommand": "npm run dev",
   "regions": ["iad1"],
-  "env": {
-    "NEXT_PUBLIC_SUPABASE_URL": "@supabase-url",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@supabase-anon-key",
-    "NEXT_PUBLIC_BACKEND_URL": "@backend-url",
-    "NEXT_PUBLIC_FEATURE_DASHBOARD_HOME": "true",
-    "NEXT_PUBLIC_FEATURE_RECOMMENDATIONS": "true",
-    "NEXT_PUBLIC_FEATURE_ANALYTICS": "true"
-  },
   "headers": [
     {
       "source": "/(.*)",
