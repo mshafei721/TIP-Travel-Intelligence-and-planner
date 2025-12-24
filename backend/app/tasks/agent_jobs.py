@@ -80,41 +80,97 @@ def execute_visa_agent(self, trip_id: str, traveler_data: Dict[str, Any]) -> Dic
 
     Args:
         trip_id: Trip ID from database
-        traveler_data: Traveler profile and trip details
+        traveler_data: Traveler profile and trip details including:
+            - user_nationality: ISO Alpha-2 code
+            - destination_country: ISO Alpha-2 code
+            - destination_city: str
+            - trip_purpose: str (tourism, business, transit)
+            - duration_days: int
+            - departure_date: str (ISO format)
 
     Returns:
         Visa requirements analysis with confidence and sources
 
     Raises:
         KeyError: If trip_id is missing or empty
+        ValueError: If required traveler_data fields are missing
 
-    This is a specialized task for the Visa Agent (Phase 2 priority).
+    Production implementation using CrewAI + Travel Buddy AI.
     """
+    from datetime import date
+    from app.agents.visa.agent import VisaAgent
+    from app.agents.visa.models import VisaAgentInput
+
     # Validate trip_id
     if not trip_id or trip_id.strip() == "":
         raise KeyError("trip_id is required and cannot be empty")
 
     print(f"[Task {self.request.id}] Executing Visa Agent for trip {trip_id}")
 
-    # TODO: Implement Visa Agent logic in Phase 2
-    # - Call Sherpa API or IATA Travel Centre
-    # - Scrape embassy websites (fallback)
-    # - Classify visa requirements
-    # - Calculate confidence scores
-    # - Store source references
+    try:
+        # Validate required fields
+        required_fields = [
+            "user_nationality",
+            "destination_country",
+            "destination_city",
+            "duration_days",
+            "departure_date",
+        ]
+        for field in required_fields:
+            if field not in traveler_data:
+                raise ValueError(f"Missing required field: {field}")
 
-    result = {
-        "trip_id": trip_id,
-        "agent_type": "visa",
-        "status": "placeholder",
-        "visa_requirements": [],
-        "confidence": 0.0,
-        "sources": [],
-        "error": None,
-    }
+        # Parse departure_date
+        departure_date_str = traveler_data["departure_date"]
+        if isinstance(departure_date_str, str):
+            departure_date = date.fromisoformat(departure_date_str)
+        else:
+            departure_date = departure_date_str
 
-    print(f"[Task {self.request.id}] Completed Visa Agent for trip {trip_id}")
-    return result
+        # Create VisaAgentInput
+        input_data = VisaAgentInput(
+            trip_id=trip_id,
+            user_nationality=traveler_data["user_nationality"],
+            destination_country=traveler_data["destination_country"],
+            destination_city=traveler_data["destination_city"],
+            trip_purpose=traveler_data.get("trip_purpose", "tourism"),
+            duration_days=traveler_data["duration_days"],
+            departure_date=departure_date,
+            traveler_count=traveler_data.get("traveler_count", 1),
+        )
+
+        # Initialize and run Visa Agent
+        agent = VisaAgent()
+        result = agent.run(input_data)
+
+        # Store result in database (Supabase report_sections table)
+        # TODO: Add database storage in next step
+
+        print(f"[Task {self.request.id}] Completed Visa Agent for trip {trip_id}")
+        print(f"[Task {self.request.id}] Confidence: {result.confidence}")
+
+        return {
+            "trip_id": trip_id,
+            "agent_type": "visa",
+            "status": "completed",
+            "data": result.data,
+            "confidence": result.confidence,
+            "sources": result.sources,
+            "execution_time": result.execution_time,
+            "error": None,
+        }
+
+    except Exception as e:
+        print(f"[Task {self.request.id}] Error in Visa Agent: {str(e)}")
+        return {
+            "trip_id": trip_id,
+            "agent_type": "visa",
+            "status": "failed",
+            "data": {},
+            "confidence": 0.0,
+            "sources": [],
+            "error": str(e),
+        }
 
 
 @shared_task(

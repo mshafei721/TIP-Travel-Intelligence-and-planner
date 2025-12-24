@@ -44,6 +44,10 @@ class Settings(BaseSettings):
     FEATURE_RECOMMENDATIONS: bool = True
     FEATURE_ANALYTICS: bool = True
 
+    # External APIs
+    RAPIDAPI_KEY: str  # Travel Buddy AI / Sherpa API
+    ANTHROPIC_API_KEY: str  # Claude AI for CrewAI agents
+
     @property
     def cors_origins_list(self) -> List[str]:
         """Parse CORS origins from comma-separated string"""
