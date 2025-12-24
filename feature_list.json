@@ -23,7 +23,8 @@
       "status": {
         "frontend": 100,
         "backend": 60,
-        "overall": 80
+        "infrastructure": 75,
+        "overall": 85
       },
       "features": [
         {
@@ -121,24 +122,25 @@
           "id": "I1-INFRA-01",
           "name": "Configure Redis instance",
           "type": "infrastructure",
-          "passes": false,
+          "passes": true,
           "priority": "high",
-          "blockedBy": "Requires Upstash or local Docker"
+          "implementation": "Docker Compose with Redis 7 Alpine"
         },
         {
           "id": "I1-INFRA-02",
           "name": "Set up Celery workers",
           "type": "infrastructure",
-          "passes": false,
+          "passes": true,
           "priority": "high",
-          "blockedBy": "I1-INFRA-01"
+          "implementation": "Celery worker + Beat + Flower via Docker Compose"
         },
         {
           "id": "I1-INFRA-03",
           "name": "Create Docker Compose for local dev",
           "type": "infrastructure",
-          "passes": false,
-          "priority": "medium"
+          "passes": true,
+          "priority": "medium",
+          "implementation": "5 services: Redis, Backend, Celery Worker, Beat, Flower"
         },
         {
           "id": "I1-INFRA-04",

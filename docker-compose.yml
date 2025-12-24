@@ -1,0 +1,145 @@
+# ==============================================
+# TIP - Travel Intelligence & Planner
+# Docker Compose - Local Development Environment
+# ==============================================
+version: '3.8'
+
+services:
+  # ==============================================
+  # Redis - Cache & Celery Broker
+  # ==============================================
+  redis:
+    image: redis:7-alpine
+    container_name: tip-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - tip-network
+
+  # ==============================================
+  # Backend API - FastAPI
+  # ==============================================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: tip-backend
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - ENVIRONMENT=development
+    volumes:
+      - ./backend:/app
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - tip-network
+
+  # ==============================================
+  # Celery Worker - Async Task Processing
+  # ==============================================
+  celery-worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: tip-celery-worker
+    command: celery -A app.core.celery_app worker --loglevel=info --concurrency=4 --pool=prefork
+    env_file:
+      - .env
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - ENVIRONMENT=development
+    volumes:
+      - ./backend:/app
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - tip-network
+    restart: unless-stopped
+
+  # ==============================================
+  # Celery Beat - Periodic Task Scheduler (Optional)
+  # ==============================================
+  celery-beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: tip-celery-beat
+    command: celery -A app.core.celery_app beat --loglevel=info
+    env_file:
+      - .env
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - ENVIRONMENT=development
+    volumes:
+      - ./backend:/app
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - tip-network
+    restart: unless-stopped
+
+  # ==============================================
+  # Flower - Celery Monitoring UI
+  # ==============================================
+  flower:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: tip-flower
+    command: celery -A app.core.celery_app flower --port=5555
+    ports:
+      - "5555:5555"
+    env_file:
+      - .env
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    volumes:
+      - ./backend:/app
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - tip-network
+    restart: unless-stopped
+
+# ==============================================
+# Networks
+# ==============================================
+networks:
+  tip-network:
+    driver: bridge
+
+# ==============================================
+# Volumes
+# ==============================================
+volumes:
+  redis_data:
+    driver: local
