@@ -32,6 +32,9 @@ def execute_agent_job(self, job_id: str, agent_type: str, input_data: Dict[str, 
     Returns:
         Agent execution results including data, confidence, sources
 
+    Raises:
+        ValueError: If agent_type is invalid
+
     Flow:
         1. Update job status to 'running'
         2. Initialize agent based on agent_type
@@ -39,6 +42,14 @@ def execute_agent_job(self, job_id: str, agent_type: str, input_data: Dict[str, 
         4. Store results in report_sections table
         5. Update job status to 'completed' or 'failed'
     """
+    # Validate agent type
+    valid_agent_types = [
+        "visa", "country", "weather", "currency", "culture",
+        "food", "attractions", "itinerary", "flight", "orchestrator"
+    ]
+    if agent_type not in valid_agent_types:
+        raise ValueError(f"Invalid agent type: {agent_type}. Must be one of {valid_agent_types}")
+
     print(f"[Task {self.request.id}] Executing {agent_type} agent for job {job_id}")
 
     # TODO: Implement agent execution logic in Phase 2 (Agents)
@@ -74,8 +85,15 @@ def execute_visa_agent(self, trip_id: str, traveler_data: Dict[str, Any]) -> Dic
     Returns:
         Visa requirements analysis with confidence and sources
 
+    Raises:
+        KeyError: If trip_id is missing or empty
+
     This is a specialized task for the Visa Agent (Phase 2 priority).
     """
+    # Validate trip_id
+    if not trip_id or trip_id.strip() == "":
+        raise KeyError("trip_id is required and cannot be empty")
+
     print(f"[Task {self.request.id}] Executing Visa Agent for trip {trip_id}")
 
     # TODO: Implement Visa Agent logic in Phase 2
@@ -115,6 +133,9 @@ def execute_orchestrator(self, trip_id: str) -> Dict[str, Any]:
     Returns:
         Orchestrator execution summary with all agent results
 
+    Raises:
+        ValueError: If trip_id is missing or empty
+
     Flow:
         1. Load trip data and traveler profile
         2. Create agent jobs in database
@@ -123,6 +144,10 @@ def execute_orchestrator(self, trip_id: str) -> Dict[str, Any]:
         5. Aggregate results into report sections
         6. Mark trip report as ready
     """
+    # Validate trip_id
+    if not trip_id or trip_id.strip() == "":
+        raise ValueError("trip_id is required and cannot be empty")
+
     print(f"[Task {self.request.id}] Executing Orchestrator for trip {trip_id}")
 
     # TODO: Implement Orchestrator logic in Phase 2
