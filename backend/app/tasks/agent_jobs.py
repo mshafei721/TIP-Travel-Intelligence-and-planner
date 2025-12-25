@@ -846,3 +846,141 @@ def execute_food_agent(self, trip_id: str, trip_data: dict[str, Any]) -> dict[st
             "sources": [],
             "error": str(e),
         }
+
+
+@shared_task(
+    bind=True,
+    base=BaseTipTask,
+    name="app.tasks.agent_jobs.execute_attractions_agent",
+    time_limit=1800,  # 30 minutes
+)
+def execute_attractions_agent(self, trip_id: str, trip_data: dict[str, Any]) -> dict[str, Any]:
+    """
+    Execute Attractions Agent for tourist attractions and points of interest
+
+    Args:
+        trip_id: Trip ID from database
+        trip_data: Trip details including:
+            - destination_country: str (country name)
+            - destination_city: str (optional)
+            - departure_date: str (ISO format)
+            - return_date: str (ISO format)
+            - traveler_nationality: str (optional)
+            - interests: list[str] (optional: history, art, culture, nature, food)
+
+    Returns:
+        Attractions intelligence with top attractions, hidden gems, day trips
+
+    Raises:
+        KeyError: If trip_id is missing or empty
+        ValueError: If required trip_data fields are missing
+
+    Production implementation using CrewAI + OpenTripMap API.
+    """
+    from datetime import date
+
+    from app.agents.attractions.agent import AttractionsAgent
+    from app.agents.attractions.models import AttractionsAgentInput
+
+    # Validate trip_id
+    if not trip_id or trip_id.strip() == "":
+        raise KeyError("trip_id is required and cannot be empty")
+
+    print(f"[Task {self.request.id}] Executing Attractions Agent for trip {trip_id}")
+
+    try:
+        # Validate required fields
+        required_fields = [
+            "destination_country",
+            "departure_date",
+            "return_date",
+        ]
+        for field in required_fields:
+            if field not in trip_data:
+                raise ValueError(f"Missing required field: {field}")
+
+        # Parse dates
+        departure_date_str = trip_data["departure_date"]
+        return_date_str = trip_data["return_date"]
+
+        if isinstance(departure_date_str, str):
+            departure_date = date.fromisoformat(departure_date_str)
+        else:
+            departure_date = departure_date_str
+
+        if isinstance(return_date_str, str):
+            return_date = date.fromisoformat(return_date_str)
+        else:
+            return_date = return_date_str
+
+        # Create AttractionsAgentInput
+        input_data = AttractionsAgentInput(
+            trip_id=trip_id,
+            destination_country=trip_data["destination_country"],
+            destination_city=trip_data.get("destination_city"),
+            departure_date=departure_date,
+            return_date=return_date,
+            traveler_nationality=trip_data.get("traveler_nationality"),
+            interests=trip_data.get("interests"),
+        )
+
+        # Initialize and run Attractions Agent
+        agent = AttractionsAgent()
+        result = agent.run(input_data)
+
+        # Store result in database (Supabase report_sections table)
+        from app.core.supabase import supabase
+
+        # Convert result to dict for JSON storage
+        content_data = result.model_dump(mode="json")
+
+        # Convert confidence (0.0-1.0) to integer (0-100) for database
+        confidence_integer = int(result.confidence_score * 100)
+
+        # Store in report_sections table
+        report_response = (
+            supabase.table("report_sections")
+            .insert(
+                {
+                    "trip_id": trip_id,
+                    "section_type": "attractions",
+                    "title": f"Attractions: {trip_data.get('destination_city') or trip_data['destination_country']}",
+                    "content": content_data,
+                    "confidence_score": confidence_integer,
+                    "sources": [source.model_dump() for source in result.sources],
+                    "generated_at": result.generated_at.isoformat(),
+                }
+            )
+            .execute()
+        )
+
+        if not report_response.data:
+            raise Exception("Failed to store attractions report in database")
+
+        print(f"[Task {self.request.id}] Completed Attractions Agent for trip {trip_id}")
+        print(f"[Task {self.request.id}] Destination: {trip_data.get('destination_city') or trip_data['destination_country']}")
+        print(f"[Task {self.request.id}] Attractions found: {len(result.top_attractions)}")
+        print(f"[Task {self.request.id}] Confidence: {result.confidence_score}")
+        print(f"[Task {self.request.id}] Stored report ID: {report_response.data[0]['id']}")
+
+        return {
+            "trip_id": trip_id,
+            "agent_type": "attractions",
+            "status": "completed",
+            "data": content_data,
+            "confidence": result.confidence_score,
+            "sources": [source.model_dump() for source in result.sources],
+            "error": None,
+        }
+
+    except Exception as e:
+        print(f"[Task {self.request.id}] Error in Attractions Agent: {str(e)}")
+        return {
+            "trip_id": trip_id,
+            "agent_type": "attractions",
+            "status": "failed",
+            "data": {},
+            "confidence": 0.0,
+            "sources": [],
+            "error": str(e),
+        }
