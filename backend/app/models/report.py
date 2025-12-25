@@ -82,3 +82,85 @@ class ReportUnauthorizedError(BaseModel):
     """Error response when user doesn't own the trip"""
     detail: str = "You do not have permission to access this report"
     code: str = "UNAUTHORIZED"
+
+
+# Country/Destination Report Models
+
+class EmergencyContactResponse(BaseModel):
+    """Emergency contact information"""
+    service: str
+    number: str
+    notes: Optional[str] = None
+
+
+class PowerOutletResponse(BaseModel):
+    """Power outlet information"""
+    plug_types: List[str]
+    voltage: str
+    frequency: str
+
+
+class TravelAdvisoryResponse(BaseModel):
+    """Travel advisory information"""
+    level: str
+    title: str
+    summary: str
+    updated_at: Optional[str] = None
+    source: str
+
+
+class CountryReportResponse(BaseModel):
+    """
+    Complete country/destination intelligence report response
+
+    This is the API response format for GET /trips/{id}/report/destination
+    """
+    report_id: str
+    trip_id: str
+    generated_at: datetime
+    confidence_score: float  # 0.0 - 1.0
+
+    # Basic Information
+    country_name: str
+    country_code: str
+    capital: str
+    region: str
+    subregion: Optional[str] = None
+
+    # Demographics
+    population: int
+    area_km2: Optional[float] = None
+    population_density: Optional[float] = None
+
+    # Languages and Communication
+    official_languages: List[str]
+    common_languages: Optional[List[str]] = None
+
+    # Time and Geography
+    time_zones: List[str]
+    coordinates: Optional[dict] = None
+    borders: Optional[List[str]] = None
+
+    # Practical Information
+    emergency_numbers: List[EmergencyContactResponse]
+    power_outlet: PowerOutletResponse
+    driving_side: str
+
+    # Currency
+    currencies: List[str]
+    currency_codes: List[str]
+
+    # Safety and Advisories
+    safety_rating: float  # 0.0 - 5.0
+    travel_advisories: List[TravelAdvisoryResponse] = Field(default_factory=list)
+
+    # Additional Information
+    notable_facts: List[str] = Field(default_factory=list)
+    best_time_to_visit: Optional[str] = None
+
+    # Metadata
+    sources: List[SourceReferenceResponse] = Field(default_factory=list)
+    warnings: List[str] = Field(default_factory=list)
+
+    class Config:
+        from_attributes = True

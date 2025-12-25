@@ -23,6 +23,10 @@ from app.models.report import (
     ApplicationProcessResponse,
     EntryRequirementResponse,
     SourceReferenceResponse,
+    CountryReportResponse,
+    EmergencyContactResponse,
+    PowerOutletResponse,
+    TravelAdvisoryResponse,
 )
 
 router = APIRouter(prefix="/trips", tags=["trips"])
@@ -909,4 +913,142 @@ async def get_visa_report(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to retrieve visa report: {str(e)}"
+        )
+
+
+@router.get(
+    "/{trip_id}/report/destination",
+    response_model=CountryReportResponse,
+    responses={
+        404: {"model": ReportNotFoundError, "description": "Report not found"},
+        403: {"model": ReportUnauthorizedError, "description": "Unauthorized access"},
+    }
+)
+async def get_destination_report(
+    trip_id: str,
+    token_payload: dict = Depends(verify_jwt_token)
+):
+    """
+    Get destination/country intelligence report for a trip
+
+    Retrieves the generated country intelligence for the specified trip,
+    including demographics, practical information, safety ratings, and travel advisories.
+
+    Path Parameters:
+    - trip_id: UUID of the trip
+
+    Returns:
+    - Complete destination intelligence report with country facts, emergency contacts,
+      safety information, and travel advisories
+
+    Errors:
+    - 404: Destination report not found (generate it first using POST /trips/{trip_id}/generate)
+    - 403: User does not own this trip
+    - 500: Database error
+
+    Example:
+        GET /trips/550e8400-e29b-41d4-a716-446655440000/report/destination
+
+        Response:
+        {
+            "report_id": "...",
+            "trip_id": "...",
+            "generated_at": "2025-12-25T10:00:00Z",
+            "confidence_score": 0.95,
+            "country_name": "Japan",
+            "country_code": "JP",
+            "capital": "Tokyo",
+            "region": "Asia",
+            ...
+        }
+    """
+    user_id = token_payload["user_id"]
+
+    try:
+        # 1. Verify trip exists and user owns it
+        trip_response = supabase.table("trips").select("id, user_id").eq(
+            "id", trip_id
+        ).single().execute()
+
+        if not trip_response.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Trip not found"
+            )
+
+        # 2. Check ownership
+        if trip_response.data["user_id"] != user_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to access this report"
+            )
+
+        # 3. Retrieve country report from report_sections table
+        report_response = supabase.table("report_sections").select("*").eq(
+            "trip_id", trip_id
+        ).eq("section_type", "country").order("generated_at", desc=True).limit(1).execute()
+
+        if not report_response.data or len(report_response.data) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Destination report not found for this trip. Generate the trip report first using POST /trips/{id}/generate"
+            )
+
+        # 4. Parse report data
+        report = report_response.data[0]
+        content = report["content"]
+
+        # Convert confidence from integer (0-100) back to float (0.0-1.0)
+        confidence_float = float(report["confidence_score"]) / 100.0 if report.get("confidence_score") else 0.0
+
+        # 5. Build response
+        return CountryReportResponse(
+            report_id=report["id"],
+            trip_id=report["trip_id"],
+            generated_at=datetime.fromisoformat(report["generated_at"].replace("Z", "+00:00")),
+            confidence_score=confidence_float,
+            country_name=content["country_name"],
+            country_code=content["country_code"],
+            capital=content["capital"],
+            region=content["region"],
+            subregion=content.get("subregion"),
+            population=content["population"],
+            area_km2=content.get("area_km2"),
+            population_density=content.get("population_density"),
+            official_languages=content["official_languages"],
+            common_languages=content.get("common_languages"),
+            time_zones=content["time_zones"],
+            coordinates=content.get("coordinates"),
+            borders=content.get("borders"),
+            emergency_numbers=[
+                EmergencyContactResponse(**contact)
+                for contact in content["emergency_numbers"]
+            ],
+            power_outlet=PowerOutletResponse(**content["power_outlet"]),
+            driving_side=content["driving_side"],
+            currencies=content["currencies"],
+            currency_codes=content["currency_codes"],
+            safety_rating=content["safety_rating"],
+            travel_advisories=[
+                TravelAdvisoryResponse(**advisory)
+                for advisory in content.get("travel_advisories", [])
+            ],
+            notable_facts=content.get("notable_facts", []),
+            best_time_to_visit=content.get("best_time_to_visit"),
+            sources=[SourceReferenceResponse(**source) for source in content.get("sources", [])],
+            warnings=content.get("warnings", [])
+        )
+
+    except HTTPException:
+        raise
+    except KeyError as e:
+        # Handle missing fields in content data
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Invalid report data format: missing field {str(e)}"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to retrieve destination report: {str(e)}"
         )
