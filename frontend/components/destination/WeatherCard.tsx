@@ -119,21 +119,11 @@ export default function WeatherCard({
             {data.dailyForecasts.map((day, idx) => (
               <div
                 key={idx}
-                className="
-                  relative overflow-hidden
-                  flex items-center gap-4 p-4
-                  bg-white dark:bg-slate-900
-                  border border-slate-200 dark:border-slate-800
-                  rounded-lg
-                  hover:shadow-md transition-shadow
-                "
+                className="relative overflow-hidden flex items-center gap-4 p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg hover:shadow-md transition-shadow"
               >
                 {/* Background gradient based on condition */}
                 <div
-                  className={`
-                  absolute inset-0 opacity-5
-                  bg-gradient-to-r ${getConditionColor(day.condition)}
-                `}
+                  className={`absolute inset-0 opacity-5 bg-gradient-to-r ${getConditionColor(day.condition)}`}
                 />
 
                 {/* Date */}

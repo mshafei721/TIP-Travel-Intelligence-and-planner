@@ -1,36 +1,24 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { MapPin, Calendar } from 'lucide-react'
-import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
-import { SectionCard } from './SectionCard'
-import { useDebounce } from '@/hooks/useDebounce'
-import type { TravelerDetails, SaveState } from '@/types/profile'
-
-// Note: In production, use a comprehensive country list library
-const COUNTRIES = [
-  { code: 'US', name: 'United States' },
-  { code: 'GB', name: 'United Kingdom' },
-  { code: 'CA', name: 'Canada' },
-  { code: 'IN', name: 'India' },
-  { code: 'AU', name: 'Australia' },
-  { code: 'FR', name: 'France' },
-  { code: 'DE', name: 'Germany' },
-  { code: 'JP', name: 'Japan' },
-  // Add more countries as needed
-]
+import { useState, useEffect } from 'react';
+import { MapPin, Calendar } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { SectionCard } from './SectionCard';
+import { useDebounce } from '@/hooks/useDebounce';
+import { COUNTRIES, POPULAR_COUNTRIES } from '@/lib/data/countries';
+import type { TravelerDetails, SaveState } from '@/types/profile';
 
 const RESIDENCY_STATUS_OPTIONS = [
   { value: 'citizen', label: 'Citizen' },
   { value: 'permanent_resident', label: 'Permanent Resident' },
   { value: 'temporary_resident', label: 'Temporary Resident' },
   { value: 'visitor', label: 'Visitor' },
-] as const
+] as const;
 
 export interface TravelerDetailsSectionProps {
-  travelerDetails: TravelerDetails
-  onUpdate: (data: TravelerDetails) => Promise<void>
+  travelerDetails: TravelerDetails;
+  onUpdate: (data: TravelerDetails) => Promise<void>;
 }
 
 /**
@@ -44,30 +32,27 @@ export interface TravelerDetailsSectionProps {
  *
  * Auto-saves changes after user stops editing.
  */
-export function TravelerDetailsSection({
-  travelerDetails,
-  onUpdate,
-}: TravelerDetailsSectionProps) {
-  const [details, setDetails] = useState<TravelerDetails>(travelerDetails)
-  const [saveState, setSaveState] = useState<SaveState>('idle')
+export function TravelerDetailsSection({ travelerDetails, onUpdate }: TravelerDetailsSectionProps) {
+  const [details, setDetails] = useState<TravelerDetails>(travelerDetails);
+  const [saveState, setSaveState] = useState<SaveState>('idle');
 
-  const debouncedDetails = useDebounce(details, 1500)
+  const debouncedDetails = useDebounce(details, 1500);
 
   // Auto-save when details change
   useEffect(() => {
     if (JSON.stringify(debouncedDetails) !== JSON.stringify(travelerDetails)) {
       const saveDetails = async () => {
-        setSaveState('saving')
+        setSaveState('saving');
         try {
-          await onUpdate(debouncedDetails)
-          setSaveState('saved')
+          await onUpdate(debouncedDetails);
+          setSaveState('saved');
         } catch {
-          setSaveState('error')
+          setSaveState('error');
         }
-      }
-      saveDetails()
+      };
+      saveDetails();
     }
-  }, [debouncedDetails, travelerDetails, onUpdate])
+  }, [debouncedDetails, travelerDetails, onUpdate]);
 
   return (
     <SectionCard
@@ -79,45 +64,77 @@ export function TravelerDetailsSection({
       <div className="grid gap-4 md:grid-cols-2">
         {/* Nationality */}
         <div className="space-y-2">
-          <Label htmlFor="nationality">Nationality</Label>
+          <Label htmlFor="nationality" className="text-sm font-medium">
+            Nationality
+          </Label>
           <select
             id="nationality"
             value={details.nationality}
             onChange={(e) => setDetails({ ...details, nationality: e.target.value })}
-            className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-900"
+            className="flex h-11 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-sm shadow-sm transition-all focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:focus:border-blue-400 dark:focus:ring-blue-400/20"
             disabled={saveState === 'saving'}
           >
-            <option value="">Select nationality</option>
-            {COUNTRIES.map((country) => (
-              <option key={country.code} value={country.code}>
-                {country.name}
-              </option>
-            ))}
+            <option value="" className="text-slate-400">
+              Select your nationality
+            </option>
+            {/* Popular countries first */}
+            <optgroup label="Popular Countries">
+              {COUNTRIES.filter((c) => POPULAR_COUNTRIES.includes(c.code)).map((country) => (
+                <option key={country.code} value={country.code}>
+                  {country.name}
+                </option>
+              ))}
+            </optgroup>
+            {/* All countries */}
+            <optgroup label="All Countries">
+              {COUNTRIES.filter((c) => !POPULAR_COUNTRIES.includes(c.code)).map((country) => (
+                <option key={country.code} value={country.code}>
+                  {country.name}
+                </option>
+              ))}
+            </optgroup>
           </select>
         </div>
 
         {/* Residence Country */}
         <div className="space-y-2">
-          <Label htmlFor="residence-country">Residence Country</Label>
+          <Label htmlFor="residence-country" className="text-sm font-medium">
+            Residence Country
+          </Label>
           <select
             id="residence-country"
             value={details.residenceCountry}
             onChange={(e) => setDetails({ ...details, residenceCountry: e.target.value })}
-            className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-900"
+            className="flex h-11 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-sm shadow-sm transition-all focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:focus:border-blue-400 dark:focus:ring-blue-400/20"
             disabled={saveState === 'saving'}
           >
-            <option value="">Select residence country</option>
-            {COUNTRIES.map((country) => (
-              <option key={country.code} value={country.code}>
-                {country.name}
-              </option>
-            ))}
+            <option value="" className="text-slate-400">
+              Select your residence country
+            </option>
+            {/* Popular countries first */}
+            <optgroup label="Popular Countries">
+              {COUNTRIES.filter((c) => POPULAR_COUNTRIES.includes(c.code)).map((country) => (
+                <option key={country.code} value={country.code}>
+                  {country.name}
+                </option>
+              ))}
+            </optgroup>
+            {/* All countries */}
+            <optgroup label="All Countries">
+              {COUNTRIES.filter((c) => !POPULAR_COUNTRIES.includes(c.code)).map((country) => (
+                <option key={country.code} value={country.code}>
+                  {country.name}
+                </option>
+              ))}
+            </optgroup>
           </select>
         </div>
 
         {/* Residency Status */}
         <div className="space-y-2">
-          <Label htmlFor="residency-status">Residency Status</Label>
+          <Label htmlFor="residency-status" className="text-sm font-medium">
+            Residency Status
+          </Label>
           <select
             id="residency-status"
             value={details.residencyStatus}
@@ -127,10 +144,12 @@ export function TravelerDetailsSection({
                 residencyStatus: e.target.value as TravelerDetails['residencyStatus'],
               })
             }
-            className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-900"
+            className="flex h-11 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-sm shadow-sm transition-all focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:focus:border-blue-400 dark:focus:ring-blue-400/20"
             disabled={saveState === 'saving'}
           >
-            <option value="">Select status</option>
+            <option value="" className="text-slate-400">
+              Select your status
+            </option>
             {RESIDENCY_STATUS_OPTIONS.map((status) => (
               <option key={status.value} value={status.value}>
                 {status.label}
@@ -141,7 +160,9 @@ export function TravelerDetailsSection({
 
         {/* Date of Birth */}
         <div className="space-y-2">
-          <Label htmlFor="date-of-birth">Date of Birth</Label>
+          <Label htmlFor="date-of-birth" className="text-sm font-medium">
+            Date of Birth
+          </Label>
           <div className="relative">
             <Input
               id="date-of-birth"
@@ -149,12 +170,15 @@ export function TravelerDetailsSection({
               value={details.dateOfBirth}
               onChange={(e) => setDetails({ ...details, dateOfBirth: e.target.value })}
               disabled={saveState === 'saving'}
-              className="pr-10"
+              className="h-11 rounded-lg border-slate-200 pr-11 shadow-sm transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:focus:border-blue-400 dark:focus:ring-blue-400/20"
             />
-            <Calendar className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+            <Calendar
+              className="absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+              aria-hidden="true"
+            />
           </div>
         </div>
       </div>
     </SectionCard>
-  )
+  );
 }

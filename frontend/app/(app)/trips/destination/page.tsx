@@ -1,11 +1,7 @@
+'use client';
+
 import DestinationIntelligencePage from '@/components/destination/DestinationIntelligencePage';
 import { sampleDestinationData } from '@/lib/mock-data/destination-sample';
-
-export const metadata = {
-  title: 'Destination Intelligence - Japan | TIP',
-  description:
-    'Comprehensive destination intelligence for Japan including weather, culture, safety, and more.',
-};
 
 export default function DestinationDemoPage() {
   return (

@@ -3,14 +3,30 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { DayTimeline } from '@/components/itinerary/DayTimeline';
 import { FlightOptions } from '@/components/itinerary/FlightOptions';
 import { ActivityModal } from '@/components/itinerary/ActivityModal';
 import { ConfirmDialog } from '@/components/itinerary/ConfirmDialog';
-import { MapView } from '@/components/itinerary/MapView';
 import { sampleItinerary } from '@/lib/mock-data/itinerary-sample';
 import type { Activity, TimeOfDay, TripItinerary } from '@/types/itinerary';
 import { Calendar, MapPin, Plane, ChevronRight, Map as MapIcon, List } from 'lucide-react';
+
+// Dynamically import MapView with no SSR to avoid mapbox-gl issues
+const MapView = dynamic(
+  () => import('@/components/itinerary/MapView').then((mod) => ({ default: mod.MapView })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-[600px] items-center justify-center rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+        <div className="text-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent mx-auto"></div>
+          <p className="mt-4 text-sm text-slate-600 dark:text-slate-400">Loading map...</p>
+        </div>
+      </div>
+    ),
+  },
+);
 
 interface ItineraryPageProps {
   params: {

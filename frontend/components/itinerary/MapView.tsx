@@ -1,14 +1,15 @@
 'use client';
 
 import React, { useState, useMemo, useCallback } from 'react';
-import Map, {
+import {
+  Map,
   Marker,
   Popup,
   Source,
   Layer,
   NavigationControl,
   GeolocateControl,
-} from 'react-map-gl';
+} from 'react-map-gl/mapbox';
 import type { Activity, DayItinerary, ActivityCategory } from '@/types/itinerary';
 import { MapPin, X, Clock, DollarSign } from 'lucide-react';
 import 'mapbox-gl/dist/mapbox-gl.css';
