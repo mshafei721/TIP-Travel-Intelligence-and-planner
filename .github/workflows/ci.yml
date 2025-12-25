@@ -93,21 +93,21 @@ jobs:
 
       - name: Set up Docker Compose
         run: |
-          docker-compose config > /dev/null
+          docker compose config > /dev/null
           echo "✅ Docker Compose configuration is valid"
 
       - name: Start services
         run: |
-          docker-compose up -d redis
+          docker compose up -d redis
           sleep 5
 
       - name: Test Redis connection
         run: |
-          docker-compose exec -T redis redis-cli ping
+          docker compose exec -T redis redis-cli ping
 
       - name: Stop services
         run: |
-          docker-compose down
+          docker compose down
 
   # ==============================================
   # Job 5: Summary

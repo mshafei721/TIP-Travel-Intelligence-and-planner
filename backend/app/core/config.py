@@ -16,20 +16,20 @@ class Settings(BaseSettings):
     BACKEND_URL: str = "http://localhost:8000"
     CORS_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000"
 
-    # Supabase
-    SUPABASE_URL: str
-    SUPABASE_ANON_KEY: str
-    SUPABASE_SERVICE_ROLE_KEY: str
-    SUPABASE_JWT_SECRET: str
-    DATABASE_URL: str
+    # Supabase (optional for testing, required for production)
+    SUPABASE_URL: str = ""
+    SUPABASE_ANON_KEY: str = ""
+    SUPABASE_SERVICE_ROLE_KEY: str = ""
+    SUPABASE_JWT_SECRET: str = ""
+    DATABASE_URL: str = ""
 
     # Redis & Celery
     REDIS_URL: str = "redis://localhost:6379"
     CELERY_BROKER_URL: str = "redis://localhost:6379/0"
     CELERY_RESULT_BACKEND: str = "redis://localhost:6379/0"
 
-    # Security
-    SECRET_KEY: str
+    # Security (default for testing only)
+    SECRET_KEY: str = "test-secret-key-change-in-production"
     SESSION_LIFETIME_HOURS: int = 24
     RATE_LIMIT_PER_MINUTE: int = 60
 
@@ -43,9 +43,10 @@ class Settings(BaseSettings):
     FEATURE_RECOMMENDATIONS: bool = True
     FEATURE_ANALYTICS: bool = True
 
-    # External APIs
-    RAPIDAPI_KEY: str  # Travel Buddy AI / Sherpa API
-    ANTHROPIC_API_KEY: str  # Claude AI for CrewAI agents
+    # External APIs (optional - features degrade gracefully without them)
+    RAPIDAPI_KEY: str = ""  # Travel Buddy AI / Sherpa API
+    ANTHROPIC_API_KEY: str = ""  # Claude AI for CrewAI agents
+    WEATHERAPI_KEY: str = ""  # Weather API
 
     @property
     def cors_origins_list(self) -> list[str]:
