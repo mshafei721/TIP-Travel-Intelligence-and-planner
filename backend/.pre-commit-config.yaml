@@ -1,0 +1,94 @@
+# ==============================================
+# Pre-commit Hooks Configuration
+# ==============================================
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+
+default_language_version:
+  python: python3.11
+
+repos:
+  # ==============================================
+  # General File Checks
+  # ==============================================
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+        name: Trim trailing whitespace
+      - id: end-of-file-fixer
+        name: Fix end of files
+      - id: check-yaml
+        name: Check YAML syntax
+      - id: check-added-large-files
+        name: Check for large files
+        args: ['--maxkb=1000']
+      - id: check-json
+        name: Check JSON syntax
+      - id: check-toml
+        name: Check TOML syntax
+      - id: check-merge-conflict
+        name: Check for merge conflicts
+      - id: detect-private-key
+        name: Detect private keys
+      - id: mixed-line-ending
+        name: Fix mixed line endings
+        args: ['--fix=lf']
+
+  # ==============================================
+  # Ruff - Fast Python Linter
+  # ==============================================
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.4.9
+    hooks:
+      - id: ruff
+        name: Ruff linting
+        args: [--fix, --exit-non-zero-on-fix]
+        types_or: [python, pyi]
+
+  # ==============================================
+  # Black - Code Formatter
+  # ==============================================
+  - repo: https://github.com/psf/black
+    rev: 24.4.2
+    hooks:
+      - id: black
+        name: Black formatting
+        types_or: [python, pyi]
+
+  # ==============================================
+  # Mypy - Static Type Checker
+  # ==============================================
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.10.0
+    hooks:
+      - id: mypy
+        name: Mypy type checking
+        additional_dependencies:
+          - types-python-dateutil
+          - types-redis
+          - types-passlib
+        args: [--config-file=pyproject.toml]
+        exclude: ^tests/
+
+  # ==============================================
+  # Pytest - Run Tests (DISABLED - Run manually)
+  # ==============================================
+  # NOTE: Pytest requires environment variables to be set (.env file)
+  # Run tests manually before committing: cd backend && pytest
+  # Uncomment the hook below if you have a test environment configured
+  #
+  # - repo: local
+  #   hooks:
+  #     - id: pytest
+  #       name: Run pytest (full test suite)
+  #       entry: bash -c 'cd backend && pytest'
+  #       language: system
+  #       types: [python]
+  #       pass_filenames: false
+  #       always_run: true
+  #       args:
+  #         - -v
+  #         - --tb=short
+  #         - --cov=app
+  #         - --cov-fail-under=80
