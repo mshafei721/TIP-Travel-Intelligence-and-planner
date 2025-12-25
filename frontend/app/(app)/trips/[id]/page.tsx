@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { TripReportLayout } from '@/components/report/TripReportLayout';
 import { VisaRequirementsSection } from '@/components/report/VisaRequirementsSection';
 import { EntryConditionsSection } from '@/components/report/EntryConditionsSection';
 import { TipsAndWarningsSection } from '@/components/report/TipsAndWarningsSection';
@@ -150,14 +151,16 @@ export default async function TripReportPage({ params }: TripReportPageProps) {
 
   const { trip, visaData, error: dataError } = data;
 
+  const tripName = `${trip.destination_city}, ${trip.destination_country}`;
+
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
-      <div className="max-w-4xl mx-auto p-6 space-y-6">
+    <TripReportLayout tripId={trip.id} tripName={tripName} currentSection="visa">
+      <div className="max-w-4xl mx-auto space-y-6">
         {/* Page Header */}
         <div className="flex items-start justify-between gap-6">
           <div className="flex-1">
             <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2">
-              Travel Intelligence Report
+              Visa Intelligence
             </h1>
             <p className="text-slate-600 dark:text-slate-400">
               {trip.destination_city}, {trip.destination_country}
@@ -259,6 +262,6 @@ export default async function TripReportPage({ params }: TripReportPageProps) {
           </div>
         </Suspense>
       </div>
-    </div>
+    </TripReportLayout>
   );
 }

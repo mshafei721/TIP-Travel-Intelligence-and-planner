@@ -6,6 +6,7 @@ import { fetchDestinationReport } from '@/lib/api/destination';
 import { sampleDestinationData } from '@/lib/mock-data/destination-sample';
 import DestinationIntelligencePage from '@/components/destination/DestinationIntelligencePage';
 import LoadingState from '@/components/destination/LoadingState';
+import { TripReportLayout } from '@/components/report/TripReportLayout';
 import type { DestinationIntelligence } from '@/types/destination';
 
 export default function TripDestinationPage() {
@@ -99,18 +100,23 @@ export default function TripDestinationPage() {
     );
   }
 
+  // Extract trip name from destination data
+  const tripName = destinationData.countryOverview?.name || 'Unknown Destination';
+
   return (
-    <DestinationIntelligencePage
-      data={destinationData}
-      callbacks={{
-        onCardExpand: (cardId) => console.log('Card expanded:', cardId),
-        onCardCollapse: (cardId) => console.log('Card collapsed:', cardId),
-        onExternalLinkClick: (url, title) => {
-          console.log('External link clicked:', title, url);
-          window.open(url, '_blank', 'noopener,noreferrer');
-        },
-      }}
-      allowMultipleExpanded={true}
-    />
+    <TripReportLayout tripId={tripId} tripName={tripName} currentSection="destination">
+      <DestinationIntelligencePage
+        data={destinationData}
+        callbacks={{
+          onCardExpand: (cardId) => console.log('Card expanded:', cardId),
+          onCardCollapse: (cardId) => console.log('Card collapsed:', cardId),
+          onExternalLinkClick: (url, title) => {
+            console.log('External link clicked:', title, url);
+            window.open(url, '_blank', 'noopener,noreferrer');
+          },
+        }}
+        allowMultipleExpanded={true}
+      />
+    </TripReportLayout>
   );
 }
