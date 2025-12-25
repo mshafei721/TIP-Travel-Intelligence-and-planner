@@ -254,7 +254,7 @@ class OrchestratorAgent:
         Create input for specific agent
 
         Args:
-            trip_data: Validated trip data
+            trip_data: Validated trip data (TripData object)
             agent_name: Name of agent
 
         Returns:
@@ -350,19 +350,31 @@ class OrchestratorAgent:
         Aggregate results from all agents
 
         Args:
-            data: Raw results data
+            data: Raw results data (can be dict with trip_id or dict with just sections)
 
         Returns:
             Aggregated report
         """
+        # Handle case where data is a simple dict with sections
+        if isinstance(data, dict) and "visa" in data:
+            # data is actually the sections dict
+            sections = data
+            trip_id = "unknown"
+            errors = []
+        else:
+            # data is the full result dict
+            sections = data.get("sections", {})
+            trip_id = data.get("trip_id", "unknown")
+            errors = data.get("errors", [])
+
         return {
-            "trip_id": data["trip_id"],
+            "trip_id": trip_id,
             "generated_at": datetime.utcnow().isoformat(),
-            "sections": data.get("sections", {}),
-            "errors": data.get("errors", []),
+            "sections": sections,
+            "errors": errors,
             "metadata": {
-                "agent_count": len(data.get("sections", {})),
-                "error_count": len(data.get("errors", [])),
+                "agent_count": len(sections),
+                "error_count": len(errors),
                 "orchestrator_version": "1.0.0"
             }
         }

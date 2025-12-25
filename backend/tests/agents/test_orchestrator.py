@@ -206,7 +206,7 @@ class TestOrchestratorAgent:
         """Test that orchestrator creates proper agent input"""
         orchestrator = OrchestratorAgent()
 
-        trip_data = {
+        trip_data_dict = {
             "trip_id": "test-input",
             "user_nationality": "US",
             "destination_country": "AU",
@@ -215,6 +215,9 @@ class TestOrchestratorAgent:
             "return_date": date(2025, 12, 14),
             "trip_purpose": "tourism"
         }
+
+        # Validate trip data first
+        trip_data = orchestrator._validate_trip_data(trip_data_dict)
 
         agent_input = orchestrator._create_agent_input(trip_data, "visa")
 
@@ -227,18 +230,18 @@ class TestOrchestratorAgent:
         """Test that orchestrator aggregates results from all agents"""
         orchestrator = OrchestratorAgent()
 
-        # Mock results from multiple agents
-        visa_result = AgentResult(
-            agent_type="visa",
-            trip_id="test-agg",
-            generated_at=datetime.utcnow(),
-            confidence_score=0.95,
-            data={"visa_required": False},
-            sources=[],
-            warnings=[]
-        )
+        # Mock results from multiple agents (as dicts, not AgentResult objects)
+        visa_result_dict = {
+            "agent_type": "visa",
+            "trip_id": "test-agg",
+            "generated_at": datetime.utcnow().isoformat(),
+            "confidence_score": 0.95,
+            "data": {"visa_required": False},
+            "sources": [],
+            "warnings": []
+        }
 
-        results = {"visa": visa_result}
+        results = {"visa": visa_result_dict}
 
         aggregated = orchestrator._aggregate_results(results)
 

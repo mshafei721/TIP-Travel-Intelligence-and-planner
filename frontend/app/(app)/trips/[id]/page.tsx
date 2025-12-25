@@ -9,6 +9,7 @@ import { WarningBanner } from '@/components/report/WarningBanner';
 import { VisaReportLoadingSkeleton, VisaErrorState } from '@/components/report/VisaLoadingState';
 import { ConfidenceStamp } from '@/components/report/ConfidenceBadge';
 import type { VisaIntelligence } from '@/types/visa';
+import { fetchVisaReport } from '@/lib/api/visa';
 
 interface TripReportPageProps {
   params: Promise<{ id: string }>;
@@ -93,7 +94,7 @@ const getMockVisaData = (tripId: string): VisaIntelligence => {
   };
 };
 
-async function getTripData(tripId: string): Promise<{ trip: TripData; visaData: VisaIntelligence } | null> {
+async function getTripData(tripId: string): Promise<{ trip: TripData; visaData: VisaIntelligence; error?: string } | null> {
   const supabase = await createClient();
 
   // Get trip basic info
@@ -107,14 +108,34 @@ async function getTripData(tripId: string): Promise<{ trip: TripData; visaData: 
     return null;
   }
 
-  // TODO: Fetch visa report from backend API
-  // For now, return mock data
-  const visaData = getMockVisaData(tripId);
+  // Fetch visa report from backend API
+  try {
+    const visaData = await fetchVisaReport(tripId);
+    return {
+      trip: trip as TripData,
+      visaData,
+    };
+  } catch (error) {
+    // If report not found, it might need to be generated
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 
-  return {
-    trip: trip as TripData,
-    visaData,
-  };
+    if (errorMessage === 'REPORT_NOT_FOUND') {
+      // Return trip data with mock visa data and flag for generation
+      return {
+        trip: trip as TripData,
+        visaData: getMockVisaData(tripId),
+        error: 'REPORT_NOT_FOUND'
+      };
+    }
+
+    // For other errors, use mock data and log error
+    console.error('Failed to fetch visa report:', error);
+    return {
+      trip: trip as TripData,
+      visaData: getMockVisaData(tripId),
+      error: 'FETCH_ERROR'
+    };
+  }
 }
 
 export default async function TripReportPage({ params }: TripReportPageProps) {
@@ -125,7 +146,7 @@ export default async function TripReportPage({ params }: TripReportPageProps) {
     notFound();
   }
 
-  const { trip, visaData } = data;
+  const { trip, visaData, error: dataError } = data;
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
@@ -152,8 +173,39 @@ export default async function TripReportPage({ params }: TripReportPageProps) {
           />
         </div>
 
+        {/* Report Not Found Warning */}
+        {dataError === 'REPORT_NOT_FOUND' && (
+          <WarningBanner
+            variant="info"
+            title="Visa Report Not Generated Yet"
+            message="The visa intelligence report for this trip hasn't been generated. Click below to start the analysis."
+            action={{
+              label: 'Generate Report',
+              onClick: () => {
+                // Redirect to generate endpoint
+                window.location.href = `/api/trips/${trip.id}/generate`;
+              },
+            }}
+          />
+        )}
+
+        {/* Fetch Error Warning */}
+        {dataError === 'FETCH_ERROR' && (
+          <WarningBanner
+            variant="error"
+            title="Error Loading Visa Report"
+            message="We encountered an error loading the visa report. The data shown below may be outdated."
+            action={{
+              label: 'Retry',
+              onClick: () => {
+                window.location.reload();
+              },
+            }}
+          />
+        )}
+
         {/* Partial Data Warning */}
-        {visaData.isPartialData && (
+        {visaData.isPartialData && !dataError && (
           <WarningBanner
             variant="warning"
             title="Incomplete Visa Information"
