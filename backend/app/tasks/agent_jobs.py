@@ -197,6 +197,134 @@ def execute_visa_agent(self, trip_id: str, traveler_data: Dict[str, Any]) -> Dic
 @shared_task(
     bind=True,
     base=BaseTipTask,
+    name="app.tasks.agent_jobs.execute_country_agent",
+    time_limit=1800,  # 30 minutes
+)
+def execute_country_agent(self, trip_id: str, trip_data: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Execute Country Agent for comprehensive country intelligence
+
+    Args:
+        trip_id: Trip ID from database
+        trip_data: Trip details including:
+            - destination_country: str (country name or ISO code)
+            - destination_city: str (optional)
+            - departure_date: str (ISO format)
+            - return_date: str (ISO format)
+            - traveler_nationality: str (optional)
+
+    Returns:
+        Country intelligence analysis with confidence and sources
+
+    Raises:
+        KeyError: If trip_id is missing or empty
+        ValueError: If required trip_data fields are missing
+
+    Production implementation using CrewAI + REST Countries API.
+    """
+    from datetime import date
+    from app.agents.country.agent import CountryAgent
+    from app.agents.country.models import CountryAgentInput
+
+    # Validate trip_id
+    if not trip_id or trip_id.strip() == "":
+        raise KeyError("trip_id is required and cannot be empty")
+
+    print(f"[Task {self.request.id}] Executing Country Agent for trip {trip_id}")
+
+    try:
+        # Validate required fields
+        required_fields = [
+            "destination_country",
+            "departure_date",
+            "return_date",
+        ]
+        for field in required_fields:
+            if field not in trip_data:
+                raise ValueError(f"Missing required field: {field}")
+
+        # Parse dates
+        departure_date_str = trip_data["departure_date"]
+        return_date_str = trip_data["return_date"]
+
+        if isinstance(departure_date_str, str):
+            departure_date = date.fromisoformat(departure_date_str)
+        else:
+            departure_date = departure_date_str
+
+        if isinstance(return_date_str, str):
+            return_date = date.fromisoformat(return_date_str)
+        else:
+            return_date = return_date_str
+
+        # Create CountryAgentInput
+        input_data = CountryAgentInput(
+            trip_id=trip_id,
+            destination_country=trip_data["destination_country"],
+            destination_city=trip_data.get("destination_city"),
+            departure_date=departure_date,
+            return_date=return_date,
+            traveler_nationality=trip_data.get("traveler_nationality"),
+        )
+
+        # Initialize and run Country Agent
+        agent = CountryAgent()
+        result = agent.run(input_data)
+
+        # Store result in database (Supabase report_sections table)
+        from app.core.supabase import supabase
+
+        # Convert result to dict for JSON storage
+        content_data = result.model_dump(mode='json')
+
+        # Convert confidence (0.0-1.0) to integer (0-100) for database
+        confidence_integer = int(result.confidence_score * 100)
+
+        # Store in report_sections table
+        report_response = supabase.table("report_sections").insert({
+            "trip_id": trip_id,
+            "section_type": "country",
+            "title": f"Country Information: {result.country_name}",
+            "content": content_data,
+            "confidence_score": confidence_integer,
+            "sources": [source.model_dump() for source in result.sources],
+            "generated_at": result.generated_at.isoformat(),
+        }).execute()
+
+        if not report_response.data:
+            raise Exception("Failed to store country report in database")
+
+        print(f"[Task {self.request.id}] Completed Country Agent for trip {trip_id}")
+        print(f"[Task {self.request.id}] Country: {result.country_name}")
+        print(f"[Task {self.request.id}] Confidence: {result.confidence_score}")
+        print(f"[Task {self.request.id}] Stored report ID: {report_response.data[0]['id']}")
+
+        return {
+            "trip_id": trip_id,
+            "agent_type": "country",
+            "status": "completed",
+            "data": content_data,
+            "confidence": result.confidence_score,
+            "sources": [source.model_dump() for source in result.sources],
+            "error": None,
+        }
+
+    except Exception as e:
+        print(f"[Task {self.request.id}] Error in Country Agent: {str(e)}")
+        return {
+            "trip_id": trip_id,
+            "agent_type": "country",
+            "status": "failed",
+            "data": {},
+            "confidence": 0.0,
+            "sources": [],
+            "error": str(e),
+        }
+
+
+@shared_task(
+    bind=True,
+    base=BaseTipTask,
     name="app.tasks.agent_jobs.execute_orchestrator",
     time_limit=3600,  # 60 minutes
 )
