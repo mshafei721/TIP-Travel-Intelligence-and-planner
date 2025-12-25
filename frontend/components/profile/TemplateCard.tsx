@@ -21,13 +21,14 @@ export interface TemplateCardProps {
  * - Edit/Delete actions
  */
 export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) {
-  const destinations = template.destinations.length > 0
-    ? template.destinations
-        .map((destination) =>
-          destination.city ? `${destination.city}, ${destination.country}` : destination.country,
-        )
-        .join(', ')
-    : 'No destinations';
+  const destinations =
+    template.destinations.length > 0
+      ? template.destinations
+          .map((destination) =>
+            destination.city ? `${destination.city}, ${destination.country}` : destination.country,
+          )
+          .join(', ')
+      : 'No destinations';
   const datePattern = template.description || 'Custom trip';
   const travelStyle = template.preferences?.travel_style || 'balanced';
   const travelStyleLabel = travelStyle
@@ -74,9 +75,7 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
           className="mt-0.5 h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400"
           aria-hidden="true"
         />
-        <p className="text-sm text-slate-600 dark:text-slate-400">
-          {destinations}
-        </p>
+        <p className="text-sm text-slate-600 dark:text-slate-400">{destinations}</p>
       </div>
 
       {/* Date Pattern */}

@@ -1,19 +1,19 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { Eye, EyeOff, AlertCircle, CheckCircle2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { validatePassword, passwordsMatch } from '@/lib/auth/validation'
-import type { ChangePasswordData, PasswordStrength } from '@/types/auth'
+import { useState } from 'react';
+import { Eye, EyeOff, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { validatePassword, passwordsMatch } from '@/lib/auth/validation';
+import type { ChangePasswordData, PasswordStrength } from '@/types/auth';
 
 export interface ChangePasswordFormProps {
-  onChangePassword: (data: ChangePasswordData) => Promise<void>
-  isLoading?: boolean
-  success?: boolean
-  error?: string
+  onChangePassword: (data: ChangePasswordData) => Promise<void>;
+  isLoading?: boolean;
+  success?: boolean;
+  error?: string;
 }
 
 export function ChangePasswordForm({
@@ -26,47 +26,47 @@ export function ChangePasswordForm({
     currentPassword: '',
     newPassword: '',
     confirmPassword: '',
-  })
+  });
 
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false)
-  const [showNewPassword, setShowNewPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [touched, setTouched] = useState({
     currentPassword: false,
     newPassword: false,
     confirmPassword: false,
-  })
+  });
 
   // Validation
-  const currentPasswordValid = formData.currentPassword.length > 0
-  const passwordValidation = validatePassword(formData.newPassword)
-  const confirmPasswordValid = passwordsMatch(formData.newPassword, formData.confirmPassword)
+  const currentPasswordValid = formData.currentPassword.length > 0;
+  const passwordValidation = validatePassword(formData.newPassword);
+  const confirmPasswordValid = passwordsMatch(formData.newPassword, formData.confirmPassword);
 
-  const formValid = currentPasswordValid && passwordValidation.isValid && confirmPasswordValid
+  const formValid = currentPasswordValid && passwordValidation.isValid && confirmPasswordValid;
 
   const handleChange =
     (field: keyof typeof formData) => (e: React.ChangeEvent<HTMLInputElement>) => {
-      setFormData((prev) => ({ ...prev, [field]: e.target.value }))
-    }
+      setFormData((prev) => ({ ...prev, [field]: e.target.value }));
+    };
 
   const handleBlur = (field: keyof typeof touched) => () => {
-    setTouched((prev) => ({ ...prev, [field]: true }))
-  }
+    setTouched((prev) => ({ ...prev, [field]: true }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     // Mark all fields as touched
     setTouched({
       currentPassword: true,
       newPassword: true,
       confirmPassword: true,
-    })
+    });
 
-    if (!formValid) return
+    if (!formValid) return;
 
-    await onChangePassword(formData)
+    await onChangePassword(formData);
 
     // Clear form on success
     if (success) {
@@ -74,25 +74,25 @@ export function ChangePasswordForm({
         currentPassword: '',
         newPassword: '',
         confirmPassword: '',
-      })
+      });
       setTouched({
         currentPassword: false,
         newPassword: false,
         confirmPassword: false,
-      })
+      });
     }
-  }
+  };
 
   const getStrengthColor = (strength: PasswordStrength) => {
     switch (strength) {
       case 'weak':
-        return 'text-red-600'
+        return 'text-red-600';
       case 'medium':
-        return 'text-amber-600'
+        return 'text-amber-600';
       case 'strong':
-        return 'text-green-600'
+        return 'text-green-600';
     }
-  }
+  };
 
   return (
     <div className="w-full max-w-md space-y-6">
@@ -226,11 +226,9 @@ export function ChangePasswordForm({
               {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
-          {touched.confirmPassword &&
-            !confirmPasswordValid &&
-            formData.confirmPassword !== '' && (
-              <p className="text-sm text-red-600">Passwords do not match</p>
-            )}
+          {touched.confirmPassword && !confirmPasswordValid && formData.confirmPassword !== '' && (
+            <p className="text-sm text-red-600">Passwords do not match</p>
+          )}
         </div>
 
         {/* Submit Button */}
@@ -239,5 +237,5 @@ export function ChangePasswordForm({
         </Button>
       </form>
     </div>
-  )
+  );
 }

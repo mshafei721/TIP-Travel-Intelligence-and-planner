@@ -1,8 +1,8 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { AlertTriangle, Trash2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { useState } from 'react';
+import { AlertTriangle, Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -10,11 +10,11 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from '@/components/ui/dialog'
-import { SectionCard } from './SectionCard'
+} from '@/components/ui/dialog';
+import { SectionCard } from './SectionCard';
 
 export interface AccountSectionProps {
-  onAccountDelete: () => Promise<void>
+  onAccountDelete: () => Promise<void>;
 }
 
 /**
@@ -26,45 +26,36 @@ export interface AccountSectionProps {
  * - Confirmation dialog before deletion
  */
 export function AccountSection({ onAccountDelete }: AccountSectionProps) {
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {
-    setIsDeleting(true)
+    setIsDeleting(true);
     try {
-      await onAccountDelete()
+      await onAccountDelete();
       // onAccountDelete should handle logout and redirect
     } catch {
-      setIsDeleting(false)
-      alert('Failed to delete account. Please try again.')
+      setIsDeleting(false);
+      alert('Failed to delete account. Please try again.');
     }
-  }
+  };
 
   return (
     <>
-      <SectionCard
-        title="Danger Zone"
-        description="Permanent account actions"
-        icon={AlertTriangle}
-      >
+      <SectionCard title="Danger Zone" description="Permanent account actions" icon={AlertTriangle}>
         <div className="rounded-lg border-2 border-red-200 bg-red-50 p-6 dark:border-red-900/50 dark:bg-red-950/20">
           <div className="flex items-start gap-4">
             <div className="rounded-full bg-red-100 p-2 dark:bg-red-900/30">
               <Trash2 className="h-5 w-5 text-red-600 dark:text-red-400" />
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-red-900 dark:text-red-100">
-                Delete Your Account
-              </h3>
+              <h3 className="font-semibold text-red-900 dark:text-red-100">Delete Your Account</h3>
               <p className="mt-2 text-sm text-red-800 dark:text-red-200">
-                This action is <strong>permanent and cannot be undone</strong>. All your trips, reports, and personal data will be permanently deleted.
-                You will be logged out and redirected to the signup page.
+                This action is <strong>permanent and cannot be undone</strong>. All your trips,
+                reports, and personal data will be permanently deleted. You will be logged out and
+                redirected to the signup page.
               </p>
-              <Button
-                variant="destructive"
-                onClick={() => setIsDialogOpen(true)}
-                className="mt-4"
-              >
+              <Button variant="destructive" onClick={() => setIsDialogOpen(true)} className="mt-4">
                 <Trash2 className="h-4 w-4" />
                 Delete Account
               </Button>
@@ -96,23 +87,15 @@ export function AccountSection({ onAccountDelete }: AccountSectionProps) {
           </div>
 
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsDialogOpen(false)}
-              disabled={isDeleting}
-            >
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isDeleting}>
               Cancel
             </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDelete}
-              disabled={isDeleting}
-            >
+            <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
               {isDeleting ? 'Deleting...' : 'Yes, Delete My Account'}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
-  )
+  );
 }

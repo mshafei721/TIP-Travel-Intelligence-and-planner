@@ -1,94 +1,133 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import type { TravelerDetails } from './TripCreationWizard'
+import { useState, useEffect } from 'react';
+import type { TravelerDetails } from './TripCreationWizard';
 
 interface Step1Props {
-  data: TravelerDetails
-  onChange: (data: TravelerDetails) => void
+  data: TravelerDetails;
+  onChange: (data: TravelerDetails) => void;
 }
 
 // Country list (top 50 most common)
 const COUNTRIES = [
-  'United States', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'France',
-  'Italy', 'Spain', 'Japan', 'China', 'India', 'Brazil', 'Mexico', 'South Korea',
-  'Netherlands', 'Sweden', 'Switzerland', 'Norway', 'Denmark', 'Finland',
-  'Belgium', 'Austria', 'Poland', 'Greece', 'Portugal', 'Ireland', 'New Zealand',
-  'Singapore', 'UAE', 'Saudi Arabia', 'Turkey', 'Egypt', 'South Africa', 'Nigeria',
-  'Argentina', 'Chile', 'Colombia', 'Peru', 'Thailand', 'Vietnam', 'Philippines',
-  'Indonesia', 'Malaysia', 'Pakistan', 'Bangladesh', 'Israel', 'Russia', 'Ukraine',
-  'Czech Republic', 'Hungary'
-].sort()
+  'United States',
+  'United Kingdom',
+  'Canada',
+  'Australia',
+  'Germany',
+  'France',
+  'Italy',
+  'Spain',
+  'Japan',
+  'China',
+  'India',
+  'Brazil',
+  'Mexico',
+  'South Korea',
+  'Netherlands',
+  'Sweden',
+  'Switzerland',
+  'Norway',
+  'Denmark',
+  'Finland',
+  'Belgium',
+  'Austria',
+  'Poland',
+  'Greece',
+  'Portugal',
+  'Ireland',
+  'New Zealand',
+  'Singapore',
+  'UAE',
+  'Saudi Arabia',
+  'Turkey',
+  'Egypt',
+  'South Africa',
+  'Nigeria',
+  'Argentina',
+  'Chile',
+  'Colombia',
+  'Peru',
+  'Thailand',
+  'Vietnam',
+  'Philippines',
+  'Indonesia',
+  'Malaysia',
+  'Pakistan',
+  'Bangladesh',
+  'Israel',
+  'Russia',
+  'Ukraine',
+  'Czech Republic',
+  'Hungary',
+].sort();
 
 const RESIDENCY_STATUS = [
   'Citizen',
   'Permanent Resident',
   'Temporary Resident',
   'Student Visa',
-  'Work Visa'
-]
+  'Work Visa',
+];
 
-const CONTACT_PREFERENCES = ['Email', 'SMS', 'WhatsApp']
+const CONTACT_PREFERENCES = ['Email', 'SMS', 'WhatsApp'];
 
 export default function Step1TravelerDetails({ data, onChange }: Step1Props) {
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Validate email
   const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    return emailRegex.test(email)
-  }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
 
   // Update field with validation
-  const updateField = <K extends keyof TravelerDetails>(
-    field: K,
-    value: TravelerDetails[K]
-  ) => {
-    onChange({ ...data, [field]: value })
+  const updateField = <K extends keyof TravelerDetails>(field: K, value: TravelerDetails[K]) => {
+    onChange({ ...data, [field]: value });
 
     // Clear error for this field
     if (errors[field]) {
       setErrors((prev) => {
-        const newErrors = { ...prev }
-        delete newErrors[field]
-        return newErrors
-      })
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
     }
-  }
+  };
 
   // Validate party size and ages
   useEffect(() => {
-    const shouldHaveAges = data.partySize > 1
-    const desiredCount = Math.max(data.partySize - 1, 0)
+    const shouldHaveAges = data.partySize > 1;
+    const desiredCount = Math.max(data.partySize - 1, 0);
 
     if (shouldHaveAges && data.partyAges.length !== desiredCount) {
       onChange({
         ...data,
         partyAges: Array(desiredCount).fill(0),
-      })
-      return
+      });
+      return;
     }
 
     if (!shouldHaveAges && data.partyAges.length > 0) {
-      onChange({ ...data, partyAges: [] })
+      onChange({ ...data, partyAges: [] });
     }
-  }, [data, onChange])
+  }, [data, onChange]);
 
   // Update party age
   const updatePartyAge = (index: number, age: number) => {
-    const newAges = [...data.partyAges]
-    newAges[index] = age
-    onChange({ ...data, partyAges: newAges })
-  }
+    const newAges = [...data.partyAges];
+    newAges[index] = age;
+    onChange({ ...data, partyAges: newAges });
+  };
 
   // Toggle contact preference
   const toggleContactPref = (pref: string) => {
-    const isSelected = data.contactPreferences.includes(pref)
+    const isSelected = data.contactPreferences.includes(pref);
     const newPrefs = isSelected
       ? data.contactPreferences.filter((p) => p !== pref)
-      : [...data.contactPreferences, pref]
-    onChange({ ...data, contactPreferences: newPrefs })
-  }
+      : [...data.contactPreferences, pref];
+    onChange({ ...data, contactPreferences: newPrefs });
+  };
 
   return (
     <div className="space-y-8">
@@ -119,7 +158,10 @@ export default function Step1TravelerDetails({ data, onChange }: Step1Props) {
         </div>
 
         {/* Email & Age */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-slideInUp" style={{ animationDelay: '50ms' }}>
+        <div
+          className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-slideInUp"
+          style={{ animationDelay: '50ms' }}
+        >
           <div className="md:col-span-2">
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               Email <span className="text-red-600">*</span>
@@ -130,15 +172,13 @@ export default function Step1TravelerDetails({ data, onChange }: Step1Props) {
               onChange={(e) => updateField('email', e.target.value)}
               onBlur={() => {
                 if (data.email && !validateEmail(data.email)) {
-                  setErrors((prev) => ({ ...prev, email: 'Invalid email format' }))
+                  setErrors((prev) => ({ ...prev, email: 'Invalid email format' }));
                 }
               }}
               className={`w-full px-4 py-3 rounded-lg border ${errors.email ? 'border-red-500' : 'border-slate-300 dark:border-slate-700'} bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200`}
               placeholder="john@example.com"
             />
-            {errors.email && (
-              <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-            )}
+            {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
           </div>
 
           <div>
@@ -150,7 +190,9 @@ export default function Step1TravelerDetails({ data, onChange }: Step1Props) {
               min="0"
               max="120"
               value={data.age || ''}
-              onChange={(e) => updateField('age', e.target.value ? parseInt(e.target.value) : undefined)}
+              onChange={(e) =>
+                updateField('age', e.target.value ? parseInt(e.target.value) : undefined)
+              }
               className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
               placeholder="30"
             />
@@ -158,7 +200,10 @@ export default function Step1TravelerDetails({ data, onChange }: Step1Props) {
         </div>
 
         {/* Nationality & Residence */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-slideInUp" style={{ animationDelay: '100ms' }}>
+        <div
+          className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-slideInUp"
+          style={{ animationDelay: '100ms' }}
+        >
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               Nationality <span className="text-red-600">*</span>
@@ -170,7 +215,9 @@ export default function Step1TravelerDetails({ data, onChange }: Step1Props) {
             >
               <option value="">Select country...</option>
               {COUNTRIES.map((country) => (
-                <option key={country} value={country}>{country}</option>
+                <option key={country} value={country}>
+                  {country}
+                </option>
               ))}
             </select>
           </div>
@@ -186,14 +233,19 @@ export default function Step1TravelerDetails({ data, onChange }: Step1Props) {
             >
               <option value="">Select country...</option>
               {COUNTRIES.map((country) => (
-                <option key={country} value={country}>{country}</option>
+                <option key={country} value={country}>
+                  {country}
+                </option>
               ))}
             </select>
           </div>
         </div>
 
         {/* Origin City & Residency Status */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-slideInUp" style={{ animationDelay: '150ms' }}>
+        <div
+          className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-slideInUp"
+          style={{ animationDelay: '150ms' }}
+        >
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               Origin City <span className="text-red-600">*</span>
@@ -213,12 +265,16 @@ export default function Step1TravelerDetails({ data, onChange }: Step1Props) {
             </label>
             <select
               value={data.residencyStatus}
-              onChange={(e) => updateField('residencyStatus', e.target.value as TravelerDetails['residencyStatus'])}
+              onChange={(e) =>
+                updateField('residencyStatus', e.target.value as TravelerDetails['residencyStatus'])
+              }
               className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
             >
               <option value="">Select status...</option>
               {RESIDENCY_STATUS.map((status) => (
-                <option key={status} value={status}>{status}</option>
+                <option key={status} value={status}>
+                  {status}
+                </option>
               ))}
             </select>
           </div>
@@ -237,9 +293,7 @@ export default function Step1TravelerDetails({ data, onChange }: Step1Props) {
             onChange={(e) => updateField('partySize', parseInt(e.target.value) || 1)}
             className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
           />
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-500">
-            Including yourself
-          </p>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-500">Including yourself</p>
         </div>
 
         {/* Party Ages (if party size > 1) */}
@@ -302,5 +356,5 @@ export default function Step1TravelerDetails({ data, onChange }: Step1Props) {
         }
       `}</style>
     </div>
-  )
+  );
 }

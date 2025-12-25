@@ -1,30 +1,30 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { PasswordResetRequestForm } from '@/components/auth'
-import { requestPasswordReset } from '@/lib/auth/actions'
+import { useState } from 'react';
+import { PasswordResetRequestForm } from '@/components/auth';
+import { requestPasswordReset } from '@/lib/auth/actions';
 
 export default function ForgotPasswordPage() {
-  const [isLoading, setIsLoading] = useState(false)
-  const [emailSent, setEmailSent] = useState(false)
+  const [isLoading, setIsLoading] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
 
   const handleRequestReset = async (email: string) => {
-    setIsLoading(true)
+    setIsLoading(true);
 
     try {
-      const result = await requestPasswordReset(email)
+      const result = await requestPasswordReset(email);
 
       if (!result.error) {
-        setEmailSent(true)
+        setEmailSent(true);
       }
     } catch {
       // Even on error, show success message for security
       // (don't reveal whether email exists)
-      setEmailSent(true)
+      setEmailSent(true);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
@@ -38,5 +38,5 @@ export default function ForgotPasswordPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

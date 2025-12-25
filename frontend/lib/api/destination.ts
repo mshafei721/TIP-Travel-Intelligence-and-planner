@@ -103,7 +103,7 @@ interface CountryReportAPIResponse {
  * @returns Country overview data or error
  */
 export async function fetchDestinationReport(
-  tripId: string
+  tripId: string,
 ): Promise<{ data: CountryOverview } | { error: DestinationReportErrorResponse }> {
   try {
     // Get Supabase session for auth token

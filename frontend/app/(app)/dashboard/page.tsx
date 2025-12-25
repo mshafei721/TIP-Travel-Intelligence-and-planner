@@ -1,61 +1,61 @@
-import { notFound } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
-import { features } from '@/lib/config/features'
-import { ApiClient } from '@/lib/api/client'
-import { DashboardGrid, DashboardSection } from '@/components/dashboard/DashboardLayout'
-import { QuickActionsCard } from '@/components/dashboard/QuickActionsCard'
-import { StatisticsSummaryCard } from '@/components/dashboard/StatisticsSummaryCard'
-import { RecentTripsCard } from '@/components/dashboard/RecentTripsCard'
-import { UpcomingTripsCard } from '@/components/dashboard/UpcomingTripsCard'
-import { RecommendationsCard } from '@/components/dashboard/RecommendationsCard'
-import { EmptyState } from '@/components/dashboard/EmptyState'
+import { notFound } from 'next/navigation';
+import { createClient } from '@/lib/supabase/server';
+import { features } from '@/lib/config/features';
+import { ApiClient } from '@/lib/api/client';
+import { DashboardGrid, DashboardSection } from '@/components/dashboard/DashboardLayout';
+import { QuickActionsCard } from '@/components/dashboard/QuickActionsCard';
+import { StatisticsSummaryCard } from '@/components/dashboard/StatisticsSummaryCard';
+import { RecentTripsCard } from '@/components/dashboard/RecentTripsCard';
+import { UpcomingTripsCard } from '@/components/dashboard/UpcomingTripsCard';
+import { RecommendationsCard } from '@/components/dashboard/RecommendationsCard';
+import { EmptyState } from '@/components/dashboard/EmptyState';
 
 interface TripListItem {
-  id: string
-  destination: string
-  startDate: string
-  endDate: string
-  status: 'upcoming' | 'in-progress' | 'completed'
+  id: string;
+  destination: string;
+  startDate: string;
+  endDate: string;
+  status: 'upcoming' | 'in-progress' | 'completed';
 }
 
 interface Statistics {
-  totalTrips: number
-  countriesVisited: number
-  destinationsExplored: number
-  activeTrips: number
+  totalTrips: number;
+  countriesVisited: number;
+  destinationsExplored: number;
+  activeTrips: number;
 }
 
 interface Recommendation {
-  destination: string
-  country: string
-  reason: string
-  imageUrl: string
-  confidence?: number
-  tags?: string[]
+  destination: string;
+  country: string;
+  reason: string;
+  imageUrl: string;
+  confidence?: number;
+  tags?: string[];
 }
 
 export default async function DashboardPage() {
   // Feature flag check
   if (!features.dashboardHome) {
-    notFound()
+    notFound();
   }
 
   // Get authenticated user session
-  const supabase = await createClient()
+  const supabase = await createClient();
   const {
     data: { session },
-  } = await supabase.auth.getSession()
+  } = await supabase.auth.getSession();
 
   // This should be handled by middleware, but double-check
   if (!session) {
-    notFound()
+    notFound();
   }
 
   // Create API client with access token getter
-  const apiClient = new ApiClient(async () => session.access_token)
+  const apiClient = new ApiClient(async () => session.access_token);
 
   // Fetch all data in parallel
-  const today = new Date().toISOString().split('T')[0]
+  const today = new Date().toISOString().split('T')[0];
 
   const [recentTripsResult, upcomingTripsResult, statisticsResult, recommendationsResult] =
     await Promise.allSettled([
@@ -65,24 +65,21 @@ export default async function DashboardPage() {
       features.recommendations
         ? apiClient.get<{ recommendations: Recommendation[] }>('/recommendations?limit=3')
         : Promise.resolve({ recommendations: [] }),
-    ])
+    ]);
 
   // Extract data or handle errors gracefully
-  const recentTrips =
-    recentTripsResult.status === 'fulfilled' ? recentTripsResult.value.items : []
+  const recentTrips = recentTripsResult.status === 'fulfilled' ? recentTripsResult.value.items : [];
   const upcomingTrips =
-    upcomingTripsResult.status === 'fulfilled' ? upcomingTripsResult.value.items : []
+    upcomingTripsResult.status === 'fulfilled' ? upcomingTripsResult.value.items : [];
   const statistics =
     statisticsResult.status === 'fulfilled'
       ? statisticsResult.value.statistics
-      : { totalTrips: 0, countriesVisited: 0, destinationsExplored: 0, activeTrips: 0 }
+      : { totalTrips: 0, countriesVisited: 0, destinationsExplored: 0, activeTrips: 0 };
   const recommendations =
-    recommendationsResult.status === 'fulfilled'
-      ? recommendationsResult.value.recommendations
-      : []
+    recommendationsResult.status === 'fulfilled' ? recommendationsResult.value.recommendations : [];
 
   // Check if user has any trips
-  const hasTrips = recentTrips.length > 0
+  const hasTrips = recentTrips.length > 0;
 
   return (
     <div className="space-y-6">
@@ -117,5 +114,5 @@ export default async function DashboardPage() {
         </>
       )}
     </div>
-  )
+  );
 }

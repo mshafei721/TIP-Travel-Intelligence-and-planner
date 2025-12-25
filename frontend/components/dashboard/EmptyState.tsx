@@ -1,17 +1,17 @@
-'use client'
+'use client';
 
-import { Button } from '@/components/ui/button'
-import { analytics } from '@/lib/analytics'
+import { Button } from '@/components/ui/button';
+import { analytics } from '@/lib/analytics';
 
 interface EmptyStateProps {
-  onCreateTrip?: () => void
+  onCreateTrip?: () => void;
 }
 
 export function EmptyState({ onCreateTrip }: EmptyStateProps) {
   const handleClick = () => {
-    analytics.createTripStart('empty_state')
-    onCreateTrip?.()
-  }
+    analytics.createTripStart('empty_state');
+    onCreateTrip?.();
+  };
 
   return (
     <div className="flex min-h-[400px] items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 p-12 dark:border-slate-700 dark:bg-slate-900/50">
@@ -40,9 +40,9 @@ export function EmptyState({ onCreateTrip }: EmptyStateProps) {
 
         {/* Description */}
         <p className="mb-6 max-w-md text-slate-600 dark:text-slate-400">
-          Start planning your next adventure with AI-powered travel intelligence.
-          Get accurate visa requirements, destination insights, weather forecasts,
-          and personalized itineraries—all in one comprehensive report.
+          Start planning your next adventure with AI-powered travel intelligence. Get accurate visa
+          requirements, destination insights, weather forecasts, and personalized itineraries—all in
+          one comprehensive report.
         </p>
 
         {/* CTA Button */}
@@ -79,7 +79,7 @@ export function EmptyState({ onCreateTrip }: EmptyStateProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 function FeatureItem({
@@ -87,9 +87,9 @@ function FeatureItem({
   title,
   description,
 }: {
-  icon: string
-  title: string
-  description: string
+  icon: string;
+  title: string;
+  description: string;
 }) {
   return (
     <div className="flex items-start space-x-3">
@@ -99,5 +99,5 @@ function FeatureItem({
         <p className="text-sm text-slate-600 dark:text-slate-400">{description}</p>
       </div>
     </div>
-  )
+  );
 }

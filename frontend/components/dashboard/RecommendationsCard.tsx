@@ -1,22 +1,22 @@
-'use client'
+'use client';
 
-import { useRouter } from 'next/navigation'
-import { analytics } from '@/lib/analytics'
-import { features } from '@/lib/config/features'
+import { useRouter } from 'next/navigation';
+import { analytics } from '@/lib/analytics';
+import { features } from '@/lib/config/features';
 
 interface Recommendation {
-  destination: string
-  country: string
-  reason: string
-  imageUrl: string
-  confidence?: number
-  tags?: string[]
+  destination: string;
+  country: string;
+  reason: string;
+  imageUrl: string;
+  confidence?: number;
+  tags?: string[];
 }
 
 interface RecommendationsCardProps {
-  recommendations?: Recommendation[]
-  isLoading?: boolean
-  onRecommendationClick?: (destination: string) => void
+  recommendations?: Recommendation[];
+  isLoading?: boolean;
+  onRecommendationClick?: (destination: string) => void;
 }
 
 export function RecommendationsCard({
@@ -24,24 +24,24 @@ export function RecommendationsCard({
   isLoading = false,
   onRecommendationClick,
 }: RecommendationsCardProps) {
-  const router = useRouter()
+  const router = useRouter();
 
   // Don't render if feature is disabled or no recommendations
   if (!features.recommendations || (!isLoading && recommendations.length === 0)) {
-    return null
+    return null;
   }
 
   const handleClick = (destination: string) => {
-    analytics.recommendationClick(destination, 'dashboard_recommendations')
+    analytics.recommendationClick(destination, 'dashboard_recommendations');
 
     if (onRecommendationClick) {
-      onRecommendationClick(destination)
+      onRecommendationClick(destination);
     } else {
       // Navigate to trip creation with pre-filled destination
-      const params = new URLSearchParams({ destination })
-      router.push(`/trips/create?${params.toString()}`)
+      const params = new URLSearchParams({ destination });
+      router.push(`/trips/create?${params.toString()}`);
     }
-  }
+  };
 
   if (isLoading) {
     return (
@@ -67,7 +67,7 @@ export function RecommendationsCard({
           ))}
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -153,5 +153,5 @@ export function RecommendationsCard({
         ))}
       </div>
     </div>
-  )
+  );
 }

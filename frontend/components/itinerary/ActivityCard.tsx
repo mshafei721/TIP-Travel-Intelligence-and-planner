@@ -2,16 +2,7 @@
 
 import React from 'react';
 import type { Activity, ActivityCategory } from '@/types/itinerary';
-import {
-  Clock,
-  MapPin,
-  DollarSign,
-  Star,
-  ExternalLink,
-  Edit,
-  Trash2,
-  Map,
-} from 'lucide-react';
+import { Clock, MapPin, DollarSign, Star, ExternalLink, Edit, Trash2, Map } from 'lucide-react';
 
 interface ActivityCardProps {
   activity: Activity;
@@ -184,15 +175,11 @@ export function ActivityCard({
           <div className="mb-3 flex items-center gap-2 text-sm">
             <DollarSign className="h-4 w-4 text-green-600 dark:text-green-400" />
             <span className="font-semibold text-green-700 dark:text-green-400">
-              {activity.cost.amount === 0
-                ? 'Free'
-                : `¥${activity.cost.amount.toLocaleString()}`}
+              {activity.cost.amount === 0 ? 'Free' : `¥${activity.cost.amount.toLocaleString()}`}
               {activity.cost.perPerson && activity.cost.amount > 0 && ' per person'}
             </span>
             {activity.cost.notes && (
-              <span className="text-slate-500 dark:text-slate-400">
-                • {activity.cost.notes}
-              </span>
+              <span className="text-slate-500 dark:text-slate-400">• {activity.cost.notes}</span>
             )}
           </div>
         )}
@@ -223,9 +210,7 @@ export function ActivityCard({
                       Booking Information
                     </div>
                     <div className="mt-1 space-y-1 text-slate-600 dark:text-slate-400">
-                      {activity.bookingInfo.required && (
-                        <div>⚠️ Booking required in advance</div>
-                      )}
+                      {activity.bookingInfo.required && <div>⚠️ Booking required in advance</div>}
                       {activity.bookingInfo.website && (
                         <div className="flex items-center gap-1">
                           <ExternalLink className="h-3 w-3" />
@@ -262,12 +247,8 @@ export function ActivityCard({
                 {/* Notes */}
                 {activity.notes && (
                   <div>
-                    <div className="font-semibold text-slate-900 dark:text-slate-50">
-                      Notes
-                    </div>
-                    <div className="mt-1 text-slate-600 dark:text-slate-400">
-                      {activity.notes}
-                    </div>
+                    <div className="font-semibold text-slate-900 dark:text-slate-50">Notes</div>
+                    <div className="mt-1 text-slate-600 dark:text-slate-400">{activity.notes}</div>
                   </div>
                 )}
 

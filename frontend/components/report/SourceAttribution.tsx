@@ -60,9 +60,7 @@ export function SourceAttribution({
   if (variant === 'compact') {
     return (
       <div className={`flex flex-wrap items-center gap-2 ${className}`}>
-        <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
-          {title}:
-        </span>
+        <span className="text-sm font-medium text-slate-600 dark:text-slate-400">{title}:</span>
         {sources.map((source, index) => {
           const config = SOURCE_TYPE_CONFIG[source.type];
           const Icon = config.icon;
@@ -83,7 +81,10 @@ export function SourceAttribution({
             >
               <Icon size={12} />
               <span className="max-w-[120px] truncate">{source.name}</span>
-              <ExternalLink size={10} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+              <ExternalLink
+                size={10}
+                className="opacity-0 group-hover:opacity-100 transition-opacity"
+              />
             </a>
           );
         })}
@@ -97,9 +98,7 @@ export function SourceAttribution({
       {/* Header */}
       <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2">
         <LinkIcon className="text-slate-400" size={16} />
-        <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-          {title}
-        </h3>
+        <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">{title}</h3>
         <span className="text-xs text-slate-500 dark:text-slate-400">
           ({sources.length} {sources.length === 1 ? 'source' : 'sources'})
         </span>
@@ -131,11 +130,13 @@ export function SourceAttribution({
                 {/* Left: Icon and content */}
                 <div className="flex items-start gap-3 flex-1 min-w-0">
                   {/* Type icon */}
-                  <div className={`
+                  <div
+                    className={`
                     flex-shrink-0 w-8 h-8 rounded-md
                     ${config.bg} ${config.border} border
                     flex items-center justify-center
-                  `}>
+                  `}
+                  >
                     <Icon className={config.color} size={16} />
                   </div>
 

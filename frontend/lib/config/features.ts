@@ -23,6 +23,6 @@ export const features = {
    * When disabled, no analytics events are sent
    */
   analytics: process.env.NEXT_PUBLIC_FEATURE_ANALYTICS !== 'false',
-} as const
+} as const;
 
-export type FeatureFlags = typeof features
+export type FeatureFlags = typeof features;

@@ -113,9 +113,7 @@ export function ConfidenceBadge({
 
       {/* Optional confidence score */}
       {score !== undefined && (
-        <span className="opacity-75 font-mono text-xs ml-0.5">
-          {Math.round(score * 100)}%
-        </span>
+        <span className="opacity-75 font-mono text-xs ml-0.5">{Math.round(score * 100)}%</span>
       )}
     </div>
   );
@@ -156,7 +154,9 @@ export function ConfidenceStamp({ level, score, size = 'lg' }: ConfidenceStampPr
       <Icon className={config.colors.icon} size={size === 'xl' ? 20 : size === 'lg' ? 16 : 14} />
 
       {/* Label */}
-      <span className={`${config.colors.text} font-bold uppercase tracking-tight text-center leading-tight`}>
+      <span
+        className={`${config.colors.text} font-bold uppercase tracking-tight text-center leading-tight`}
+      >
         {level === 'official' ? 'Official' : level === 'third-party' ? 'Verified' : 'Review'}
       </span>
 

@@ -1,36 +1,36 @@
-'use client'
+'use client';
 
-import { useState, Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
-import { PasswordResetForm } from '@/components/auth'
-import { updatePassword } from '@/lib/auth/actions'
+import { useState, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { PasswordResetForm } from '@/components/auth';
+import { updatePassword } from '@/lib/auth/actions';
 
 function ResetPasswordContent() {
-  const searchParams = useSearchParams()
-  const token = searchParams.get('token') || ''
+  const searchParams = useSearchParams();
+  const token = searchParams.get('token') || '';
 
-  const [isLoading, setIsLoading] = useState(false)
-  const [success, setSuccess] = useState(false)
-  const [error, setError] = useState<string | undefined>()
+  const [isLoading, setIsLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string | undefined>();
 
   const handleResetPassword = async (newPassword: string) => {
-    setError(undefined)
-    setIsLoading(true)
+    setError(undefined);
+    setIsLoading(true);
 
     try {
-      const result = await updatePassword(newPassword)
+      const result = await updatePassword(newPassword);
 
       if (result.error) {
-        setError(result.error)
+        setError(result.error);
       } else {
-        setSuccess(true)
+        setSuccess(true);
       }
     } catch {
-      setError('An unexpected error occurred. Please try again.')
+      setError('An unexpected error occurred. Please try again.');
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   if (!token) {
     return (
@@ -43,7 +43,7 @@ function ResetPasswordContent() {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -59,7 +59,7 @@ function ResetPasswordContent() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export default function ResetPasswordPage() {
@@ -67,5 +67,5 @@ export default function ResetPasswordPage() {
     <Suspense fallback={<div>Loading...</div>}>
       <ResetPasswordContent />
     </Suspense>
-  )
+  );
 }

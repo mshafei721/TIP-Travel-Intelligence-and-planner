@@ -1,18 +1,18 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { CheckCircle2, Mail } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { validateEmail } from '@/lib/auth/validation'
+import { useState } from 'react';
+import Link from 'next/link';
+import { CheckCircle2, Mail } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { validateEmail } from '@/lib/auth/validation';
 
 export interface PasswordResetRequestFormProps {
-  onRequestReset: (email: string) => Promise<void>
-  isLoading?: boolean
-  emailSent?: boolean
+  onRequestReset: (email: string) => Promise<void>;
+  isLoading?: boolean;
+  emailSent?: boolean;
 }
 
 export function PasswordResetRequestForm({
@@ -20,20 +20,20 @@ export function PasswordResetRequestForm({
   isLoading = false,
   emailSent = false,
 }: PasswordResetRequestFormProps) {
-  const [email, setEmail] = useState('')
-  const [touched, setTouched] = useState(false)
+  const [email, setEmail] = useState('');
+  const [touched, setTouched] = useState(false);
 
-  const emailValid = validateEmail(email)
-  const formValid = emailValid
+  const emailValid = validateEmail(email);
+  const formValid = emailValid;
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setTouched(true)
+    e.preventDefault();
+    setTouched(true);
 
-    if (!formValid) return
+    if (!formValid) return;
 
-    await onRequestReset(email.trim())
-  }
+    await onRequestReset(email.trim());
+  };
 
   if (emailSent) {
     return (
@@ -42,8 +42,8 @@ export function PasswordResetRequestForm({
           <CheckCircle2 className="h-4 w-4" />
           <AlertTitle>Check your email</AlertTitle>
           <AlertDescription>
-            We&apos;ve sent a password reset link to <strong>{email}</strong>. Click the link in
-            the email to reset your password.
+            We&apos;ve sent a password reset link to <strong>{email}</strong>. Click the link in the
+            email to reset your password.
           </AlertDescription>
         </Alert>
 
@@ -64,7 +64,7 @@ export function PasswordResetRequestForm({
           </Link>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -111,5 +111,5 @@ export function PasswordResetRequestForm({
         </Link>
       </p>
     </div>
-  )
+  );
 }

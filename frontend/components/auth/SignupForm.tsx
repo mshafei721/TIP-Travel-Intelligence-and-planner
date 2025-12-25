@@ -1,20 +1,25 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { Eye, EyeOff, AlertCircle, CheckCircle2, Chrome } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { validateEmail, validatePassword, validateName, passwordsMatch } from '@/lib/auth/validation'
-import type { SignupCredentials, PasswordStrength } from '@/types/auth'
+import { useState } from 'react';
+import Link from 'next/link';
+import { Eye, EyeOff, AlertCircle, CheckCircle2, Chrome } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  validateEmail,
+  validatePassword,
+  validateName,
+  passwordsMatch,
+} from '@/lib/auth/validation';
+import type { SignupCredentials, PasswordStrength } from '@/types/auth';
 
 export interface SignupFormProps {
-  onSignup: (credentials: SignupCredentials) => Promise<void>
-  onGoogleAuth: () => Promise<void>
-  isLoading?: boolean
-  error?: string
+  onSignup: (credentials: SignupCredentials) => Promise<void>;
+  onGoogleAuth: () => Promise<void>;
+  isLoading?: boolean;
+  error?: string;
 }
 
 export function SignupForm({ onSignup, onGoogleAuth, isLoading = false, error }: SignupFormProps) {
@@ -23,22 +28,22 @@ export function SignupForm({ onSignup, onGoogleAuth, isLoading = false, error }:
     email: '',
     password: '',
     confirmPassword: '',
-  })
+  });
 
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [touched, setTouched] = useState({
     name: false,
     email: false,
     password: false,
     confirmPassword: false,
-  })
+  });
 
   // Validation
-  const nameValid = validateName(formData.name)
-  const emailValid = validateEmail(formData.email)
-  const passwordValidation = validatePassword(formData.password)
-  const confirmPasswordValid = passwordsMatch(formData.password, formData.confirmPassword)
+  const nameValid = validateName(formData.name);
+  const emailValid = validateEmail(formData.email);
+  const passwordValidation = validatePassword(formData.password);
+  const confirmPasswordValid = passwordsMatch(formData.password, formData.confirmPassword);
 
   const formValid =
     nameValid &&
@@ -48,18 +53,19 @@ export function SignupForm({ onSignup, onGoogleAuth, isLoading = false, error }:
     formData.name.trim() !== '' &&
     formData.email.trim() !== '' &&
     formData.password !== '' &&
-    formData.confirmPassword !== ''
+    formData.confirmPassword !== '';
 
-  const handleChange = (field: keyof typeof formData) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({ ...prev, [field]: e.target.value }))
-  }
+  const handleChange =
+    (field: keyof typeof formData) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      setFormData((prev) => ({ ...prev, [field]: e.target.value }));
+    };
 
   const handleBlur = (field: keyof typeof touched) => () => {
-    setTouched((prev) => ({ ...prev, [field]: true }))
-  }
+    setTouched((prev) => ({ ...prev, [field]: true }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     // Mark all fields as touched
     setTouched({
@@ -67,27 +73,27 @@ export function SignupForm({ onSignup, onGoogleAuth, isLoading = false, error }:
       email: true,
       password: true,
       confirmPassword: true,
-    })
+    });
 
-    if (!formValid) return
+    if (!formValid) return;
 
     await onSignup({
       name: formData.name.trim(),
       email: formData.email.trim(),
       password: formData.password,
-    })
-  }
+    });
+  };
 
   const getStrengthColor = (strength: PasswordStrength) => {
     switch (strength) {
       case 'weak':
-        return 'text-red-600'
+        return 'text-red-600';
       case 'medium':
-        return 'text-amber-600'
+        return 'text-amber-600';
       case 'strong':
-        return 'text-green-600'
+        return 'text-green-600';
     }
-  }
+  };
 
   return (
     <div className="w-full max-w-md space-y-6">
@@ -196,8 +202,11 @@ export function SignupForm({ onSignup, onGoogleAuth, isLoading = false, error }:
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <span className="text-sm text-slate-600">Strength:</span>
-                <span className={`text-sm font-medium ${getStrengthColor(passwordValidation.strength)}`}>
-                  {passwordValidation.strength.charAt(0).toUpperCase() + passwordValidation.strength.slice(1)}
+                <span
+                  className={`text-sm font-medium ${getStrengthColor(passwordValidation.strength)}`}
+                >
+                  {passwordValidation.strength.charAt(0).toUpperCase() +
+                    passwordValidation.strength.slice(1)}
                 </span>
               </div>
               {passwordValidation.feedback.length > 0 && (
@@ -265,5 +274,5 @@ export function SignupForm({ onSignup, onGoogleAuth, isLoading = false, error }:
         </Link>
       </p>
     </div>
-  )
+  );
 }

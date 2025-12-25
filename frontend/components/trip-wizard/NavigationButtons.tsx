@@ -1,14 +1,14 @@
-'use client'
+'use client';
 
 interface NavigationButtonsProps {
-  currentStep: number
-  totalSteps: number
-  onBack: () => void
-  onNext: () => void
-  canGoBack: boolean
-  canGoNext: boolean
-  isSubmitting?: boolean
-  nextLabel?: string
+  currentStep: number;
+  totalSteps: number;
+  onBack: () => void;
+  onNext: () => void;
+  canGoBack: boolean;
+  canGoNext: boolean;
+  isSubmitting?: boolean;
+  nextLabel?: string;
 }
 
 export default function NavigationButtons({
@@ -21,15 +21,15 @@ export default function NavigationButtons({
   isSubmitting = false,
   nextLabel,
 }: NavigationButtonsProps) {
-  const isLastStep = currentStep === totalSteps
-  const isSummaryPage = currentStep === totalSteps + 1
+  const isLastStep = currentStep === totalSteps;
+  const isSummaryPage = currentStep === totalSteps + 1;
 
   const getNextLabel = () => {
-    if (nextLabel) return nextLabel
-    if (isSummaryPage) return 'Confirm & Generate Report'
-    if (isLastStep) return 'Review Trip'
-    return 'Next Step'
-  }
+    if (nextLabel) return nextLabel;
+    if (isSummaryPage) return 'Confirm & Generate Report';
+    if (isLastStep) return 'Review Trip';
+    return 'Next Step';
+  };
 
   return (
     <div className="flex items-center justify-between gap-4 mt-8">
@@ -41,7 +41,13 @@ export default function NavigationButtons({
           disabled={isSubmitting}
           className="px-6 py-3 rounded-lg border-2 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-2"
         >
-          <svg className="w-5 h-5" fill="none" strokeWidth="2" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            strokeWidth="2"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
           Back
@@ -60,7 +66,14 @@ export default function NavigationButtons({
         {isSubmitting ? (
           <>
             <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
               <path
                 className="opacity-75"
                 fill="currentColor"
@@ -72,12 +85,18 @@ export default function NavigationButtons({
         ) : (
           <>
             {getNextLabel()}
-            <svg className="w-5 h-5" fill="none" strokeWidth="2" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              strokeWidth="2"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
             </svg>
           </>
         )}
       </button>
     </div>
-  )
+  );
 }

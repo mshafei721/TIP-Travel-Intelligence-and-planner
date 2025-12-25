@@ -1,71 +1,77 @@
-'use client'
+'use client';
 
-import { useState, useEffect, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
-import { type z } from 'zod'
-import StepIndicator from './StepIndicator'
-import ProgressBar from './ProgressBar'
-import Step1TravelerDetails from './Step1TravelerDetails'
-import Step2Destination from './Step2Destination'
-import Step3TripDetails from './Step3TripDetails'
-import Step4Preferences from './Step4Preferences'
-import TripSummary from './TripSummary'
-import AutoSaveIndicator from './AutoSaveIndicator'
-import NavigationButtons from './NavigationButtons'
-import { validateStep, validateCompleteForm } from '@/lib/validation/trip-wizard-schemas'
+import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import { type z } from 'zod';
+import StepIndicator from './StepIndicator';
+import ProgressBar from './ProgressBar';
+import Step1TravelerDetails from './Step1TravelerDetails';
+import Step2Destination from './Step2Destination';
+import Step3TripDetails from './Step3TripDetails';
+import Step4Preferences from './Step4Preferences';
+import TripSummary from './TripSummary';
+import AutoSaveIndicator from './AutoSaveIndicator';
+import NavigationButtons from './NavigationButtons';
+import { validateStep, validateCompleteForm } from '@/lib/validation/trip-wizard-schemas';
 
 // TypeScript interfaces matching the spec
 export interface TravelerDetails {
-  name: string
-  email: string
-  age?: number
-  nationality: string
-  residenceCountry: string
-  originCity: string
-  residencyStatus: 'Citizen' | 'Permanent Resident' | 'Temporary Resident' | 'Student Visa' | 'Work Visa' | ''
-  partySize: number
-  partyAges: number[]
-  contactPreferences: string[]
+  name: string;
+  email: string;
+  age?: number;
+  nationality: string;
+  residenceCountry: string;
+  originCity: string;
+  residencyStatus:
+    | 'Citizen'
+    | 'Permanent Resident'
+    | 'Temporary Resident'
+    | 'Student Visa'
+    | 'Work Visa'
+    | '';
+  partySize: number;
+  partyAges: number[];
+  contactPreferences: string[];
 }
 
 export interface Destination {
-  country: string
-  city: string
+  country: string;
+  city: string;
 }
 
 export interface TripDetails {
-  departureDate: string
-  returnDate: string
-  budget: number
-  currency: 'USD' | 'EUR' | 'GBP' | 'JPY' | 'AUD' | 'CAD'
-  tripPurpose: 'Tourism' | 'Business' | 'Education' | 'Family Visit' | 'Medical' | 'Other' | ''
+  departureDate: string;
+  returnDate: string;
+  budget: number;
+  currency: 'USD' | 'EUR' | 'GBP' | 'JPY' | 'AUD' | 'CAD';
+  tripPurpose: 'Tourism' | 'Business' | 'Education' | 'Family Visit' | 'Medical' | 'Other' | '';
 }
 
 export interface TripPreferences {
-  travelStyle: 'Relaxed' | 'Balanced' | 'Packed' | 'Budget-Focused' | ''
-  interests: string[]
-  dietaryRestrictions: string[]
-  accessibilityNeeds: string
+  travelStyle: 'Relaxed' | 'Balanced' | 'Packed' | 'Budget-Focused' | '';
+  interests: string[];
+  dietaryRestrictions: string[];
+  accessibilityNeeds: string;
 }
 
 export interface TripFormData {
-  travelerDetails: TravelerDetails
-  destinations: Destination[]
-  tripDetails: TripDetails
-  preferences: TripPreferences
+  travelerDetails: TravelerDetails;
+  destinations: Destination[];
+  tripDetails: TripDetails;
+  preferences: TripPreferences;
 }
 
-const TOTAL_STEPS = 4
-const DRAFT_KEY = 'trip-wizard-draft'
+const TOTAL_STEPS = 4;
+const DRAFT_KEY = 'trip-wizard-draft';
 
 export default function TripCreationWizard() {
-  const router = useRouter()
-  const [currentStep, setCurrentStep] = useState(1)
-  const [showSummary, setShowSummary] = useState(false)
-  const [showSaveIndicator, setShowSaveIndicator] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [validationErrors, setValidationErrors] = useState<z.ZodError | null>(null)
-  const [showValidationErrors, setShowValidationErrors] = useState(false)
+  const router = useRouter();
+  const [currentStep, setCurrentStep] = useState(1);
+  const [showSummary, setShowSummary] = useState(false);
+  const [showSaveIndicator, setShowSaveIndicator] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<z.ZodError | null>(null);
+  const [showValidationErrors, setShowValidationErrors] = useState(false);
 
   // Form data state
   const [formData, setFormData] = useState<TripFormData>({
@@ -95,21 +101,21 @@ export default function TripCreationWizard() {
       dietaryRestrictions: [],
       accessibilityNeeds: '',
     },
-  })
+  });
 
   // Load draft on mount
   useEffect(() => {
-    const savedDraft = localStorage.getItem(DRAFT_KEY)
+    const savedDraft = localStorage.getItem(DRAFT_KEY);
     if (savedDraft) {
       try {
-        const parsed = JSON.parse(savedDraft)
-        setFormData(parsed.formData)
-        setCurrentStep(parsed.currentStep || 1)
+        const parsed = JSON.parse(savedDraft);
+        setFormData(parsed.formData);
+        setCurrentStep(parsed.currentStep || 1);
       } catch (error) {
-        console.error('Failed to load draft:', error)
+        console.error('Failed to load draft:', error);
       }
     }
-  }, [])
+  }, []);
 
   // Auto-save draft
   const saveDraft = useCallback(() => {
@@ -117,136 +123,131 @@ export default function TripCreationWizard() {
       formData,
       currentStep,
       savedAt: new Date().toISOString(),
-    }
-    localStorage.setItem(DRAFT_KEY, JSON.stringify(draft))
-    setShowSaveIndicator(true)
-    setTimeout(() => setShowSaveIndicator(false), 3000)
-  }, [formData, currentStep])
+    };
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+    setShowSaveIndicator(true);
+    setTimeout(() => setShowSaveIndicator(false), 3000);
+  }, [formData, currentStep]);
 
   // Update form data
-  const updateFormData = <K extends keyof TripFormData>(
-    section: K,
-    data: TripFormData[K]
-  ) => {
+  const updateFormData = <K extends keyof TripFormData>(section: K, data: TripFormData[K]) => {
     setFormData((prev) => ({
       ...prev,
       [section]: data,
-    }))
-  }
+    }));
+  };
 
   // Navigation
   const handleNext = () => {
     // Get data for current step
-    let stepData: unknown
+    let stepData: unknown;
     switch (currentStep) {
       case 1:
-        stepData = formData.travelerDetails
-        break
+        stepData = formData.travelerDetails;
+        break;
       case 2:
-        stepData = formData.destinations
-        break
+        stepData = formData.destinations;
+        break;
       case 3:
-        stepData = formData.tripDetails
-        break
+        stepData = formData.tripDetails;
+        break;
       case 4:
-        stepData = formData.preferences
-        break
+        stepData = formData.preferences;
+        break;
       default:
-        stepData = null
+        stepData = null;
     }
 
     // Validate current step
-    const validation = validateStep(currentStep, stepData)
+    const validation = validateStep(currentStep, stepData);
 
     if (!validation.success) {
       // Show validation errors
-      setValidationErrors(validation.errors || null)
-      setShowValidationErrors(true)
+      setValidationErrors(validation.errors || null);
+      setShowValidationErrors(true);
 
       // Scroll to top to show errors
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-      return
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
     }
 
     // Clear validation errors
-    setValidationErrors(null)
-    setShowValidationErrors(false)
+    setValidationErrors(null);
+    setShowValidationErrors(false);
 
     // Save draft
-    saveDraft()
+    saveDraft();
 
     // Proceed to next step
     if (currentStep < TOTAL_STEPS) {
-      setCurrentStep((prev) => prev + 1)
+      setCurrentStep((prev) => prev + 1);
     } else {
-      setShowSummary(true)
+      setShowSummary(true);
     }
-  }
+  };
 
   const handleBack = () => {
     // Clear validation errors when going back
-    setValidationErrors(null)
-    setShowValidationErrors(false)
+    setValidationErrors(null);
+    setShowValidationErrors(false);
 
     if (showSummary) {
-      setShowSummary(false)
+      setShowSummary(false);
     } else if (currentStep > 1) {
-      setCurrentStep((prev) => prev - 1)
+      setCurrentStep((prev) => prev - 1);
     }
-  }
+  };
 
   const handleEditFromSummary = (step: number) => {
-    setShowSummary(false)
-    setCurrentStep(step)
+    setShowSummary(false);
+    setCurrentStep(step);
     // Clear validation errors
-    setValidationErrors(null)
-    setShowValidationErrors(false)
-  }
+    setValidationErrors(null);
+    setShowValidationErrors(false);
+  };
 
   const handleSubmit = async () => {
     // Validate complete form before submission
-    const validation = validateCompleteForm(formData)
+    const validation = validateCompleteForm(formData);
 
     if (!validation.success) {
       // Show validation errors
-      setValidationErrors(validation.errors || null)
-      setShowValidationErrors(true)
-      alert('Please check all fields and correct any errors before submitting.')
-      return
+      setValidationErrors(validation.errors || null);
+      setShowValidationErrors(true);
+      alert('Please check all fields and correct any errors before submitting.');
+      return;
     }
 
-    setIsSubmitting(true)
+    setIsSubmitting(true);
     try {
       // API call to create trip with validated data
       const response = await fetch('/api/trips', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(validation.data),
-      })
+      });
 
-      if (!response.ok) throw new Error('Failed to create trip')
+      if (!response.ok) throw new Error('Failed to create trip');
 
-      const trip = await response.json()
+      const trip = await response.json();
 
       // Clear draft and validation errors
-      localStorage.removeItem(DRAFT_KEY)
-      setValidationErrors(null)
-      setShowValidationErrors(false)
+      localStorage.removeItem(DRAFT_KEY);
+      setValidationErrors(null);
+      setShowValidationErrors(false);
 
       // Redirect to trip dashboard or report generation page
-      router.push(`/trips/${trip.id}`)
+      router.push(`/trips/${trip.id}`);
     } catch (error) {
-      console.error('Submission error:', error)
-      alert('Failed to create trip. Please try again.')
+      console.error('Submission error:', error);
+      alert('Failed to create trip. Please try again.');
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   // Calculate progress percentage
-  const progressPercentage = showSummary
-    ? 100
-    : ((currentStep - 1) / TOTAL_STEPS) * 100
+  const progressPercentage = showSummary ? 100 : ((currentStep - 1) / TOTAL_STEPS) * 100;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-amber-50/20 dark:from-slate-950 dark:via-slate-900 dark:to-slate-900">
@@ -273,9 +274,7 @@ export default function TripCreationWizard() {
         <ProgressBar progress={progressPercentage} />
 
         {/* Step Indicator */}
-        {!showSummary && (
-          <StepIndicator currentStep={currentStep} totalSteps={TOTAL_STEPS} />
-        )}
+        {!showSummary && <StepIndicator currentStep={currentStep} totalSteps={TOTAL_STEPS} />}
 
         {/* Main Content Area */}
         <div className="mt-8 md:mt-12">
@@ -283,8 +282,16 @@ export default function TripCreationWizard() {
           {showValidationErrors && validationErrors && (
             <div className="mb-6 p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 rounded-lg animate-slideIn">
               <div className="flex items-start">
-                <svg className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                <svg
+                  className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5 mr-3 flex-shrink-0"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                    clipRule="evenodd"
+                  />
                 </svg>
                 <div className="flex-1">
                   <h3 className="text-sm font-semibold text-red-800 dark:text-red-200 mb-1">
@@ -336,12 +343,7 @@ export default function TripCreationWizard() {
           )}
 
           {/* Summary Page */}
-          {showSummary && (
-            <TripSummary
-              formData={formData}
-              onEdit={handleEditFromSummary}
-            />
-          )}
+          {showSummary && <TripSummary formData={formData} onEdit={handleEditFromSummary} />}
 
           {/* Navigation Buttons */}
           {!showSummary && (
@@ -389,5 +391,5 @@ export default function TripCreationWizard() {
         }
       `}</style>
     </div>
-  )
+  );
 }

@@ -1,5 +1,5 @@
-import { Shield, ExternalLink } from 'lucide-react'
-import { SectionCard } from './SectionCard'
+import { Shield, ExternalLink } from 'lucide-react';
+import { SectionCard } from './SectionCard';
 
 /**
  * PrivacySection - Privacy policy and data retention information
@@ -18,21 +18,18 @@ export function PrivacySection() {
       <div className="space-y-4">
         {/* Auto-Deletion Policy */}
         <div className="rounded-lg bg-blue-50 p-4 dark:bg-blue-950/20">
-          <h3 className="font-medium text-blue-900 dark:text-blue-100">
-            Automatic Data Deletion
-          </h3>
+          <h3 className="font-medium text-blue-900 dark:text-blue-100">Automatic Data Deletion</h3>
           <p className="mt-2 text-sm text-blue-800 dark:text-blue-200">
-            Your trip data is automatically deleted <strong>7 days after your trip end date</strong> to protect your privacy.
-            You&apos;ll receive email reminders before deletion if enabled in notification settings.
+            Your trip data is automatically deleted <strong>7 days after your trip end date</strong>{' '}
+            to protect your privacy. You&apos;ll receive email reminders before deletion if enabled
+            in notification settings.
           </p>
         </div>
 
         {/* Privacy Policy Link */}
         <div className="flex items-center justify-between rounded-lg border border-slate-200 p-4 dark:border-slate-800">
           <div>
-            <h3 className="font-medium text-slate-900 dark:text-slate-50">
-              Full Privacy Policy
-            </h3>
+            <h3 className="font-medium text-slate-900 dark:text-slate-50">Full Privacy Policy</h3>
             <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
               Read our complete privacy policy and data handling practices
             </p>
@@ -49,5 +46,5 @@ export function PrivacySection() {
         </div>
       </div>
     </SectionCard>
-  )
+  );
 }

@@ -1,14 +1,14 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import { analytics } from '@/lib/analytics'
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { analytics } from '@/lib/analytics';
 
 interface QuickActionsCardProps {
-  onCreateTrip?: () => void
-  onViewAllTrips?: () => void
-  onUseTemplate?: () => void
+  onCreateTrip?: () => void;
+  onViewAllTrips?: () => void;
+  onUseTemplate?: () => void;
 }
 
 export function QuickActionsCard({
@@ -16,36 +16,36 @@ export function QuickActionsCard({
   onViewAllTrips,
   onUseTemplate,
 }: QuickActionsCardProps) {
-  const router = useRouter()
-  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false)
+  const router = useRouter();
+  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
 
   const handleCreateTrip = () => {
-    analytics.ctaClick('create_trip', 'dashboard_quick_actions')
+    analytics.ctaClick('create_trip', 'dashboard_quick_actions');
     if (onCreateTrip) {
-      onCreateTrip()
+      onCreateTrip();
     } else {
-      router.push('/trips/create')
+      router.push('/trips/create');
     }
-  }
+  };
 
   const handleViewAllTrips = () => {
-    analytics.ctaClick('view_all_trips', 'dashboard_quick_actions')
+    analytics.ctaClick('view_all_trips', 'dashboard_quick_actions');
     if (onViewAllTrips) {
-      onViewAllTrips()
+      onViewAllTrips();
     } else {
-      router.push('/trips')
+      router.push('/trips');
     }
-  }
+  };
 
   const handleUseTemplate = () => {
-    analytics.ctaClick('use_template', 'dashboard_quick_actions')
-    analytics.templateModalOpen()
+    analytics.ctaClick('use_template', 'dashboard_quick_actions');
+    analytics.templateModalOpen();
     if (onUseTemplate) {
-      onUseTemplate()
+      onUseTemplate();
     } else {
-      setIsTemplateModalOpen(true)
+      setIsTemplateModalOpen(true);
     }
-  }
+  };
 
   return (
     <div
@@ -63,18 +63,8 @@ export function QuickActionsCard({
           className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700"
           size="lg"
         >
-          <svg
-            className="h-5 w-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 4v16m8-8H4"
-            />
+          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
           Create New Trip
         </Button>
@@ -86,12 +76,7 @@ export function QuickActionsCard({
           size="lg"
           className="dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
         >
-          <svg
-            className="h-5 w-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -109,12 +94,7 @@ export function QuickActionsCard({
           size="lg"
           className="dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
         >
-          <svg
-            className="h-5 w-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -139,5 +119,5 @@ export function QuickActionsCard({
         </div>
       )}
     </div>
-  )
+  );
 }

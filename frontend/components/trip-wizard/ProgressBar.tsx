@@ -1,7 +1,7 @@
-'use client'
+'use client';
 
 interface ProgressBarProps {
-  progress: number // 0-100
+  progress: number; // 0-100
 }
 
 export default function ProgressBar({ progress }: ProgressBarProps) {
@@ -42,5 +42,5 @@ export default function ProgressBar({ progress }: ProgressBarProps) {
         }
       `}</style>
     </div>
-  )
+  );
 }

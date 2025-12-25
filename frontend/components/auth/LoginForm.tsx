@@ -1,24 +1,24 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { Eye, EyeOff, AlertCircle, Chrome } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { validateEmail } from '@/lib/auth/validation'
-import { getLockoutTimeRemaining, formatLockoutTime } from '@/lib/auth/rate-limit'
-import type { LoginCredentials } from '@/types/auth'
+import { useState } from 'react';
+import Link from 'next/link';
+import { Eye, EyeOff, AlertCircle, Chrome } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { validateEmail } from '@/lib/auth/validation';
+import { getLockoutTimeRemaining, formatLockoutTime } from '@/lib/auth/rate-limit';
+import type { LoginCredentials } from '@/types/auth';
 
 export interface LoginFormProps {
-  onLogin: (credentials: LoginCredentials) => Promise<void>
-  onGoogleAuth: () => Promise<void>
-  isLoading?: boolean
-  error?: string
-  rateLimited?: boolean
-  lockoutEndsAt?: string
+  onLogin: (credentials: LoginCredentials) => Promise<void>;
+  onGoogleAuth: () => Promise<void>;
+  isLoading?: boolean;
+  error?: string;
+  rateLimited?: boolean;
+  lockoutEndsAt?: string;
 }
 
 export function LoginForm({
@@ -33,68 +33,67 @@ export function LoginForm({
     email: '',
     password: '',
     rememberMe: false,
-  })
+  });
 
-  const [showPassword, setShowPassword] = useState(false)
+  const [showPassword, setShowPassword] = useState(false);
   const [touched, setTouched] = useState({
     email: false,
     password: false,
-  })
+  });
 
-  const [lockoutRemaining, setLockoutRemaining] = useState(0)
+  const [lockoutRemaining, setLockoutRemaining] = useState(0);
 
   // Update lockout timer
   useState(() => {
     if (rateLimited && lockoutEndsAt) {
       const interval = setInterval(() => {
-        const remaining = getLockoutTimeRemaining(new Date(lockoutEndsAt))
-        setLockoutRemaining(remaining)
+        const remaining = getLockoutTimeRemaining(new Date(lockoutEndsAt));
+        setLockoutRemaining(remaining);
         if (remaining <= 0) {
-          clearInterval(interval)
+          clearInterval(interval);
         }
-      }, 1000)
+      }, 1000);
 
-      return () => clearInterval(interval)
+      return () => clearInterval(interval);
     }
-  })
+  });
 
   // Validation
-  const emailValid = validateEmail(formData.email)
-  const passwordValid = formData.password.length > 0
+  const emailValid = validateEmail(formData.email);
+  const passwordValid = formData.password.length > 0;
 
-  const formValid = emailValid && passwordValid && !rateLimited
+  const formValid = emailValid && passwordValid && !rateLimited;
 
-  const handleChange = (field: keyof typeof formData) => (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    if (field === 'rememberMe') {
-      setFormData((prev) => ({ ...prev, [field]: e.target.checked }))
-    } else {
-      setFormData((prev) => ({ ...prev, [field]: e.target.value }))
-    }
-  }
+  const handleChange =
+    (field: keyof typeof formData) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (field === 'rememberMe') {
+        setFormData((prev) => ({ ...prev, [field]: e.target.checked }));
+      } else {
+        setFormData((prev) => ({ ...prev, [field]: e.target.value }));
+      }
+    };
 
   const handleBlur = (field: keyof typeof touched) => () => {
-    setTouched((prev) => ({ ...prev, [field]: true }))
-  }
+    setTouched((prev) => ({ ...prev, [field]: true }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     // Mark all fields as touched
     setTouched({
       email: true,
       password: true,
-    })
+    });
 
-    if (!formValid) return
+    if (!formValid) return;
 
     await onLogin({
       email: formData.email.trim(),
       password: formData.password,
       rememberMe: formData.rememberMe,
-    })
-  }
+    });
+  };
 
   return (
     <div className="w-full max-w-md space-y-6">
@@ -216,11 +215,7 @@ export function LoginForm({
         </div>
 
         {/* Submit Button */}
-        <Button
-          type="submit"
-          className="w-full h-11 text-base"
-          disabled={!formValid || isLoading}
-        >
+        <Button type="submit" className="w-full h-11 text-base" disabled={!formValid || isLoading}>
           {isLoading ? 'Logging in...' : 'Log In'}
         </Button>
       </form>
@@ -233,5 +228,5 @@ export function LoginForm({
         </Link>
       </p>
     </div>
-  )
+  );
 }

@@ -1,10 +1,10 @@
-'use client'
+'use client';
 
-import type { TripPreferences } from './TripCreationWizard'
+import type { TripPreferences } from './TripCreationWizard';
 
 interface Step4Props {
-  data: TripPreferences
-  onChange: (data: TripPreferences) => void
+  data: TripPreferences;
+  onChange: (data: TripPreferences) => void;
 }
 
 const TRAVEL_STYLES = [
@@ -32,7 +32,7 @@ const TRAVEL_STYLES = [
     title: 'Budget-Focused',
     desc: 'Maximize value, minimize cost',
   },
-]
+];
 
 const INTERESTS = [
   { value: 'Food', icon: '🍜' },
@@ -43,7 +43,7 @@ const INTERESTS = [
   { value: 'Nature', icon: '🌲' },
   { value: 'Shopping', icon: '🛍️' },
   { value: 'History', icon: '📜' },
-]
+];
 
 const DIETARY_RESTRICTIONS = [
   'None',
@@ -54,43 +54,40 @@ const DIETARY_RESTRICTIONS = [
   'Gluten-Free',
   'Lactose-Free',
   'Allergies',
-]
+];
 
 export default function Step4Preferences({ data, onChange }: Step4Props) {
-  const updateField = <K extends keyof TripPreferences>(
-    field: K,
-    value: TripPreferences[K]
-  ) => {
-    onChange({ ...data, [field]: value })
-  }
+  const updateField = <K extends keyof TripPreferences>(field: K, value: TripPreferences[K]) => {
+    onChange({ ...data, [field]: value });
+  };
 
   const toggleInterest = (interest: string) => {
-    const isSelected = data.interests.includes(interest)
+    const isSelected = data.interests.includes(interest);
     const newInterests = isSelected
       ? data.interests.filter((i) => i !== interest)
-      : [...data.interests, interest]
-    updateField('interests', newInterests)
-  }
+      : [...data.interests, interest];
+    updateField('interests', newInterests);
+  };
 
   const toggleDietary = (restriction: string) => {
-    const isSelected = data.dietaryRestrictions.includes(restriction)
-    let newRestrictions: string[]
+    const isSelected = data.dietaryRestrictions.includes(restriction);
+    let newRestrictions: string[];
 
     if (restriction === 'None') {
       // If selecting "None", clear all others
-      newRestrictions = isSelected ? [] : ['None']
+      newRestrictions = isSelected ? [] : ['None'];
     } else {
       // If selecting anything else, remove "None" if present
-      newRestrictions = data.dietaryRestrictions.filter((r) => r !== 'None')
+      newRestrictions = data.dietaryRestrictions.filter((r) => r !== 'None');
       if (isSelected) {
-        newRestrictions = newRestrictions.filter((r) => r !== restriction)
+        newRestrictions = newRestrictions.filter((r) => r !== restriction);
       } else {
-        newRestrictions = [...newRestrictions, restriction]
+        newRestrictions = [...newRestrictions, restriction];
       }
     }
 
-    updateField('dietaryRestrictions', newRestrictions)
-  }
+    updateField('dietaryRestrictions', newRestrictions);
+  };
 
   return (
     <div className="space-y-8">
@@ -99,9 +96,7 @@ export default function Step4Preferences({ data, onChange }: Step4Props) {
         <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-50 mb-1">
           Travel Preferences
         </h2>
-        <p className="text-sm text-slate-600 dark:text-slate-400">
-          Customize your experience
-        </p>
+        <p className="text-sm text-slate-600 dark:text-slate-400">Customize your experience</p>
       </div>
 
       <div className="space-y-8">
@@ -115,16 +110,16 @@ export default function Step4Preferences({ data, onChange }: Step4Props) {
               <button
                 key={style.value}
                 type="button"
-                onClick={() => updateField('travelStyle', style.value as TripPreferences['travelStyle'])}
+                onClick={() =>
+                  updateField('travelStyle', style.value as TripPreferences['travelStyle'])
+                }
                 className={`p-5 rounded-xl border-2 transition-all duration-300 hover:shadow-lg hover:scale-105 ${data.travelStyle === style.value ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/30 shadow-lg shadow-amber-500/20' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800'}`}
               >
                 <div className="text-3xl mb-2">{style.icon}</div>
                 <div className="font-semibold text-slate-900 dark:text-slate-100 mb-1">
                   {style.title}
                 </div>
-                <div className="text-xs text-slate-600 dark:text-slate-400">
-                  {style.desc}
-                </div>
+                <div className="text-xs text-slate-600 dark:text-slate-400">{style.desc}</div>
               </button>
             ))}
           </div>
@@ -152,7 +147,13 @@ export default function Step4Preferences({ data, onChange }: Step4Props) {
                 </div>
                 {data.interests.includes(interest.value) && (
                   <div className="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center">
-                    <svg className="w-3 h-3 text-white" fill="none" strokeWidth="3" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg
+                      className="w-3 h-3 text-white"
+                      fill="none"
+                      strokeWidth="3"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
@@ -206,7 +207,10 @@ export default function Step4Preferences({ data, onChange }: Step4Props) {
 
         {/* Summary of selections */}
         {(data.travelStyle || data.interests.length > 0 || data.dietaryRestrictions.length > 0) && (
-          <div className="bg-gradient-to-br from-slate-50 to-blue-50/30 dark:from-slate-800/50 dark:to-blue-950/20 border border-slate-200 dark:border-slate-700 rounded-xl p-6 animate-slideInUp" style={{ animationDelay: '200ms' }}>
+          <div
+            className="bg-gradient-to-br from-slate-50 to-blue-50/30 dark:from-slate-800/50 dark:to-blue-950/20 border border-slate-200 dark:border-slate-700 rounded-xl p-6 animate-slideInUp"
+            style={{ animationDelay: '200ms' }}
+          >
             <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2">
               <span className="text-lg">✨</span>
               Your Travel Profile
@@ -215,7 +219,9 @@ export default function Step4Preferences({ data, onChange }: Step4Props) {
               {data.travelStyle && (
                 <div className="flex items-start gap-2">
                   <span className="text-slate-500 dark:text-slate-500 min-w-20">Style:</span>
-                  <span className="text-slate-900 dark:text-slate-100 font-medium">{data.travelStyle}</span>
+                  <span className="text-slate-900 dark:text-slate-100 font-medium">
+                    {data.travelStyle}
+                  </span>
                 </div>
               )}
               {data.interests.length > 0 && (
@@ -255,5 +261,5 @@ export default function Step4Preferences({ data, onChange }: Step4Props) {
         }
       `}</style>
     </div>
-  )
+  );
 }

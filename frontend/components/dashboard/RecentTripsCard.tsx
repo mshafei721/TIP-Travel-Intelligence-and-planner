@@ -1,23 +1,23 @@
-'use client'
+'use client';
 
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { TripCard } from './TripCard'
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { TripCard } from './TripCard';
 
 interface TripListItem {
-  id: string
-  destination: string
-  startDate: string
-  endDate: string
-  status: 'upcoming' | 'in-progress' | 'completed'
+  id: string;
+  destination: string;
+  startDate: string;
+  endDate: string;
+  status: 'upcoming' | 'in-progress' | 'completed';
 }
 
 interface RecentTripsCardProps {
-  trips?: TripListItem[]
-  isLoading?: boolean
-  error?: Error | null
-  onTripClick?: (tripId: string) => void
-  onViewAll?: () => void
+  trips?: TripListItem[];
+  isLoading?: boolean;
+  error?: Error | null;
+  onTripClick?: (tripId: string) => void;
+  onViewAll?: () => void;
 }
 
 export function RecentTripsCard({
@@ -27,23 +27,23 @@ export function RecentTripsCard({
   onTripClick,
   onViewAll,
 }: RecentTripsCardProps) {
-  const router = useRouter()
+  const router = useRouter();
 
   const handleTripClick = (tripId: string) => {
     if (onTripClick) {
-      onTripClick(tripId)
+      onTripClick(tripId);
     } else {
-      router.push(`/trips/${tripId}`)
+      router.push(`/trips/${tripId}`);
     }
-  }
+  };
 
   const handleViewAll = () => {
     if (onViewAll) {
-      onViewAll()
+      onViewAll();
     } else {
-      router.push('/trips')
+      router.push('/trips');
     }
-  }
+  };
 
   if (error) {
     return (
@@ -52,15 +52,13 @@ export function RecentTripsCard({
         className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900"
       >
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-            Recent Trips
-          </h2>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Recent Trips</h2>
         </div>
         <div className="text-center text-sm text-red-600 dark:text-red-400">
           Failed to load recent trips
         </div>
       </div>
-    )
+    );
   }
 
   if (isLoading) {
@@ -70,9 +68,7 @@ export function RecentTripsCard({
         className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900"
       >
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-            Recent Trips
-          </h2>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Recent Trips</h2>
         </div>
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
@@ -89,7 +85,7 @@ export function RecentTripsCard({
           ))}
         </div>
       </div>
-    )
+    );
   }
 
   if (trips.length === 0) {
@@ -99,15 +95,13 @@ export function RecentTripsCard({
         className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900"
       >
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-            Recent Trips
-          </h2>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Recent Trips</h2>
         </div>
         <div className="py-8 text-center text-sm text-slate-600 dark:text-slate-400">
           No trips yet. Start planning your first adventure!
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -116,14 +110,12 @@ export function RecentTripsCard({
       className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900"
     >
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-          Recent Trips
-        </h2>
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Recent Trips</h2>
         <Link
           href="/trips"
           onClick={(e) => {
-            e.preventDefault()
-            handleViewAll()
+            e.preventDefault();
+            handleViewAll();
           }}
           className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
         >
@@ -133,14 +125,9 @@ export function RecentTripsCard({
 
       <div className="space-y-3">
         {trips.slice(0, 5).map((trip) => (
-          <TripCard
-            key={trip.id}
-            trip={trip}
-            onClick={handleTripClick}
-            location="recent_trips"
-          />
+          <TripCard key={trip.id} trip={trip} onClick={handleTripClick} location="recent_trips" />
         ))}
       </div>
     </div>
-  )
+  );
 }

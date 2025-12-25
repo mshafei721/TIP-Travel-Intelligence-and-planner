@@ -1,8 +1,8 @@
-export { SignupForm } from './SignupForm'
-export { LoginForm } from './LoginForm'
-export { PasswordResetRequestForm } from './PasswordResetRequestForm'
-export { PasswordResetForm } from './PasswordResetForm'
-export { EmailVerificationPage } from './EmailVerificationPage'
-export { ChangePasswordForm } from './ChangePasswordForm'
-export { DeleteAccountDialog } from './DeleteAccountDialog'
-export { SessionExpiryBanner } from './SessionExpiryBanner'
+export { SignupForm } from './SignupForm';
+export { LoginForm } from './LoginForm';
+export { PasswordResetRequestForm } from './PasswordResetRequestForm';
+export { PasswordResetForm } from './PasswordResetForm';
+export { EmailVerificationPage } from './EmailVerificationPage';
+export { ChangePasswordForm } from './ChangePasswordForm';
+export { DeleteAccountDialog } from './DeleteAccountDialog';
+export { SessionExpiryBanner } from './SessionExpiryBanner';

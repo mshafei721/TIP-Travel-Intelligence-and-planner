@@ -63,7 +63,9 @@ export function TemplateModal({ open, onOpenChange, template, onSave }: Template
           name: template.name,
           destinations: template.destinations
             .map((destination) =>
-              destination.city ? `${destination.city}, ${destination.country}` : destination.country,
+              destination.city
+                ? `${destination.city}, ${destination.country}`
+                : destination.country,
             )
             .join('; '),
           description: template.description || '',

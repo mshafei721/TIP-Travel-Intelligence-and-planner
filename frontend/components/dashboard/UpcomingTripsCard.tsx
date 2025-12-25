@@ -1,21 +1,21 @@
-'use client'
+'use client';
 
-import { useRouter } from 'next/navigation'
-import { TripCard } from './TripCard'
+import { useRouter } from 'next/navigation';
+import { TripCard } from './TripCard';
 
 interface TripListItem {
-  id: string
-  destination: string
-  startDate: string
-  endDate: string
-  status: 'upcoming' | 'in-progress' | 'completed'
+  id: string;
+  destination: string;
+  startDate: string;
+  endDate: string;
+  status: 'upcoming' | 'in-progress' | 'completed';
 }
 
 interface UpcomingTripsCardProps {
-  trips?: TripListItem[]
-  isLoading?: boolean
-  error?: Error | null
-  onTripClick?: (tripId: string) => void
+  trips?: TripListItem[];
+  isLoading?: boolean;
+  error?: Error | null;
+  onTripClick?: (tripId: string) => void;
 }
 
 export function UpcomingTripsCard({
@@ -24,23 +24,23 @@ export function UpcomingTripsCard({
   error = null,
   onTripClick,
 }: UpcomingTripsCardProps) {
-  const router = useRouter()
+  const router = useRouter();
 
   const handleTripClick = (tripId: string) => {
     if (onTripClick) {
-      onTripClick(tripId)
+      onTripClick(tripId);
     } else {
-      router.push(`/trips/${tripId}`)
+      router.push(`/trips/${tripId}`);
     }
-  }
+  };
 
   // Filter for upcoming trips only (future dates with active statuses)
   const upcomingTrips = trips.filter((trip) => {
-    const today = new Date()
-    const startDate = new Date(trip.startDate)
+    const today = new Date();
+    const startDate = new Date(trip.startDate);
     // Show trips that haven't started yet and are in active status
-    return startDate > today && trip.status === 'upcoming'
-  })
+    return startDate > today && trip.status === 'upcoming';
+  });
 
   if (error) {
     return (
@@ -55,7 +55,7 @@ export function UpcomingTripsCard({
           Failed to load upcoming trips
         </div>
       </div>
-    )
+    );
   }
 
   if (isLoading) {
@@ -85,7 +85,7 @@ export function UpcomingTripsCard({
           ))}
         </div>
       </div>
-    )
+    );
   }
 
   if (upcomingTrips.length === 0) {
@@ -113,12 +113,10 @@ export function UpcomingTripsCard({
               />
             </svg>
           </div>
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            No upcoming trips planned
-          </p>
+          <p className="text-sm text-slate-600 dark:text-slate-400">No upcoming trips planned</p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -142,5 +140,5 @@ export function UpcomingTripsCard({
         ))}
       </div>
     </div>
-  )
+  );
 }

@@ -54,9 +54,10 @@ export function VisaRequirementsSection({ data, className = '' }: VisaRequiremen
       <div
         className={`
           p-6 rounded-lg border-2
-          ${visaRequirement.visaRequired
-            ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800'
-            : 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800'
+          ${
+            visaRequirement.visaRequired
+              ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800'
+              : 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800'
           }
         `}
       >
@@ -64,9 +65,10 @@ export function VisaRequirementsSection({ data, className = '' }: VisaRequiremen
           <div
             className={`
               w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0
-              ${visaRequirement.visaRequired
-                ? 'bg-amber-100 dark:bg-amber-900'
-                : 'bg-green-100 dark:bg-green-900'
+              ${
+                visaRequirement.visaRequired
+                  ? 'bg-amber-100 dark:bg-amber-900'
+                  : 'bg-green-100 dark:bg-green-900'
               }
             `}
           >
@@ -80,9 +82,10 @@ export function VisaRequirementsSection({ data, className = '' }: VisaRequiremen
             <h3
               className={`
                 text-lg font-bold mb-1
-                ${visaRequirement.visaRequired
-                  ? 'text-amber-900 dark:text-amber-100'
-                  : 'text-green-900 dark:text-green-100'
+                ${
+                  visaRequirement.visaRequired
+                    ? 'text-amber-900 dark:text-amber-100'
+                    : 'text-green-900 dark:text-green-100'
                 }
               `}
             >
@@ -91,9 +94,10 @@ export function VisaRequirementsSection({ data, className = '' }: VisaRequiremen
             <p
               className={`
                 text-sm
-                ${visaRequirement.visaRequired
-                  ? 'text-amber-800 dark:text-amber-200'
-                  : 'text-green-800 dark:text-green-200'
+                ${
+                  visaRequirement.visaRequired
+                    ? 'text-amber-800 dark:text-amber-200'
+                    : 'text-green-800 dark:text-green-200'
                 }
               `}
             >
@@ -111,7 +115,10 @@ export function VisaRequirementsSection({ data, className = '' }: VisaRequiremen
           {/* Processing Time */}
           {applicationProcess.processingTime && (
             <div className="flex items-start gap-3 p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
-              <Clock className="text-slate-600 dark:text-slate-400 flex-shrink-0 mt-0.5" size={18} />
+              <Clock
+                className="text-slate-600 dark:text-slate-400 flex-shrink-0 mt-0.5"
+                size={18}
+              />
               <div>
                 <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">
                   Processing Time
@@ -125,7 +132,10 @@ export function VisaRequirementsSection({ data, className = '' }: VisaRequiremen
 
           {/* Cost */}
           <div className="flex items-start gap-3 p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
-            <DollarSign className="text-slate-600 dark:text-slate-400 flex-shrink-0 mt-0.5" size={18} />
+            <DollarSign
+              className="text-slate-600 dark:text-slate-400 flex-shrink-0 mt-0.5"
+              size={18}
+            />
             <div>
               <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">
                 Visa Cost
@@ -133,7 +143,7 @@ export function VisaRequirementsSection({ data, className = '' }: VisaRequiremen
               <div className="text-sm font-medium text-slate-900 dark:text-slate-100">
                 {formatCurrency(
                   applicationProcess.costLocal?.amount || applicationProcess.costUsd,
-                  applicationProcess.costLocal?.currency
+                  applicationProcess.costLocal?.currency,
                 )}
               </div>
             </div>
@@ -150,7 +160,9 @@ export function VisaRequirementsSection({ data, className = '' }: VisaRequiremen
           </h3>
           <div className="space-y-2">
             <div className="flex items-baseline gap-2">
-              <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Method:</span>
+              <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                Method:
+              </span>
               <span className="text-sm text-slate-900 dark:text-slate-100 capitalize">
                 {applicationProcess.applicationMethod.replace('_', ' ')}
               </span>
@@ -179,8 +191,14 @@ export function VisaRequirementsSection({ data, className = '' }: VisaRequiremen
           </h3>
           <ul className="space-y-2">
             {applicationProcess.requiredDocuments.map((doc, index) => (
-              <li key={index} className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300">
-                <CheckCircle size={16} className="text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+              <li
+                key={index}
+                className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300"
+              >
+                <CheckCircle
+                  size={16}
+                  className="text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5"
+                />
                 <span>{doc}</span>
               </li>
             ))}

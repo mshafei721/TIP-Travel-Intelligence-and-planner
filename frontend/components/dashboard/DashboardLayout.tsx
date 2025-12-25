@@ -1,5 +1,5 @@
 interface DashboardLayoutProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
@@ -7,7 +7,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     <div data-testid="dashboard-layout" className="space-y-6">
       {children}
     </div>
-  )
+  );
 }
 
 /**
@@ -27,13 +27,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
  */
 export function DashboardGrid({ children }: DashboardLayoutProps) {
   return (
-    <div
-      data-testid="dashboard-layout"
-      className="grid grid-cols-1 gap-6 lg:grid-cols-2"
-    >
+    <div data-testid="dashboard-layout" className="grid grid-cols-1 gap-6 lg:grid-cols-2">
       {children}
     </div>
-  )
+  );
 }
 
 /**
@@ -41,5 +38,5 @@ export function DashboardGrid({ children }: DashboardLayoutProps) {
  * Use for full-width sections like recommendations
  */
 export function DashboardSection({ children }: DashboardLayoutProps) {
-  return <div className="lg:col-span-2">{children}</div>
+  return <div className="lg:col-span-2">{children}</div>;
 }

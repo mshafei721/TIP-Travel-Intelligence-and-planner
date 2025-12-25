@@ -27,9 +27,7 @@ export function EntryConditionsSection({ data, className = '' }: EntryConditions
           <Shield className="text-green-600 dark:text-green-400" size={20} />
         </div>
         <div>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
-            Entry Conditions
-          </h2>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">Entry Conditions</h2>
           <p className="text-sm text-slate-600 dark:text-slate-400">
             Requirements for entering {data.destinationCountry}
           </p>
@@ -40,9 +38,7 @@ export function EntryConditionsSection({ data, className = '' }: EntryConditions
       <div className="flex items-start gap-4 p-4 rounded-lg bg-blue-50 dark:bg-blue-950/20 border-2 border-blue-200 dark:border-blue-800">
         <FileCheck className="text-blue-600 dark:text-blue-400 flex-shrink-0 mt-1" size={20} />
         <div className="flex-1">
-          <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-1">
-            Passport Validity
-          </h3>
+          <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-1">Passport Validity</h3>
           <p className="text-sm text-blue-800 dark:text-blue-200">
             {entryRequirements.passportValidity}
           </p>
@@ -153,31 +149,30 @@ function RequirementCard({ icon: Icon, label, required }: RequirementCardProps) 
     <div
       className={`
         flex items-center gap-3 p-4 rounded-lg border-2
-        ${required
-          ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800'
-          : 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800'
+        ${
+          required
+            ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800'
+            : 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800'
         }
       `}
     >
       <Icon
-        className={required ? 'text-amber-600 dark:text-amber-400' : 'text-green-600 dark:text-green-400'}
+        className={
+          required ? 'text-amber-600 dark:text-amber-400' : 'text-green-600 dark:text-green-400'
+        }
         size={18}
       />
       <div className="flex-1">
         <div
           className={`text-sm font-semibold ${
-            required
-              ? 'text-amber-900 dark:text-amber-100'
-              : 'text-green-900 dark:text-green-100'
+            required ? 'text-amber-900 dark:text-amber-100' : 'text-green-900 dark:text-green-100'
           }`}
         >
           {label}
         </div>
         <div
           className={`text-xs ${
-            required
-              ? 'text-amber-700 dark:text-amber-300'
-              : 'text-green-700 dark:text-green-300'
+            required ? 'text-amber-700 dark:text-amber-300' : 'text-green-700 dark:text-green-300'
           }`}
         >
           {required ? 'Required' : 'Not Required'}

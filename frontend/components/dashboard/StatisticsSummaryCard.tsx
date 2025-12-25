@@ -1,16 +1,16 @@
-'use client'
+'use client';
 
 interface Statistics {
-  totalTrips: number
-  countriesVisited: number
-  destinationsExplored: number
-  activeTrips: number
+  totalTrips: number;
+  countriesVisited: number;
+  destinationsExplored: number;
+  activeTrips: number;
 }
 
 interface StatisticsSummaryCardProps {
-  statistics?: Statistics
-  isLoading?: boolean
-  error?: Error | null
+  statistics?: Statistics;
+  isLoading?: boolean;
+  error?: Error | null;
 }
 
 export function StatisticsSummaryCard({
@@ -31,7 +31,7 @@ export function StatisticsSummaryCard({
           Failed to load statistics
         </div>
       </div>
-    )
+    );
   }
 
   if (isLoading || !statistics) {
@@ -53,7 +53,7 @@ export function StatisticsSummaryCard({
           ))}
         </div>
       </div>
-    )
+    );
   }
 
   const metrics = [
@@ -147,7 +147,7 @@ export function StatisticsSummaryCard({
         </svg>
       ),
     },
-  ]
+  ];
 
   return (
     <div
@@ -168,12 +168,10 @@ export function StatisticsSummaryCard({
             <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">
               {metric.value}
             </div>
-            <div className="text-xs text-slate-600 dark:text-slate-400">
-              {metric.label}
-            </div>
+            <div className="text-xs text-slate-600 dark:text-slate-400">{metric.label}</div>
           </div>
         ))}
       </div>
     </div>
-  )
+  );
 }

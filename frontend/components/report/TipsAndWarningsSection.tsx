@@ -35,9 +35,7 @@ export function TipsAndWarningsSection({ data, className = '' }: TipsAndWarnings
             <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-950 flex items-center justify-center">
               <Lightbulb className="text-blue-600 dark:text-blue-400" size={16} />
             </div>
-            <h3 className="font-semibold text-slate-900 dark:text-slate-100">
-              Helpful Tips
-            </h3>
+            <h3 className="font-semibold text-slate-900 dark:text-slate-100">Helpful Tips</h3>
           </div>
           <div className="space-y-3">
             {tips.map((tip, index) => (
@@ -48,9 +46,7 @@ export function TipsAndWarningsSection({ data, className = '' }: TipsAndWarnings
                 <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-600 dark:bg-blue-500 text-white text-xs font-bold flex items-center justify-center mt-0.5">
                   {index + 1}
                 </div>
-                <p className="text-sm text-blue-900 dark:text-blue-100 leading-relaxed">
-                  {tip}
-                </p>
+                <p className="text-sm text-blue-900 dark:text-blue-100 leading-relaxed">{tip}</p>
               </div>
             ))}
           </div>
@@ -64,9 +60,7 @@ export function TipsAndWarningsSection({ data, className = '' }: TipsAndWarnings
             <div className="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-950 flex items-center justify-center">
               <AlertTriangle className="text-amber-600 dark:text-amber-400" size={16} />
             </div>
-            <h3 className="font-semibold text-slate-900 dark:text-slate-100">
-              Important Warnings
-            </h3>
+            <h3 className="font-semibold text-slate-900 dark:text-slate-100">Important Warnings</h3>
           </div>
           <div className="space-y-3">
             {warnings.map((warning, index) => (
@@ -74,7 +68,10 @@ export function TipsAndWarningsSection({ data, className = '' }: TipsAndWarnings
                 key={index}
                 className="flex items-start gap-3 p-4 rounded-lg bg-amber-50 dark:bg-amber-950/20 border-2 border-amber-300 dark:border-amber-700"
               >
-                <AlertTriangle className="text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" size={18} />
+                <AlertTriangle
+                  className="text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5"
+                  size={18}
+                />
                 <p className="text-sm text-amber-900 dark:text-amber-100 font-medium leading-relaxed">
                   {warning}
                 </p>

@@ -1,7 +1,7 @@
-import { DashboardGrid, DashboardSection } from '@/components/dashboard/DashboardLayout'
-import { CardSkeleton } from '@/components/dashboard/skeletons/CardSkeleton'
-import { TripCardSkeleton } from '@/components/dashboard/skeletons/TripCardSkeleton'
-import { StatsSkeleton } from '@/components/dashboard/skeletons/StatsSkeleton'
+import { DashboardGrid, DashboardSection } from '@/components/dashboard/DashboardLayout';
+import { CardSkeleton } from '@/components/dashboard/skeletons/CardSkeleton';
+import { TripCardSkeleton } from '@/components/dashboard/skeletons/TripCardSkeleton';
+import { StatsSkeleton } from '@/components/dashboard/skeletons/StatsSkeleton';
 
 /**
  * Dashboard Loading State
@@ -72,5 +72,5 @@ export default function DashboardLoading() {
         </div>
       </DashboardSection>
     </div>
-  )
+  );
 }

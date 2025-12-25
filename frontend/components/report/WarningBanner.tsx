@@ -94,12 +94,8 @@ export function WarningBanner({
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <h3 className={`font-bold text-base ${config.colors.text} mb-1`}>
-            {title}
-          </h3>
-          <p className={`text-sm ${config.colors.text} opacity-90 leading-relaxed`}>
-            {message}
-          </p>
+          <h3 className={`font-bold text-base ${config.colors.text} mb-1`}>{title}</h3>
+          <p className={`text-sm ${config.colors.text} opacity-90 leading-relaxed`}>{message}</p>
 
           {/* Action button */}
           {action && (
@@ -146,7 +142,11 @@ interface InlineWarningProps {
   className?: string;
 }
 
-export function InlineWarning({ variant = 'warning', message, className = '' }: InlineWarningProps) {
+export function InlineWarning({
+  variant = 'warning',
+  message,
+  className = '',
+}: InlineWarningProps) {
   const config = VARIANT_CONFIG[variant];
   const Icon = config.icon;
 
@@ -159,9 +159,7 @@ export function InlineWarning({ variant = 'warning', message, className = '' }: 
       `}
     >
       <Icon className={config.colors.icon} size={14} />
-      <span className={`text-xs font-medium ${config.colors.text}`}>
-        {message}
-      </span>
+      <span className={`text-xs font-medium ${config.colors.text}`}>{message}</span>
     </div>
   );
 }

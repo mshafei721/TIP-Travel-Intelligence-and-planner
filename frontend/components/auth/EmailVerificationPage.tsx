@@ -1,16 +1,16 @@
-'use client'
+'use client';
 
-import { useEffect } from 'react'
-import Link from 'next/link'
-import { CheckCircle2, AlertCircle, Loader2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { useEffect } from 'react';
+import Link from 'next/link';
+import { CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export interface EmailVerificationPageProps {
-  onVerify: () => Promise<void>
-  isLoading?: boolean
-  success?: boolean
-  error?: string
+  onVerify: () => Promise<void>;
+  isLoading?: boolean;
+  success?: boolean;
+  error?: string;
 }
 
 export function EmailVerificationPage({
@@ -22,9 +22,9 @@ export function EmailVerificationPage({
   // Auto-verify on mount
   useEffect(() => {
     if (!success && !error && !isLoading) {
-      onVerify()
+      onVerify();
     }
-  }, [onVerify, success, error, isLoading])
+  }, [onVerify, success, error, isLoading]);
 
   if (isLoading) {
     return (
@@ -34,7 +34,7 @@ export function EmailVerificationPage({
           <p className="text-lg text-slate-600">Verifying your email...</p>
         </div>
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -59,7 +59,7 @@ export function EmailVerificationPage({
           </Link>
         </div>
       </div>
-    )
+    );
   }
 
   if (success) {
@@ -77,8 +77,8 @@ export function EmailVerificationPage({
           <Button className="w-full h-11 text-base">Continue to Login</Button>
         </Link>
       </div>
-    )
+    );
   }
 
-  return null
+  return null;
 }

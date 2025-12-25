@@ -1,27 +1,22 @@
-'use client'
+'use client';
 
-import { Menu, X } from 'lucide-react'
-import { useState } from 'react'
-import Link from 'next/link'
-import { MainNav, type NavigationItem } from './MainNav'
-import { UserMenu, type User } from './UserMenu'
+import { Menu, X } from 'lucide-react';
+import { useState } from 'react';
+import Link from 'next/link';
+import { MainNav, type NavigationItem } from './MainNav';
+import { UserMenu, type User } from './UserMenu';
 
-export type { NavigationItem, User }
+export type { NavigationItem, User };
 
 export interface AppShellProps {
-  children: React.ReactNode
-  navigationItems: NavigationItem[]
-  user?: User
-  onLogout?: () => void
+  children: React.ReactNode;
+  navigationItems: NavigationItem[];
+  user?: User;
+  onLogout?: () => void;
 }
 
-export function AppShell({
-  children,
-  navigationItems,
-  user,
-  onLogout,
-}: AppShellProps) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+export function AppShell({ children, navigationItems, user, onLogout }: AppShellProps) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
@@ -64,20 +59,11 @@ export function AppShell({
             </Link>
 
             {/* Desktop Navigation */}
-            <MainNav
-              items={navigationItems}
-              className="hidden md:flex"
-            />
+            <MainNav items={navigationItems} className="hidden md:flex" />
 
             {/* Right Side: User Menu + Mobile Toggle */}
             <div className="flex items-center gap-4">
-              {user && (
-                <UserMenu
-                  user={user}
-                  onLogout={onLogout}
-                  className="hidden md:flex"
-                />
-              )}
+              {user && <UserMenu user={user} onLogout={onLogout} className="hidden md:flex" />}
 
               {/* Mobile Menu Button */}
               <button
@@ -85,11 +71,7 @@ export function AppShell({
                 className="md:hidden rounded-lg p-2 text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
                 aria-label="Toggle menu"
               >
-                {mobileMenuOpen ? (
-                  <X className="h-6 w-6" />
-                ) : (
-                  <Menu className="h-6 w-6" />
-                )}
+                {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </button>
             </div>
           </div>
@@ -122,17 +104,12 @@ export function AppShell({
             </>
           )}
 
-          <MainNav
-            items={navigationItems}
-            isMobile
-          />
+          <MainNav items={navigationItems} isMobile />
         </div>
       </div>
 
       {/* Content Area */}
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {children}
-      </main>
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">{children}</main>
     </div>
-  )
+  );
 }

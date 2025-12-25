@@ -70,7 +70,7 @@ export function DayTimeline({
   readOnly = false,
 }: DayTimelineProps) {
   const [expandedBlocks, setExpandedBlocks] = React.useState<Set<string>>(
-    new Set(day.timeBlocks.map((b) => b.id))
+    new Set(day.timeBlocks.map((b) => b.id)),
   );
 
   const toggleBlock = (blockId: string) => {
@@ -99,9 +99,7 @@ export function DayTimeline({
                 <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-50">
                   Day {day.dayNumber} - {day.location}
                 </h2>
-                <p className="text-sm text-slate-600 dark:text-slate-400">
-                  {formatDate(day.date)}
-                </p>
+                <p className="text-sm text-slate-600 dark:text-slate-400">{formatDate(day.date)}</p>
               </div>
             </div>
           </div>

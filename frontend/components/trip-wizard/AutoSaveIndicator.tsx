@@ -1,11 +1,11 @@
-'use client'
+'use client';
 
 interface AutoSaveIndicatorProps {
-  show: boolean
+  show: boolean;
 }
 
 export default function AutoSaveIndicator({ show }: AutoSaveIndicatorProps) {
-  if (!show) return null
+  if (!show) return null;
 
   return (
     <div className="fixed bottom-8 right-8 z-50 animate-slideInRight">
@@ -22,7 +22,7 @@ export default function AutoSaveIndicator({ show }: AutoSaveIndicatorProps) {
         <span className="font-medium text-sm">Draft saved</span>
       </div>
     </div>
-  )
+  );
 }
 
 // Add these styles globally or in a separate CSS file
@@ -59,11 +59,11 @@ const styles = `
   .animate-checkmark {
     animation: checkmark 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
-`
+`;
 
 // Inject styles (only needed if not using global CSS)
 if (typeof document !== 'undefined') {
-  const styleSheet = document.createElement('style')
-  styleSheet.textContent = styles
-  document.head.appendChild(styleSheet)
+  const styleSheet = document.createElement('style');
+  styleSheet.textContent = styles;
+  document.head.appendChild(styleSheet);
 }

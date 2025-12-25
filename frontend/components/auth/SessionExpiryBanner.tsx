@@ -1,14 +1,14 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { Clock, X } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { useState, useEffect } from 'react';
+import { Clock, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export interface SessionExpiryBannerProps {
-  expiresAt: string
-  onExtendSession: () => Promise<void>
-  onDismiss: () => void
+  expiresAt: string;
+  onExtendSession: () => Promise<void>;
+  onDismiss: () => void;
 }
 
 export function SessionExpiryBanner({
@@ -16,44 +16,44 @@ export function SessionExpiryBanner({
   onExtendSession,
   onDismiss,
 }: SessionExpiryBannerProps) {
-  const [timeRemaining, setTimeRemaining] = useState(0)
-  const [isExtending, setIsExtending] = useState(false)
+  const [timeRemaining, setTimeRemaining] = useState(0);
+  const [isExtending, setIsExtending] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      const now = new Date().getTime()
-      const expiry = new Date(expiresAt).getTime()
-      const remaining = Math.max(0, Math.floor((expiry - now) / 1000))
+      const now = new Date().getTime();
+      const expiry = new Date(expiresAt).getTime();
+      const remaining = Math.max(0, Math.floor((expiry - now) / 1000));
 
-      setTimeRemaining(remaining)
+      setTimeRemaining(remaining);
 
       if (remaining <= 0) {
-        clearInterval(interval)
+        clearInterval(interval);
       }
-    }, 1000)
+    }, 1000);
 
-    return () => clearInterval(interval)
-  }, [expiresAt])
+    return () => clearInterval(interval);
+  }, [expiresAt]);
 
   const handleExtend = async () => {
-    setIsExtending(true)
+    setIsExtending(true);
     try {
-      await onExtendSession()
-      onDismiss()
+      await onExtendSession();
+      onDismiss();
     } finally {
-      setIsExtending(false)
+      setIsExtending(false);
     }
-  }
+  };
 
   const formatTime = (seconds: number): string => {
-    const minutes = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${minutes}:${secs.toString().padStart(2, '0')}`
-  }
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${minutes}:${secs.toString().padStart(2, '0')}`;
+  };
 
   // Don't show banner if more than 5 minutes remaining
   if (timeRemaining > 5 * 60 || timeRemaining <= 0) {
-    return null
+    return null;
   }
 
   return (
@@ -65,18 +65,13 @@ export function SessionExpiryBanner({
         <div className="flex items-center gap-3 flex-1">
           <Clock className="h-4 w-4" />
           <AlertDescription className="flex-1">
-            Your session will expire in <strong>{formatTime(timeRemaining)}</strong>. Would you
-            like to extend it?
+            Your session will expire in <strong>{formatTime(timeRemaining)}</strong>. Would you like
+            to extend it?
           </AlertDescription>
         </div>
 
         <div className="flex items-center gap-2">
-          <Button
-            size="sm"
-            variant="default"
-            onClick={handleExtend}
-            disabled={isExtending}
-          >
+          <Button size="sm" variant="default" onClick={handleExtend} disabled={isExtending}>
             {isExtending ? 'Extending...' : 'Extend Session'}
           </Button>
           <button
@@ -90,5 +85,5 @@ export function SessionExpiryBanner({
         </div>
       </Alert>
     </div>
-  )
+  );
 }

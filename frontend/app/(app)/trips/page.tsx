@@ -1,99 +1,101 @@
-'use client'
+'use client';
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
-import { TripCard } from '@/components/dashboard/TripCard'
-import { Loader2, Plus, Search } from 'lucide-react'
-import Link from 'next/link'
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
+import { TripCard } from '@/components/dashboard/TripCard';
+import { Loader2, Plus, Search } from 'lucide-react';
+import Link from 'next/link';
 
 interface Trip {
-  id: string
-  destination_city: string
-  destination_country: string
-  departure_date: string
-  return_date: string
-  status: 'upcoming' | 'in-progress' | 'completed'
-  created_at: string
+  id: string;
+  destination_city: string;
+  destination_country: string;
+  departure_date: string;
+  return_date: string;
+  status: 'upcoming' | 'in-progress' | 'completed';
+  created_at: string;
 }
 
 interface TripFromDB {
-  id: string
-  destination_city: string
-  destination_country: string
-  departure_date: string
-  return_date: string
-  created_at: string
-  [key: string]: unknown
+  id: string;
+  destination_city: string;
+  destination_country: string;
+  departure_date: string;
+  return_date: string;
+  created_at: string;
+  [key: string]: unknown;
 }
 
 export default function TripsPage() {
-  const router = useRouter()
-  const [trips, setTrips] = useState<Trip[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [filterStatus, setFilterStatus] = useState<'all' | 'upcoming' | 'in-progress' | 'completed'>('all')
+  const router = useRouter();
+  const [trips, setTrips] = useState<Trip[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterStatus, setFilterStatus] = useState<
+    'all' | 'upcoming' | 'in-progress' | 'completed'
+  >('all');
 
   useEffect(() => {
-    loadTrips()
-  }, [])
+    loadTrips();
+  }, []);
 
   const loadTrips = async () => {
     try {
-      setIsLoading(true)
-      setError(null)
+      setIsLoading(true);
+      setError(null);
 
-      const supabase = createClient()
+      const supabase = createClient();
       const { data, error } = await supabase
         .from('trips')
         .select('*')
-        .order('created_at', { ascending: false })
+        .order('created_at', { ascending: false });
 
-      if (error) throw error
+      if (error) throw error;
 
       // Transform data to match TripCard interface
       const transformedTrips: Trip[] = ((data || []) as TripFromDB[]).map((trip) => {
-        const today = new Date()
-        const departure = new Date(trip.departure_date)
-        const returnDate = new Date(trip.return_date)
+        const today = new Date();
+        const departure = new Date(trip.departure_date);
+        const returnDate = new Date(trip.return_date);
 
-        let status: 'upcoming' | 'in-progress' | 'completed' = 'upcoming'
+        let status: 'upcoming' | 'in-progress' | 'completed' = 'upcoming';
         if (today >= departure && today <= returnDate) {
-          status = 'in-progress'
+          status = 'in-progress';
         } else if (today > returnDate) {
-          status = 'completed'
+          status = 'completed';
         }
 
         return {
           ...trip,
           status,
-        }
-      })
+        };
+      });
 
-      setTrips(transformedTrips)
+      setTrips(transformedTrips);
     } catch (err) {
-      console.error('Error loading trips:', err)
-      setError('Failed to load trips')
+      console.error('Error loading trips:', err);
+      setError('Failed to load trips');
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleTripClick = (tripId: string) => {
-    router.push(`/trips/${tripId}`)
-  }
+    router.push(`/trips/${tripId}`);
+  };
 
   const filteredTrips = trips.filter((trip) => {
     const matchesSearch =
       searchQuery === '' ||
       trip.destination_city.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      trip.destination_country.toLowerCase().includes(searchQuery.toLowerCase())
+      trip.destination_country.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesFilter = filterStatus === 'all' || trip.status === filterStatus
+    const matchesFilter = filterStatus === 'all' || trip.status === filterStatus;
 
-    return matchesSearch && matchesFilter
-  })
+    return matchesSearch && matchesFilter;
+  });
 
   if (isLoading) {
     return (
@@ -111,7 +113,7 @@ export default function TripsPage() {
           <Loader2 className="h-8 w-8 animate-spin text-blue-600 dark:text-blue-400" />
         </div>
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -134,7 +136,7 @@ export default function TripsPage() {
           </button>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -183,7 +185,11 @@ export default function TripsPage() {
                   : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
               }`}
             >
-              {status === 'all' ? 'All' : status === 'in-progress' ? 'In Progress' : status.charAt(0).toUpperCase() + status.slice(1)}
+              {status === 'all'
+                ? 'All'
+                : status === 'in-progress'
+                  ? 'In Progress'
+                  : status.charAt(0).toUpperCase() + status.slice(1)}
             </button>
           ))}
         </div>
@@ -240,5 +246,5 @@ export default function TripsPage() {
         </div>
       )}
     </div>
-  )
+  );
 }

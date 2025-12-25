@@ -1,7 +1,7 @@
-'use client'
+'use client';
 
-import { useEffect } from 'react'
-import { Button } from '@/components/ui/button'
+import { useEffect } from 'react';
+import { Button } from '@/components/ui/button';
 
 /**
  * Dashboard Error Boundary
@@ -11,13 +11,13 @@ export default function DashboardError({
   error,
   reset,
 }: {
-  error: Error & { digest?: string }
-  reset: () => void
+  error: Error & { digest?: string };
+  reset: () => void;
 }) {
   useEffect(() => {
     // Log error to error reporting service
-    console.error('Dashboard Error:', error)
-  }, [error])
+    console.error('Dashboard Error:', error);
+  }, [error]);
 
   return (
     <div className="flex min-h-[400px] flex-col items-center justify-center space-y-4 rounded-lg border-2 border-dashed border-red-300 bg-red-50 p-12 dark:border-red-900 dark:bg-red-950">
@@ -44,16 +44,14 @@ export default function DashboardError({
           Oops! Something went wrong
         </h2>
         <p className="mb-6 max-w-md text-slate-600 dark:text-slate-400">
-          We encountered an error while loading your dashboard. This could be due to a network
-          issue or a temporary server problem.
+          We encountered an error while loading your dashboard. This could be due to a network issue
+          or a temporary server problem.
         </p>
 
         {/* Error Details (Development Only) */}
         {process.env.NODE_ENV === 'development' && (
           <div className="mb-6 rounded-lg bg-slate-100 p-4 text-left dark:bg-slate-800">
-            <p className="font-mono text-xs text-red-600 dark:text-red-400">
-              {error.message}
-            </p>
+            <p className="font-mono text-xs text-red-600 dark:text-red-400">{error.message}</p>
             {error.digest && (
               <p className="mt-1 font-mono text-xs text-slate-500">Digest: {error.digest}</p>
             )}
@@ -66,12 +64,7 @@ export default function DashboardError({
             onClick={reset}
             className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700"
           >
-            <svg
-              className="mr-2 h-4 w-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -97,5 +90,5 @@ export default function DashboardError({
         </p>
       </div>
     </div>
-  )
+  );
 }

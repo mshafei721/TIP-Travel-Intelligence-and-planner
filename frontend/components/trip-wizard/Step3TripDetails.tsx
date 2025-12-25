@@ -1,11 +1,11 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import type { TripDetails } from './TripCreationWizard'
+import { useState } from 'react';
+import type { TripDetails } from './TripCreationWizard';
 
 interface Step3Props {
-  data: TripDetails
-  onChange: (data: TripDetails) => void
+  data: TripDetails;
+  onChange: (data: TripDetails) => void;
 }
 
 const CURRENCIES = [
@@ -15,7 +15,7 @@ const CURRENCIES = [
   { code: 'JPY', symbol: '¥', name: 'Japanese Yen' },
   { code: 'AUD', symbol: 'A$', name: 'Australian Dollar' },
   { code: 'CAD', symbol: 'C$', name: 'Canadian Dollar' },
-]
+];
 
 const TRIP_PURPOSES = [
   { value: 'Tourism', icon: '🏖️', desc: 'Leisure and sightseeing' },
@@ -24,67 +24,62 @@ const TRIP_PURPOSES = [
   { value: 'Family Visit', icon: '👨‍👩‍👧', desc: 'Visiting relatives' },
   { value: 'Medical', icon: '🏥', desc: 'Healthcare purposes' },
   { value: 'Other', icon: '✈️', desc: 'Other purposes' },
-]
+];
 
 export default function Step3TripDetails({ data, onChange }: Step3Props) {
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const updateField = <K extends keyof TripDetails>(
-    field: K,
-    value: TripDetails[K]
-  ) => {
-    onChange({ ...data, [field]: value })
+  const updateField = <K extends keyof TripDetails>(field: K, value: TripDetails[K]) => {
+    onChange({ ...data, [field]: value });
 
     // Clear error for this field
     if (errors[field]) {
       setErrors((prev) => {
-        const newErrors = { ...prev }
-        delete newErrors[field]
-        return newErrors
-      })
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
     }
-  }
+  };
 
   // Validate dates
   const validateDates = () => {
-    const newErrors: Record<string, string> = {}
+    const newErrors: Record<string, string> = {};
 
     if (data.departureDate && data.returnDate) {
-      const departure = new Date(data.departureDate)
-      const returnDate = new Date(data.returnDate)
+      const departure = new Date(data.departureDate);
+      const returnDate = new Date(data.returnDate);
 
       if (returnDate <= departure) {
-        newErrors.returnDate = 'Return date must be after departure date'
+        newErrors.returnDate = 'Return date must be after departure date';
       }
     }
 
-    setErrors(newErrors)
-  }
+    setErrors(newErrors);
+  };
 
   // Get today's date in YYYY-MM-DD format
-  const today = new Date().toISOString().split('T')[0]
+  const today = new Date().toISOString().split('T')[0];
 
   // Calculate trip duration
   const calculateDuration = () => {
     if (data.departureDate && data.returnDate) {
-      const departure = new Date(data.departureDate)
-      const returnDate = new Date(data.returnDate)
-      const diffTime = Math.abs(returnDate.getTime() - departure.getTime())
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-      return diffDays
+      const departure = new Date(data.departureDate);
+      const returnDate = new Date(data.returnDate);
+      const diffTime = Math.abs(returnDate.getTime() - departure.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays;
     }
-    return null
-  }
+    return null;
+  };
 
-  const duration = calculateDuration()
+  const duration = calculateDuration();
 
   return (
     <div className="space-y-8">
       {/* Page title */}
       <div className="border-l-4 border-blue-600 pl-4">
-        <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-50 mb-1">
-          Trip Details
-        </h2>
+        <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-50 mb-1">Trip Details</h2>
         <p className="text-sm text-slate-600 dark:text-slate-400">
           When and how much you plan to spend
         </p>
@@ -102,8 +97,8 @@ export default function Step3TripDetails({ data, onChange }: Step3Props) {
               min={today}
               value={data.departureDate}
               onChange={(e) => {
-                updateField('departureDate', e.target.value)
-                setTimeout(validateDates, 100)
+                updateField('departureDate', e.target.value);
+                setTimeout(validateDates, 100);
               }}
               className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
             />
@@ -118,21 +113,21 @@ export default function Step3TripDetails({ data, onChange }: Step3Props) {
               min={data.departureDate || today}
               value={data.returnDate}
               onChange={(e) => {
-                updateField('returnDate', e.target.value)
-                setTimeout(validateDates, 100)
+                updateField('returnDate', e.target.value);
+                setTimeout(validateDates, 100);
               }}
               className={`w-full px-4 py-3 rounded-lg border ${errors.returnDate ? 'border-red-500' : 'border-slate-300 dark:border-slate-700'} bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200`}
             />
-            {errors.returnDate && (
-              <p className="mt-1 text-sm text-red-600">{errors.returnDate}</p>
-            )}
+            {errors.returnDate && <p className="mt-1 text-sm text-red-600">{errors.returnDate}</p>}
           </div>
         </div>
 
         {/* Duration display */}
         {duration && (
-          <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 rounded-lg p-4 flex items-center gap-3 animate-slideInUp"
-               style={{ animationDelay: '50ms' }}>
+          <div
+            className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 rounded-lg p-4 flex items-center gap-3 animate-slideInUp"
+            style={{ animationDelay: '50ms' }}
+          >
             <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white text-xl">
               📅
             </div>
@@ -140,9 +135,7 @@ export default function Step3TripDetails({ data, onChange }: Step3Props) {
               <div className="font-semibold text-slate-900 dark:text-slate-100">
                 {duration} {duration === 1 ? 'day' : 'days'}
               </div>
-              <div className="text-sm text-slate-600 dark:text-slate-400">
-                Total trip duration
-              </div>
+              <div className="text-sm text-slate-600 dark:text-slate-400">Total trip duration</div>
             </div>
           </div>
         )}
@@ -185,18 +178,21 @@ export default function Step3TripDetails({ data, onChange }: Step3Props) {
 
         {/* Budget breakdown (if budget is set) */}
         {data.budget > 0 && duration && (
-          <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4 grid grid-cols-3 gap-4 animate-slideInUp" style={{ animationDelay: '150ms' }}>
+          <div
+            className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4 grid grid-cols-3 gap-4 animate-slideInUp"
+            style={{ animationDelay: '150ms' }}
+          >
             <div className="text-center">
               <div className="text-xs text-slate-500 dark:text-slate-500 mb-1">Per Day</div>
               <div className="font-mono font-semibold text-slate-900 dark:text-slate-100">
-                {CURRENCIES.find(c => c.code === data.currency)?.symbol}
+                {CURRENCIES.find((c) => c.code === data.currency)?.symbol}
                 {Math.round(data.budget / duration)}
               </div>
             </div>
             <div className="text-center border-x border-slate-200 dark:border-slate-700">
               <div className="text-xs text-slate-500 dark:text-slate-500 mb-1">Total</div>
               <div className="font-mono font-semibold text-slate-900 dark:text-slate-100">
-                {CURRENCIES.find(c => c.code === data.currency)?.symbol}
+                {CURRENCIES.find((c) => c.code === data.currency)?.symbol}
                 {data.budget.toLocaleString()}
               </div>
             </div>
@@ -219,16 +215,16 @@ export default function Step3TripDetails({ data, onChange }: Step3Props) {
               <button
                 key={purpose.value}
                 type="button"
-                onClick={() => updateField('tripPurpose', purpose.value as TripDetails['tripPurpose'])}
+                onClick={() =>
+                  updateField('tripPurpose', purpose.value as TripDetails['tripPurpose'])
+                }
                 className={`p-4 rounded-xl border-2 transition-all duration-200 text-left hover:shadow-md ${data.tripPurpose === purpose.value ? 'border-blue-600 bg-blue-50 dark:bg-blue-950/30 shadow-md' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300'}`}
               >
                 <div className="text-2xl mb-2">{purpose.icon}</div>
                 <div className="font-semibold text-slate-900 dark:text-slate-100 mb-0.5">
                   {purpose.value}
                 </div>
-                <div className="text-xs text-slate-600 dark:text-slate-400">
-                  {purpose.desc}
-                </div>
+                <div className="text-xs text-slate-600 dark:text-slate-400">{purpose.desc}</div>
               </button>
             ))}
           </div>
@@ -251,5 +247,5 @@ export default function Step3TripDetails({ data, onChange }: Step3Props) {
         }
       `}</style>
     </div>
-  )
+  );
 }

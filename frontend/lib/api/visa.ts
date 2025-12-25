@@ -115,13 +115,11 @@ export async function fetchVisaReport(tripId: string): Promise<VisaIntelligence>
  * @returns Transformed visa intelligence data
  */
 function transformVisaReport(apiData: VisaReportApi, tripId: string): VisaIntelligence {
-  const costLocal = apiData.application_process?.cost_local
+  const costLocal = apiData.application_process?.cost_local;
   const normalizedCostLocal =
-    costLocal
-    && typeof costLocal.amount === 'number'
-    && typeof costLocal.currency === 'string'
+    costLocal && typeof costLocal.amount === 'number' && typeof costLocal.currency === 'string'
       ? { amount: costLocal.amount, currency: costLocal.currency }
-      : undefined
+      : undefined;
 
   return {
     tripId,
@@ -173,12 +171,12 @@ function transformVisaReport(apiData: VisaReportApi, tripId: string): VisaIntell
 
     // Confidence and sources
     confidenceScore: apiData.confidence_score || 0.0,
-      sources: (apiData.sources || []).map((source) => ({
-        name: source.name || 'Unknown Source',
-        url: source.url || '',
-        type: source.type || 'third-party',
-        lastVerified: source.last_verified || new Date().toISOString(),
-      })),
+    sources: (apiData.sources || []).map((source) => ({
+      name: source.name || 'Unknown Source',
+      url: source.url || '',
+      type: source.type || 'third-party',
+      lastVerified: source.last_verified || new Date().toISOString(),
+    })),
     lastVerified: apiData.last_verified || new Date().toISOString(),
 
     // Metadata
@@ -193,7 +191,9 @@ function transformVisaReport(apiData: VisaReportApi, tripId: string): VisaIntell
  * @param tripId - UUID of the trip
  * @returns Task ID for tracking generation status
  */
-export async function generateVisaReport(tripId: string): Promise<{ taskId: string; status: string }> {
+export async function generateVisaReport(
+  tripId: string,
+): Promise<{ taskId: string; status: string }> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
   const url = `${apiUrl}/api/trips/${tripId}/generate`;
 
@@ -248,7 +248,9 @@ export async function checkGenerationStatus(tripId: string): Promise<{
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
-    throw new Error(errorData.detail || `Failed to check generation status: ${response.statusText}`);
+    throw new Error(
+      errorData.detail || `Failed to check generation status: ${response.statusText}`,
+    );
   }
 
   const data = await response.json();

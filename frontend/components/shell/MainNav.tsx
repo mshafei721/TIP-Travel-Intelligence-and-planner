@@ -1,31 +1,27 @@
-'use client'
+'use client';
 
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 export interface NavigationItem {
-  label: string
-  href: string
+  label: string;
+  href: string;
 }
 
 export interface MainNavProps {
-  items: NavigationItem[]
-  className?: string
-  isMobile?: boolean
+  items: NavigationItem[];
+  className?: string;
+  isMobile?: boolean;
 }
 
-export function MainNav({
-  items,
-  className = '',
-  isMobile = false,
-}: MainNavProps) {
-  const pathname = usePathname()
+export function MainNav({ items, className = '', isMobile = false }: MainNavProps) {
+  const pathname = usePathname();
 
   if (isMobile) {
     return (
       <nav className="flex flex-col gap-2">
         {items.map((item) => {
-          const isActive = pathname === item.href
+          const isActive = pathname === item.href;
           return (
             <Link
               key={item.href}
@@ -38,16 +34,16 @@ export function MainNav({
             >
               {item.label}
             </Link>
-          )
+          );
         })}
       </nav>
-    )
+    );
   }
 
   return (
     <nav className={`flex items-center gap-1 ${className}`}>
       {items.map((item) => {
-        const isActive = pathname === item.href
+        const isActive = pathname === item.href;
         return (
           <Link
             key={item.href}
@@ -60,8 +56,8 @@ export function MainNav({
           >
             {item.label}
           </Link>
-        )
+        );
       })}
     </nav>
-  )
+  );
 }

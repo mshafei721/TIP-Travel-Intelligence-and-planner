@@ -94,7 +94,9 @@ const getMockVisaData = (tripId: string): VisaIntelligence => {
   };
 };
 
-async function getTripData(tripId: string): Promise<{ trip: TripData; visaData: VisaIntelligence; error?: string } | null> {
+async function getTripData(
+  tripId: string,
+): Promise<{ trip: TripData; visaData: VisaIntelligence; error?: string } | null> {
   const supabase = await createClient();
 
   // Get trip basic info
@@ -124,7 +126,7 @@ async function getTripData(tripId: string): Promise<{ trip: TripData; visaData: 
       return {
         trip: trip as TripData,
         visaData: getMockVisaData(tripId),
-        error: 'REPORT_NOT_FOUND'
+        error: 'REPORT_NOT_FOUND',
       };
     }
 
@@ -133,7 +135,7 @@ async function getTripData(tripId: string): Promise<{ trip: TripData; visaData: 
     return {
       trip: trip as TripData,
       visaData: getMockVisaData(tripId),
-      error: 'FETCH_ERROR'
+      error: 'FETCH_ERROR',
     };
   }
 }
@@ -161,7 +163,8 @@ export default async function TripReportPage({ params }: TripReportPageProps) {
               {trip.destination_city}, {trip.destination_country}
             </p>
             <p className="text-sm text-slate-500 dark:text-slate-500 mt-1">
-              Generated {new Date(visaData.generatedAt).toLocaleDateString()} · Trip ID: {trip.id.slice(0, 8)}
+              Generated {new Date(visaData.generatedAt).toLocaleDateString()} · Trip ID:{' '}
+              {trip.id.slice(0, 8)}
             </p>
           </div>
 

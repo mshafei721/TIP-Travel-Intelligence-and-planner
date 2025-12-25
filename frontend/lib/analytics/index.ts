@@ -5,18 +5,18 @@
  * Currently logs to console, can be extended to send to analytics service
  */
 
-import { features } from '../config/features'
+import { features } from '../config/features';
 
-type EventData = Record<string, unknown>
+type EventData = Record<string, unknown>;
 
 export function trackEvent(eventName: string, data?: EventData) {
   if (!features.analytics) {
-    return // Analytics disabled
+    return; // Analytics disabled
   }
 
   // Log to console in development
   if (process.env.NODE_ENV === 'development') {
-    console.log('[Analytics]', eventName, data)
+    console.log('[Analytics]', eventName, data);
   }
 
   // TODO: Send to analytics service (Google Analytics, Mixpanel, etc.)
@@ -33,31 +33,31 @@ export const AnalyticsEvents = {
   RECOMMENDATION_CLICK: 'recommendation_click',
   CREATE_TRIP_START: 'create_trip_start',
   TEMPLATE_MODAL_OPEN: 'template_modal_open',
-} as const
+} as const;
 
 // Helper functions for common events
 export const analytics = {
   pageView: (page: string, section?: string) => {
-    trackEvent(AnalyticsEvents.PAGE_VIEW, { page, section })
+    trackEvent(AnalyticsEvents.PAGE_VIEW, { page, section });
   },
 
   ctaClick: (cta: string, location: string) => {
-    trackEvent(AnalyticsEvents.CTA_CLICK, { cta, location })
+    trackEvent(AnalyticsEvents.CTA_CLICK, { cta, location });
   },
 
   tripCardClick: (tripId: string, location: string) => {
-    trackEvent(AnalyticsEvents.TRIP_CARD_CLICK, { tripId, location })
+    trackEvent(AnalyticsEvents.TRIP_CARD_CLICK, { tripId, location });
   },
 
   recommendationClick: (destination: string, location: string) => {
-    trackEvent(AnalyticsEvents.RECOMMENDATION_CLICK, { destination, location })
+    trackEvent(AnalyticsEvents.RECOMMENDATION_CLICK, { destination, location });
   },
 
   createTripStart: (source: string) => {
-    trackEvent(AnalyticsEvents.CREATE_TRIP_START, { source })
+    trackEvent(AnalyticsEvents.CREATE_TRIP_START, { source });
   },
 
   templateModalOpen: () => {
-    trackEvent(AnalyticsEvents.TEMPLATE_MODAL_OPEN, {})
+    trackEvent(AnalyticsEvents.TEMPLATE_MODAL_OPEN, {});
   },
-}
+};

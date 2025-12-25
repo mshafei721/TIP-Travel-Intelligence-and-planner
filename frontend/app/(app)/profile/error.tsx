@@ -1,8 +1,8 @@
-'use client'
+'use client';
 
-import { useEffect } from 'react'
-import { AlertCircle } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { useEffect } from 'react';
+import { AlertCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 /**
  * Profile Error Boundary
@@ -11,12 +11,12 @@ export default function ProfileError({
   error,
   reset,
 }: {
-  error: Error & { digest?: string }
-  reset: () => void
+  error: Error & { digest?: string };
+  reset: () => void;
 }) {
   useEffect(() => {
-    console.error('Profile page error:', error)
-  }, [error])
+    console.error('Profile page error:', error);
+  }, [error]);
 
   return (
     <div className="container mx-auto max-w-4xl py-16 px-4">
@@ -50,5 +50,5 @@ export default function ProfileError({
         </div>
       </div>
     </div>
-  )
+  );
 }

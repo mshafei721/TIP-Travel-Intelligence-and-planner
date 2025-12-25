@@ -17,10 +17,7 @@ export default function TripReportError({
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-6">
       <div className="max-w-2xl w-full">
-        <VisaErrorState
-          error={error.message || 'Failed to load trip report'}
-          onRetry={reset}
-        />
+        <VisaErrorState error={error.message || 'Failed to load trip report'} onRetry={reset} />
       </div>
     </div>
   );

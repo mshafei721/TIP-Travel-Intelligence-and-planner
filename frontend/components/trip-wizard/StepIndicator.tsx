@@ -1,11 +1,11 @@
-'use client'
+'use client';
 
 interface StepIndicatorProps {
-  currentStep: number
-  totalSteps: number
+  currentStep: number;
+  totalSteps: number;
 }
 
-const stepLabels = ['Traveler', 'Destination', 'Trip Details', 'Preferences']
+const stepLabels = ['Traveler', 'Destination', 'Trip Details', 'Preferences'];
 
 export default function StepIndicator({ currentStep, totalSteps }: StepIndicatorProps) {
   return (
@@ -13,9 +13,9 @@ export default function StepIndicator({ currentStep, totalSteps }: StepIndicator
       {/* Desktop: Horizontal route map */}
       <div className="hidden md:flex items-center justify-between max-w-2xl mx-auto">
         {Array.from({ length: totalSteps }, (_, index) => {
-          const step = index + 1
-          const isCompleted = step < currentStep
-          const isCurrent = step === currentStep
+          const step = index + 1;
+          const isCompleted = step < currentStep;
+          const isCurrent = step === currentStep;
 
           return (
             <div key={step} className="flex-1 relative">
@@ -46,11 +46,7 @@ export default function StepIndicator({ currentStep, totalSteps }: StepIndicator
                       stroke="currentColor"
                       viewBox="0 0 24 24"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M5 13l4 4L19 7"
-                      />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                   ) : (
                     <span className="font-mono text-sm font-semibold">{step}</span>
@@ -70,16 +66,16 @@ export default function StepIndicator({ currentStep, totalSteps }: StepIndicator
                 </div>
               </div>
             </div>
-          )
+          );
         })}
       </div>
 
       {/* Mobile: Compact version */}
       <div className="md:hidden flex items-center justify-center space-x-2">
         {Array.from({ length: totalSteps }, (_, index) => {
-          const step = index + 1
-          const isCompleted = step < currentStep
-          const isCurrent = step === currentStep
+          const step = index + 1;
+          const isCompleted = step < currentStep;
+          const isCurrent = step === currentStep;
 
           return (
             <div
@@ -87,19 +83,25 @@ export default function StepIndicator({ currentStep, totalSteps }: StepIndicator
               className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-mono font-semibold transition-all duration-500 ${isCompleted ? 'bg-blue-600 text-white' : isCurrent ? 'bg-amber-500 text-white scale-125' : 'bg-slate-200 dark:bg-slate-800 text-slate-400'}`}
             >
               {isCompleted ? (
-                <svg className="w-4 h-4" fill="none" strokeWidth="2.5" stroke="currentColor" viewBox="0 0 24 24">
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  strokeWidth="2.5"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
               ) : (
                 step
               )}
             </div>
-          )
+          );
         })}
         <div className="ml-3 text-sm font-medium text-slate-600 dark:text-slate-400">
           {stepLabels[currentStep - 1]}
         </div>
       </div>
     </div>
-  )
+  );
 }

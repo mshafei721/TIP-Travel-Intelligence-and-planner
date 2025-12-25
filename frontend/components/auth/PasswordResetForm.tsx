@@ -1,20 +1,20 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { Eye, EyeOff, AlertCircle, CheckCircle2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { validatePassword, passwordsMatch } from '@/lib/auth/validation'
-import type { PasswordStrength } from '@/types/auth'
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Eye, EyeOff, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { validatePassword, passwordsMatch } from '@/lib/auth/validation';
+import type { PasswordStrength } from '@/types/auth';
 
 export interface PasswordResetFormProps {
-  onResetPassword: (password: string) => Promise<void>
-  isLoading?: boolean
-  success?: boolean
-  error?: string
+  onResetPassword: (password: string) => Promise<void>;
+  isLoading?: boolean;
+  success?: boolean;
+  error?: string;
 }
 
 export function PasswordResetForm({
@@ -23,68 +23,68 @@ export function PasswordResetForm({
   success = false,
   error,
 }: PasswordResetFormProps) {
-  const router = useRouter()
+  const router = useRouter();
   const [formData, setFormData] = useState({
     newPassword: '',
     confirmPassword: '',
-  })
+  });
 
-  const [showNewPassword, setShowNewPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [touched, setTouched] = useState({
     newPassword: false,
     confirmPassword: false,
-  })
+  });
 
   // Redirect to login after success
   useEffect(() => {
     if (success) {
       const timeout = setTimeout(() => {
-        router.push('/login')
-      }, 3000)
-      return () => clearTimeout(timeout)
+        router.push('/login');
+      }, 3000);
+      return () => clearTimeout(timeout);
     }
-  }, [success, router])
+  }, [success, router]);
 
   // Validation
-  const passwordValidation = validatePassword(formData.newPassword)
-  const confirmPasswordValid = passwordsMatch(formData.newPassword, formData.confirmPassword)
+  const passwordValidation = validatePassword(formData.newPassword);
+  const confirmPasswordValid = passwordsMatch(formData.newPassword, formData.confirmPassword);
 
-  const formValid = passwordValidation.isValid && confirmPasswordValid
+  const formValid = passwordValidation.isValid && confirmPasswordValid;
 
   const handleChange =
     (field: keyof typeof formData) => (e: React.ChangeEvent<HTMLInputElement>) => {
-      setFormData((prev) => ({ ...prev, [field]: e.target.value }))
-    }
+      setFormData((prev) => ({ ...prev, [field]: e.target.value }));
+    };
 
   const handleBlur = (field: keyof typeof touched) => () => {
-    setTouched((prev) => ({ ...prev, [field]: true }))
-  }
+    setTouched((prev) => ({ ...prev, [field]: true }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     // Mark all fields as touched
     setTouched({
       newPassword: true,
       confirmPassword: true,
-    })
+    });
 
-    if (!formValid) return
+    if (!formValid) return;
 
-    await onResetPassword(formData.newPassword)
-  }
+    await onResetPassword(formData.newPassword);
+  };
 
   const getStrengthColor = (strength: PasswordStrength) => {
     switch (strength) {
       case 'weak':
-        return 'text-red-600'
+        return 'text-red-600';
       case 'medium':
-        return 'text-amber-600'
+        return 'text-amber-600';
       case 'strong':
-        return 'text-green-600'
+        return 'text-green-600';
     }
-  }
+  };
 
   if (success) {
     return (
@@ -101,16 +101,14 @@ export function PasswordResetForm({
           Redirecting to login page in 3 seconds...
         </p>
       </div>
-    )
+    );
   }
 
   return (
     <div className="w-full max-w-md space-y-6">
       <div className="space-y-2 text-center">
         <h1 className="text-2xl font-semibold tracking-tight">Set New Password</h1>
-        <p className="text-sm text-slate-600">
-          Enter a strong password for your account.
-        </p>
+        <p className="text-sm text-slate-600">Enter a strong password for your account.</p>
       </div>
 
       {/* Error Alert */}
@@ -208,11 +206,9 @@ export function PasswordResetForm({
               {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
-          {touched.confirmPassword &&
-            !confirmPasswordValid &&
-            formData.confirmPassword !== '' && (
-              <p className="text-sm text-red-600">Passwords do not match</p>
-            )}
+          {touched.confirmPassword && !confirmPasswordValid && formData.confirmPassword !== '' && (
+            <p className="text-sm text-red-600">Passwords do not match</p>
+          )}
         </div>
 
         {/* Submit Button */}
@@ -221,5 +217,5 @@ export function PasswordResetForm({
         </Button>
       </form>
     </div>
-  )
+  );
 }

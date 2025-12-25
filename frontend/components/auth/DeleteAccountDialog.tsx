@@ -1,14 +1,14 @@
-'use client'
+'use client';
 
-import { AlertTriangle } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { AlertTriangle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export interface DeleteAccountDialogProps {
-  isOpen: boolean
-  onClose: () => void
-  onConfirm: () => Promise<void>
-  isLoading?: boolean
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => Promise<void>;
+  isLoading?: boolean;
 }
 
 export function DeleteAccountDialog({
@@ -17,11 +17,11 @@ export function DeleteAccountDialog({
   onConfirm,
   isLoading = false,
 }: DeleteAccountDialogProps) {
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   const handleConfirm = async () => {
-    await onConfirm()
-  }
+    await onConfirm();
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
@@ -71,5 +71,5 @@ export function DeleteAccountDialog({
         </div>
       </div>
     </div>
-  )
+  );
 }

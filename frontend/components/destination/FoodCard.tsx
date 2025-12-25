@@ -45,9 +45,7 @@ const SpicyIndicator = ({ level }: { level?: 'mild' | 'medium' | 'hot' | 'very-h
 };
 
 const PriceLevelIndicator = ({ level }: { level: '$' | '$$' | '$$$' | '$$$$' }) => {
-  return (
-    <span className="text-xs font-bold text-green-600 dark:text-green-400">{level}</span>
-  );
+  return <span className="text-xs font-bold text-green-600 dark:text-green-400">{level}</span>;
 };
 
 const DietaryBadge = ({ label, available }: { label: string; available: boolean }) => {
@@ -65,16 +63,28 @@ const DietaryBadge = ({ label, available }: { label: string; available: boolean 
   );
 };
 
-const AvailabilityBadge = ({
-  level,
-}: {
-  level: 'widespread' | 'common' | 'limited' | 'rare';
-}) => {
+const AvailabilityBadge = ({ level }: { level: 'widespread' | 'common' | 'limited' | 'rare' }) => {
   const config = {
-    widespread: { label: 'Widespread', color: 'bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-300 border-green-300 dark:border-green-800' },
-    common: { label: 'Common', color: 'bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-800' },
-    limited: { label: 'Limited', color: 'bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800' },
-    rare: { label: 'Rare', color: 'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-300 border-red-300 dark:border-red-800' },
+    widespread: {
+      label: 'Widespread',
+      color:
+        'bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-300 border-green-300 dark:border-green-800',
+    },
+    common: {
+      label: 'Common',
+      color:
+        'bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-800',
+    },
+    limited: {
+      label: 'Limited',
+      color:
+        'bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800',
+    },
+    rare: {
+      label: 'Rare',
+      color:
+        'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-300 border-red-300 dark:border-red-800',
+    },
   };
 
   const { label, color } = config[level];
@@ -86,22 +96,36 @@ const AvailabilityBadge = ({
   );
 };
 
-const SafetyRatingBadge = ({
-  rating,
-}: {
-  rating: 'excellent' | 'good' | 'fair' | 'poor';
-}) => {
+const SafetyRatingBadge = ({ rating }: { rating: 'excellent' | 'good' | 'fair' | 'poor' }) => {
   const config = {
-    excellent: { label: 'Excellent', color: 'bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-300 border-green-300 dark:border-green-800' },
-    good: { label: 'Good', color: 'bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-800' },
-    fair: { label: 'Fair', color: 'bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800' },
-    poor: { label: 'Poor', color: 'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-300 border-red-300 dark:border-red-800' },
+    excellent: {
+      label: 'Excellent',
+      color:
+        'bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-300 border-green-300 dark:border-green-800',
+    },
+    good: {
+      label: 'Good',
+      color:
+        'bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-800',
+    },
+    fair: {
+      label: 'Fair',
+      color:
+        'bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800',
+    },
+    poor: {
+      label: 'Poor',
+      color:
+        'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-300 border-red-300 dark:border-red-800',
+    },
   };
 
   const { label, color } = config[rating];
 
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold border ${color}`}>
+    <span
+      className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold border ${color}`}
+    >
       {label}
     </span>
   );
@@ -125,34 +149,21 @@ export default function FoodCard({
     };
 
     return (
-      <div
-        key={index}
-        className={`p-4 border rounded-lg ${dishTypeColors[dish.type]}`}
-      >
+      <div key={index} className={`p-4 border rounded-lg ${dishTypeColors[dish.type]}`}>
         <div className="flex items-start justify-between gap-3 mb-2">
           <div className="flex-1">
-            <h4 className="font-semibold text-slate-900 dark:text-slate-50 mb-1">
-              {dish.name}
-            </h4>
-            <p className="text-sm text-slate-600 dark:text-slate-400 capitalize">
-              {dish.type}
-            </p>
+            <h4 className="font-semibold text-slate-900 dark:text-slate-50 mb-1">{dish.name}</h4>
+            <p className="text-sm text-slate-600 dark:text-slate-400 capitalize">{dish.type}</p>
           </div>
           <div className="flex flex-col items-end gap-1">
             {dish.spicyLevel && <SpicyIndicator level={dish.spicyLevel} />}
             <div className="flex gap-1">
-              {dish.isVegetarian && (
-                <DietaryBadge label="Veg" available={true} />
-              )}
-              {dish.isVegan && (
-                <DietaryBadge label="Vegan" available={true} />
-              )}
+              {dish.isVegetarian && <DietaryBadge label="Veg" available={true} />}
+              {dish.isVegan && <DietaryBadge label="Vegan" available={true} />}
             </div>
           </div>
         </div>
-        <p className="text-sm text-slate-700 dark:text-slate-300 mb-2">
-          {dish.description}
-        </p>
+        <p className="text-sm text-slate-700 dark:text-slate-300 mb-2">{dish.description}</p>
         {dish.commonIngredients && dish.commonIngredients.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-2">
             {dish.commonIngredients.map((ingredient, i) => (
@@ -193,9 +204,7 @@ export default function FoodCard({
             {range.priceRange.currency} {range.priceRange.min} - {range.priceRange.max}
           </div>
           {range.description && (
-            <div className="text-xs text-slate-500 dark:text-slate-400">
-              {range.description}
-            </div>
+            <div className="text-xs text-slate-500 dark:text-slate-400">{range.description}</div>
           )}
         </div>
       </div>
@@ -223,9 +232,7 @@ export default function FoodCard({
                 Must-Try Local Dishes
               </h3>
             </div>
-            <div className="grid grid-cols-1 gap-3">
-              {data.mustTryDishes.map(renderDish)}
-            </div>
+            <div className="grid grid-cols-1 gap-3">{data.mustTryDishes.map(renderDish)}</div>
           </div>
         )}
 
@@ -357,9 +364,7 @@ export default function FoodCard({
             <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-50 uppercase tracking-wide mb-3">
               Price Ranges
             </h3>
-            <div className="space-y-2">
-              {data.priceRanges.map(renderPriceRange)}
-            </div>
+            <div className="space-y-2">{data.priceRanges.map(renderPriceRange)}</div>
           </div>
         )}
 
@@ -384,9 +389,7 @@ export default function FoodCard({
                   <p className="text-xs text-slate-500 dark:text-slate-400 capitalize mb-1">
                     {rec.type}
                   </p>
-                  <p className="text-xs text-slate-600 dark:text-slate-300 mb-2">
-                    {rec.specialty}
-                  </p>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 mb-2">{rec.specialty}</p>
                   {rec.location && (
                     <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
                       <MapPin className="w-3 h-3" />
@@ -414,9 +417,7 @@ export default function FoodCard({
                   key={idx}
                   className="flex items-start gap-2 text-sm text-red-900 dark:text-red-100"
                 >
-                  <span className="flex-shrink-0 text-red-600 dark:text-red-400 mt-0.5">
-                    ⚠
-                  </span>
+                  <span className="flex-shrink-0 text-red-600 dark:text-red-400 mt-0.5">⚠</span>
                   {tip}
                 </li>
               ))}

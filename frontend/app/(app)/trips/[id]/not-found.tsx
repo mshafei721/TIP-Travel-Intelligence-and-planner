@@ -14,9 +14,7 @@ export default function TripNotFound() {
 
         {/* Content */}
         <div className="space-y-2">
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-            Trip Not Found
-          </h1>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Trip Not Found</h1>
           <p className="text-slate-600 dark:text-slate-400">
             The trip report you&apos;re looking for doesn&apos;t exist or has been deleted.
           </p>

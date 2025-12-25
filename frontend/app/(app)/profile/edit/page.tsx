@@ -1,8 +1,8 @@
-import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
-import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { redirect } from 'next/navigation';
+import { createClient } from '@/lib/supabase/server';
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 /**
  * Profile Edit Page
@@ -10,16 +10,16 @@ import { Button } from '@/components/ui/button'
  * Allows users to edit their profile information
  */
 export default async function ProfileEditPage() {
-  const supabase = await createClient()
+  const supabase = await createClient();
 
   // Check authentication
   const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser()
+  } = await supabase.auth.getUser();
 
   if (authError || !user) {
-    redirect('/login')
+    redirect('/login');
   }
 
   return (
@@ -36,9 +36,7 @@ export default async function ProfileEditPage() {
         </div>
 
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-50">
-            Edit Profile
-          </h1>
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-50">Edit Profile</h1>
           <p className="mt-1 text-slate-600 dark:text-slate-400">
             Update your personal information and preferences
           </p>
@@ -57,5 +55,5 @@ export default async function ProfileEditPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

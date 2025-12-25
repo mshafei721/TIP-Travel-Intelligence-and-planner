@@ -152,6 +152,8 @@ export function isValidDestination(destination: unknown): destination is Templat
     return false;
   }
 
-  return typeof (destination as TemplateDestination).country === 'string'
-    && (destination as TemplateDestination).country.length > 0;
+  return (
+    typeof (destination as TemplateDestination).country === 'string' &&
+    (destination as TemplateDestination).country.length > 0
+  );
 }

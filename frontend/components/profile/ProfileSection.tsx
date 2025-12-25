@@ -1,20 +1,20 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { User, Chrome, Mail } from 'lucide-react'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Button } from '@/components/ui/button'
-import { SectionCard } from './SectionCard'
-import { ProfilePhotoUpload } from './ProfilePhotoUpload'
-import { useDebounce } from '@/hooks/useDebounce'
-import type { LegacyUserProfile, SaveState } from '@/types/profile'
+import { useState, useEffect } from 'react';
+import { User, Chrome, Mail } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { SectionCard } from './SectionCard';
+import { ProfilePhotoUpload } from './ProfilePhotoUpload';
+import { useDebounce } from '@/hooks/useDebounce';
+import type { LegacyUserProfile, SaveState } from '@/types/profile';
 
 export interface ProfileSectionProps {
-  profile: LegacyUserProfile
-  onProfileUpdate: (data: Partial<LegacyUserProfile>) => Promise<void>
-  onPhotoUpload: (file: File) => Promise<string>
-  onChangePassword?: () => void
+  profile: LegacyUserProfile;
+  onProfileUpdate: (data: Partial<LegacyUserProfile>) => Promise<void>;
+  onPhotoUpload: (file: File) => Promise<string>;
+  onChangePassword?: () => void;
 }
 
 /**
@@ -32,28 +32,28 @@ export function ProfileSection({
   onPhotoUpload,
   onChangePassword,
 }: ProfileSectionProps) {
-  const [name, setName] = useState(profile.name)
-  const [saveState, setSaveState] = useState<SaveState>('idle')
+  const [name, setName] = useState(profile.name);
+  const [saveState, setSaveState] = useState<SaveState>('idle');
 
-  const debouncedName = useDebounce(name, 1500)
+  const debouncedName = useDebounce(name, 1500);
 
   // Auto-save name changes
   useEffect(() => {
     if (debouncedName !== profile.name && debouncedName.trim() !== '') {
       const saveName = async () => {
-        setSaveState('saving')
+        setSaveState('saving');
         try {
-          await onProfileUpdate({ name: debouncedName })
-          setSaveState('saved')
+          await onProfileUpdate({ name: debouncedName });
+          setSaveState('saved');
         } catch {
-          setSaveState('error')
+          setSaveState('error');
         }
-      }
-      saveName()
+      };
+      saveName();
     }
-  }, [debouncedName, profile.name, onProfileUpdate])
+  }, [debouncedName, profile.name, onProfileUpdate]);
 
-  const showChangePassword = profile.authProvider === 'email' && onChangePassword
+  const showChangePassword = profile.authProvider === 'email' && onChangePassword;
 
   return (
     <SectionCard
@@ -90,13 +90,7 @@ export function ProfileSection({
           <div className="space-y-2">
             <Label htmlFor="profile-email">Email</Label>
             <div className="relative">
-              <Input
-                id="profile-email"
-                value={profile.email}
-                disabled
-                readOnly
-                className="pr-10"
-              />
+              <Input id="profile-email" value={profile.email} disabled readOnly className="pr-10" />
               <div className="absolute right-3 top-1/2 -translate-y-1/2">
                 {profile.authProvider === 'google' ? (
                   <Chrome className="h-4 w-4 text-slate-400" aria-label="Google account" />
@@ -115,12 +109,7 @@ export function ProfileSection({
           {/* Change Password (email/password only) */}
           {showChangePassword && (
             <div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onChangePassword}
-                className="mt-2"
-              >
+              <Button variant="outline" size="sm" onClick={onChangePassword} className="mt-2">
                 Change Password
               </Button>
             </div>
@@ -128,5 +117,5 @@ export function ProfileSection({
         </div>
       </div>
     </SectionCard>
-  )
+  );
 }

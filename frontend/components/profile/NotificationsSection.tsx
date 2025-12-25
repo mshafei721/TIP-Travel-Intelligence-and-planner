@@ -1,18 +1,19 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { Bell } from 'lucide-react'
-import { Label } from '@/components/ui/label'
-import { Checkbox } from '@/components/ui/checkbox'
-import { SectionCard } from './SectionCard'
-import { useDebounce } from '@/hooks/useDebounce'
-import type { NotificationSettings, SaveState } from '@/types/profile'
+import { useState, useEffect } from 'react';
+import { Bell } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import { SectionCard } from './SectionCard';
+import { useDebounce } from '@/hooks/useDebounce';
+import type { NotificationSettings, SaveState } from '@/types/profile';
 
 const NOTIFICATION_OPTIONS = [
   {
     key: 'deletionReminders' as keyof NotificationSettings,
     label: 'Deletion Reminders',
-    description: 'Email notifications before your trip data is automatically deleted (7 days after trip end date)',
+    description:
+      'Email notifications before your trip data is automatically deleted (7 days after trip end date)',
   },
   {
     key: 'reportCompletion' as keyof NotificationSettings,
@@ -24,11 +25,11 @@ const NOTIFICATION_OPTIONS = [
     label: 'Product Updates',
     description: 'Occasional emails about new features and product improvements',
   },
-]
+];
 
 export interface NotificationsSectionProps {
-  notifications: NotificationSettings
-  onUpdate: (notifications: NotificationSettings) => Promise<void>
+  notifications: NotificationSettings;
+  onUpdate: (notifications: NotificationSettings) => Promise<void>;
 }
 
 /**
@@ -40,30 +41,30 @@ export interface NotificationsSectionProps {
  * - Product updates (default: OFF)
  */
 export function NotificationsSection({ notifications, onUpdate }: NotificationsSectionProps) {
-  const [settings, setSettings] = useState<NotificationSettings>(notifications)
-  const [saveState, setSaveState] = useState<SaveState>('idle')
+  const [settings, setSettings] = useState<NotificationSettings>(notifications);
+  const [saveState, setSaveState] = useState<SaveState>('idle');
 
-  const debouncedSettings = useDebounce(settings, 1000)
+  const debouncedSettings = useDebounce(settings, 1000);
 
   // Auto-save when settings change
   useEffect(() => {
     if (JSON.stringify(debouncedSettings) !== JSON.stringify(notifications)) {
       const saveSettings = async () => {
-        setSaveState('saving')
+        setSaveState('saving');
         try {
-          await onUpdate(debouncedSettings)
-          setSaveState('saved')
+          await onUpdate(debouncedSettings);
+          setSaveState('saved');
         } catch {
-          setSaveState('error')
+          setSaveState('error');
         }
-      }
-      saveSettings()
+      };
+      saveSettings();
     }
-  }, [debouncedSettings, notifications, onUpdate])
+  }, [debouncedSettings, notifications, onUpdate]);
 
   const toggleNotification = (key: keyof NotificationSettings) => {
-    setSettings((prev) => ({ ...prev, [key]: !prev[key] }))
-  }
+    setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
 
   return (
     <SectionCard
@@ -97,5 +98,5 @@ export function NotificationsSection({ notifications, onUpdate }: NotificationsS
         ))}
       </div>
     </SectionCard>
-  )
+  );
 }
