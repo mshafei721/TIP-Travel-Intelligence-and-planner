@@ -185,7 +185,7 @@ export interface LegacyUserProfile {
   id: string
   name: string
   email: string
-  photoUrl?: string | null
+  photoUrl?: string
   authProvider: 'email' | 'google'
   createdAt: string
   updatedAt: string

@@ -39,7 +39,7 @@ export default async function ProfilePage() {
         id: profileResponse.user.id,
         name: profileResponse.user.display_name || '',
         email: user.email || '',
-        photoUrl: profileResponse.user.avatar_url,
+        photoUrl: profileResponse.user.avatar_url ?? undefined,
         authProvider: user.app_metadata?.provider === 'google' ? 'google' : 'email',
         createdAt: profileResponse.user.created_at,
         updatedAt: profileResponse.user.updated_at,
