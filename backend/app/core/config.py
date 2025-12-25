@@ -1,7 +1,6 @@
 """Application configuration using Pydantic Settings"""
 
 from pydantic_settings import BaseSettings
-from typing import List
 
 
 class Settings(BaseSettings):
@@ -49,7 +48,7 @@ class Settings(BaseSettings):
     ANTHROPIC_API_KEY: str  # Claude AI for CrewAI agents
 
     @property
-    def cors_origins_list(self) -> List[str]:
+    def cors_origins_list(self) -> list[str]:
         """Parse CORS origins from comma-separated string"""
         return [origin.strip() for origin in self.CORS_ORIGINS.split(",")]
 
@@ -60,4 +59,6 @@ class Settings(BaseSettings):
 
 
 # Global settings instance
-settings = Settings()
+# Note: Pydantic Settings loads values from environment variables
+# Mypy doesn't recognize this pattern, so we ignore the call-arg error
+settings = Settings()  # type: ignore[call-arg]

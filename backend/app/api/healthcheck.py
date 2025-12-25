@@ -1,7 +1,9 @@
 """Health check endpoints"""
 
+from datetime import UTC, datetime
+
 from fastapi import APIRouter, status
-from datetime import datetime
+
 from app.core.config import settings
 
 router = APIRouter(tags=["healthcheck"])
@@ -11,9 +13,9 @@ router = APIRouter(tags=["healthcheck"])
     "/health",
     status_code=status.HTTP_200_OK,
     summary="Health Check",
-    description="Returns the health status of the API"
+    description="Returns the health status of the API",
 )
-async def health_check():
+async def health_check() -> dict[str, str]:
     """
     Health check endpoint to verify API is running.
 
@@ -26,7 +28,7 @@ async def health_check():
     """
     return {
         "status": "healthy",
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "environment": settings.ENVIRONMENT,
         "version": settings.APP_VERSION,
         "service": settings.APP_NAME,
@@ -37,9 +39,9 @@ async def health_check():
     "/health/ready",
     status_code=status.HTTP_200_OK,
     summary="Readiness Check",
-    description="Returns readiness status (for k8s/docker healthchecks)"
+    description="Returns readiness status (for k8s/docker healthchecks)",
 )
-async def readiness_check():
+async def readiness_check() -> dict[str, bool]:
     """
     Readiness check endpoint for container orchestration.
 
@@ -53,9 +55,9 @@ async def readiness_check():
     "/health/live",
     status_code=status.HTTP_200_OK,
     summary="Liveness Check",
-    description="Returns liveness status (for k8s/docker healthchecks)"
+    description="Returns liveness status (for k8s/docker healthchecks)",
 )
-async def liveness_check():
+async def liveness_check() -> dict[str, bool]:
     """
     Liveness check endpoint for container orchestration.
 
