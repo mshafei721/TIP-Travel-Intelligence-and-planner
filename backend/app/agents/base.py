@@ -155,6 +155,26 @@ class BaseAgent(ABC):
         """
         pass
 
+    async def run_async(self, input_data: Dict[str, Any]) -> AgentResult:
+        """
+        Execute the agent asynchronously
+
+        This is a default implementation that wraps the synchronous run() method.
+        Subclasses can override this for true async execution if needed.
+
+        Args:
+            input_data: Agent input parameters
+
+        Returns:
+            AgentResult with execution results
+
+        Raises:
+            AgentExecutionError: If agent fails to execute
+        """
+        import asyncio
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(None, self.run, input_data)
+
     def __repr__(self) -> str:
         """String representation of agent"""
         return f"{self.__class__.__name__}(config={self.config})"
