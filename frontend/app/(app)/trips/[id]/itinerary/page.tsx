@@ -1,9 +1,13 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
 import { notFound } from 'next/navigation';
 import { DayTimeline } from '@/components/itinerary/DayTimeline';
 import { FlightOptions } from '@/components/itinerary/FlightOptions';
+import { ActivityModal } from '@/components/itinerary/ActivityModal';
+import { ConfirmDialog } from '@/components/itinerary/ConfirmDialog';
 import { sampleItinerary } from '@/lib/mock-data/itinerary-sample';
-import type { Activity, TimeOfDay } from '@/types/itinerary';
+import type { Activity, TimeOfDay, TripItinerary } from '@/types/itinerary';
 import { Calendar, MapPin, Plane, ChevronRight } from 'lucide-react';
 
 interface ItineraryPageProps {
@@ -13,9 +17,16 @@ interface ItineraryPageProps {
 }
 
 export default function ItineraryPage({ params }: ItineraryPageProps) {
-  // In production, fetch itinerary data from API based on params.id
-  // For now, using sample data
-  const itinerary = sampleItinerary;
+  // State for itinerary data (using sample data, in production this would come from API)
+  const [itinerary, setItinerary] = useState<TripItinerary>(sampleItinerary);
+
+  // Modal state
+  const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const [editingActivity, setEditingActivity] = useState<Activity | undefined>(undefined);
+  const [activityToDelete, setActivityToDelete] = useState<string | null>(null);
+  const [selectedDayNumber, setSelectedDayNumber] = useState<number>(1);
+  const [selectedTimeOfDay, setSelectedTimeOfDay] = useState<TimeOfDay>('morning');
 
   if (!itinerary) {
     notFound();
@@ -28,31 +39,149 @@ export default function ItineraryPage({ params }: ItineraryPageProps) {
     0
   );
 
-  // Handlers (will be implemented in I7-FE-06 editing feature)
+  // Get activities for time conflict detection
+  const getActivitiesForDay = (dayNumber: number): Activity[] => {
+    const day = itinerary.days.find((d) => d.dayNumber === dayNumber);
+    if (!day) return [];
+    return day.timeBlocks.flatMap((block) => block.activities);
+  };
+
+  // Handler: Open add activity modal
+  const handleAddActivity = (dayNumber: number, timeOfDay: TimeOfDay) => {
+    setSelectedDayNumber(dayNumber);
+    setSelectedTimeOfDay(timeOfDay);
+    setEditingActivity(undefined);
+    setIsActivityModalOpen(true);
+  };
+
+  // Handler: Open edit activity modal
   const handleEditActivity = (activity: Activity) => {
-    console.log('Edit activity:', activity);
-    // TODO: Open edit modal
+    // Find which day this activity belongs to
+    for (const day of itinerary.days) {
+      for (const block of day.timeBlocks) {
+        if (block.activities.some((a) => a.id === activity.id)) {
+          setSelectedDayNumber(day.dayNumber);
+          setSelectedTimeOfDay(block.timeOfDay);
+          break;
+        }
+      }
+    }
+    setEditingActivity(activity);
+    setIsActivityModalOpen(true);
   };
 
+  // Handler: Save activity (add or edit)
+  const handleSaveActivity = (activityData: Partial<Activity>) => {
+    setItinerary((prev) => {
+      const newItinerary = { ...prev };
+      const dayIndex = newItinerary.days.findIndex((d) => d.dayNumber === selectedDayNumber);
+
+      if (dayIndex === -1) return prev;
+
+      const day = { ...newItinerary.days[dayIndex] };
+      const blockIndex = day.timeBlocks.findIndex((b) => b.timeOfDay === selectedTimeOfDay);
+
+      if (blockIndex === -1) return prev;
+
+      const block = { ...day.timeBlocks[blockIndex] };
+
+      if (editingActivity) {
+        // Update existing activity
+        const activityIndex = block.activities.findIndex((a) => a.id === editingActivity.id);
+        if (activityIndex !== -1) {
+          block.activities = [...block.activities];
+          block.activities[activityIndex] = { ...block.activities[activityIndex], ...activityData };
+        }
+      } else {
+        // Add new activity
+        const newActivity = activityData as Activity;
+        block.activities = [...block.activities, newActivity];
+      }
+
+      day.timeBlocks = [...day.timeBlocks];
+      day.timeBlocks[blockIndex] = block;
+      newItinerary.days = [...newItinerary.days];
+      newItinerary.days[dayIndex] = day;
+
+      return newItinerary;
+    });
+  };
+
+  // Handler: Open remove confirmation dialog
   const handleRemoveActivity = (activityId: string) => {
-    console.log('Remove activity:', activityId);
-    // TODO: Confirm and remove activity
+    setActivityToDelete(activityId);
+    setIsConfirmDialogOpen(true);
   };
 
+  // Handler: Confirm remove activity
+  const handleConfirmRemove = () => {
+    if (!activityToDelete) return;
+
+    setItinerary((prev) => {
+      const newItinerary = { ...prev };
+
+      // Find and remove the activity
+      for (let i = 0; i < newItinerary.days.length; i++) {
+        const day = { ...newItinerary.days[i] };
+        let activityFound = false;
+
+        for (let j = 0; j < day.timeBlocks.length; j++) {
+          const block = { ...day.timeBlocks[j] };
+          const activityIndex = block.activities.findIndex((a) => a.id === activityToDelete);
+
+          if (activityIndex !== -1) {
+            block.activities = block.activities.filter((a) => a.id !== activityToDelete);
+            day.timeBlocks = [...day.timeBlocks];
+            day.timeBlocks[j] = block;
+            activityFound = true;
+            break;
+          }
+        }
+
+        if (activityFound) {
+          newItinerary.days = [...newItinerary.days];
+          newItinerary.days[i] = day;
+          break;
+        }
+      }
+
+      return newItinerary;
+    });
+
+    setActivityToDelete(null);
+  };
+
+  // Handler: View on map (placeholder for I7-FE-04 MapView)
   const handleViewOnMap = (activity: Activity) => {
     console.log('View on map:', activity);
-    // TODO: Open map view and center on activity location
+    // TODO: Implement in I7-FE-04 when Mapbox is integrated
+    alert(`Map view for "${activity.name}" will be available when Mapbox is integrated (I7-FE-04)`);
   };
 
-  const handleAddActivity = (dayNumber: number, timeOfDay: TimeOfDay) => {
-    console.log('Add activity:', { dayNumber, timeOfDay });
-    // TODO: Open add activity modal
-  };
-
+  // Handler: Select flight
   const handleSelectFlight = (flightId: string) => {
-    console.log('Select flight:', flightId);
-    // TODO: Update flight selection
+    setItinerary((prev) => ({
+      ...prev,
+      flights: prev.flights.map((flight) =>
+        flight.id === flightId
+          ? { ...flight, bookingStatus: 'selected' as const }
+          : flight
+      ),
+    }));
   };
+
+  // Get activity by ID (for confirm dialog)
+  const getActivityById = (activityId: string): Activity | undefined => {
+    for (const day of itinerary.days) {
+      for (const block of day.timeBlocks) {
+        const activity = block.activities.find((a) => a.id === activityId);
+        if (activity) return activity;
+      }
+    }
+    return undefined;
+  };
+
+  const activityToDeleteData = activityToDelete ? getActivityById(activityToDelete) : undefined;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-950 dark:to-slate-900">
@@ -246,6 +375,39 @@ export default function ItineraryPage({ params }: ItineraryPageProps) {
           </main>
         </div>
       </div>
+
+      {/* Activity Modal */}
+      <ActivityModal
+        isOpen={isActivityModalOpen}
+        onClose={() => {
+          setIsActivityModalOpen(false);
+          setEditingActivity(undefined);
+        }}
+        onSave={handleSaveActivity}
+        activity={editingActivity}
+        dayNumber={selectedDayNumber}
+        timeOfDay={selectedTimeOfDay}
+        existingActivities={getActivitiesForDay(selectedDayNumber)}
+      />
+
+      {/* Confirm Delete Dialog */}
+      <ConfirmDialog
+        isOpen={isConfirmDialogOpen}
+        onClose={() => {
+          setIsConfirmDialogOpen(false);
+          setActivityToDelete(null);
+        }}
+        onConfirm={handleConfirmRemove}
+        title="Remove Activity?"
+        message={
+          activityToDeleteData
+            ? `Are you sure you want to remove "${activityToDeleteData.name}" from your itinerary? This action cannot be undone.`
+            : 'Are you sure you want to remove this activity?'
+        }
+        confirmText="Remove Activity"
+        cancelText="Keep Activity"
+        variant="danger"
+      />
     </div>
   );
 }
