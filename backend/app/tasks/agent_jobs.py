@@ -984,3 +984,164 @@ def execute_attractions_agent(self, trip_id: str, trip_data: dict[str, Any]) -> 
             "sources": [],
             "error": str(e),
         }
+
+
+@shared_task(
+    bind=True,
+    base=BaseTipTask,
+    name="app.tasks.agent_jobs.execute_itinerary_agent",
+    time_limit=2400,  # 40 minutes (longer for complex planning)
+)
+def execute_itinerary_agent(self, trip_id: str, trip_data: dict[str, Any]) -> dict[str, Any]:
+    """
+    Execute Itinerary Agent for comprehensive trip itinerary generation
+
+    Args:
+        trip_id: Trip ID from database
+        trip_data: Trip details including:
+            - destination_country: str (country name)
+            - destination_city: str (optional)
+            - departure_date: str (ISO format)
+            - return_date: str (ISO format)
+            - traveler_nationality: str (optional)
+            - group_size: int (optional)
+            - traveler_ages: list[int] (optional)
+            - budget_level: str (budget, mid-range, luxury)
+            - pace: str (relaxed, moderate, packed)
+            - interests: list[str] (optional)
+            - mobility_constraints: list[str] (optional)
+            - dietary_restrictions: list[str] (optional)
+            - visa_info: dict (optional - from VisaAgent)
+            - country_info: dict (optional - from CountryAgent)
+            - weather_info: dict (optional - from WeatherAgent)
+            - attractions_info: dict (optional - from AttractionsAgent)
+
+    Returns:
+        Comprehensive itinerary with daily plans, accommodations, costs
+
+    Raises:
+        KeyError: If trip_id is missing or empty
+        ValueError: If required trip_data fields are missing
+
+    Production implementation using CrewAI for AI-powered itinerary generation.
+    Synthesizes data from all other agents to create optimized day-by-day plans.
+    """
+    from datetime import date
+
+    from app.agents.itinerary.agent import ItineraryAgent
+    from app.agents.itinerary.models import ItineraryAgentInput
+
+    # Validate trip_id
+    if not trip_id or trip_id.strip() == "":
+        raise KeyError("trip_id is required and cannot be empty")
+
+    print(f"[Task {self.request.id}] Executing Itinerary Agent for trip {trip_id}")
+
+    try:
+        # Validate required fields
+        required_fields = [
+            "destination_country",
+            "departure_date",
+            "return_date",
+        ]
+        for field in required_fields:
+            if field not in trip_data:
+                raise ValueError(f"Missing required field: {field}")
+
+        # Parse dates
+        departure_date_str = trip_data["departure_date"]
+        return_date_str = trip_data["return_date"]
+
+        if isinstance(departure_date_str, str):
+            departure_date = date.fromisoformat(departure_date_str)
+        else:
+            departure_date = departure_date_str
+
+        if isinstance(return_date_str, str):
+            return_date = date.fromisoformat(return_date_str)
+        else:
+            return_date = return_date_str
+
+        # Create ItineraryAgentInput
+        input_data = ItineraryAgentInput(
+            trip_id=trip_id,
+            destination_country=trip_data["destination_country"],
+            destination_city=trip_data.get("destination_city"),
+            departure_date=departure_date,
+            return_date=return_date,
+            traveler_nationality=trip_data.get("traveler_nationality"),
+            group_size=trip_data.get("group_size", 1),
+            traveler_ages=trip_data.get("traveler_ages"),
+            budget_level=trip_data.get("budget_level", "mid-range"),
+            pace=trip_data.get("pace", "moderate"),
+            interests=trip_data.get("interests"),
+            mobility_constraints=trip_data.get("mobility_constraints"),
+            dietary_restrictions=trip_data.get("dietary_restrictions"),
+            visa_info=trip_data.get("visa_info"),
+            country_info=trip_data.get("country_info"),
+            weather_info=trip_data.get("weather_info"),
+            attractions_info=trip_data.get("attractions_info"),
+        )
+
+        # Initialize and run Itinerary Agent
+        agent = ItineraryAgent()
+        result = agent.run(input_data)
+
+        # Store result in database (Supabase report_sections table)
+        from app.core.supabase import supabase
+
+        # Convert result to dict for JSON storage
+        content_data = result.model_dump(mode="json")
+
+        # Convert confidence (0.0-1.0) to integer (0-100) for database
+        confidence_integer = int(result.confidence_score * 100)
+
+        # Store in report_sections table
+        report_response = (
+            supabase.table("report_sections")
+            .insert(
+                {
+                    "trip_id": trip_id,
+                    "section_type": "itinerary",
+                    "title": f"Itinerary: {trip_data.get('destination_city') or trip_data['destination_country']}",
+                    "content": content_data,
+                    "confidence_score": confidence_integer,
+                    "sources": [source.model_dump() for source in result.sources],
+                    "generated_at": result.generated_at.isoformat(),
+                }
+            )
+            .execute()
+        )
+
+        if not report_response.data:
+            raise Exception("Failed to store itinerary report in database")
+
+        trip_duration = (return_date - departure_date).days
+        print(f"[Task {self.request.id}] Completed Itinerary Agent for trip {trip_id}")
+        print(f"[Task {self.request.id}] Destination: {trip_data.get('destination_city') or trip_data['destination_country']}")
+        print(f"[Task {self.request.id}] Duration: {trip_duration} days")
+        print(f"[Task {self.request.id}] Daily plans: {len(result.daily_plans)}")
+        print(f"[Task {self.request.id}] Confidence: {result.confidence_score}")
+        print(f"[Task {self.request.id}] Stored report ID: {report_response.data[0]['id']}")
+
+        return {
+            "trip_id": trip_id,
+            "agent_type": "itinerary",
+            "status": "completed",
+            "data": content_data,
+            "confidence": result.confidence_score,
+            "sources": [source.model_dump() for source in result.sources],
+            "error": None,
+        }
+
+    except Exception as e:
+        print(f"[Task {self.request.id}] Error in Itinerary Agent: {str(e)}")
+        return {
+            "trip_id": trip_id,
+            "agent_type": "itinerary",
+            "status": "failed",
+            "data": {},
+            "confidence": 0.0,
+            "sources": [],
+            "error": str(e),
+        }
