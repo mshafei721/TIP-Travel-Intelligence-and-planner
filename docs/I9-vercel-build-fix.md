@@ -231,10 +231,27 @@ This is NOT urgent - current solution is production-ready and maintainable.
 
 ## Commit Details
 
-**Commit**: `aa4c5ab`
-**Message**: "fix(frontend): resolve type mismatch between database and component interfaces"
+**Commits**:
+1. `aa4c5ab` - "fix(frontend): resolve type mismatch between database and component interfaces"
+2. `d9b4fe7` - "docs: add I9 Vercel build fix completion report"
+3. `fcca4cb` - "fix(frontend): correct Checkbox prop from onCheckedChange to onChange"
+
 **Branch**: `main`
 **Pushed**: ✅ Yes
+
+### Additional Fix (fcca4cb)
+
+After the initial type fix, a second build error was discovered:
+
+```
+Type '{ onCheckedChange: () => void; ... }' is not assignable to type 'CheckboxProps'
+```
+
+**Cause**: The custom Checkbox component extends `InputHTMLAttributes`, expecting standard HTML props (`onChange`), but components were using Radix UI prop (`onCheckedChange`).
+
+**Fix**: Changed `onCheckedChange` to `onChange` in:
+- `NotificationsSection.tsx:84`
+- `TravelPreferencesSection.tsx:142`
 
 ## Next Steps
 
