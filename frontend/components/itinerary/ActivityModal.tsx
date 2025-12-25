@@ -1,15 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import type {
-  Activity,
-  ActivityCategory,
-  TimeOfDay,
-  ActivityLocation,
-  ActivityCost,
-  BookingInfo,
-  AccessibilityInfo,
-} from '@/types/itinerary';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import type { Activity, ActivityCategory, TimeOfDay } from '@/types/itinerary';
 import { X, Check, AlertCircle, Clock, MapPin, DollarSign, Info } from 'lucide-react';
 
 interface ActivityModalProps {
@@ -108,38 +100,10 @@ export function ActivityModal({
 }: ActivityModalProps) {
   const isEditing = !!activity;
 
-  // Form state
-  const [formData, setFormData] = useState({
-    name: '',
-    category: 'culture' as ActivityCategory,
-    startTime: '09:00',
-    endTime: '10:00',
-    locationName: '',
-    locationAddress: '',
-    locationNeighborhood: '',
-    locationTransportInfo: '',
-    description: '',
-    costAmount: 0,
-    costCurrency: '¥',
-    costPerPerson: true,
-    costNotes: '',
-    bookingRequired: false,
-    bookingWebsite: '',
-    bookingPhone: '',
-    bookingStatus: 'pending' as 'pending' | 'confirmed' | 'cancelled',
-    notes: '',
-    priority: 'recommended' as 'must-see' | 'recommended' | 'optional' | undefined,
-    wheelchairAccessible: false,
-    accessibilityNotes: '',
-  });
-
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [timeConflict, setTimeConflict] = useState<string | null>(null);
-
-  // Initialize form with activity data when editing
-  useEffect(() => {
+  // Compute initial form data based on activity prop
+  const initialFormData = useMemo(() => {
     if (activity) {
-      setFormData({
+      return {
         name: activity.name,
         category: activity.category,
         startTime: activity.startTime,
@@ -156,27 +120,68 @@ export function ActivityModal({
         bookingRequired: activity.bookingInfo?.required || false,
         bookingWebsite: activity.bookingInfo?.website || '',
         bookingPhone: activity.bookingInfo?.phone || '',
-        bookingStatus: activity.bookingInfo?.bookingStatus || 'pending',
+        bookingStatus: activity.bookingInfo?.bookingStatus || ('pending' as const),
         notes: activity.notes || '',
         priority: activity.priority,
         wheelchairAccessible: activity.accessibility?.wheelchairAccessible || false,
         accessibilityNotes: activity.accessibility?.notes || '',
-      });
+      };
     }
+    return {
+      name: '',
+      category: 'culture' as ActivityCategory,
+      startTime: '09:00',
+      endTime: '10:00',
+      locationName: '',
+      locationAddress: '',
+      locationNeighborhood: '',
+      locationTransportInfo: '',
+      description: '',
+      costAmount: 0,
+      costCurrency: '¥',
+      costPerPerson: true,
+      costNotes: '',
+      bookingRequired: false,
+      bookingWebsite: '',
+      bookingPhone: '',
+      bookingStatus: 'pending' as const,
+      notes: '',
+      priority: 'recommended' as 'must-see' | 'recommended' | 'optional' | undefined,
+      wheelchairAccessible: false,
+      accessibilityNotes: '',
+    };
   }, [activity]);
 
-  // Check for time conflicts
-  useEffect(() => {
-    const activitiesToCheck = isEditing && activity
-      ? existingActivities.filter((a) => a.id !== activity.id)
-      : existingActivities;
+  // Form state - initialized from activity when editing
+  const [formData, setFormData] = useState(initialFormData);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-    const conflict = detectTimeConflict(
-      formData.startTime,
-      formData.endTime,
-      activitiesToCheck
-    );
-    setTimeConflict(conflict);
+  // Track activity changes to reset form (using ref to avoid lint warning)
+  const prevActivityIdRef = useRef<string | undefined>(activity?.id);
+  useEffect(() => {
+    const prevId = prevActivityIdRef.current;
+    const currentId = activity?.id;
+    prevActivityIdRef.current = currentId;
+
+    // Reset form when switching between activities or between add/edit mode
+    if (prevId !== currentId) {
+      // Using a timeout to avoid synchronous setState in effect
+      const timerId = setTimeout(() => {
+        setFormData(initialFormData);
+        setErrors({});
+      }, 0);
+      return () => clearTimeout(timerId);
+    }
+  }, [activity?.id, initialFormData]);
+
+  // Check for time conflicts using useMemo instead of useEffect + setState
+  const timeConflict = useMemo(() => {
+    const activitiesToCheck =
+      isEditing && activity
+        ? existingActivities.filter((a) => a.id !== activity.id)
+        : existingActivities;
+
+    return detectTimeConflict(formData.startTime, formData.endTime, activitiesToCheck);
   }, [formData.startTime, formData.endTime, existingActivities, isEditing, activity]);
 
   // Validate form
@@ -210,7 +215,7 @@ export function ActivityModal({
 
     const [startHour, startMin] = formData.startTime.split(':').map(Number);
     const [endHour, endMin] = formData.endTime.split(':').map(Number);
-    const duration = (endHour * 60 + endMin) - (startHour * 60 + startMin);
+    const duration = endHour * 60 + endMin - (startHour * 60 + startMin);
 
     const activityData: Partial<Activity> = {
       id: activity?.id || `activity-${Date.now()}`,
@@ -226,14 +231,15 @@ export function ActivityModal({
         transportInfo: formData.locationTransportInfo || undefined,
       },
       description: formData.description || undefined,
-      cost: formData.costAmount > 0 || formData.costNotes
-        ? {
-            amount: formData.costAmount,
-            currency: formData.costCurrency,
-            perPerson: formData.costPerPerson,
-            notes: formData.costNotes || undefined,
-          }
-        : undefined,
+      cost:
+        formData.costAmount > 0 || formData.costNotes
+          ? {
+              amount: formData.costAmount,
+              currency: formData.costCurrency,
+              perPerson: formData.costPerPerson,
+              notes: formData.costNotes || undefined,
+            }
+          : undefined,
       bookingInfo: formData.bookingRequired
         ? {
             required: formData.bookingRequired,
@@ -299,9 +305,7 @@ export function ActivityModal({
                 <h4 className="font-semibold text-amber-900 dark:text-amber-200">
                   Time Conflict Detected
                 </h4>
-                <p className="mt-1 text-sm text-amber-800 dark:text-amber-300">
-                  {timeConflict}
-                </p>
+                <p className="mt-1 text-sm text-amber-800 dark:text-amber-300">{timeConflict}</p>
               </div>
             </div>
           )}
@@ -458,9 +462,7 @@ export function ActivityModal({
                   <input
                     type="text"
                     value={formData.locationAddress}
-                    onChange={(e) =>
-                      setFormData({ ...formData, locationAddress: e.target.value })
-                    }
+                    onChange={(e) => setFormData({ ...formData, locationAddress: e.target.value })}
                     className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50"
                     placeholder="Street address"
                   />
@@ -516,9 +518,7 @@ export function ActivityModal({
                   min="0"
                   step="100"
                   value={formData.costAmount}
-                  onChange={(e) =>
-                    setFormData({ ...formData, costAmount: Number(e.target.value) })
-                  }
+                  onChange={(e) => setFormData({ ...formData, costAmount: Number(e.target.value) })}
                   className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50"
                 />
               </div>
@@ -587,9 +587,7 @@ export function ActivityModal({
               <input
                 type="checkbox"
                 checked={formData.bookingRequired}
-                onChange={(e) =>
-                  setFormData({ ...formData, bookingRequired: e.target.checked })
-                }
+                onChange={(e) => setFormData({ ...formData, bookingRequired: e.target.checked })}
                 className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
               />
               <span className="text-slate-700 dark:text-slate-300">
@@ -607,9 +605,7 @@ export function ActivityModal({
                 }
                 className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
               />
-              <span className="text-slate-700 dark:text-slate-300">
-                Wheelchair accessible
-              </span>
+              <span className="text-slate-700 dark:text-slate-300">Wheelchair accessible</span>
             </label>
 
             {/* Notes */}
@@ -655,7 +651,7 @@ export function ActivityModal({
 function detectTimeConflict(
   startTime: string,
   endTime: string,
-  activities: Activity[]
+  activities: Activity[],
 ): string | null {
   const [startHour, startMin] = startTime.split(':').map(Number);
   const [endHour, endMin] = endTime.split(':').map(Number);

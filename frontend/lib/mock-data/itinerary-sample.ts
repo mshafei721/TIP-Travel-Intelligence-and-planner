@@ -1,4 +1,4 @@
-import type { TripItinerary, DayItinerary, Activity, FlightOption } from '@/types/itinerary';
+import type { TripItinerary } from '@/types/itinerary';
 
 // Sample 5-day Tokyo itinerary
 export const sampleItinerary: TripItinerary = {
@@ -53,7 +53,12 @@ export const sampleItinerary: TripItinerary = {
                 neighborhood: 'Harajuku',
               },
               description: 'Trendy shopping street with fashion boutiques and crepe stands.',
-              cost: { amount: 3000, currency: 'JPY', perPerson: true, notes: 'Shopping budget estimate' },
+              cost: {
+                amount: 3000,
+                currency: 'JPY',
+                perPerson: true,
+                notes: 'Shopping budget estimate',
+              },
               priority: 'recommended',
             },
           ],
@@ -92,7 +97,8 @@ export const sampleItinerary: TripItinerary = {
                 coordinates: { lat: 35.6595, lng: 139.7004 },
                 neighborhood: 'Shibuya',
               },
-              description: "World's busiest pedestrian crossing. View from Starbucks for best photo op.",
+              description:
+                "World's busiest pedestrian crossing. View from Starbucks for best photo op.",
               cost: { amount: 0, currency: 'JPY', perPerson: true },
               priority: 'must-see',
             },
@@ -175,7 +181,8 @@ export const sampleItinerary: TripItinerary = {
                 coordinates: { lat: 35.7101, lng: 139.8107 },
                 neighborhood: 'Oshiage',
               },
-              description: 'Tallest structure in Japan. 360° views from 350m and 450m observation decks.',
+              description:
+                'Tallest structure in Japan. 360° views from 350m and 450m observation decks.',
               cost: { amount: 3100, currency: 'JPY', perPerson: true },
               priority: 'recommended',
             },
@@ -381,7 +388,7 @@ export const sampleItinerary: TripItinerary = {
               location: {
                 name: 'Shinjuku Gyoen',
                 address: '11 Naitomachi, Shinjuku City, Tokyo',
-                coordinates: { lat: 35.6852, lng: 139.7100 },
+                coordinates: { lat: 35.6852, lng: 139.71 },
                 neighborhood: 'Shinjuku',
               },
               description: 'Beautiful Japanese garden. Perfect for morning stroll.',
@@ -424,7 +431,7 @@ export const sampleItinerary: TripItinerary = {
                 coordinates: { lat: 35.6896, lng: 139.7006 },
                 neighborhood: 'Shinjuku',
               },
-              description: 'N\'EX train to Narita Airport. Check in 3 hours before flight.',
+              description: "N'EX train to Narita Airport. Check in 3 hours before flight.",
               cost: { amount: 3250, currency: 'JPY', perPerson: true },
               priority: 'must-see',
             },
@@ -501,9 +508,9 @@ export const sampleItinerary: TripItinerary = {
 export function getActivitiesByCategory(itinerary: TripItinerary) {
   const categoryCounts: Record<string, number> = {};
 
-  itinerary.days.forEach(day => {
-    day.timeBlocks.forEach(block => {
-      block.activities.forEach(activity => {
+  itinerary.days.forEach((day) => {
+    day.timeBlocks.forEach((block) => {
+      block.activities.forEach((activity) => {
         categoryCounts[activity.category] = (categoryCounts[activity.category] || 0) + 1;
       });
     });
@@ -516,9 +523,9 @@ export function getActivitiesByCategory(itinerary: TripItinerary) {
 export function calculateTotalCost(itinerary: TripItinerary): number {
   let total = 0;
 
-  itinerary.days.forEach(day => {
-    day.timeBlocks.forEach(block => {
-      block.activities.forEach(activity => {
+  itinerary.days.forEach((day) => {
+    day.timeBlocks.forEach((block) => {
+      block.activities.forEach((activity) => {
         if (activity.cost) {
           total += activity.cost.amount;
         }

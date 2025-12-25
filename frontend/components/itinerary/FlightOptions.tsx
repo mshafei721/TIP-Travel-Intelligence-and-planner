@@ -2,7 +2,7 @@
 
 import React from 'react';
 import type { FlightOption } from '@/types/itinerary';
-import { Plane, Clock, Calendar, DollarSign, Info } from 'lucide-react';
+import { Plane, Clock, Info } from 'lucide-react';
 
 interface FlightOptionsProps {
   flights: FlightOption[];
@@ -52,11 +52,7 @@ const fareColors = {
   first: 'text-amber-600 dark:text-amber-400',
 };
 
-export function FlightOptions({
-  flights,
-  onSelectFlight,
-  readOnly = false,
-}: FlightOptionsProps) {
+export function FlightOptions({ flights, onSelectFlight, readOnly = false }: FlightOptionsProps) {
   const [expandedFlights, setExpandedFlights] = React.useState<Set<string>>(new Set());
 
   const toggleExpanded = (flightId: string) => {
@@ -147,13 +143,15 @@ export function FlightOptions({
                   <div className="relative mx-8 flex flex-1 flex-col items-center justify-center">
                     {/* Animated dotted line */}
                     <div className="relative w-full">
-                      <svg
-                        viewBox="0 0 200 60"
-                        className="w-full"
-                        preserveAspectRatio="none"
-                      >
+                      <svg viewBox="0 0 200 60" className="w-full" preserveAspectRatio="none">
                         <defs>
-                          <linearGradient id={`grad-${flight.id}`} x1="0%" y1="0%" x2="100%" y2="0%">
+                          <linearGradient
+                            id={`grad-${flight.id}`}
+                            x1="0%"
+                            y1="0%"
+                            x2="100%"
+                            y2="0%"
+                          >
                             <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.8" />
                             <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.8" />
                           </linearGradient>
@@ -179,7 +177,9 @@ export function FlightOptions({
                         {formatDuration(flight.duration)}
                       </div>
                       <div className="text-xs text-slate-500 dark:text-slate-500">
-                        {flight.stops === 0 ? 'Direct' : `${flight.stops} stop${flight.stops > 1 ? 's' : ''}`}
+                        {flight.stops === 0
+                          ? 'Direct'
+                          : `${flight.stops} stop${flight.stops > 1 ? 's' : ''}`}
                       </div>
                     </div>
                   </div>
@@ -224,7 +224,9 @@ export function FlightOptions({
                   <div className="text-xs font-medium text-slate-500 dark:text-slate-500">
                     Class
                   </div>
-                  <div className={`mt-1 font-semibold capitalize ${fareColors[flight.price.fareClass]}`}>
+                  <div
+                    className={`mt-1 font-semibold capitalize ${fareColors[flight.price.fareClass]}`}
+                  >
                     {fareClass}
                   </div>
                 </div>
@@ -267,10 +269,7 @@ export function FlightOptions({
                         Layovers
                       </div>
                       {flight.layovers.map((layover, idx) => (
-                        <div
-                          key={idx}
-                          className="flex items-center justify-between text-sm"
-                        >
+                        <div key={idx} className="flex items-center justify-between text-sm">
                           <div>
                             <span className="font-semibold text-slate-900 dark:text-slate-50">
                               {layover.airportCode}
