@@ -946,9 +946,9 @@
           "id": "I9-FE-04",
           "name": "Create templates management",
           "type": "frontend",
-          "passes": false,
+          "passes": true,
           "priority": "medium",
-          "notes": "UI complete but marked as 'coming soon' - backend endpoints not implemented"
+          "notes": "Fully integrated with backend templates API - create, edit, delete templates working"
         },
         {
           "id": "I9-FE-05",
@@ -986,9 +986,9 @@
           "id": "I9-BE-02",
           "name": "Implement templates CRUD endpoints",
           "type": "backend",
-          "passes": false,
+          "passes": true,
           "priority": "medium",
-          "notes": "Not implemented - templates feature deferred"
+          "notes": "Full CRUD API implemented - POST/GET/PUT/DELETE /api/templates endpoints with Pydantic validation"
         },
         {
           "id": "I9-BE-03",

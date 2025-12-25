@@ -1,13 +1,13 @@
-'use client'
+'use client';
 
-import { MapPin, Calendar, Pencil, Trash2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import type { TripTemplate } from '@/types/profile'
+import { MapPin, Calendar, Pencil, Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import type { LegacyTripTemplate } from '@/types/profile';
 
 export interface TemplateCardProps {
-  template: TripTemplate
-  onEdit: (template: TripTemplate) => void
-  onDelete: (id: string) => void
+  template: LegacyTripTemplate;
+  onEdit: (template: LegacyTripTemplate) => void;
+  onDelete: (id: string) => void;
 }
 
 /**
@@ -23,9 +23,9 @@ export interface TemplateCardProps {
 export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) {
   const handleDelete = () => {
     if (confirm(`Delete template "${template.name}"? This action cannot be undone.`)) {
-      onDelete(template.id)
+      onDelete(template.id);
     }
-  }
+  };
 
   return (
     <div className="group rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition-all hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
@@ -56,7 +56,10 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
 
       {/* Destinations */}
       <div className="mb-2 flex items-start gap-2">
-        <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400" aria-hidden="true" />
+        <MapPin
+          className="mt-0.5 h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400"
+          aria-hidden="true"
+        />
         <p className="text-sm text-slate-600 dark:text-slate-400">
           {template.destinations.join(', ')}
         </p>
@@ -64,7 +67,10 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
 
       {/* Date Pattern */}
       <div className="mb-2 flex items-center gap-2">
-        <Calendar className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" aria-hidden="true" />
+        <Calendar
+          className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400"
+          aria-hidden="true"
+        />
         <p className="text-sm text-slate-600 dark:text-slate-400">{template.datePattern}</p>
       </div>
 
@@ -76,5 +82,5 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
           .join(' ')}
       </div>
     </div>
-  )
+  );
 }

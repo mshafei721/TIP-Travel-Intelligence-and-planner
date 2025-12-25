@@ -1,18 +1,23 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { FileText, Plus } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { SectionCard } from './SectionCard'
-import { TemplateCard } from './TemplateCard'
-import { TemplateModal } from './TemplateModal'
-import type { TripTemplate } from '@/types/profile'
+import { useState } from 'react';
+import { FileText, Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { SectionCard } from './SectionCard';
+import { TemplateCard } from './TemplateCard';
+import { TemplateModal } from './TemplateModal';
+import type { LegacyTripTemplate } from '@/types/profile';
 
 export interface SavedTemplatesSectionProps {
-  templates: TripTemplate[]
-  onTemplateCreate: (template: Omit<TripTemplate, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>
-  onTemplateEdit: (id: string, template: Omit<TripTemplate, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>
-  onTemplateDelete: (id: string) => Promise<void>
+  templates: LegacyTripTemplate[];
+  onTemplateCreate: (
+    template: Omit<LegacyTripTemplate, 'id' | 'createdAt' | 'updatedAt'>,
+  ) => Promise<void>;
+  onTemplateEdit: (
+    id: string,
+    template: Omit<LegacyTripTemplate, 'id' | 'createdAt' | 'updatedAt'>,
+  ) => Promise<void>;
+  onTemplateDelete: (id: string) => Promise<void>;
 }
 
 /**
@@ -31,26 +36,28 @@ export function SavedTemplatesSection({
   onTemplateEdit,
   onTemplateDelete,
 }: SavedTemplatesSectionProps) {
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingTemplate, setEditingTemplate] = useState<TripTemplate | undefined>()
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState<LegacyTripTemplate | undefined>();
 
   const handleCreate = () => {
-    setEditingTemplate(undefined)
-    setIsModalOpen(true)
-  }
+    setEditingTemplate(undefined);
+    setIsModalOpen(true);
+  };
 
-  const handleEdit = (template: TripTemplate) => {
-    setEditingTemplate(template)
-    setIsModalOpen(true)
-  }
+  const handleEdit = (template: LegacyTripTemplate) => {
+    setEditingTemplate(template);
+    setIsModalOpen(true);
+  };
 
-  const handleSave = async (templateData: Omit<TripTemplate, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const handleSave = async (
+    templateData: Omit<LegacyTripTemplate, 'id' | 'createdAt' | 'updatedAt'>,
+  ) => {
     if (editingTemplate) {
-      await onTemplateEdit(editingTemplate.id, templateData)
+      await onTemplateEdit(editingTemplate.id, templateData);
     } else {
-      await onTemplateCreate(templateData)
+      await onTemplateCreate(templateData);
     }
-  }
+  };
 
   return (
     <>
@@ -69,7 +76,8 @@ export function SavedTemplatesSection({
               No templates yet
             </h3>
             <p className="mt-2 max-w-sm text-sm text-slate-600 dark:text-slate-400">
-              Create a trip template to speed up future trip creation with pre-filled preferences and destinations.
+              Create a trip template to speed up future trip creation with pre-filled preferences
+              and destinations.
             </p>
             <Button onClick={handleCreate} className="mt-6">
               <Plus className="h-4 w-4" />
@@ -107,5 +115,5 @@ export function SavedTemplatesSection({
         onSave={handleSave}
       />
     </>
-  )
+  );
 }

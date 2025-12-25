@@ -1,21 +1,36 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Checkbox } from '@/components/ui/checkbox'
-import type { TripTemplate, TravelStyle, TravelPreferences } from '@/types/profile'
+import { useState, useEffect } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import type { LegacyTripTemplate, TravelStyle } from '@/types/profile';
 
-const TRAVEL_STYLES: TravelStyle[] = ['budget', 'balanced', 'luxury']
-const DIETARY_OPTIONS = ['Vegetarian', 'Vegan', 'Gluten-free', 'Dairy-free', 'Nut allergy', 'Halal', 'Kosher']
+const TRAVEL_STYLES: TravelStyle[] = ['budget', 'balanced', 'luxury'];
+const DIETARY_OPTIONS = [
+  'Vegetarian',
+  'Vegan',
+  'Gluten-free',
+  'Dairy-free',
+  'Nut allergy',
+  'Halal',
+  'Kosher',
+];
 
 export interface TemplateModalProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  template?: TripTemplate
-  onSave: (template: Omit<TripTemplate, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  template?: LegacyTripTemplate;
+  onSave: (template: Omit<LegacyTripTemplate, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
 }
 
 /**
@@ -29,7 +44,7 @@ export interface TemplateModalProps {
  * - Dietary restrictions
  */
 export function TemplateModal({ open, onOpenChange, template, onSave }: TemplateModalProps) {
-  const isEditing = !!template
+  const isEditing = !!template;
 
   const [formData, setFormData] = useState({
     name: '',
@@ -37,8 +52,8 @@ export function TemplateModal({ open, onOpenChange, template, onSave }: Template
     datePattern: '',
     travelStyle: 'balanced' as TravelStyle,
     dietaryRestrictions: [] as string[],
-  })
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Reset form when template changes or modal opens
   useEffect(() => {
@@ -50,7 +65,7 @@ export function TemplateModal({ open, onOpenChange, template, onSave }: Template
           datePattern: template.datePattern,
           travelStyle: template.preferences.travelStyle,
           dietaryRestrictions: template.preferences.dietaryRestrictions,
-        })
+        });
       } else {
         setFormData({
           name: '',
@@ -58,34 +73,37 @@ export function TemplateModal({ open, onOpenChange, template, onSave }: Template
           datePattern: '',
           travelStyle: 'balanced',
           dietaryRestrictions: [],
-        })
+        });
       }
     }
-  }, [open, template])
+  }, [open, template]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
+    e.preventDefault();
+    setIsSubmitting(true);
 
     try {
-      const templateData: Omit<TripTemplate, 'id' | 'createdAt' | 'updatedAt'> = {
+      const templateData: Omit<LegacyTripTemplate, 'id' | 'createdAt' | 'updatedAt'> = {
         name: formData.name.trim(),
-        destinations: formData.destinations.split(',').map((d) => d.trim()).filter(Boolean),
+        destinations: formData.destinations
+          .split(',')
+          .map((d) => d.trim())
+          .filter(Boolean),
         datePattern: formData.datePattern.trim(),
         preferences: {
           travelStyle: formData.travelStyle,
           dietaryRestrictions: formData.dietaryRestrictions,
         },
-      }
+      };
 
-      await onSave(templateData)
-      onOpenChange(false)
+      await onSave(templateData);
+      onOpenChange(false);
     } catch (error) {
-      console.error('Failed to save template:', error)
+      console.error('Failed to save template:', error);
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   const toggleDietaryRestriction = (restriction: string) => {
     setFormData((prev) => ({
@@ -93,8 +111,8 @@ export function TemplateModal({ open, onOpenChange, template, onSave }: Template
       dietaryRestrictions: prev.dietaryRestrictions.includes(restriction)
         ? prev.dietaryRestrictions.filter((r) => r !== restriction)
         : [...prev.dietaryRestrictions, restriction],
-    }))
-  }
+    }));
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -163,7 +181,10 @@ export function TemplateModal({ open, onOpenChange, template, onSave }: Template
                       : 'border-slate-200 hover:border-slate-300 dark:border-slate-800 dark:hover:border-slate-700'
                   }`}
                 >
-                  {style.split('-').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                  {style
+                    .split('-')
+                    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(' ')}
                 </button>
               ))}
             </div>
@@ -206,5 +227,5 @@ export function TemplateModal({ open, onOpenChange, template, onSave }: Template
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

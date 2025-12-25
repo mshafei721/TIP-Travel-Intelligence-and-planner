@@ -1,19 +1,26 @@
-'use client'
+'use client';
 
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
-import { ProfileSection } from './ProfileSection'
-import { TravelerDetailsSection } from './TravelerDetailsSection'
-import { TravelPreferencesSection } from './TravelPreferencesSection'
-import { SavedTemplatesSection } from './SavedTemplatesSection'
-import { NotificationsSection } from './NotificationsSection'
-import { PrivacySection } from './PrivacySection'
-import { AccountSection } from './AccountSection'
-import type { ProfileSettings, LegacyUserProfile, TravelerDetails, TravelPreferences, NotificationSettings, TripTemplate } from '@/types/profile'
-import * as profileApi from '@/lib/api/profile'
+import { useRouter } from 'next/navigation';
+import { ProfileSection } from './ProfileSection';
+import { TravelerDetailsSection } from './TravelerDetailsSection';
+import { TravelPreferencesSection } from './TravelPreferencesSection';
+import { SavedTemplatesSection } from './SavedTemplatesSection';
+import { NotificationsSection } from './NotificationsSection';
+import { PrivacySection } from './PrivacySection';
+import { AccountSection } from './AccountSection';
+import type {
+  ProfileSettings,
+  LegacyUserProfile,
+  TravelerDetails,
+  TravelPreferences,
+  NotificationSettings,
+  LegacyTripTemplate,
+} from '@/types/profile';
+import * as profileApi from '@/lib/api/profile';
+import * as templatesApi from '@/lib/api/templates';
 
 export interface ProfileSettingsPageProps {
-  initialSettings: ProfileSettings
+  initialSettings: ProfileSettings;
 }
 
 /**
@@ -29,8 +36,7 @@ export interface ProfileSettingsPageProps {
  * - Account deletion
  */
 export function ProfileSettingsPage({ initialSettings }: ProfileSettingsPageProps) {
-  const router = useRouter()
-  const [isUploading, setIsUploading] = useState(false)
+  const router = useRouter();
 
   // Profile update handlers
   const handleProfileUpdate = async (data: Partial<LegacyUserProfile>) => {
@@ -38,53 +44,50 @@ export function ProfileSettingsPage({ initialSettings }: ProfileSettingsPageProp
       await profileApi.updateProfile({
         display_name: data.name || undefined,
         avatar_url: data.photoUrl || undefined,
-      })
-      router.refresh()
+      });
+      router.refresh();
     } catch (error) {
-      console.error('Failed to update profile:', error)
-      throw error
+      console.error('Failed to update profile:', error);
+      throw error;
     }
-  }
+  };
 
   const handlePhotoUpload = async (file: File): Promise<string> => {
-    setIsUploading(true)
     try {
       // Upload to Supabase Storage
-      const { createClient } = await import('@/lib/supabase/client')
-      const supabase = createClient()
+      const { createClient } = await import('@/lib/supabase/client');
+      const supabase = createClient();
 
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
-      const filePath = `avatars/${fileName}`
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = `avatars/${fileName}`;
 
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('profile-photos')
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: false,
-        })
+        });
 
       if (uploadError) {
-        throw new Error(`Upload failed: ${uploadError.message}`)
+        throw new Error(`Upload failed: ${uploadError.message}`);
       }
 
       // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('profile-photos')
-        .getPublicUrl(filePath)
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from('profile-photos').getPublicUrl(filePath);
 
       // Update profile with new photo URL
-      await profileApi.updateProfile({ avatar_url: publicUrl })
+      await profileApi.updateProfile({ avatar_url: publicUrl });
 
-      router.refresh()
-      return publicUrl
+      router.refresh();
+      return publicUrl;
     } catch (error) {
-      console.error('Photo upload failed:', error)
-      throw error
-    } finally {
-      setIsUploading(false)
+      console.error('Photo upload failed:', error);
+      throw error;
     }
-  }
+  };
 
   const handleTravelerDetailsUpdate = async (data: TravelerDetails) => {
     try {
@@ -93,13 +96,13 @@ export function ProfileSettingsPage({ initialSettings }: ProfileSettingsPageProp
         residency_country: data.residenceCountry,
         residency_status: data.residencyStatus,
         date_of_birth: data.dateOfBirth || null,
-      })
-      router.refresh()
+      });
+      router.refresh();
     } catch (error) {
-      console.error('Failed to update traveler details:', error)
-      throw error
+      console.error('Failed to update traveler details:', error);
+      throw error;
     }
-  }
+  };
 
   const handlePreferencesUpdate = async (data: TravelPreferences) => {
     try {
@@ -108,28 +111,80 @@ export function ProfileSettingsPage({ initialSettings }: ProfileSettingsPageProp
         travel_style: data.travelStyle,
         dietary_restrictions: data.dietaryRestrictions,
         accessibility_needs: data.accessibilityNeeds || null,
-      })
-      router.refresh()
+      });
+      router.refresh();
     } catch (error) {
-      console.error('Failed to update preferences:', error)
-      throw error
+      console.error('Failed to update preferences:', error);
+      throw error;
     }
-  }
+  };
 
-  const handleTemplateCreate = async (template: Omit<TripTemplate, 'id' | 'createdAt' | 'updatedAt'>) => {
-    // TODO: Implement template API endpoints in backend
-    throw new Error('Templates feature coming soon')
-  }
+  const handleTemplateCreate = async (
+    template: Omit<LegacyTripTemplate, 'id' | 'createdAt' | 'updatedAt'>,
+  ) => {
+    try {
+      // Convert legacy format to backend format
+      await templatesApi.createTemplate({
+        name: template.name,
+        description: template.datePattern,
+        destinations: template.destinations.map((dest) => {
+          const parts = dest.split(',').map((s) => s.trim());
+          if (parts.length > 1) {
+            return { country: parts[1], city: parts[0] };
+          }
+          return { country: parts[0] };
+        }),
+        preferences: {
+          travel_style: template.preferences.travelStyle,
+          dietary_restrictions: template.preferences.dietaryRestrictions,
+          accessibility_needs: template.preferences.accessibilityNeeds,
+        },
+      });
+      router.refresh();
+    } catch (error) {
+      console.error('Failed to create template:', error);
+      throw error;
+    }
+  };
 
-  const handleTemplateEdit = async (id: string, template: Omit<TripTemplate, 'id' | 'createdAt' | 'updatedAt'>) => {
-    // TODO: Implement template API endpoints in backend
-    throw new Error('Templates feature coming soon')
-  }
+  const handleTemplateEdit = async (
+    id: string,
+    template: Omit<LegacyTripTemplate, 'id' | 'createdAt' | 'updatedAt'>,
+  ) => {
+    try {
+      // Convert legacy format to backend format
+      await templatesApi.updateTemplate(id, {
+        name: template.name,
+        description: template.datePattern,
+        destinations: template.destinations.map((dest) => {
+          const parts = dest.split(',').map((s) => s.trim());
+          if (parts.length > 1) {
+            return { country: parts[1], city: parts[0] };
+          }
+          return { country: parts[0] };
+        }),
+        preferences: {
+          travel_style: template.preferences.travelStyle,
+          dietary_restrictions: template.preferences.dietaryRestrictions,
+          accessibility_needs: template.preferences.accessibilityNeeds,
+        },
+      });
+      router.refresh();
+    } catch (error) {
+      console.error('Failed to edit template:', error);
+      throw error;
+    }
+  };
 
   const handleTemplateDelete = async (id: string) => {
-    // TODO: Implement template API endpoints in backend
-    throw new Error('Templates feature coming soon')
-  }
+    try {
+      await templatesApi.deleteTemplate(id);
+      router.refresh();
+    } catch (error) {
+      console.error('Failed to delete template:', error);
+      throw error;
+    }
+  };
 
   const handleNotificationsUpdate = async (notifications: NotificationSettings) => {
     try {
@@ -141,36 +196,36 @@ export function ProfileSettingsPage({ initialSettings }: ProfileSettingsPageProp
         language: 'en', // Keep existing
         currency: 'USD', // Keep existing
         units: 'metric', // Keep existing
-      })
-      router.refresh()
+      });
+      router.refresh();
     } catch (error) {
-      console.error('Failed to update notifications:', error)
-      throw error
+      console.error('Failed to update notifications:', error);
+      throw error;
     }
-  }
+  };
 
   const handleAccountDelete = async () => {
     try {
       await profileApi.deleteAccount({
         confirmation: 'DELETE MY ACCOUNT',
-      })
+      });
 
       // Logout from Supabase
-      const { createClient } = await import('@/lib/supabase/client')
-      const supabase = createClient()
-      await supabase.auth.signOut()
+      const { createClient } = await import('@/lib/supabase/client');
+      const supabase = createClient();
+      await supabase.auth.signOut();
 
       // Redirect to signup
-      router.push('/signup')
+      router.push('/signup');
     } catch (error) {
-      console.error('Failed to delete account:', error)
-      throw error
+      console.error('Failed to delete account:', error);
+      throw error;
     }
-  }
+  };
 
   const handleChangePassword = () => {
-    router.push('/change-password')
-  }
+    router.push('/change-password');
+  };
 
   return (
     <div className="space-y-6">
@@ -220,5 +275,5 @@ export function ProfileSettingsPage({ initialSettings }: ProfileSettingsPageProp
         <AccountSection onAccountDelete={handleAccountDelete} />
       </div>
     </div>
-  )
+  );
 }

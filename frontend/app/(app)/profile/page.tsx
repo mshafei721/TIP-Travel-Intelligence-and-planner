@@ -1,8 +1,9 @@
-import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
-import { ProfileSettingsPage } from '@/components/profile/ProfileSettingsPage'
-import { getProfile, getStatistics } from '@/lib/api/profile'
-import type { ProfileSettings, LegacyUserProfile, TravelerDetails, TravelPreferences, NotificationSettings, PrivacySettings, TripTemplate } from '@/types/profile'
+import { redirect } from 'next/navigation';
+import { createClient } from '@/lib/supabase/server';
+import { ProfileSettingsPage } from '@/components/profile/ProfileSettingsPage';
+import { getProfile } from '@/lib/api/profile';
+import { listTemplates } from '@/lib/api/templates';
+import type { ProfileSettings, TravelStyle } from '@/types/profile';
 
 /**
  * Profile Settings Page (Server Component)
@@ -16,22 +17,21 @@ import type { ProfileSettings, LegacyUserProfile, TravelerDetails, TravelPrefere
  * with existing components. New pages should use the ProfileResponse type.
  */
 export default async function ProfilePage() {
-  const supabase = await createClient()
+  const supabase = await createClient();
 
   // Check authentication
   const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser()
+  } = await supabase.auth.getUser();
 
   if (authError || !user) {
-    redirect('/login')
+    redirect('/login');
   }
 
   try {
-    // Fetch profile from backend API
-    const profileResponse = await getProfile()
-    const statistics = await getStatistics()
+    // Fetch profile and templates from backend API
+    const [profileResponse, templates] = await Promise.all([getProfile(), listTemplates()]);
 
     // Map new API response to legacy ProfileSettings type for existing components
     const profileSettings: ProfileSettings = {
@@ -47,7 +47,7 @@ export default async function ProfilePage() {
       travelerDetails: {
         nationality: profileResponse.travelerProfile?.nationality || '',
         residenceCountry: profileResponse.travelerProfile?.residency_country || '',
-        residencyStatus: (profileResponse.travelerProfile?.residency_status as any) || 'citizen',
+        residencyStatus: (profileResponse.travelerProfile?.residency_status as string) || 'citizen',
         dateOfBirth: profileResponse.travelerProfile?.date_of_birth || '',
       },
       travelPreferences: {
@@ -64,12 +64,27 @@ export default async function ProfilePage() {
         dataRetentionAcknowledged: false, // TODO: Add to backend
         allowAnalytics: true, // TODO: Add to backend
       },
-      templates: [], // TODO: Fetch from backend when template API is ready
-    }
+      templates: templates.map((template) => ({
+        // Map backend template to legacy frontend format
+        id: template.id,
+        name: template.name,
+        destinations: template.destinations.map((d) =>
+          d.city ? `${d.city}, ${d.country}` : d.country,
+        ),
+        datePattern: template.description || 'Custom trip',
+        preferences: {
+          travelStyle: (template.preferences?.travel_style || 'balanced') as TravelStyle,
+          dietaryRestrictions: template.preferences?.dietary_restrictions || [],
+          accessibilityNeeds: template.preferences?.accessibility_needs,
+        },
+        createdAt: template.created_at,
+        updatedAt: template.updated_at,
+      })),
+    };
 
-    return <ProfileSettingsPage initialSettings={profileSettings} />
+    return <ProfileSettingsPage initialSettings={profileSettings} />;
   } catch (error) {
-    console.error('Error fetching profile:', error)
-    throw new Error('Failed to load profile. Please try again later.')
+    console.error('Error fetching profile:', error);
+    throw new Error('Failed to load profile. Please try again later.');
   }
 }

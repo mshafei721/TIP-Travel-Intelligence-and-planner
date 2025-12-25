@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from app.core.config import settings
-from app.api import healthcheck, trips, profile, recommendations
+from app.api import healthcheck, trips, profile, recommendations, templates
 
 # Create FastAPI application
 app = FastAPI(
@@ -33,6 +33,7 @@ app.include_router(healthcheck.router, prefix="/api")
 app.include_router(trips.router, prefix="/api")
 app.include_router(profile.router, prefix="/api")
 app.include_router(recommendations.router, prefix="/api")
+app.include_router(templates.router, prefix="/api")
 
 
 # Root endpoint
