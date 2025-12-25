@@ -145,6 +145,7 @@ class TestOrchestratorAgent:
             assert "visa" in execution_order
 
     @pytest.mark.asyncio()
+    @pytest.mark.integration
     async def test_orchestrator_saves_results_to_database(self):
         """Test that orchestrator saves results to database"""
         orchestrator = OrchestratorAgent()
@@ -169,6 +170,7 @@ class TestOrchestratorAgent:
             assert mock_db.table.called
 
     @pytest.mark.asyncio()
+    @pytest.mark.integration
     async def test_orchestrator_updates_agent_job_status(self):
         """Test that orchestrator updates agent job status"""
         orchestrator = OrchestratorAgent()
