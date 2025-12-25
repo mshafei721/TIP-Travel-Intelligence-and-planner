@@ -96,18 +96,12 @@ jobs:
           docker compose config > /dev/null
           echo "✅ Docker Compose configuration is valid"
 
-      - name: Start services
-        run: |
-          docker compose up -d redis
-          sleep 5
-
       - name: Test Redis connection
         run: |
-          docker compose exec -T redis redis-cli ping
-
-      - name: Stop services
-        run: |
-          docker compose down
+          # Use the Redis service container already running on localhost:6379
+          sudo apt-get update && sudo apt-get install -y redis-tools
+          redis-cli -h localhost ping
+          echo "✅ Redis connection successful"
 
   # ==============================================
   # Job 5: Summary
