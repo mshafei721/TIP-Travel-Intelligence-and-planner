@@ -5,7 +5,7 @@ Input/Output schemas for the Visa Agent following the roadmap specification.
 """
 
 from datetime import date, datetime
-from typing import Optional, List
+
 from pydantic import BaseModel, Field, field_validator
 
 
@@ -26,7 +26,9 @@ class VisaAgentInput(BaseModel):
 
     trip_id: str
     user_nationality: str = Field(..., min_length=2, max_length=2, description="ISO Alpha-2 code")
-    destination_country: str = Field(..., min_length=2, max_length=2, description="ISO Alpha-2 code")
+    destination_country: str = Field(
+        ..., min_length=2, max_length=2, description="ISO Alpha-2 code"
+    )
     destination_city: str
     trip_purpose: str = Field(default="tourism", description="tourism, business, or transit")
     duration_days: int = Field(..., gt=0, description="Trip duration in days")
@@ -63,9 +65,9 @@ class VisaRequirement(BaseModel):
     """
 
     visa_required: bool
-    visa_type: Optional[str] = None
-    max_stay_days: Optional[int] = None
-    validity_period: Optional[str] = None
+    visa_type: str | None = None
+    max_stay_days: int | None = None
+    validity_period: str | None = None
 
 
 class ApplicationProcess(BaseModel):
@@ -81,12 +83,12 @@ class ApplicationProcess(BaseModel):
         application_url: URL to application portal
     """
 
-    application_method: Optional[str] = None
-    processing_time: Optional[str] = None
-    cost_usd: Optional[float] = None
-    cost_local: Optional[str] = None
-    required_documents: List[str] = Field(default_factory=list)
-    application_url: Optional[str] = None
+    application_method: str | None = None
+    processing_time: str | None = None
+    cost_usd: float | None = None
+    cost_local: str | None = None
+    required_documents: list[str] = Field(default_factory=list)
+    application_url: str | None = None
 
 
 class EntryRequirement(BaseModel):
@@ -103,9 +105,9 @@ class EntryRequirement(BaseModel):
         return_ticket: Whether return ticket is required
     """
 
-    passport_validity: Optional[str] = None
-    blank_pages_required: Optional[int] = None
-    vaccinations: List[str] = Field(default_factory=list)
+    passport_validity: str | None = None
+    blank_pages_required: int | None = None
+    vaccinations: list[str] = Field(default_factory=list)
     health_declaration: bool = False
     travel_insurance: bool = False
     proof_of_funds: bool = False
@@ -139,11 +141,11 @@ class VisaAgentOutput(BaseModel):
     entry_requirements: EntryRequirement
 
     # Additional intelligence
-    tips: List[str] = Field(default_factory=list)
-    warnings: List[str] = Field(default_factory=list)
+    tips: list[str] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
 
     # Data provenance
-    sources: List["SourceReference"] = Field(default_factory=list)
+    sources: list["SourceReference"] = Field(default_factory=list)
     last_verified: datetime = Field(default_factory=datetime.utcnow)
 
 

@@ -1,13 +1,14 @@
 """Pydantic models for trip management"""
 
-from pydantic import BaseModel, Field, field_validator, EmailStr
-from typing import Optional
 from datetime import date, datetime
 from enum import Enum
+
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 
 class TripStatus(str, Enum):
     """Trip status enumeration"""
+
     DRAFT = "draft"
     PENDING = "pending"
     PROCESSING = "processing"
@@ -17,6 +18,7 @@ class TripStatus(str, Enum):
 
 class TripPurpose(str, Enum):
     """Trip purpose enumeration"""
+
     TOURISM = "tourism"
     BUSINESS = "business"
     ADVENTURE = "adventure"
@@ -27,6 +29,7 @@ class TripPurpose(str, Enum):
 
 class TravelStyle(str, Enum):
     """Travel style preferences"""
+
     BUDGET = "budget"
     BALANCED = "balanced"
     LUXURY = "luxury"
@@ -34,6 +37,7 @@ class TravelStyle(str, Enum):
 
 class AccommodationType(str, Enum):
     """Accommodation type preferences"""
+
     HOTEL = "hotel"
     HOSTEL = "hostel"
     AIRBNB = "airbnb"
@@ -44,6 +48,7 @@ class AccommodationType(str, Enum):
 
 class TransportationPreference(str, Enum):
     """Transportation preference"""
+
     PUBLIC = "public"
     RENTAL_CAR = "rental_car"
     TAXI_RIDESHARE = "taxi_rideshare"
@@ -53,15 +58,20 @@ class TransportationPreference(str, Enum):
 
 class TravelerDetails(BaseModel):
     """Traveler information for trip creation"""
+
     name: str = Field(..., min_length=1, max_length=100)
     email: EmailStr
-    nationality: str = Field(..., min_length=2, max_length=2, description="ISO 3166-1 alpha-2 country code")
-    residence_country: str = Field(..., min_length=2, max_length=2, description="ISO 3166-1 alpha-2 country code")
+    nationality: str = Field(
+        ..., min_length=2, max_length=2, description="ISO 3166-1 alpha-2 country code"
+    )
+    residence_country: str = Field(
+        ..., min_length=2, max_length=2, description="ISO 3166-1 alpha-2 country code"
+    )
     origin_city: str = Field(..., min_length=1, max_length=100)
     party_size: int = Field(default=1, ge=1, le=20)
     party_ages: list[int] = Field(default_factory=list)
 
-    @field_validator('nationality', 'residence_country')
+    @field_validator("nationality", "residence_country")
     @classmethod
     def validate_country_code(cls, v: str) -> str:
         """Validate country code is uppercase"""
@@ -69,15 +79,17 @@ class TravelerDetails(BaseModel):
             raise ValueError("Country code must be uppercase (ISO 3166-1 alpha-2)")
         return v
 
-    @field_validator('party_ages')
+    @field_validator("party_ages")
     @classmethod
     def validate_party_ages(cls, v: list[int], info) -> list[int]:
         """Validate party_ages matches party_size"""
         # Get party_size from the values being validated
-        party_size = info.data.get('party_size', 1)
+        party_size = info.data.get("party_size", 1)
 
         if len(v) > party_size:
-            raise ValueError(f"Number of party ages ({len(v)}) cannot exceed party size ({party_size})")
+            raise ValueError(
+                f"Number of party ages ({len(v)}) cannot exceed party size ({party_size})"
+            )
 
         # Validate all ages are reasonable
         for age in v:
@@ -95,45 +107,41 @@ class TravelerDetails(BaseModel):
                 "residence_country": "US",
                 "origin_city": "New York",
                 "party_size": 2,
-                "party_ages": [30, 28]
+                "party_ages": [30, 28],
             }
         }
 
 
 class Destination(BaseModel):
     """Destination information for multi-city trips"""
+
     country: str = Field(..., min_length=1, max_length=100)
     city: str = Field(..., min_length=1, max_length=100)
-    duration_days: Optional[int] = Field(None, ge=1, le=365)
+    duration_days: int | None = Field(None, ge=1, le=365)
 
     class Config:
-        json_schema_extra = {
-            "example": {
-                "country": "France",
-                "city": "Paris",
-                "duration_days": 5
-            }
-        }
+        json_schema_extra = {"example": {"country": "France", "city": "Paris", "duration_days": 5}}
 
 
 class TripDetails(BaseModel):
     """Trip planning details"""
+
     departure_date: date
     return_date: date
     budget: float = Field(..., gt=0)
     currency: str = Field(default="USD", min_length=3, max_length=3)
     trip_purpose: TripPurpose = TripPurpose.TOURISM
 
-    @field_validator('return_date')
+    @field_validator("return_date")
     @classmethod
     def validate_return_date(cls, v: date, info) -> date:
         """Validate return date is after departure date"""
-        departure_date = info.data.get('departure_date')
+        departure_date = info.data.get("departure_date")
         if departure_date and v <= departure_date:
             raise ValueError("Return date must be after departure date")
         return v
 
-    @field_validator('currency')
+    @field_validator("currency")
     @classmethod
     def validate_currency(cls, v: str) -> str:
         """Validate currency code is uppercase"""
@@ -148,13 +156,14 @@ class TripDetails(BaseModel):
                 "return_date": "2025-06-15",
                 "budget": 5000.00,
                 "currency": "USD",
-                "trip_purpose": "tourism"
+                "trip_purpose": "tourism",
             }
         }
 
 
 class TripPreferences(BaseModel):
     """Trip preferences and special requirements"""
+
     travel_style: TravelStyle = TravelStyle.BALANCED
     interests: list[str] = Field(default_factory=list)
     dietary_restrictions: list[str] = Field(default_factory=list)
@@ -170,20 +179,21 @@ class TripPreferences(BaseModel):
                 "dietary_restrictions": ["vegetarian"],
                 "accessibility_needs": [],
                 "accommodation_type": "hotel",
-                "transportation_preference": "public"
+                "transportation_preference": "public",
             }
         }
 
 
 class TripCreateRequest(BaseModel):
     """Request model for creating a new trip"""
+
     traveler_details: TravelerDetails
     destinations: list[Destination] = Field(..., min_length=1)
     trip_details: TripDetails
     preferences: TripPreferences
-    template_id: Optional[str] = None
+    template_id: str | None = None
 
-    @field_validator('destinations')
+    @field_validator("destinations")
     @classmethod
     def validate_destinations(cls, v: list[Destination]) -> list[Destination]:
         """Validate at least one destination is provided"""
@@ -201,21 +211,15 @@ class TripCreateRequest(BaseModel):
                     "residence_country": "US",
                     "origin_city": "New York",
                     "party_size": 2,
-                    "party_ages": [30, 28]
+                    "party_ages": [30, 28],
                 },
-                "destinations": [
-                    {
-                        "country": "France",
-                        "city": "Paris",
-                        "duration_days": 7
-                    }
-                ],
+                "destinations": [{"country": "France", "city": "Paris", "duration_days": 7}],
                 "trip_details": {
                     "departure_date": "2025-06-01",
                     "return_date": "2025-06-15",
                     "budget": 5000.00,
                     "currency": "USD",
-                    "trip_purpose": "tourism"
+                    "trip_purpose": "tourism",
                 },
                 "preferences": {
                     "travel_style": "balanced",
@@ -223,23 +227,24 @@ class TripCreateRequest(BaseModel):
                     "dietary_restrictions": [],
                     "accessibility_needs": [],
                     "accommodation_type": "hotel",
-                    "transportation_preference": "public"
+                    "transportation_preference": "public",
                 },
-                "template_id": None
+                "template_id": None,
             }
         }
 
 
 class TripUpdateRequest(BaseModel):
     """Request model for updating an existing trip (all fields optional)"""
-    traveler_details: Optional[TravelerDetails] = None
-    destinations: Optional[list[Destination]] = None
-    trip_details: Optional[TripDetails] = None
-    preferences: Optional[TripPreferences] = None
 
-    @field_validator('destinations')
+    traveler_details: TravelerDetails | None = None
+    destinations: list[Destination] | None = None
+    trip_details: TripDetails | None = None
+    preferences: TripPreferences | None = None
+
+    @field_validator("destinations")
     @classmethod
-    def validate_destinations(cls, v: Optional[list[Destination]]) -> Optional[list[Destination]]:
+    def validate_destinations(cls, v: list[Destination] | None) -> list[Destination] | None:
         """Validate at least one destination if provided"""
         if v is not None and len(v) == 0:
             raise ValueError("At least one destination is required")
@@ -248,6 +253,7 @@ class TripUpdateRequest(BaseModel):
 
 class TripResponse(BaseModel):
     """Response model for trip data"""
+
     id: str
     user_id: str
     status: TripStatus
@@ -257,8 +263,8 @@ class TripResponse(BaseModel):
     destinations: list[Destination]
     trip_details: TripDetails
     preferences: TripPreferences
-    template_id: Optional[str] = None
-    auto_delete_at: Optional[datetime] = None
+    template_id: str | None = None
+    auto_delete_at: datetime | None = None
 
     class Config:
         from_attributes = True
@@ -276,21 +282,15 @@ class TripResponse(BaseModel):
                     "residence_country": "US",
                     "origin_city": "New York",
                     "party_size": 2,
-                    "party_ages": [30, 28]
+                    "party_ages": [30, 28],
                 },
-                "destinations": [
-                    {
-                        "country": "France",
-                        "city": "Paris",
-                        "duration_days": 7
-                    }
-                ],
+                "destinations": [{"country": "France", "city": "Paris", "duration_days": 7}],
                 "trip_details": {
                     "departure_date": "2025-06-01",
                     "return_date": "2025-06-15",
                     "budget": 5000.00,
                     "currency": "USD",
-                    "trip_purpose": "tourism"
+                    "trip_purpose": "tourism",
                 },
                 "preferences": {
                     "travel_style": "balanced",
@@ -298,10 +298,10 @@ class TripResponse(BaseModel):
                     "dietary_restrictions": [],
                     "accessibility_needs": [],
                     "accommodation_type": "hotel",
-                    "transportation_preference": "public"
+                    "transportation_preference": "public",
                 },
                 "template_id": None,
-                "auto_delete_at": "2025-07-15T00:00:00Z"
+                "auto_delete_at": "2025-07-15T00:00:00Z",
             }
         }
 
@@ -309,14 +309,16 @@ class TripResponse(BaseModel):
 # Draft models
 class DraftSaveRequest(BaseModel):
     """Request model for saving a draft (partial trip data)"""
-    traveler_details: Optional[TravelerDetails] = None
-    destinations: Optional[list[Destination]] = None
-    trip_details: Optional[TripDetails] = None
-    preferences: Optional[TripPreferences] = None
+
+    traveler_details: TravelerDetails | None = None
+    destinations: list[Destination] | None = None
+    trip_details: TripDetails | None = None
+    preferences: TripPreferences | None = None
 
 
 class DraftResponse(BaseModel):
     """Response model for draft data"""
+
     id: str
     user_id: str
     created_at: datetime

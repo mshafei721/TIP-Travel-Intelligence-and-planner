@@ -340,8 +340,6 @@ export default function TripCreationWizard() {
             <TripSummary
               formData={formData}
               onEdit={handleEditFromSummary}
-              onSubmit={handleSubmit}
-              isSubmitting={isSubmitting}
             />
           )}
 

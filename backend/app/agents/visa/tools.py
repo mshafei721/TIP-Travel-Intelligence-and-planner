@@ -6,9 +6,9 @@ Each tool is decorated with @tool for CrewAI integration.
 """
 
 from crewai.tools import tool
-from app.services.visa.travel_buddy_client import TravelBuddyClient, VisaCheckResult
-from app.core.config import settings
 
+from app.core.config import settings
+from app.services.visa.travel_buddy_client import TravelBuddyClient
 
 # Initialize Travel Buddy AI client
 _visa_client = TravelBuddyClient(api_key=settings.RAPIDAPI_KEY)
@@ -154,12 +154,22 @@ def estimate_processing_time(visa_type: str, application_method: str) -> dict:
         "e-visa": {"min_days": 1, "max_days": 3, "description": "1-3 business days"},
         "online": {"min_days": 3, "max_days": 7, "description": "3-7 business days"},
         "embassy": {"min_days": 5, "max_days": 15, "description": "5-15 business days"},
-        "on-arrival": {"min_days": 0, "max_days": 1, "description": "Same day (at airport)"},
-        "visa-free": {"min_days": 0, "max_days": 0, "description": "No processing needed"},
+        "on-arrival": {
+            "min_days": 0,
+            "max_days": 1,
+            "description": "Same day (at airport)",
+        },
+        "visa-free": {
+            "min_days": 0,
+            "max_days": 0,
+            "description": "No processing needed",
+        },
     }
 
     method = visa_type.lower() if visa_type else application_method.lower()
-    return processing_times.get(method, {"min_days": 7, "max_days": 21, "description": "7-21 business days"})
+    return processing_times.get(
+        method, {"min_days": 7, "max_days": 21, "description": "7-21 business days"}
+    )
 
 
 @tool("Travel Advisory Checker")

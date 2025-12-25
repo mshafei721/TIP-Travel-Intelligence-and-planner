@@ -94,6 +94,7 @@ export function RecommendationsCard({
             {/* Image */}
             <div className="relative h-40 overflow-hidden bg-slate-100 dark:bg-slate-800">
               {recommendation.imageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={recommendation.imageUrl}
                   alt={recommendation.destination}

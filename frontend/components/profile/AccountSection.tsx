@@ -34,7 +34,7 @@ export function AccountSection({ onAccountDelete }: AccountSectionProps) {
     try {
       await onAccountDelete()
       // onAccountDelete should handle logout and redirect
-    } catch (error) {
+    } catch {
       setIsDeleting(false)
       alert('Failed to delete account. Please try again.')
     }

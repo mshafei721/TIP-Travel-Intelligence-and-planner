@@ -10,11 +10,13 @@ TDD Approach:
 3. Refactor while keeping tests passing
 """
 
+from datetime import date, datetime
+from unittest.mock import Mock, patch
+
 import pytest
-from datetime import datetime, date
-from unittest.mock import Mock, AsyncMock, patch
+
+from app.agents.interfaces import AgentResult
 from app.agents.orchestrator.agent import OrchestratorAgent
-from app.agents.interfaces import AgentResult, SourceReference
 
 
 class TestOrchestratorAgent:
@@ -25,13 +27,13 @@ class TestOrchestratorAgent:
         orchestrator = OrchestratorAgent()
 
         # Should have a registry of available agents
-        assert hasattr(orchestrator, 'available_agents')
+        assert hasattr(orchestrator, "available_agents")
         assert isinstance(orchestrator.available_agents, dict)
 
         # At minimum should recognize visa agent
-        assert 'visa' in orchestrator.available_agents
+        assert "visa" in orchestrator.available_agents
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_orchestrator_generates_report_for_trip(self):
         """Test that orchestrator can generate a complete report"""
         orchestrator = OrchestratorAgent()
@@ -43,7 +45,7 @@ class TestOrchestratorAgent:
             "destination_city": "Paris",
             "departure_date": date(2025, 6, 1),
             "return_date": date(2025, 6, 15),
-            "trip_purpose": "tourism"
+            "trip_purpose": "tourism",
         }
 
         # Should return a complete report
@@ -54,7 +56,7 @@ class TestOrchestratorAgent:
         assert "sections" in result
         assert "generated_at" in result
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_orchestrator_runs_visa_agent(self):
         """Test that orchestrator runs visa agent"""
         orchestrator = OrchestratorAgent()
@@ -66,7 +68,7 @@ class TestOrchestratorAgent:
             "destination_city": "Tokyo",
             "departure_date": date(2025, 7, 1),
             "return_date": date(2025, 7, 14),
-            "trip_purpose": "tourism"
+            "trip_purpose": "tourism",
         }
 
         result = await orchestrator.generate_report(trip_data)
@@ -76,13 +78,13 @@ class TestOrchestratorAgent:
         assert "visa" in result["sections"]
         assert result["sections"]["visa"] is not None
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_orchestrator_handles_agent_failure_gracefully(self):
         """Test that orchestrator continues if one agent fails"""
         orchestrator = OrchestratorAgent()
 
         # Mock visa agent to fail
-        with patch('app.agents.orchestrator.agent.VisaAgent') as mock_visa:
+        with patch("app.agents.orchestrator.agent.VisaAgent") as mock_visa:
             mock_visa.return_value.run_async.side_effect = Exception("API failure")
 
             trip_data = {
@@ -92,7 +94,7 @@ class TestOrchestratorAgent:
                 "destination_city": "London",
                 "departure_date": date(2025, 8, 1),
                 "return_date": date(2025, 8, 10),
-                "trip_purpose": "tourism"
+                "trip_purpose": "tourism",
             }
 
             # Should not raise exception
@@ -103,7 +105,7 @@ class TestOrchestratorAgent:
             assert "errors" in result
             assert len(result["errors"]) > 0
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_orchestrator_runs_agents_in_phases(self):
         """Test that orchestrator runs agents in correct phases"""
         orchestrator = OrchestratorAgent()
@@ -120,11 +122,11 @@ class TestOrchestratorAgent:
                 confidence_score=0.9,
                 data={},
                 sources=[],
-                warnings=[]
+                warnings=[],
             )
 
         # Mock agents
-        with patch.object(orchestrator, '_run_agent', side_effect=track_execution):
+        with patch.object(orchestrator, "_run_agent", side_effect=track_execution):
             trip_data = {
                 "trip_id": "test-phases",
                 "user_nationality": "US",
@@ -132,15 +134,15 @@ class TestOrchestratorAgent:
                 "destination_city": "Rome",
                 "departure_date": date(2025, 9, 1),
                 "return_date": date(2025, 9, 14),
-                "trip_purpose": "tourism"
+                "trip_purpose": "tourism",
             }
 
             await orchestrator.generate_report(trip_data)
 
             # Visa should run in Phase 1 (independent agents)
-            assert 'visa' in execution_order
+            assert "visa" in execution_order
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_orchestrator_saves_results_to_database(self):
         """Test that orchestrator saves results to database"""
         orchestrator = OrchestratorAgent()
@@ -152,11 +154,11 @@ class TestOrchestratorAgent:
             "destination_city": "Barcelona",
             "departure_date": date(2025, 10, 1),
             "return_date": date(2025, 10, 14),
-            "trip_purpose": "tourism"
+            "trip_purpose": "tourism",
         }
 
         # Mock database save
-        with patch('app.agents.orchestrator.agent.supabase') as mock_db:
+        with patch("app.agents.orchestrator.agent.supabase") as mock_db:
             mock_db.table.return_value.insert.return_value.execute.return_value = None
 
             await orchestrator.generate_report(trip_data)
@@ -164,7 +166,7 @@ class TestOrchestratorAgent:
             # Should have called database save
             assert mock_db.table.called
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_orchestrator_updates_agent_job_status(self):
         """Test that orchestrator updates agent job status"""
         orchestrator = OrchestratorAgent()
@@ -176,13 +178,15 @@ class TestOrchestratorAgent:
             "destination_city": "Berlin",
             "departure_date": date(2025, 11, 1),
             "return_date": date(2025, 11, 14),
-            "trip_purpose": "tourism"
+            "trip_purpose": "tourism",
         }
 
         # Mock database
-        with patch('app.agents.orchestrator.agent.supabase') as mock_db:
+        with patch("app.agents.orchestrator.agent.supabase") as mock_db:
             mock_update = Mock()
-            mock_db.table.return_value.update.return_value.eq.return_value.execute.return_value = None
+            mock_db.table.return_value.update.return_value.eq.return_value.execute.return_value = (
+                None
+            )
 
             await orchestrator.generate_report(trip_data)
 
@@ -213,7 +217,7 @@ class TestOrchestratorAgent:
             "destination_city": "Sydney",
             "departure_date": date(2025, 12, 1),
             "return_date": date(2025, 12, 14),
-            "trip_purpose": "tourism"
+            "trip_purpose": "tourism",
         }
 
         # Validate trip data first
@@ -225,7 +229,7 @@ class TestOrchestratorAgent:
         assert agent_input.user_nationality == "US"
         assert agent_input.destination_country == "AU"
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_orchestrator_aggregates_results(self):
         """Test that orchestrator aggregates results from all agents"""
         orchestrator = OrchestratorAgent()
@@ -238,7 +242,7 @@ class TestOrchestratorAgent:
             "confidence_score": 0.95,
             "data": {"visa_required": False},
             "sources": [],
-            "warnings": []
+            "warnings": [],
         }
 
         results = {"visa": visa_result_dict}

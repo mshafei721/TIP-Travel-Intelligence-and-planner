@@ -23,7 +23,7 @@ export function PrivacySection() {
           </h3>
           <p className="mt-2 text-sm text-blue-800 dark:text-blue-200">
             Your trip data is automatically deleted <strong>7 days after your trip end date</strong> to protect your privacy.
-            You'll receive email reminders before deletion if enabled in notification settings.
+            You&apos;ll receive email reminders before deletion if enabled in notification settings.
           </p>
         </div>
 

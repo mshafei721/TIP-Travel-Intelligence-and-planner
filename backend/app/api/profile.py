@@ -1,24 +1,21 @@
 """Profile and statistics API endpoints"""
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from app.core.supabase import supabase
+
 from app.core.auth import verify_jwt_token
+from app.core.supabase import supabase
 from app.models.profile import (
-    UserProfileUpdate,
-    TravelerProfileCreate,
+    AccountDeletionRequest,
     TravelerProfileUpdate,
     UserPreferences,
-    AccountDeletionRequest
+    UserProfileUpdate,
 )
-from datetime import date
 
 router = APIRouter(prefix="/profile", tags=["profile"])
 
 
 @router.get("/statistics")
-async def get_statistics(
-    token_payload: dict = Depends(verify_jwt_token)
-):
+async def get_statistics(token_payload: dict = Depends(verify_jwt_token)):
     """
     Get user travel statistics
 
@@ -35,9 +32,12 @@ async def get_statistics(
 
     try:
         # Fetch all trips for user
-        response = supabase.table("trips").select(
-            "id, status, destinations"
-        ).eq("user_id", user_id).execute()
+        response = (
+            supabase.table("trips")
+            .select("id, status, destinations")
+            .eq("user_id", user_id)
+            .execute()
+        )
 
         trips = response.data if response.data else []
 
@@ -64,7 +64,7 @@ async def get_statistics(
             "totalTrips": total_trips,
             "countriesVisited": len(countries),
             "destinationsExplored": len(destinations),
-            "activeTrips": active_trips
+            "activeTrips": active_trips,
         }
 
         return {"statistics": statistics}
@@ -72,14 +72,12 @@ async def get_statistics(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to calculate statistics: {str(e)}"
+            detail=f"Failed to calculate statistics: {str(e)}",
         )
 
 
 @router.get("")
-async def get_profile(
-    token_payload: dict = Depends(verify_jwt_token)
-):
+async def get_profile(token_payload: dict = Depends(verify_jwt_token)):
     """
     Get complete user profile
 
@@ -92,22 +90,25 @@ async def get_profile(
 
     try:
         # Fetch user profile
-        user_response = supabase.table("user_profiles").select("*").eq(
-            "id", user_id
-        ).single().execute()
+        user_response = (
+            supabase.table("user_profiles").select("*").eq("id", user_id).single().execute()
+        )
 
         if not user_response.data:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User profile not found"
+                status_code=status.HTTP_404_NOT_FOUND, detail="User profile not found"
             )
 
         user_profile = user_response.data
 
         # Fetch traveler profile (optional)
-        traveler_response = supabase.table("traveler_profiles").select("*").eq(
-            "user_id", user_id
-        ).maybe_single().execute()
+        traveler_response = (
+            supabase.table("traveler_profiles")
+            .select("*")
+            .eq("user_id", user_id)
+            .maybe_single()
+            .execute()
+        )
 
         traveler_profile = traveler_response.data if traveler_response.data else None
 
@@ -115,13 +116,13 @@ async def get_profile(
         notification_settings = {
             "deletionReminders": True,
             "reportCompletion": True,
-            "productUpdates": False
+            "productUpdates": False,
         }
 
         return {
             "user": user_profile,
             "travelerProfile": traveler_profile,
-            "notificationSettings": notification_settings
+            "notificationSettings": notification_settings,
         }
 
     except HTTPException:
@@ -129,14 +130,13 @@ async def get_profile(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to fetch profile: {str(e)}"
+            detail=f"Failed to fetch profile: {str(e)}",
         )
 
 
 @router.put("")
 async def update_profile(
-    profile_update: UserProfileUpdate,
-    token_payload: dict = Depends(verify_jwt_token)
+    profile_update: UserProfileUpdate, token_payload: dict = Depends(verify_jwt_token)
 ):
     """
     Update user profile
@@ -161,18 +161,15 @@ async def update_profile(
     if not update_data:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="No fields provided for update"
+            detail="No fields provided for update",
         )
 
     try:
-        response = supabase.table("user_profiles").update(update_data).eq(
-            "id", user_id
-        ).execute()
+        response = supabase.table("user_profiles").update(update_data).eq("id", user_id).execute()
 
         if not response.data:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User profile not found"
+                status_code=status.HTTP_404_NOT_FOUND, detail="User profile not found"
             )
 
         return response.data[0]
@@ -182,14 +179,12 @@ async def update_profile(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to update profile: {str(e)}"
+            detail=f"Failed to update profile: {str(e)}",
         )
 
 
 @router.get("/traveler")
-async def get_traveler_profile(
-    token_payload: dict = Depends(verify_jwt_token)
-):
+async def get_traveler_profile(token_payload: dict = Depends(verify_jwt_token)):
     """
     Get traveler profile
 
@@ -201,23 +196,27 @@ async def get_traveler_profile(
     user_id = token_payload["user_id"]
 
     try:
-        response = supabase.table("traveler_profiles").select("*").eq(
-            "user_id", user_id
-        ).maybe_single().execute()
+        response = (
+            supabase.table("traveler_profiles")
+            .select("*")
+            .eq("user_id", user_id)
+            .maybe_single()
+            .execute()
+        )
 
         return response.data if response.data else None
 
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to fetch traveler profile: {str(e)}"
+            detail=f"Failed to fetch traveler profile: {str(e)}",
         )
 
 
 @router.put("/traveler")
 async def update_traveler_profile(
     traveler_update: TravelerProfileUpdate,
-    token_payload: dict = Depends(verify_jwt_token)
+    token_payload: dict = Depends(verify_jwt_token),
 ):
     """
     Create or update traveler profile
@@ -234,9 +233,13 @@ async def update_traveler_profile(
 
     try:
         # Check if traveler profile exists
-        existing = supabase.table("traveler_profiles").select("*").eq(
-            "user_id", user_id
-        ).maybe_single().execute()
+        existing = (
+            supabase.table("traveler_profiles")
+            .select("*")
+            .eq("user_id", user_id)
+            .maybe_single()
+            .execute()
+        )
 
         # Build update dict with only provided fields
         update_data = {}
@@ -258,20 +261,26 @@ async def update_traveler_profile(
         if not update_data:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="No fields provided for update"
+                detail="No fields provided for update",
             )
 
         if existing.data:
             # Update existing profile
-            response = supabase.table("traveler_profiles").update(update_data).eq(
-                "user_id", user_id
-            ).execute()
+            response = (
+                supabase.table("traveler_profiles")
+                .update(update_data)
+                .eq("user_id", user_id)
+                .execute()
+            )
         else:
             # Create new profile - need all required fields
-            if not all(key in update_data for key in ["nationality", "residency_country", "residency_status"]):
+            if not all(
+                key in update_data
+                for key in ["nationality", "residency_country", "residency_status"]
+            ):
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Creating traveler profile requires nationality, residency_country, and residency_status"
+                    detail="Creating traveler profile requires nationality, residency_country, and residency_status",
                 )
 
             update_data["user_id"] = user_id
@@ -285,7 +294,7 @@ async def update_traveler_profile(
         if not response.data:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to create or update traveler profile"
+                detail="Failed to create or update traveler profile",
             )
 
         return response.data[0]
@@ -295,14 +304,13 @@ async def update_traveler_profile(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to update traveler profile: {str(e)}"
+            detail=f"Failed to update traveler profile: {str(e)}",
         )
 
 
 @router.put("/preferences")
 async def update_preferences(
-    preferences: UserPreferences,
-    token_payload: dict = Depends(verify_jwt_token)
+    preferences: UserPreferences, token_payload: dict = Depends(verify_jwt_token)
 ):
     """
     Update user preferences
@@ -321,14 +329,16 @@ async def update_preferences(
         # Convert Pydantic model to dict for JSONB storage
         preferences_dict = preferences.model_dump()
 
-        response = supabase.table("user_profiles").update({
-            "preferences": preferences_dict
-        }).eq("id", user_id).execute()
+        response = (
+            supabase.table("user_profiles")
+            .update({"preferences": preferences_dict})
+            .eq("id", user_id)
+            .execute()
+        )
 
         if not response.data:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User profile not found"
+                status_code=status.HTTP_404_NOT_FOUND, detail="User profile not found"
             )
 
         return response.data[0]
@@ -338,14 +348,14 @@ async def update_preferences(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to update preferences: {str(e)}"
+            detail=f"Failed to update preferences: {str(e)}",
         )
 
 
 @router.delete("")
 async def delete_account(
     deletion_request: AccountDeletionRequest,
-    token_payload: dict = Depends(verify_jwt_token)
+    token_payload: dict = Depends(verify_jwt_token),
 ):
     """
     Delete user account
@@ -373,25 +383,19 @@ async def delete_account(
     try:
         # Delete from user_profiles table
         # This will CASCADE delete all related data due to foreign key constraints
-        response = supabase.table("user_profiles").delete().eq(
-            "id", user_id
-        ).execute()
+        response = supabase.table("user_profiles").delete().eq("id", user_id).execute()
 
         if not response.data:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User profile not found"
+                status_code=status.HTTP_404_NOT_FOUND, detail="User profile not found"
             )
 
-        return {
-            "message": "Account deleted successfully",
-            "user_id": user_id
-        }
+        return {"message": "Account deleted successfully", "user_id": user_id}
 
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to delete account: {str(e)}"
+            detail=f"Failed to delete account: {str(e)}",
         )

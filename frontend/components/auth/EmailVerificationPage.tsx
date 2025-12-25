@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 
 export interface EmailVerificationPageProps {
-  token: string
   onVerify: () => Promise<void>
   isLoading?: boolean
   success?: boolean
@@ -15,7 +14,6 @@ export interface EmailVerificationPageProps {
 }
 
 export function EmailVerificationPage({
-  token,
   onVerify,
   isLoading = false,
   success = false,

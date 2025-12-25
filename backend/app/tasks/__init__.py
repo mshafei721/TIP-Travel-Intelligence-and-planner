@@ -12,8 +12,8 @@ All tasks are auto-discovered by Celery from this module.
 
 from app.tasks.agent_jobs import (
     execute_agent_job,
-    execute_visa_agent,
     execute_orchestrator,
+    execute_visa_agent,
 )
 from app.tasks.cleanup import (
     cleanup_expired_tasks,

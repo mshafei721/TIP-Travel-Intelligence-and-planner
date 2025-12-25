@@ -5,12 +5,13 @@ Defines CrewAI tasks for country information gathering and analysis.
 """
 
 from crewai import Task
+
 from .models import CountryAgentInput
 from .prompts import (
+    COMPREHENSIVE_INFO_TASK_PROMPT,
+    PRACTICAL_INFO_TASK_PROMPT,
     RESEARCH_TASK_PROMPT,
     VERIFICATION_TASK_PROMPT,
-    PRACTICAL_INFO_TASK_PROMPT,
-    COMPREHENSIVE_INFO_TASK_PROMPT,
 )
 
 

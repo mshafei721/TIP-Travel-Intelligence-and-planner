@@ -12,23 +12,25 @@ Test cases from visa-agent-roadmap.md:
 - US to Japan: visa-free (90 days)
 """
 
+from datetime import date
+
 import pytest
-from datetime import date, datetime
+
+from app.agents.interfaces import SourceReference
 from app.agents.visa.agent import VisaAgent
 from app.agents.visa.models import (
+    ApplicationProcess,
+    EntryRequirement,
     VisaAgentInput,
     VisaAgentOutput,
     VisaRequirement,
-    ApplicationProcess,
-    EntryRequirement,
 )
-from app.agents.interfaces import SourceReference
 
 
 class TestVisaAgent:
     """Test suite for Visa Agent"""
 
-    @pytest.fixture
+    @pytest.fixture()
     def agent(self):
         """Create Visa Agent instance"""
         return VisaAgent()

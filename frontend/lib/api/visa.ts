@@ -4,7 +4,68 @@
  * Functions for fetching visa intelligence reports from the backend
  */
 
-import type { VisaIntelligence } from '@/types/visa';
+import type { ConfidenceLevel, TripPurpose, VisaCategory, VisaIntelligence } from '@/types/visa';
+
+type VisaSourceApi = {
+  name?: string;
+  url?: string;
+  type?: 'government' | 'embassy' | 'third-party';
+  last_verified?: string;
+};
+
+type VisaRequirementApi = {
+  user_nationality?: string;
+  destination_country?: string;
+  destination_city?: string;
+  trip_purpose?: TripPurpose;
+  duration_days?: number;
+  visa_required?: boolean;
+  visa_type?: string;
+  visa_category?: VisaCategory;
+  max_stay_days?: number;
+  max_stay_duration?: string;
+  multiple_entry?: boolean;
+  confidence_level?: ConfidenceLevel;
+};
+
+type ApplicationProcessApi = {
+  application_method?: string;
+  application_url?: string;
+  processing_time?: string;
+  processing_time_days?: number;
+  cost_usd?: number;
+  cost_local?: {
+    amount?: number;
+    currency?: string;
+  };
+  required_documents?: string[];
+  steps?: string[];
+};
+
+type EntryRequirementsApi = {
+  passport_validity?: string;
+  passport_validity_months?: number;
+  blank_pages_required?: number;
+  vaccinations?: string[];
+  return_ticket?: boolean;
+  proof_of_accommodation?: boolean;
+  proof_of_funds?: boolean;
+  other_requirements?: string[];
+};
+
+type VisaReportApi = {
+  generated_at?: string;
+  visa_requirement?: VisaRequirementApi | null;
+  application_process?: ApplicationProcessApi | null;
+  entry_requirements?: EntryRequirementsApi | null;
+  tips?: string[];
+  warnings?: string[];
+  confidence_score?: number;
+  sources?: VisaSourceApi[];
+  last_verified?: string;
+  is_partial_data?: boolean;
+  missing_fields?: string[];
+};
 
 /**
  * Fetch visa report for a specific trip
@@ -40,7 +101,7 @@ export async function fetchVisaReport(tripId: string): Promise<VisaIntelligence>
     throw new Error(errorData.detail || `Failed to fetch visa report: ${response.statusText}`);
   }
 
-  const data = await response.json();
+  const data = (await response.json()) as VisaReportApi;
 
   // Transform API response to match frontend types
   return transformVisaReport(data, tripId);
@@ -53,14 +114,22 @@ export async function fetchVisaReport(tripId: string): Promise<VisaIntelligence>
  * @param tripId - Trip ID
  * @returns Transformed visa intelligence data
  */
-function transformVisaReport(apiData: any, tripId: string): VisaIntelligence {
+function transformVisaReport(apiData: VisaReportApi, tripId: string): VisaIntelligence {
+  const costLocal = apiData.application_process?.cost_local
+  const normalizedCostLocal =
+    costLocal
+    && typeof costLocal.amount === 'number'
+    && typeof costLocal.currency === 'string'
+      ? { amount: costLocal.amount, currency: costLocal.currency }
+      : undefined
+
   return {
     tripId,
-    generatedAt: apiData.generated_at,
+    generatedAt: apiData.generated_at || new Date().toISOString(),
     userNationality: apiData.visa_requirement?.user_nationality || 'Unknown',
     destinationCountry: apiData.visa_requirement?.destination_country || 'Unknown',
     destinationCity: apiData.visa_requirement?.destination_city,
-    tripPurpose: (apiData.visa_requirement?.trip_purpose || 'tourism') as 'tourism' | 'business' | 'transit',
+    tripPurpose: apiData.visa_requirement?.trip_purpose || 'tourism',
     durationDays: apiData.visa_requirement?.duration_days || 0,
 
     // Visa requirement
@@ -81,7 +150,7 @@ function transformVisaReport(apiData: any, tripId: string): VisaIntelligence {
       processingTime: apiData.application_process?.processing_time,
       processingTimeDays: apiData.application_process?.processing_time_days,
       costUsd: apiData.application_process?.cost_usd,
-      costLocal: apiData.application_process?.cost_local,
+      costLocal: normalizedCostLocal,
       requiredDocuments: apiData.application_process?.required_documents || [],
       steps: apiData.application_process?.steps || [],
     },
@@ -104,12 +173,12 @@ function transformVisaReport(apiData: any, tripId: string): VisaIntelligence {
 
     // Confidence and sources
     confidenceScore: apiData.confidence_score || 0.0,
-    sources: (apiData.sources || []).map((source: any) => ({
-      name: source.name || 'Unknown Source',
-      url: source.url || '',
-      type: source.type || 'third-party',
-      lastVerified: source.last_verified || new Date().toISOString(),
-    })),
+      sources: (apiData.sources || []).map((source) => ({
+        name: source.name || 'Unknown Source',
+        url: source.url || '',
+        type: source.type || 'third-party',
+        lastVerified: source.last_verified || new Date().toISOString(),
+      })),
     lastVerified: apiData.last_verified || new Date().toISOString(),
 
     // Metadata

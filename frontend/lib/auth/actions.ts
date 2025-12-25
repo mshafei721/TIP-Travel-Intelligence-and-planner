@@ -8,14 +8,29 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
+import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Database } from '@/types/database'
 import type { SignupCredentials, LoginCredentials, ChangePasswordData } from '@/types/auth'
-import type { Json } from '@/types/database'
+
+type UserProfilesTable = Database['public']['Tables']['user_profiles']
+type UserProfilesInsert = UserProfilesTable['Insert']
+
+const userProfilesTable = (supabase: SupabaseClient<Database, 'public'>) =>
+  supabase.from('user_profiles') as unknown as {
+    insert: (values: UserProfilesInsert) => Promise<{ error: { message: string } | null }>
+    delete: () => {
+      eq: (
+        column: keyof UserProfilesTable['Row'],
+        value: string
+      ) => Promise<{ error: { message: string } | null }>
+    }
+  }
 
 /**
  * Sign up with email and password
  */
 export async function signUp(credentials: SignupCredentials) {
-  const supabase = await createClient()
+  const supabase = (await createClient()) as SupabaseClient<Database, 'public'>
 
   const { data, error } = await supabase.auth.signUp({
     email: credentials.email,
@@ -34,9 +49,7 @@ export async function signUp(credentials: SignupCredentials) {
 
   // Create user profile
   if (data.user) {
-    // Type assertion needed due to known @supabase/ssr type inference issues
-    // See: https://github.com/supabase/supabase-js/issues/1738
-    const { error: profileError } = await (supabase.from('user_profiles') as any).insert({
+    const { error: profileError } = await userProfilesTable(supabase).insert({
       id: data.user.id,
       display_name: credentials.name,
       preferences: {},
@@ -54,7 +67,7 @@ export async function signUp(credentials: SignupCredentials) {
  * Sign in with email and password
  */
 export async function signIn(credentials: LoginCredentials) {
-  const supabase = await createClient()
+  const supabase = (await createClient()) as SupabaseClient<Database, 'public'>
 
   const { data, error } = await supabase.auth.signInWithPassword({
     email: credentials.email,
@@ -73,7 +86,7 @@ export async function signIn(credentials: LoginCredentials) {
  * Sign out
  */
 export async function signOut() {
-  const supabase = await createClient()
+  const supabase = (await createClient()) as SupabaseClient<Database, 'public'>
   await supabase.auth.signOut()
   revalidatePath('/', 'layout')
   redirect('/login')
@@ -83,7 +96,7 @@ export async function signOut() {
  * Request password reset
  */
 export async function requestPasswordReset(email: string) {
-  const supabase = await createClient()
+  const supabase = (await createClient()) as SupabaseClient<Database, 'public'>
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/reset-password`,
@@ -100,7 +113,7 @@ export async function requestPasswordReset(email: string) {
  * Update password
  */
 export async function updatePassword(newPassword: string) {
-  const supabase = await createClient()
+  const supabase = (await createClient()) as SupabaseClient<Database, 'public'>
 
   const { error } = await supabase.auth.updateUser({
     password: newPassword,
@@ -117,7 +130,7 @@ export async function updatePassword(newPassword: string) {
  * Change password (requires current password)
  */
 export async function changePassword(data: ChangePasswordData) {
-  const supabase = await createClient()
+  const supabase = (await createClient()) as SupabaseClient<Database, 'public'>
 
   // Verify current password by attempting sign in
   const {
@@ -154,7 +167,7 @@ export async function changePassword(data: ChangePasswordData) {
  * Delete account
  */
 export async function deleteAccount() {
-  const supabase = await createClient()
+  const supabase = (await createClient()) as SupabaseClient<Database, 'public'>
 
   const {
     data: { user },
@@ -165,10 +178,7 @@ export async function deleteAccount() {
   }
 
   // Delete user profile (cascade will handle related data)
-  // Type assertion needed due to known @supabase/ssr type inference issues
-  const { error: profileError } = await (supabase.from('user_profiles') as any)
-    .delete()
-    .eq('id', user.id)
+  const { error: profileError } = await userProfilesTable(supabase).delete().eq('id', user.id)
 
   if (profileError) {
     return { error: 'Failed to delete profile' }
@@ -184,7 +194,7 @@ export async function deleteAccount() {
  * Resend verification email
  */
 export async function resendVerificationEmail() {
-  const supabase = await createClient()
+  const supabase = (await createClient()) as SupabaseClient<Database, 'public'>
 
   const {
     data: { user },

@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import type { LegacyTripTemplate, TravelStyle } from '@/types/profile';
+import type { TripTemplate, TripTemplateCreate, TravelStyle } from '@/types/profile';
 
 const TRAVEL_STYLES: TravelStyle[] = ['budget', 'balanced', 'luxury'];
 const DIETARY_OPTIONS = [
@@ -29,8 +29,8 @@ const DIETARY_OPTIONS = [
 export interface TemplateModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  template?: LegacyTripTemplate;
-  onSave: (template: Omit<LegacyTripTemplate, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  template?: TripTemplate;
+  onSave: (template: TripTemplateCreate) => Promise<void>;
 }
 
 /**
@@ -38,7 +38,7 @@ export interface TemplateModalProps {
  *
  * Form fields:
  * - Template name
- * - Destinations (comma-separated)
+ * - Destinations (semicolon-separated)
  * - Date pattern
  * - Travel style
  * - Dietary restrictions
@@ -49,7 +49,7 @@ export function TemplateModal({ open, onOpenChange, template, onSave }: Template
   const [formData, setFormData] = useState({
     name: '',
     destinations: '',
-    datePattern: '',
+    description: '',
     travelStyle: 'balanced' as TravelStyle,
     dietaryRestrictions: [] as string[],
   });
@@ -61,16 +61,20 @@ export function TemplateModal({ open, onOpenChange, template, onSave }: Template
       if (template) {
         setFormData({
           name: template.name,
-          destinations: template.destinations.join(', '),
-          datePattern: template.datePattern,
-          travelStyle: template.preferences.travelStyle,
-          dietaryRestrictions: template.preferences.dietaryRestrictions,
+          destinations: template.destinations
+            .map((destination) =>
+              destination.city ? `${destination.city}, ${destination.country}` : destination.country,
+            )
+            .join('; '),
+          description: template.description || '',
+          travelStyle: template.preferences?.travel_style || 'balanced',
+          dietaryRestrictions: template.preferences?.dietary_restrictions || [],
         });
       } else {
         setFormData({
           name: '',
           destinations: '',
-          datePattern: '',
+          description: '',
           travelStyle: 'balanced',
           dietaryRestrictions: [],
         });
@@ -83,16 +87,29 @@ export function TemplateModal({ open, onOpenChange, template, onSave }: Template
     setIsSubmitting(true);
 
     try {
-      const templateData: Omit<LegacyTripTemplate, 'id' | 'createdAt' | 'updatedAt'> = {
-        name: formData.name.trim(),
-        destinations: formData.destinations
+      const destinationInputs = formData.destinations
+        .split(/[;\n]/)
+        .map((destination) => destination.trim())
+        .filter(Boolean);
+
+      const destinations = destinationInputs.map((destination) => {
+        const [city, ...rest] = destination
           .split(',')
-          .map((d) => d.trim())
-          .filter(Boolean),
-        datePattern: formData.datePattern.trim(),
+          .map((part) => part.trim())
+          .filter(Boolean);
+        if (rest.length > 0) {
+          return { city, country: rest.join(', ') };
+        }
+        return { country: city };
+      });
+
+      const templateData: TripTemplateCreate = {
+        name: formData.name.trim(),
+        description: formData.description.trim() || null,
+        destinations,
         preferences: {
-          travelStyle: formData.travelStyle,
-          dietaryRestrictions: formData.dietaryRestrictions,
+          travel_style: formData.travelStyle,
+          dietary_restrictions: formData.dietaryRestrictions,
         },
       };
 
@@ -145,11 +162,11 @@ export function TemplateModal({ open, onOpenChange, template, onSave }: Template
               id="destinations"
               value={formData.destinations}
               onChange={(e) => setFormData({ ...formData, destinations: e.target.value })}
-              placeholder="E.g., Paris, London (comma-separated)"
+              placeholder="E.g., Paris, France; London, UK"
               required
               disabled={isSubmitting}
             />
-            <p className="text-xs text-slate-500">Separate multiple destinations with commas</p>
+            <p className="text-xs text-slate-500">Separate multiple destinations with semicolons</p>
           </div>
 
           {/* Date Pattern */}
@@ -157,8 +174,8 @@ export function TemplateModal({ open, onOpenChange, template, onSave }: Template
             <Label htmlFor="date-pattern">Date Pattern *</Label>
             <Input
               id="date-pattern"
-              value={formData.datePattern}
-              onChange={(e) => setFormData({ ...formData, datePattern: e.target.value })}
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="E.g., Weekend, 1 week, 2 weeks"
               required
               disabled={isSubmitting}

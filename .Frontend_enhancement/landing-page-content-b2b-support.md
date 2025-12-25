@@ -44,28 +44,28 @@ Intro:
 [Product] eliminates the bottlenecks by automating the repetitive, so your team can focus on complex and high-value conversations.
 
 Feature-to-Benefit Blocks (Use Icons + Short Text):
-- 24/7 Automated Support  
-  Feature: AI answers instantly.  
+- 24/7 Automated Support
+  Feature: AI answers instantly.
   Benefit: Improve CSAT with immediate responses, anytime. Scale globally without adding headcount.
 
-- Quick Setup with Existing Content  
-  Feature: Uses your KB and docs.  
+- Quick Setup with Existing Content
+  Feature: Uses your KB and docs.
   Benefit: Go live in minutes, not months. Leverage the knowledge you already trust, no coding needed.
 
-- Trusted, Cited Answers  
-  Feature: Answers from approved content with sources.  
+- Trusted, Cited Answers
+  Feature: Answers from approved content with sources.
   Benefit: Build customer trust with accurate, verifiable information and consistent brand voice.
 
-- Seamless Handoff to Humans  
-  Feature: Escalates complex issues.  
+- Seamless Handoff to Humans
+  Feature: Escalates complex issues.
   Benefit: Route edge cases to experts fast with full context, while AI handles the routine.
 
-- CRM Integration and Personalization  
-  Feature: Native CRM connection.  
+- CRM Integration and Personalization
+  Feature: Native CRM connection.
   Benefit: Deliver personalized support based on customer history, all in one platform.
 
-- Analytics and Reporting  
-  Feature: Performance insights.  
+- Analytics and Reporting
+  Feature: Performance insights.
   Benefit: Understand what customers ask, identify gaps, and continuously improve.
 
 Visual:
@@ -103,22 +103,22 @@ Headline:
 Have Questions? We've Got Answers.
 
 Questions:
-- How quickly can I set up [Product]?  
+- How quickly can I set up [Product]?
   Most teams are live in under an hour with existing content.
 
-- What content sources does [Product] use?  
+- What content sources does [Product] use?
   Your knowledge base, help docs, and approved internal content.
 
-- How does [Product] ensure answers are accurate and on-brand?  
+- How does [Product] ensure answers are accurate and on-brand?
   Responses are grounded in your sources with citations and guardrails.
 
-- What happens if [Product] can't answer a question?  
+- What happens if [Product] can't answer a question?
   It escalates to a human with full context and conversation history.
 
-- Is my customer data secure when using [Product]?  
+- Is my customer data secure when using [Product]?
   Yes. Data is encrypted, access is controlled, and retention is configurable.
 
-- Does [Product] require technical expertise to manage?  
+- Does [Product] require technical expertise to manage?
   No. Non-technical teams can launch and update it with simple workflows.
 
 ---

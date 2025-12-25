@@ -14,7 +14,8 @@ import type {
   TravelerDetails,
   TravelPreferences,
   NotificationSettings,
-  LegacyTripTemplate,
+  TripTemplateCreate,
+  TripTemplateUpdate,
 } from '@/types/profile';
 import * as profileApi from '@/lib/api/profile';
 import * as templatesApi from '@/lib/api/templates';
@@ -119,27 +120,9 @@ export function ProfileSettingsPage({ initialSettings }: ProfileSettingsPageProp
     }
   };
 
-  const handleTemplateCreate = async (
-    template: Omit<LegacyTripTemplate, 'id' | 'createdAt' | 'updatedAt'>,
-  ) => {
+  const handleTemplateCreate = async (template: TripTemplateCreate) => {
     try {
-      // Convert legacy format to backend format
-      await templatesApi.createTemplate({
-        name: template.name,
-        description: template.datePattern,
-        destinations: template.destinations.map((dest) => {
-          const parts = dest.split(',').map((s) => s.trim());
-          if (parts.length > 1) {
-            return { country: parts[1], city: parts[0] };
-          }
-          return { country: parts[0] };
-        }),
-        preferences: {
-          travel_style: template.preferences.travelStyle,
-          dietary_restrictions: template.preferences.dietaryRestrictions,
-          accessibility_needs: template.preferences.accessibilityNeeds,
-        },
-      });
+      await templatesApi.createTemplate(template);
       router.refresh();
     } catch (error) {
       console.error('Failed to create template:', error);
@@ -147,28 +130,9 @@ export function ProfileSettingsPage({ initialSettings }: ProfileSettingsPageProp
     }
   };
 
-  const handleTemplateEdit = async (
-    id: string,
-    template: Omit<LegacyTripTemplate, 'id' | 'createdAt' | 'updatedAt'>,
-  ) => {
+  const handleTemplateEdit = async (id: string, template: TripTemplateUpdate) => {
     try {
-      // Convert legacy format to backend format
-      await templatesApi.updateTemplate(id, {
-        name: template.name,
-        description: template.datePattern,
-        destinations: template.destinations.map((dest) => {
-          const parts = dest.split(',').map((s) => s.trim());
-          if (parts.length > 1) {
-            return { country: parts[1], city: parts[0] };
-          }
-          return { country: parts[0] };
-        }),
-        preferences: {
-          travel_style: template.preferences.travelStyle,
-          dietary_restrictions: template.preferences.dietaryRestrictions,
-          accessibility_needs: template.preferences.accessibilityNeeds,
-        },
-      });
+      await templatesApi.updateTemplate(id, template);
       router.refresh();
     } catch (error) {
       console.error('Failed to edit template:', error);

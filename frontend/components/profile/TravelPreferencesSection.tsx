@@ -68,7 +68,7 @@ export function TravelPreferencesSection({
         try {
           await onUpdate(debouncedPrefs)
           setSaveState('saved')
-        } catch (error) {
+        } catch {
           setSaveState('error')
         }
       }

@@ -11,34 +11,33 @@ Architecture:
 - Confidence scoring and source attribution
 """
 
-from datetime import datetime
-from typing import Dict, Any, Optional
 import json
+from datetime import datetime
 
 from crewai import Agent, Crew, Process
 from langchain_anthropic import ChatAnthropic
 
 from app.agents.base import BaseAgent
 from app.agents.config import AgentConfig
-from app.agents.interfaces import SourceReference, AgentResult
 from app.agents.exceptions import AgentExecutionError
+from app.agents.interfaces import AgentResult, SourceReference
 from app.core.config import settings
 
 from .models import (
+    ApplicationProcess,
+    EntryRequirement,
     VisaAgentInput,
     VisaAgentOutput,
     VisaRequirement,
-    ApplicationProcess,
-    EntryRequirement,
 )
-from .prompts import VISA_AGENT_ROLE, VISA_AGENT_GOAL, VISA_AGENT_BACKSTORY
+from .prompts import VISA_AGENT_BACKSTORY, VISA_AGENT_GOAL, VISA_AGENT_ROLE
 from .tasks import create_single_step_task
 from .tools import (
-    check_visa_requirements,
-    get_embassy_info,
-    generate_document_checklist,
-    estimate_processing_time,
     check_travel_advisories,
+    check_visa_requirements,
+    estimate_processing_time,
+    generate_document_checklist,
+    get_embassy_info,
 )
 
 
@@ -70,7 +69,7 @@ class VisaAgent(BaseAgent):
         >>> print(result.data["visa_requirement"]["visa_required"])  # False
     """
 
-    def __init__(self, anthropic_api_key: Optional[str] = None):
+    def __init__(self, anthropic_api_key: str | None = None):
         """
         Initialize Visa Agent with CrewAI
 
@@ -229,9 +228,11 @@ class VisaAgent(BaseAgent):
                     source_type=s.get("source_type", "api"),
                     url=s.get("url", ""),
                     description=s.get("description", ""),
-                    last_accessed=datetime.fromisoformat(s["last_accessed"])
-                    if "last_accessed" in s
-                    else datetime.utcnow(),
+                    last_accessed=(
+                        datetime.fromisoformat(s["last_accessed"])
+                        if "last_accessed" in s
+                        else datetime.utcnow()
+                    ),
                     confidence=s.get("confidence", 0.9),
                 )
                 for s in sources_data
@@ -251,7 +252,7 @@ class VisaAgent(BaseAgent):
                 last_verified=datetime.utcnow(),
             )
 
-        except (json.JSONDecodeError, KeyError, ValueError) as e:
+        except (json.JSONDecodeError, KeyError, ValueError):
             # Fallback: Create basic output from crew result text
             return self._create_fallback_output(crew_result, input_data)
 

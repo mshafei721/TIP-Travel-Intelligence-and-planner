@@ -20,7 +20,7 @@
     Stop guessing with outdated blogs. TIP verifies visa rules, live safety alerts, and a day-by-day plan for your nationality and dates, all linked to official sources.
 
 *   **Primary CTA Button:**
-    **Generate My Free Report**  
+    **Generate My Free Report**
     *(Subtext under button: No card required. Ready in 60 seconds.)*
 
 *   **Secondary Link:**
@@ -63,13 +63,13 @@
 
     *   **The Diplomat (Visa Agent):**
         'Confirms entry requirements for your passport and residency with official links and a confidence score.'
-    
+
     *   **The Local Guide (Itinerary Agent):**
         'Builds a day-by-day route that fits your dates, pace, and forecast.'
-    
+
     *   **The Security Analyst (Safety Agent):**
         'Flags live political and health alerts so you can reroute before you land.'
-    
+
     *   **The CFO (Budget Agent):**
         'Projects daily spend in your currency and warns you before you overspend.'
 

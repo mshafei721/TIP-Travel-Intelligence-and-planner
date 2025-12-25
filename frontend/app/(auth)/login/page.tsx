@@ -53,7 +53,7 @@ function LoginContent() {
         clearRateLimit(credentials.email)
         router.push(redirectTo)
       }
-    } catch (err) {
+    } catch {
       setError('An unexpected error occurred. Please try again.')
     } finally {
       setIsLoading(false)
@@ -77,7 +77,7 @@ function LoginContent() {
         setError(error.message)
         setIsLoading(false)
       }
-    } catch (err) {
+    } catch {
       setError('An unexpected error occurred. Please try again.')
       setIsLoading(false)
     }

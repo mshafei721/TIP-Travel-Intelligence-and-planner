@@ -12,16 +12,16 @@ Usage:
 4. Run: python tests/integration_test_manual.py
 """
 
-import requests
 import json
-from typing import Optional
+
+import requests
 
 # ============================================
 # Configuration
 # ============================================
 
 BASE_URL = "http://localhost:8000"
-TOKEN: Optional[str] = None  # Set this to your JWT token from frontend
+TOKEN: str | None = None  # Set this to your JWT token from frontend
 
 # ============================================
 # Test Configuration
@@ -33,14 +33,13 @@ ENABLE_DESTRUCTIVE_TESTS = False  # Set to True to test account deletion
 # Helper Functions
 # ============================================
 
+
 def get_headers():
     """Get headers with authorization"""
     if not TOKEN:
         raise ValueError("TOKEN not set! Get it from frontend localStorage")
-    return {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {TOKEN}"
-    }
+    return {"Content-Type": "application/json", "Authorization": f"Bearer {TOKEN}"}
+
 
 def print_response(response: requests.Response, test_name: str):
     """Pretty print response"""
@@ -58,6 +57,7 @@ def print_response(response: requests.Response, test_name: str):
 
     return response
 
+
 def assert_status(response: requests.Response, expected: int, test_name: str):
     """Assert response status code"""
     if response.status_code == expected:
@@ -67,15 +67,18 @@ def assert_status(response: requests.Response, expected: int, test_name: str):
         print(f"❌ FAIL: {test_name} (Expected {expected}, got {response.status_code})")
         return False
 
+
 # ============================================
 # Test Cases
 # ============================================
+
 
 def test_health_check():
     """Test 1: Health check (no auth required)"""
     response = requests.get(f"{BASE_URL}/api/health")
     print_response(response, "Health Check")
     return assert_status(response, 200, "Health check should return 200")
+
 
 def test_get_profile():
     """Test 2: GET /api/profile (authenticated)"""
@@ -90,16 +93,11 @@ def test_get_profile():
 
     return success
 
+
 def test_update_profile_name():
     """Test 3: PUT /api/profile - Update display name"""
-    payload = {
-        "display_name": "Integration Test User"
-    }
-    response = requests.put(
-        f"{BASE_URL}/api/profile",
-        headers=get_headers(),
-        json=payload
-    )
+    payload = {"display_name": "Integration Test User"}
+    response = requests.put(f"{BASE_URL}/api/profile", headers=get_headers(), json=payload)
     print_response(response, "Update Profile Name")
     success = assert_status(response, 200, "Update profile should return 200")
 
@@ -110,19 +108,16 @@ def test_update_profile_name():
 
     return success
 
+
 def test_create_traveler_profile():
     """Test 4: PUT /api/profile/traveler - Create traveler profile"""
     payload = {
         "nationality": "US",
         "residency_country": "US",
         "residency_status": "citizen",
-        "travel_style": "balanced"
+        "travel_style": "balanced",
     }
-    response = requests.put(
-        f"{BASE_URL}/api/profile/traveler",
-        headers=get_headers(),
-        json=payload
-    )
+    response = requests.put(f"{BASE_URL}/api/profile/traveler", headers=get_headers(), json=payload)
     print_response(response, "Create Traveler Profile")
     success = assert_status(response, 200, "Create traveler profile should return 200")
 
@@ -133,17 +128,11 @@ def test_create_traveler_profile():
 
     return success
 
+
 def test_update_traveler_profile():
     """Test 5: PUT /api/profile/traveler - Update existing"""
-    payload = {
-        "nationality": "GB",  # Change to UK
-        "travel_style": "luxury"
-    }
-    response = requests.put(
-        f"{BASE_URL}/api/profile/traveler",
-        headers=get_headers(),
-        json=payload
-    )
+    payload = {"nationality": "GB", "travel_style": "luxury"}  # Change to UK
+    response = requests.put(f"{BASE_URL}/api/profile/traveler", headers=get_headers(), json=payload)
     print_response(response, "Update Traveler Profile")
     success = assert_status(response, 200, "Update traveler profile should return 200")
 
@@ -154,18 +143,14 @@ def test_update_traveler_profile():
 
     return success
 
+
 def test_invalid_country_code():
     """Test 6: PUT /api/profile/traveler - Invalid country code (validation)"""
-    payload = {
-        "nationality": "USA"  # Invalid: must be 2 letters
-    }
-    response = requests.put(
-        f"{BASE_URL}/api/profile/traveler",
-        headers=get_headers(),
-        json=payload
-    )
+    payload = {"nationality": "USA"}  # Invalid: must be 2 letters
+    response = requests.put(f"{BASE_URL}/api/profile/traveler", headers=get_headers(), json=payload)
     print_response(response, "Invalid Country Code")
     return assert_status(response, 422, "Invalid country code should return 422")
+
 
 def test_update_preferences():
     """Test 7: PUT /api/profile/preferences - Update preferences"""
@@ -174,12 +159,10 @@ def test_update_preferences():
         "push_notifications": False,
         "language": "en",
         "currency": "USD",
-        "units": "metric"
+        "units": "metric",
     }
     response = requests.put(
-        f"{BASE_URL}/api/profile/preferences",
-        headers=get_headers(),
-        json=payload
+        f"{BASE_URL}/api/profile/preferences", headers=get_headers(), json=payload
     )
     print_response(response, "Update Preferences")
     success = assert_status(response, 200, "Update preferences should return 200")
@@ -191,34 +174,32 @@ def test_update_preferences():
 
     return success
 
+
 def test_invalid_currency():
     """Test 8: PUT /api/profile/preferences - Invalid currency code"""
-    payload = {
-        "currency": "US"  # Invalid: must be 3 letters
-    }
+    payload = {"currency": "US"}  # Invalid: must be 3 letters
     response = requests.put(
-        f"{BASE_URL}/api/profile/preferences",
-        headers=get_headers(),
-        json=payload
+        f"{BASE_URL}/api/profile/preferences", headers=get_headers(), json=payload
     )
     print_response(response, "Invalid Currency Code")
     return assert_status(response, 422, "Invalid currency should return 422")
 
+
 def test_get_statistics():
     """Test 9: GET /api/profile/statistics"""
-    response = requests.get(
-        f"{BASE_URL}/api/profile/statistics",
-        headers=get_headers()
-    )
+    response = requests.get(f"{BASE_URL}/api/profile/statistics", headers=get_headers())
     print_response(response, "Get Statistics")
     success = assert_status(response, 200, "Get statistics should return 200")
 
     if success:
         data = response.json()
         stats = data.get("statistics", {})
-        print(f"✅ Stats: {stats.get('totalTrips')} trips, {stats.get('countriesVisited')} countries")
+        print(
+            f"✅ Stats: {stats.get('totalTrips')} trips, {stats.get('countriesVisited')} countries"
+        )
 
     return success
+
 
 def test_unauthenticated_access():
     """Test 10: Access without token (should fail)"""
@@ -226,39 +207,38 @@ def test_unauthenticated_access():
     print_response(response, "Unauthenticated Access")
     return assert_status(response, 401, "Unauthenticated request should return 401")
 
+
 def test_delete_account_wrong_confirmation():
     """Test 11: DELETE /api/profile - Wrong confirmation"""
     if not ENABLE_DESTRUCTIVE_TESTS:
         print("\n⚠️ SKIP: Destructive test disabled (ENABLE_DESTRUCTIVE_TESTS=False)")
         return True
 
-    payload = {
-        "confirmation": "DELETE MY ACCOUN"  # Wrong text
-    }
-    response = requests.delete(
-        f"{BASE_URL}/api/profile",
-        headers=get_headers(),
-        json=payload
-    )
+    payload = {"confirmation": "DELETE MY ACCOUN"}  # Wrong text
+    response = requests.delete(f"{BASE_URL}/api/profile", headers=get_headers(), json=payload)
     print_response(response, "Delete Account - Wrong Confirmation")
     return assert_status(response, 400, "Wrong confirmation should return 400")
+
 
 # ============================================
 # Main Test Runner
 # ============================================
 
+
 def run_all_tests():
     """Run all integration tests"""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("I2 BACKEND INTEGRATION TESTS")
-    print("="*60)
+    print("=" * 60)
 
     if not TOKEN:
         print("\n❌ ERROR: TOKEN not set!")
         print("\nTo get your token:")
         print("1. Log in to http://localhost:3000/login")
         print("2. Open browser DevTools (F12) → Console")
-        print("3. Run: JSON.parse(localStorage.getItem('sb-bsfmmxjoxwbcsbpjkmcn-auth-token')).access_token")
+        print(
+            "3. Run: JSON.parse(localStorage.getItem('sb-bsfmmxjoxwbcsbpjkmcn-auth-token')).access_token"
+        )
         print("4. Copy the token and set TOKEN variable in this script")
         return
 
@@ -289,9 +269,9 @@ def run_all_tests():
             results.append(("ERROR", test.__name__))
 
     # Summary
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("TEST SUMMARY")
-    print("="*60)
+    print("=" * 60)
 
     passed = sum(1 for r in results if r[0] == "PASS")
     failed = sum(1 for r in results if r[0] == "FAIL")
@@ -301,12 +281,15 @@ def run_all_tests():
         icon = "✅" if status == "PASS" else "❌" if status == "FAIL" else "⚠️"
         print(f"{icon} {status:5s} - {name}")
 
-    print(f"\n📊 Results: {passed} passed, {failed} failed, {errors} errors out of {len(results)} tests")
+    print(
+        f"\n📊 Results: {passed} passed, {failed} failed, {errors} errors out of {len(results)} tests"
+    )
 
     if passed == len(results):
         print("\n🎉 ALL TESTS PASSED!")
     else:
         print(f"\n⚠️ {failed + errors} tests failed or errored")
+
 
 if __name__ == "__main__":
     run_all_tests()

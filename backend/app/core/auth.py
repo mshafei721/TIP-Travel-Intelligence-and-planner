@@ -1,12 +1,12 @@
 """Authentication utilities for FastAPI"""
 
 from fastapi import Header, HTTPException, status
-from typing import Optional
-from jose import jwt, JWTError
+from jose import JWTError, jwt
+
 from app.core.config import settings
 
 
-def verify_jwt_token(authorization: Optional[str] = Header(None)) -> dict:
+def verify_jwt_token(authorization: str | None = Header(None)) -> dict:
     """
     Verify JWT token from Authorization header
     Returns decoded token payload with user_id
@@ -42,14 +42,13 @@ def verify_jwt_token(authorization: Optional[str] = Header(None)) -> dict:
             token,
             settings.SUPABASE_JWT_SECRET,
             algorithms=["HS256"],
-            options={"verify_aud": False}  # Supabase doesn't use aud claim
+            options={"verify_aud": False},  # Supabase doesn't use aud claim
         )
 
         user_id = payload.get("sub")
         if not user_id:
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token payload"
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token payload"
             )
 
         return {"user_id": user_id, **payload}

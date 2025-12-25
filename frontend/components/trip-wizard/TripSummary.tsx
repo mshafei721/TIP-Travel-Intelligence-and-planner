@@ -5,11 +5,9 @@ import type { TripFormData } from './TripCreationWizard'
 interface TripSummaryProps {
   formData: TripFormData
   onEdit: (step: number) => void
-  onSubmit: () => void
-  isSubmitting: boolean
 }
 
-export default function TripSummary({ formData, onEdit, onSubmit, isSubmitting }: TripSummaryProps) {
+export default function TripSummary({ formData, onEdit }: TripSummaryProps) {
   const { travelerDetails, destinations, tripDetails, preferences } = formData
 
   // Calculate trip duration
@@ -43,7 +41,6 @@ export default function TripSummary({ formData, onEdit, onSubmit, isSubmitting }
         <SummaryCard
           title="Traveler Details"
           icon="👤"
-          stepNumber={1}
           onEdit={() => onEdit(1)}
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -64,7 +61,6 @@ export default function TripSummary({ formData, onEdit, onSubmit, isSubmitting }
         <SummaryCard
           title="Destinations"
           icon="📍"
-          stepNumber={2}
           onEdit={() => onEdit(2)}
         >
           <div className="space-y-3">
@@ -87,7 +83,6 @@ export default function TripSummary({ formData, onEdit, onSubmit, isSubmitting }
         <SummaryCard
           title="Trip Details"
           icon="🗓️"
-          stepNumber={3}
           onEdit={() => onEdit(3)}
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -119,7 +114,6 @@ export default function TripSummary({ formData, onEdit, onSubmit, isSubmitting }
         <SummaryCard
           title="Preferences"
           icon="⭐"
-          stepNumber={4}
           onEdit={() => onEdit(4)}
         >
           <div className="space-y-4">
@@ -158,12 +152,11 @@ export default function TripSummary({ formData, onEdit, onSubmit, isSubmitting }
 interface SummaryCardProps {
   title: string
   icon: string
-  stepNumber: number
   onEdit: () => void
   children: React.ReactNode
 }
 
-function SummaryCard({ title, icon, stepNumber, onEdit, children }: SummaryCardProps) {
+function SummaryCard({ title, icon, onEdit, children }: SummaryCardProps) {
   return (
     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm">
       <div className="flex items-center justify-between mb-4">

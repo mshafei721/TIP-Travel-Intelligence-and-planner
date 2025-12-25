@@ -18,7 +18,7 @@ export default function TripNotFound() {
             Trip Not Found
           </h1>
           <p className="text-slate-600 dark:text-slate-400">
-            The trip report you're looking for doesn't exist or has been deleted.
+            The trip report you&apos;re looking for doesn&apos;t exist or has been deleted.
           </p>
         </div>
 

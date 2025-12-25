@@ -7,10 +7,11 @@ These tasks handle:
 - Database maintenance
 """
 
+from datetime import datetime
+
 from celery import shared_task
+
 from app.core.celery_app import BaseTipTask
-from datetime import datetime, timedelta
-from typing import Dict
 
 
 @shared_task(
@@ -18,7 +19,7 @@ from typing import Dict
     base=BaseTipTask,
     name="app.tasks.cleanup.cleanup_expired_tasks",
 )
-def cleanup_expired_tasks(self) -> Dict[str, int]:
+def cleanup_expired_tasks(self) -> dict[str, int]:
     """
     Clean up expired task results from Celery result backend
 
@@ -50,7 +51,7 @@ def cleanup_expired_tasks(self) -> Dict[str, int]:
     base=BaseTipTask,
     name="app.tasks.cleanup.process_deletion_queue",
 )
-def process_deletion_queue(self) -> Dict[str, int]:
+def process_deletion_queue(self) -> dict[str, int]:
     """
     Process GDPR deletion queue
 

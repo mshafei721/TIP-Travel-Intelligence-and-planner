@@ -1,22 +1,20 @@
 """Trip templates API endpoints"""
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from app.core.supabase import supabase
+
 from app.core.auth import verify_jwt_token
+from app.core.supabase import supabase
 from app.models.template import (
     TripTemplateCreate,
+    TripTemplateResponse,
     TripTemplateUpdate,
-    TripTemplateResponse
 )
-from typing import List
 
 router = APIRouter(prefix="/templates", tags=["templates"])
 
 
-@router.get("", response_model=List[TripTemplateResponse])
-async def list_templates(
-    token_payload: dict = Depends(verify_jwt_token)
-):
+@router.get("", response_model=list[TripTemplateResponse])
+async def list_templates(token_payload: dict = Depends(verify_jwt_token)):
     """
     List all trip templates for the authenticated user
 
@@ -26,24 +24,25 @@ async def list_templates(
     user_id = token_payload["user_id"]
 
     try:
-        response = supabase.table("trip_templates").select("*").eq(
-            "user_id", user_id
-        ).order("created_at", desc=True).execute()
+        response = (
+            supabase.table("trip_templates")
+            .select("*")
+            .eq("user_id", user_id)
+            .order("created_at", desc=True)
+            .execute()
+        )
 
         return response.data if response.data else []
 
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to fetch templates: {str(e)}"
+            detail=f"Failed to fetch templates: {str(e)}",
         )
 
 
 @router.get("/{template_id}", response_model=TripTemplateResponse)
-async def get_template(
-    template_id: str,
-    token_payload: dict = Depends(verify_jwt_token)
-):
+async def get_template(template_id: str, token_payload: dict = Depends(verify_jwt_token)):
     """
     Get a specific trip template by ID
 
@@ -56,15 +55,17 @@ async def get_template(
     user_id = token_payload["user_id"]
 
     try:
-        response = supabase.table("trip_templates").select("*").eq(
-            "id", template_id
-        ).eq("user_id", user_id).maybe_single().execute()
+        response = (
+            supabase.table("trip_templates")
+            .select("*")
+            .eq("id", template_id)
+            .eq("user_id", user_id)
+            .maybe_single()
+            .execute()
+        )
 
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Template not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Template not found")
 
         return response.data
 
@@ -73,14 +74,13 @@ async def get_template(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to fetch template: {str(e)}"
+            detail=f"Failed to fetch template: {str(e)}",
         )
 
 
 @router.post("", response_model=TripTemplateResponse, status_code=status.HTTP_201_CREATED)
 async def create_template(
-    template: TripTemplateCreate,
-    token_payload: dict = Depends(verify_jwt_token)
+    template: TripTemplateCreate, token_payload: dict = Depends(verify_jwt_token)
 ):
     """
     Create a new trip template
@@ -109,7 +109,7 @@ async def create_template(
         if not response.data:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to create template"
+                detail="Failed to create template",
             )
 
         return response.data[0]
@@ -119,7 +119,7 @@ async def create_template(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to create template: {str(e)}"
+            detail=f"Failed to create template: {str(e)}",
         )
 
 
@@ -127,7 +127,7 @@ async def create_template(
 async def update_template(
     template_id: str,
     template: TripTemplateUpdate,
-    token_payload: dict = Depends(verify_jwt_token)
+    token_payload: dict = Depends(verify_jwt_token),
 ):
     """
     Update an existing trip template
@@ -143,15 +143,17 @@ async def update_template(
 
     try:
         # Check template exists and belongs to user
-        existing = supabase.table("trip_templates").select("*").eq(
-            "id", template_id
-        ).eq("user_id", user_id).maybe_single().execute()
+        existing = (
+            supabase.table("trip_templates")
+            .select("*")
+            .eq("id", template_id)
+            .eq("user_id", user_id)
+            .maybe_single()
+            .execute()
+        )
 
         if not existing.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Template not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Template not found")
 
         # Build update dict with only provided fields
         update_data = {}
@@ -169,17 +171,21 @@ async def update_template(
         if not update_data:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="No fields provided for update"
+                detail="No fields provided for update",
             )
 
-        response = supabase.table("trip_templates").update(update_data).eq(
-            "id", template_id
-        ).eq("user_id", user_id).execute()
+        response = (
+            supabase.table("trip_templates")
+            .update(update_data)
+            .eq("id", template_id)
+            .eq("user_id", user_id)
+            .execute()
+        )
 
         if not response.data:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to update template"
+                detail="Failed to update template",
             )
 
         return response.data[0]
@@ -189,15 +195,12 @@ async def update_template(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to update template: {str(e)}"
+            detail=f"Failed to update template: {str(e)}",
         )
 
 
 @router.delete("/{template_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_template(
-    template_id: str,
-    token_payload: dict = Depends(verify_jwt_token)
-):
+async def delete_template(template_id: str, token_payload: dict = Depends(verify_jwt_token)):
     """
     Delete a trip template
 
@@ -211,32 +214,38 @@ async def delete_template(
 
     try:
         # Check template exists and belongs to user
-        existing = supabase.table("trip_templates").select("id").eq(
-            "id", template_id
-        ).eq("user_id", user_id).maybe_single().execute()
+        existing = (
+            supabase.table("trip_templates")
+            .select("id")
+            .eq("id", template_id)
+            .eq("user_id", user_id)
+            .maybe_single()
+            .execute()
+        )
 
         if not existing.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Template not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Template not found")
 
-        response = supabase.table("trip_templates").delete().eq(
-            "id", template_id
-        ).eq("user_id", user_id).execute()
+        response = (
+            supabase.table("trip_templates")
+            .delete()
+            .eq("id", template_id)
+            .eq("user_id", user_id)
+            .execute()
+        )
 
         if not response.data:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to delete template"
+                detail="Failed to delete template",
             )
 
-        return None
+        return
 
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to delete template: {str(e)}"
+            detail=f"Failed to delete template: {str(e)}",
         )

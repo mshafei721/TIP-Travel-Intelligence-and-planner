@@ -7,11 +7,11 @@ Uses Travel Buddy AI API (or Sherpa) for official data.
 
 from .agent import VisaAgent
 from .models import (
+    ApplicationProcess,
+    EntryRequirement,
     VisaAgentInput,
     VisaAgentOutput,
     VisaRequirement,
-    ApplicationProcess,
-    EntryRequirement,
 )
 
 __all__ = [

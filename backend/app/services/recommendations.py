@@ -1,8 +1,6 @@
 """Destination recommendations service"""
 
-from typing import List, Dict
 from app.core.supabase import supabase
-
 
 # Popular destinations database (algorithm-based recommendations)
 POPULAR_DESTINATIONS = [
@@ -12,7 +10,7 @@ POPULAR_DESTINATIONS = [
         "reason": "Vibrant culture, stunning architecture, and Mediterranean beaches",
         "imageUrl": "/images/destinations/barcelona.jpg",
         "confidence": 0.90,
-        "tags": ["culture", "beach", "architecture", "food"]
+        "tags": ["culture", "beach", "architecture", "food"],
     },
     {
         "destination": "Seoul, South Korea",
@@ -20,7 +18,7 @@ POPULAR_DESTINATIONS = [
         "reason": "Modern technology meets traditional culture with world-class cuisine",
         "imageUrl": "/images/destinations/seoul.jpg",
         "confidence": 0.92,
-        "tags": ["culture", "technology", "food", "shopping"]
+        "tags": ["culture", "technology", "food", "shopping"],
     },
     {
         "destination": "Reykjavik, Iceland",
@@ -28,7 +26,7 @@ POPULAR_DESTINATIONS = [
         "reason": "Unique natural wonders, Northern Lights, and adventure activities",
         "imageUrl": "/images/destinations/reykjavik.jpg",
         "confidence": 0.85,
-        "tags": ["adventure", "nature", "photography"]
+        "tags": ["adventure", "nature", "photography"],
     },
     {
         "destination": "Lisbon, Portugal",
@@ -36,7 +34,7 @@ POPULAR_DESTINATIONS = [
         "reason": "Coastal charm, rich history, vibrant nightlife, and delicious seafood",
         "imageUrl": "/images/destinations/lisbon.jpg",
         "confidence": 0.88,
-        "tags": ["culture", "beach", "history", "food"]
+        "tags": ["culture", "beach", "history", "food"],
     },
     {
         "destination": "Kyoto, Japan",
@@ -44,7 +42,7 @@ POPULAR_DESTINATIONS = [
         "reason": "Ancient temples, traditional gardens, and authentic Japanese culture",
         "imageUrl": "/images/destinations/kyoto.jpg",
         "confidence": 0.93,
-        "tags": ["culture", "history", "nature", "spirituality"]
+        "tags": ["culture", "history", "nature", "spirituality"],
     },
     {
         "destination": "Cape Town, South Africa",
@@ -52,7 +50,7 @@ POPULAR_DESTINATIONS = [
         "reason": "Stunning landscapes, wildlife safaris, and diverse cultural experiences",
         "imageUrl": "/images/destinations/capetown.jpg",
         "confidence": 0.87,
-        "tags": ["adventure", "nature", "wildlife", "beach"]
+        "tags": ["adventure", "nature", "wildlife", "beach"],
     },
     {
         "destination": "Prague, Czech Republic",
@@ -60,7 +58,7 @@ POPULAR_DESTINATIONS = [
         "reason": "Fairytale architecture, rich history, and affordable European charm",
         "imageUrl": "/images/destinations/prague.jpg",
         "confidence": 0.86,
-        "tags": ["culture", "history", "architecture", "budget"]
+        "tags": ["culture", "history", "architecture", "budget"],
     },
     {
         "destination": "Bali, Indonesia",
@@ -68,7 +66,7 @@ POPULAR_DESTINATIONS = [
         "reason": "Tropical paradise with temples, rice terraces, and yoga retreats",
         "imageUrl": "/images/destinations/bali.jpg",
         "confidence": 0.91,
-        "tags": ["beach", "culture", "nature", "relaxation"]
+        "tags": ["beach", "culture", "nature", "relaxation"],
     },
     {
         "destination": "Dubai, UAE",
@@ -76,7 +74,7 @@ POPULAR_DESTINATIONS = [
         "reason": "Modern luxury, world-class shopping, and desert adventures",
         "imageUrl": "/images/destinations/dubai.jpg",
         "confidence": 0.84,
-        "tags": ["luxury", "shopping", "modern", "adventure"]
+        "tags": ["luxury", "shopping", "modern", "adventure"],
     },
     {
         "destination": "Amsterdam, Netherlands",
@@ -84,12 +82,12 @@ POPULAR_DESTINATIONS = [
         "reason": "Picturesque canals, world-class museums, and cycling culture",
         "imageUrl": "/images/destinations/amsterdam.jpg",
         "confidence": 0.89,
-        "tags": ["culture", "history", "art", "cycling"]
-    }
+        "tags": ["culture", "history", "art", "cycling"],
+    },
 ]
 
 
-def get_recommendations(user_id: str, limit: int = 3) -> List[Dict]:
+def get_recommendations(user_id: str, limit: int = 3) -> list[dict]:
     """
     Get personalized destination recommendations for a user
 
@@ -113,9 +111,13 @@ def get_recommendations(user_id: str, limit: int = 3) -> List[Dict]:
     """
     try:
         # Fetch user's trip history
-        response = supabase.table("trips").select(
-            "destinations"
-        ).eq("user_id", user_id).eq("status", "completed").execute()
+        response = (
+            supabase.table("trips")
+            .select("destinations")
+            .eq("user_id", user_id)
+            .eq("status", "completed")
+            .execute()
+        )
 
         trips = response.data if response.data else []
 
@@ -130,8 +132,7 @@ def get_recommendations(user_id: str, limit: int = 3) -> List[Dict]:
 
         # Filter recommendations (exclude visited countries for new experiences)
         recommendations = [
-            rec for rec in POPULAR_DESTINATIONS
-            if rec["country"] not in visited_countries
+            rec for rec in POPULAR_DESTINATIONS if rec["country"] not in visited_countries
         ]
 
         # If user has visited all countries, return all recommendations
@@ -150,7 +151,7 @@ def get_recommendations(user_id: str, limit: int = 3) -> List[Dict]:
         return POPULAR_DESTINATIONS[:limit]
 
 
-def get_recommendation_by_destination(destination_name: str) -> Dict:
+def get_recommendation_by_destination(destination_name: str) -> dict:
     """
     Get detailed recommendation for a specific destination
 

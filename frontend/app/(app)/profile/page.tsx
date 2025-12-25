@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { ProfileSettingsPage } from '@/components/profile/ProfileSettingsPage';
 import { getProfile } from '@/lib/api/profile';
 import { listTemplates } from '@/lib/api/templates';
-import type { ProfileSettings, TravelStyle } from '@/types/profile';
+import type { ProfileSettings, TravelerDetails } from '@/types/profile';
 
 /**
  * Profile Settings Page (Server Component)
@@ -13,8 +13,8 @@ import type { ProfileSettings, TravelStyle } from '@/types/profile';
  * - Fetches user profile from FastAPI backend
  * - Renders profile settings UI with all sections
  *
- * Note: This page uses the legacy ProfileSettings type for backwards compatibility
- * with existing components. New pages should use the ProfileResponse type.
+ * Note: This page uses the ProfileSettings adapter for backwards compatibility.
+ * New pages should use the ProfileResponse type directly.
  */
 export default async function ProfilePage() {
   const supabase = await createClient();
@@ -33,7 +33,16 @@ export default async function ProfilePage() {
     // Fetch profile and templates from backend API
     const [profileResponse, templates] = await Promise.all([getProfile(), listTemplates()]);
 
-    // Map new API response to legacy ProfileSettings type for existing components
+    const residencyStatus = profileResponse.travelerProfile?.residency_status;
+    const normalizedResidencyStatus: TravelerDetails['residencyStatus'] =
+      residencyStatus === 'citizen' ||
+      residencyStatus === 'permanent_resident' ||
+      residencyStatus === 'temporary_resident' ||
+      residencyStatus === 'visitor'
+        ? residencyStatus
+        : 'citizen';
+
+    // Map API response to ProfileSettings type for existing components
     const profileSettings: ProfileSettings = {
       profile: {
         id: profileResponse.user.id,
@@ -47,7 +56,7 @@ export default async function ProfilePage() {
       travelerDetails: {
         nationality: profileResponse.travelerProfile?.nationality || '',
         residenceCountry: profileResponse.travelerProfile?.residency_country || '',
-        residencyStatus: (profileResponse.travelerProfile?.residency_status as string) || 'citizen',
+        residencyStatus: normalizedResidencyStatus,
         dateOfBirth: profileResponse.travelerProfile?.date_of_birth || '',
       },
       travelPreferences: {
@@ -64,22 +73,7 @@ export default async function ProfilePage() {
         dataRetentionAcknowledged: false, // TODO: Add to backend
         allowAnalytics: true, // TODO: Add to backend
       },
-      templates: templates.map((template) => ({
-        // Map backend template to legacy frontend format
-        id: template.id,
-        name: template.name,
-        destinations: template.destinations.map((d) =>
-          d.city ? `${d.city}, ${d.country}` : d.country,
-        ),
-        datePattern: template.description || 'Custom trip',
-        preferences: {
-          travelStyle: (template.preferences?.travel_style || 'balanced') as TravelStyle,
-          dietaryRestrictions: template.preferences?.dietary_restrictions || [],
-          accessibilityNeeds: template.preferences?.accessibility_needs,
-        },
-        createdAt: template.created_at,
-        updatedAt: template.updated_at,
-      })),
+      templates,
     };
 
     return <ProfileSettingsPage initialSettings={profileSettings} />;

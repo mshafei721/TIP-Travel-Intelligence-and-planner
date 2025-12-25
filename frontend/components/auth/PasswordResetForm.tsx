@@ -11,7 +11,6 @@ import { validatePassword, passwordsMatch } from '@/lib/auth/validation'
 import type { PasswordStrength } from '@/types/auth'
 
 export interface PasswordResetFormProps {
-  token: string
   onResetPassword: (password: string) => Promise<void>
   isLoading?: boolean
   success?: boolean
@@ -19,7 +18,6 @@ export interface PasswordResetFormProps {
 }
 
 export function PasswordResetForm({
-  token,
   onResetPassword,
   isLoading = false,
   success = false,

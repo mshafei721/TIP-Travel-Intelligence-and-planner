@@ -6,17 +6,12 @@ import { Button } from '@/components/ui/button';
 import { SectionCard } from './SectionCard';
 import { TemplateCard } from './TemplateCard';
 import { TemplateModal } from './TemplateModal';
-import type { LegacyTripTemplate } from '@/types/profile';
+import type { TripTemplate, TripTemplateCreate, TripTemplateUpdate } from '@/types/profile';
 
 export interface SavedTemplatesSectionProps {
-  templates: LegacyTripTemplate[];
-  onTemplateCreate: (
-    template: Omit<LegacyTripTemplate, 'id' | 'createdAt' | 'updatedAt'>,
-  ) => Promise<void>;
-  onTemplateEdit: (
-    id: string,
-    template: Omit<LegacyTripTemplate, 'id' | 'createdAt' | 'updatedAt'>,
-  ) => Promise<void>;
+  templates: TripTemplate[];
+  onTemplateCreate: (template: TripTemplateCreate) => Promise<void>;
+  onTemplateEdit: (id: string, template: TripTemplateUpdate) => Promise<void>;
   onTemplateDelete: (id: string) => Promise<void>;
 }
 
@@ -37,21 +32,19 @@ export function SavedTemplatesSection({
   onTemplateDelete,
 }: SavedTemplatesSectionProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingTemplate, setEditingTemplate] = useState<LegacyTripTemplate | undefined>();
+  const [editingTemplate, setEditingTemplate] = useState<TripTemplate | undefined>();
 
   const handleCreate = () => {
     setEditingTemplate(undefined);
     setIsModalOpen(true);
   };
 
-  const handleEdit = (template: LegacyTripTemplate) => {
+  const handleEdit = (template: TripTemplate) => {
     setEditingTemplate(template);
     setIsModalOpen(true);
   };
 
-  const handleSave = async (
-    templateData: Omit<LegacyTripTemplate, 'id' | 'createdAt' | 'updatedAt'>,
-  ) => {
+  const handleSave = async (templateData: TripTemplateCreate) => {
     if (editingTemplate) {
       await onTemplateEdit(editingTemplate.id, templateData);
     } else {

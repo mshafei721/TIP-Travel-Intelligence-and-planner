@@ -2,11 +2,11 @@
 
 import { MapPin, Calendar, Pencil, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import type { LegacyTripTemplate } from '@/types/profile';
+import type { TripTemplate } from '@/types/profile';
 
 export interface TemplateCardProps {
-  template: LegacyTripTemplate;
-  onEdit: (template: LegacyTripTemplate) => void;
+  template: TripTemplate;
+  onEdit: (template: TripTemplate) => void;
   onDelete: (id: string) => void;
 }
 
@@ -21,6 +21,20 @@ export interface TemplateCardProps {
  * - Edit/Delete actions
  */
 export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) {
+  const destinations = template.destinations.length > 0
+    ? template.destinations
+        .map((destination) =>
+          destination.city ? `${destination.city}, ${destination.country}` : destination.country,
+        )
+        .join(', ')
+    : 'No destinations';
+  const datePattern = template.description || 'Custom trip';
+  const travelStyle = template.preferences?.travel_style || 'balanced';
+  const travelStyleLabel = travelStyle
+    .split('-')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+
   const handleDelete = () => {
     if (confirm(`Delete template "${template.name}"? This action cannot be undone.`)) {
       onDelete(template.id);
@@ -61,7 +75,7 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
           aria-hidden="true"
         />
         <p className="text-sm text-slate-600 dark:text-slate-400">
-          {template.destinations.join(', ')}
+          {destinations}
         </p>
       </div>
 
@@ -71,15 +85,12 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
           className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400"
           aria-hidden="true"
         />
-        <p className="text-sm text-slate-600 dark:text-slate-400">{template.datePattern}</p>
+        <p className="text-sm text-slate-600 dark:text-slate-400">{datePattern}</p>
       </div>
 
       {/* Travel Style */}
       <div className="mt-3 inline-block rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-        {template.preferences.travelStyle
-          .split('-')
-          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(' ')}
+        {travelStyleLabel}
       </div>
     </div>
   );

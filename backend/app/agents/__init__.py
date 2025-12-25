@@ -20,8 +20,8 @@ Agent Types:
 
 from app.agents.base import BaseAgent
 from app.agents.config import AgentConfig
-from app.agents.interfaces import AgentResult, SourceReference
 from app.agents.exceptions import AgentExecutionError
+from app.agents.interfaces import AgentResult, SourceReference
 
 __all__ = [
     "BaseAgent",

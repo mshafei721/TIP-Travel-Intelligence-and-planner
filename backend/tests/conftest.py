@@ -6,8 +6,6 @@ This file contains shared fixtures used across all tests.
 
 import pytest
 from celery import Celery
-from app.core.config import settings
-from app.core.celery_app import celery_app
 
 
 @pytest.fixture(scope="session")
@@ -29,14 +27,15 @@ def celery_app_instance(celery_config):
     return app
 
 
-@pytest.fixture
+@pytest.fixture()
 def mock_redis():
     """Mock Redis connection for testing"""
     import fakeredis
+
     return fakeredis.FakeStrictRedis()
 
 
-@pytest.fixture
+@pytest.fixture()
 def sample_trip_data():
     """Sample trip data for testing"""
     return {
@@ -52,7 +51,7 @@ def sample_trip_data():
     }
 
 
-@pytest.fixture
+@pytest.fixture()
 def sample_visa_input():
     """Sample Visa Agent input for testing"""
     return {

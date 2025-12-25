@@ -7,16 +7,16 @@ Following TDD RED-GREEN-REFACTOR:
 3. REFACTOR: Improve code while keeping tests green
 """
 
-import pytest
 from datetime import datetime
-from typing import Dict, Any, List
-from abc import ABC
+from typing import Any
+
+import pytest
 
 # These imports will fail initially (RED phase)
 from app.agents.base import BaseAgent
-from app.agents.interfaces import AgentResult, SourceReference
 from app.agents.config import AgentConfig
 from app.agents.exceptions import AgentExecutionError
+from app.agents.interfaces import AgentResult, SourceReference
 
 
 class MockAgent(BaseAgent):
@@ -27,15 +27,15 @@ class MockAgent(BaseAgent):
     so we can test BaseAgent functionality.
     """
 
-    def configure_tools(self) -> List[Any]:
+    def configure_tools(self) -> list[Any]:
         """Return empty tools list for testing"""
         return []
 
-    def create_task(self, input_data: Dict[str, Any]) -> Any:
+    def create_task(self, input_data: dict[str, Any]) -> Any:
         """Create mock task for testing"""
         return {"description": "mock task", "input": input_data}
 
-    def run(self, input_data: Dict[str, Any]) -> AgentResult:
+    def run(self, input_data: dict[str, Any]) -> AgentResult:
         """Execute mock agent logic"""
         return AgentResult(
             agent_type="mock",
@@ -47,10 +47,10 @@ class MockAgent(BaseAgent):
                 SourceReference(
                     url="https://example.com",
                     title="Test Source",
-                    verified_at=datetime.utcnow()
+                    verified_at=datetime.utcnow(),
                 )
             ],
-            error=None
+            error=None,
         )
 
 
@@ -78,7 +78,7 @@ class TestBaseAgent:
             llm_model="claude-3-opus-20240229",
             temperature=0.5,
             max_tokens=2000,
-            verbose=False
+            verbose=False,
         )
         agent = MockAgent(config=config)
 
@@ -181,7 +181,7 @@ class TestAgentResultValidation:
                 generated_at=datetime.utcnow(),
                 confidence_score=0.9,
                 data={},
-                sources=[]
+                sources=[],
             )
 
     def test_confidence_score_validation(self):
@@ -194,7 +194,7 @@ class TestAgentResultValidation:
             confidence_score=0.95,
             data={},
             sources=[],
-            error=None
+            error=None,
         )
         assert result.confidence_score == 0.95
 
@@ -205,7 +205,7 @@ class TestAgentResultValidation:
             generated_at=datetime.utcnow(),
             confidence_score=0.0,
             data={},
-            sources=[]
+            sources=[],
         )
         assert result_min.confidence_score == 0.0
 
@@ -215,6 +215,6 @@ class TestAgentResultValidation:
             generated_at=datetime.utcnow(),
             confidence_score=1.0,
             data={},
-            sources=[]
+            sources=[],
         )
         assert result_max.confidence_score == 1.0

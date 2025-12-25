@@ -132,18 +132,26 @@ export function isValidTemplateName(name: string): boolean {
 /**
  * Validate template has at least one destination
  */
-export function hasDestinations(destinations: unknown[]): boolean {
+type TemplateDestination = TripTemplate['destinations'][number];
+
+export function hasDestinations(
+  destinations: TripTemplate['destinations'] | null | undefined,
+): destinations is TripTemplate['destinations'] {
   return Array.isArray(destinations) && destinations.length > 0;
 }
 
 /**
  * Validate destination object has required fields
  */
-export function isValidDestination(destination: unknown): boolean {
+export function isValidDestination(destination: unknown): destination is TemplateDestination {
   if (typeof destination !== 'object' || destination === null) {
     return false;
   }
 
-  const dest = destination as Record<string, unknown>;
-  return typeof dest.country === 'string' && dest.country.length > 0;
+  if (!('country' in destination)) {
+    return false;
+  }
+
+  return typeof (destination as TemplateDestination).country === 'string'
+    && (destination as TemplateDestination).country.length > 0;
 }

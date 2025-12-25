@@ -7,7 +7,6 @@ Provides comprehensive country intelligence using CrewAI and Claude AI.
 import json
 import logging
 from datetime import datetime
-from typing import Optional
 
 from crewai import Agent, Crew, Process
 from langchain_anthropic import ChatAnthropic
@@ -16,15 +15,21 @@ from ..base import BaseAgent
 from ..config import AgentConfig
 from ..exceptions import AgentExecutionError
 from ..interfaces import AgentResult, SourceReference
-from .models import CountryAgentInput, CountryAgentOutput, EmergencyContact, PowerOutletInfo, TravelAdvisory
-from .prompts import COUNTRY_AGENT_ROLE, COUNTRY_AGENT_GOAL, COUNTRY_AGENT_BACKSTORY
+from .models import (
+    CountryAgentInput,
+    CountryAgentOutput,
+    EmergencyContact,
+    PowerOutletInfo,
+    TravelAdvisory,
+)
+from .prompts import COUNTRY_AGENT_BACKSTORY, COUNTRY_AGENT_GOAL, COUNTRY_AGENT_ROLE
 from .tasks import create_comprehensive_country_task
 from .tools import (
     get_country_info,
     get_emergency_services,
+    get_notable_facts,
     get_power_outlet_info,
     get_travel_safety_rating,
-    get_notable_facts,
 )
 
 logger = logging.getLogger(__name__)
@@ -40,7 +45,7 @@ class CountryAgent(BaseAgent):
 
     def __init__(
         self,
-        config: Optional[AgentConfig] = None,
+        config: AgentConfig | None = None,
         llm_model: str = "claude-3-5-sonnet-20241022",
     ):
         """
@@ -136,9 +141,7 @@ class CountryAgent(BaseAgent):
             logger.error(f"CountryAgent execution failed: {str(e)}", exc_info=True)
             raise AgentExecutionError(f"Country agent failed: {str(e)}")
 
-    def _parse_result(
-        self, result: str, input_data: CountryAgentInput
-    ) -> CountryAgentOutput:
+    def _parse_result(self, result: str, input_data: CountryAgentInput) -> CountryAgentOutput:
         """
         Parse CrewAI result into CountryAgentOutput.
 
@@ -193,9 +196,7 @@ class CountryAgent(BaseAgent):
                 coordinates=data.get("coordinates"),
                 borders=data.get("borders"),
                 # Emergency Services
-                emergency_numbers=self._build_emergency_contacts(
-                    data.get("emergency_numbers", [])
-                ),
+                emergency_numbers=self._build_emergency_contacts(data.get("emergency_numbers", [])),
                 # Power and Driving
                 power_outlet=self._build_power_outlet(data.get("power_outlet", {})),
                 driving_side=data.get("driving_side", "right"),
@@ -204,9 +205,7 @@ class CountryAgent(BaseAgent):
                 currency_codes=data.get("currency_codes", []),
                 # Safety
                 safety_rating=data.get("safety_rating", 3.5),
-                travel_advisories=self._build_travel_advisories(
-                    data.get("travel_advisories", [])
-                ),
+                travel_advisories=self._build_travel_advisories(data.get("travel_advisories", [])),
                 # Additional
                 notable_facts=data.get("notable_facts", []),
                 best_time_to_visit=data.get("best_time_to_visit"),
@@ -240,18 +239,18 @@ class CountryAgent(BaseAgent):
                     SourceReference(
                         name=source.get("name", "Unknown"),
                         url=source.get("url", ""),
-                        accessed_at=datetime.fromisoformat(source.get("accessed_at"))
-                        if source.get("accessed_at")
-                        else datetime.utcnow(),
+                        accessed_at=(
+                            datetime.fromisoformat(source.get("accessed_at"))
+                            if source.get("accessed_at")
+                            else datetime.utcnow()
+                        ),
                         reliability=source.get("reliability", "third_party"),
                     )
                 )
 
         return sources
 
-    def _build_emergency_contacts(
-        self, contacts_data: list[dict]
-    ) -> list[EmergencyContact]:
+    def _build_emergency_contacts(self, contacts_data: list[dict]) -> list[EmergencyContact]:
         """Build emergency contact objects from data."""
         contacts = []
         for contact in contacts_data:
@@ -272,9 +271,7 @@ class CountryAgent(BaseAgent):
             frequency=power_data.get("frequency", "Unknown"),
         )
 
-    def _build_travel_advisories(
-        self, advisories_data: list[dict]
-    ) -> list[TravelAdvisory]:
+    def _build_travel_advisories(self, advisories_data: list[dict]) -> list[TravelAdvisory]:
         """Build travel advisory objects from data."""
         advisories = []
         for advisory in advisories_data:
@@ -289,9 +286,7 @@ class CountryAgent(BaseAgent):
             )
         return advisories
 
-    def _create_fallback_output(
-        self, input_data: CountryAgentInput
-    ) -> CountryAgentOutput:
+    def _create_fallback_output(self, input_data: CountryAgentInput) -> CountryAgentOutput:
         """
         Create fallback output when parsing fails.
 
@@ -316,9 +311,7 @@ class CountryAgent(BaseAgent):
                     reliability="uncertain",
                 )
             ],
-            warnings=[
-                "Failed to parse complete country information. Using fallback data."
-            ],
+            warnings=["Failed to parse complete country information. Using fallback data."],
             country_name=input_data.destination_country,
             country_code="",
             capital="Unknown",

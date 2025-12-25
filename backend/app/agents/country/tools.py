@@ -6,7 +6,8 @@ safety data, and travel advisories.
 """
 
 from crewai.tools import tool
-from app.services.country.rest_countries_client import RestCountriesClient, CountryInfo
+
+from app.services.country.rest_countries_client import RestCountriesClient
 
 
 @tool("Get Country Information")
@@ -66,45 +67,105 @@ def get_emergency_services(country_code: str) -> dict:
     # In production, this should query a comprehensive database or API
     emergency_numbers = {
         "FR": [  # France
-            {"service": "Emergency (All Services)", "number": "112", "notes": "EU standard emergency number"},
+            {
+                "service": "Emergency (All Services)",
+                "number": "112",
+                "notes": "EU standard emergency number",
+            },
             {"service": "Police", "number": "17", "notes": "National police"},
-            {"service": "Ambulance (SAMU)", "number": "15", "notes": "Medical emergency"},
+            {
+                "service": "Ambulance (SAMU)",
+                "number": "15",
+                "notes": "Medical emergency",
+            },
             {"service": "Fire", "number": "18", "notes": "Fire brigade"},
         ],
         "US": [  # United States
-            {"service": "Emergency (All Services)", "number": "911", "notes": "Police, Fire, Ambulance"},
+            {
+                "service": "Emergency (All Services)",
+                "number": "911",
+                "notes": "Police, Fire, Ambulance",
+            },
         ],
         "GB": [  # United Kingdom
-            {"service": "Emergency (All Services)", "number": "112", "notes": "EU standard (still works post-Brexit)"},
-            {"service": "Emergency (All Services)", "number": "999", "notes": "UK traditional emergency number"},
+            {
+                "service": "Emergency (All Services)",
+                "number": "112",
+                "notes": "EU standard (still works post-Brexit)",
+            },
+            {
+                "service": "Emergency (All Services)",
+                "number": "999",
+                "notes": "UK traditional emergency number",
+            },
         ],
         "JP": [  # Japan
             {"service": "Police", "number": "110", "notes": "Police emergency"},
-            {"service": "Ambulance/Fire", "number": "119", "notes": "Medical emergency and fire"},
+            {
+                "service": "Ambulance/Fire",
+                "number": "119",
+                "notes": "Medical emergency and fire",
+            },
         ],
         "DE": [  # Germany
-            {"service": "Emergency (All Services)", "number": "112", "notes": "EU standard emergency number"},
+            {
+                "service": "Emergency (All Services)",
+                "number": "112",
+                "notes": "EU standard emergency number",
+            },
             {"service": "Police", "number": "110", "notes": "Police emergency"},
         ],
         "IT": [  # Italy
-            {"service": "Emergency (All Services)", "number": "112", "notes": "EU standard emergency number"},
-            {"service": "Police (Carabinieri)", "number": "112", "notes": "Military police"},
-            {"service": "Police (State Police)", "number": "113", "notes": "State police"},
+            {
+                "service": "Emergency (All Services)",
+                "number": "112",
+                "notes": "EU standard emergency number",
+            },
+            {
+                "service": "Police (Carabinieri)",
+                "number": "112",
+                "notes": "Military police",
+            },
+            {
+                "service": "Police (State Police)",
+                "number": "113",
+                "notes": "State police",
+            },
             {"service": "Ambulance", "number": "118", "notes": "Medical emergency"},
             {"service": "Fire", "number": "115", "notes": "Fire brigade"},
         ],
         "ES": [  # Spain
-            {"service": "Emergency (All Services)", "number": "112", "notes": "EU standard emergency number"},
+            {
+                "service": "Emergency (All Services)",
+                "number": "112",
+                "notes": "EU standard emergency number",
+            },
         ],
         "CA": [  # Canada
-            {"service": "Emergency (All Services)", "number": "911", "notes": "Police, Fire, Ambulance"},
+            {
+                "service": "Emergency (All Services)",
+                "number": "911",
+                "notes": "Police, Fire, Ambulance",
+            },
         ],
         "AU": [  # Australia
-            {"service": "Emergency (All Services)", "number": "000", "notes": "Police, Fire, Ambulance"},
-            {"service": "Emergency (Mobile)", "number": "112", "notes": "Works on mobile phones"},
+            {
+                "service": "Emergency (All Services)",
+                "number": "000",
+                "notes": "Police, Fire, Ambulance",
+            },
+            {
+                "service": "Emergency (Mobile)",
+                "number": "112",
+                "notes": "Works on mobile phones",
+            },
         ],
         "NZ": [  # New Zealand
-            {"service": "Emergency (All Services)", "number": "111", "notes": "Police, Fire, Ambulance"},
+            {
+                "service": "Emergency (All Services)",
+                "number": "111",
+                "notes": "Police, Fire, Ambulance",
+            },
         ],
         "CN": [  # China
             {"service": "Police", "number": "110", "notes": "Police emergency"},
@@ -270,7 +331,11 @@ def get_travel_safety_rating(country_name: str) -> dict:
     }
 
     if country_name in safety_ratings:
-        return {"success": True, "country": country_name, **safety_ratings[country_name]}
+        return {
+            "success": True,
+            "country": country_name,
+            **safety_ratings[country_name],
+        }
     else:
         # Default safety rating for countries not in database
         return {

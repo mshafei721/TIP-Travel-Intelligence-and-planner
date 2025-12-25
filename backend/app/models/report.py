@@ -1,42 +1,46 @@
 """Report API response models"""
 
 from datetime import datetime
-from typing import List, Optional
+
 from pydantic import BaseModel, Field
 
 
 class SourceReferenceResponse(BaseModel):
     """Source reference in API response"""
+
     url: str
     source_type: str
-    title: Optional[str] = None
-    reliability: Optional[str] = None
-    accessed_at: Optional[datetime] = None
+    title: str | None = None
+    reliability: str | None = None
+    accessed_at: datetime | None = None
 
 
 class VisaRequirementResponse(BaseModel):
     """Visa requirement details"""
+
     visa_required: bool
-    visa_type: Optional[str] = None
-    max_stay_days: Optional[int] = None
-    validity_period: Optional[str] = None
+    visa_type: str | None = None
+    max_stay_days: int | None = None
+    validity_period: str | None = None
 
 
 class ApplicationProcessResponse(BaseModel):
     """Visa application process details"""
-    application_method: Optional[str] = None
-    processing_time: Optional[str] = None
-    cost_usd: Optional[float] = None
-    cost_local: Optional[str] = None
-    required_documents: List[str] = Field(default_factory=list)
-    application_url: Optional[str] = None
+
+    application_method: str | None = None
+    processing_time: str | None = None
+    cost_usd: float | None = None
+    cost_local: str | None = None
+    required_documents: list[str] = Field(default_factory=list)
+    application_url: str | None = None
 
 
 class EntryRequirementResponse(BaseModel):
     """Entry requirements beyond visa"""
-    passport_validity: Optional[str] = None
-    blank_pages_required: Optional[int] = None
-    vaccinations: List[str] = Field(default_factory=list)
+
+    passport_validity: str | None = None
+    blank_pages_required: int | None = None
+    vaccinations: list[str] = Field(default_factory=list)
     health_declaration: bool = False
     travel_insurance: bool = False
     proof_of_funds: bool = False
@@ -49,6 +53,7 @@ class VisaReportResponse(BaseModel):
 
     This is the API response format for GET /trips/{id}/report/visa
     """
+
     report_id: str
     trip_id: str
     generated_at: datetime
@@ -60,11 +65,11 @@ class VisaReportResponse(BaseModel):
     entry_requirements: EntryRequirementResponse
 
     # Additional intelligence
-    tips: List[str] = Field(default_factory=list)
-    warnings: List[str] = Field(default_factory=list)
+    tips: list[str] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
 
     # Data provenance
-    sources: List[SourceReferenceResponse] = Field(default_factory=list)
+    sources: list[SourceReferenceResponse] = Field(default_factory=list)
     last_verified: datetime
 
     class Config:
@@ -73,6 +78,7 @@ class VisaReportResponse(BaseModel):
 
 class ReportNotFoundError(BaseModel):
     """Error response when report is not found"""
+
     detail: str = "Visa report not found for this trip"
     code: str = "REPORT_NOT_FOUND"
     suggestion: str = "Generate the trip report first using POST /trips/{id}/generate"
@@ -80,32 +86,37 @@ class ReportNotFoundError(BaseModel):
 
 class ReportUnauthorizedError(BaseModel):
     """Error response when user doesn't own the trip"""
+
     detail: str = "You do not have permission to access this report"
     code: str = "UNAUTHORIZED"
 
 
 # Country/Destination Report Models
 
+
 class EmergencyContactResponse(BaseModel):
     """Emergency contact information"""
+
     service: str
     number: str
-    notes: Optional[str] = None
+    notes: str | None = None
 
 
 class PowerOutletResponse(BaseModel):
     """Power outlet information"""
-    plug_types: List[str]
+
+    plug_types: list[str]
     voltage: str
     frequency: str
 
 
 class TravelAdvisoryResponse(BaseModel):
     """Travel advisory information"""
+
     level: str
     title: str
     summary: str
-    updated_at: Optional[str] = None
+    updated_at: str | None = None
     source: str
 
 
@@ -115,6 +126,7 @@ class CountryReportResponse(BaseModel):
 
     This is the API response format for GET /trips/{id}/report/destination
     """
+
     report_id: str
     trip_id: str
     generated_at: datetime
@@ -125,42 +137,42 @@ class CountryReportResponse(BaseModel):
     country_code: str
     capital: str
     region: str
-    subregion: Optional[str] = None
+    subregion: str | None = None
 
     # Demographics
     population: int
-    area_km2: Optional[float] = None
-    population_density: Optional[float] = None
+    area_km2: float | None = None
+    population_density: float | None = None
 
     # Languages and Communication
-    official_languages: List[str]
-    common_languages: Optional[List[str]] = None
+    official_languages: list[str]
+    common_languages: list[str] | None = None
 
     # Time and Geography
-    time_zones: List[str]
-    coordinates: Optional[dict] = None
-    borders: Optional[List[str]] = None
+    time_zones: list[str]
+    coordinates: dict | None = None
+    borders: list[str] | None = None
 
     # Practical Information
-    emergency_numbers: List[EmergencyContactResponse]
+    emergency_numbers: list[EmergencyContactResponse]
     power_outlet: PowerOutletResponse
     driving_side: str
 
     # Currency
-    currencies: List[str]
-    currency_codes: List[str]
+    currencies: list[str]
+    currency_codes: list[str]
 
     # Safety and Advisories
     safety_rating: float  # 0.0 - 5.0
-    travel_advisories: List[TravelAdvisoryResponse] = Field(default_factory=list)
+    travel_advisories: list[TravelAdvisoryResponse] = Field(default_factory=list)
 
     # Additional Information
-    notable_facts: List[str] = Field(default_factory=list)
-    best_time_to_visit: Optional[str] = None
+    notable_facts: list[str] = Field(default_factory=list)
+    best_time_to_visit: str | None = None
 
     # Metadata
-    sources: List[SourceReferenceResponse] = Field(default_factory=list)
-    warnings: List[str] = Field(default_factory=list)
+    sources: list[SourceReferenceResponse] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
 
     class Config:
         from_attributes = True

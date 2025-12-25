@@ -17,8 +17,6 @@ class AgentExecutionError(Exception):
     - Data validation errors
     """
 
-    pass
-
 
 class AgentConfigurationError(Exception):
     """
@@ -30,20 +28,14 @@ class AgentConfigurationError(Exception):
     - Invalid temperature or max_tokens
     """
 
-    pass
-
 
 class AgentTimeoutError(AgentExecutionError):
     """
     Raised when agent execution exceeds time limit
     """
 
-    pass
-
 
 class AgentValidationError(AgentExecutionError):
     """
     Raised when agent output fails validation
     """
-
-    pass

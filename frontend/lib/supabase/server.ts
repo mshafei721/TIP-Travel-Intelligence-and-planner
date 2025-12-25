@@ -3,11 +3,12 @@
  * For use in Server Components, Server Actions, and Route Handlers
  */
 
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/database'
 
-export async function createClient() {
+export async function createClient(): Promise<SupabaseClient<Database, 'public'>> {
   const cookieStore = await cookies()
 
   return createServerClient<Database>(
@@ -23,7 +24,7 @@ export async function createClient() {
             cookiesToSet.forEach(({ name, value, options }) =>
               cookieStore.set(name, value, options)
             )
-          } catch (error) {
+          } catch {
             // The `setAll` method was called from a Server Component.
             // This can be ignored if you have middleware refreshing
             // user sessions.

@@ -6,7 +6,7 @@ import { EntryConditionsSection } from '@/components/report/EntryConditionsSecti
 import { TipsAndWarningsSection } from '@/components/report/TipsAndWarningsSection';
 import { SourceAttribution } from '@/components/report/SourceAttribution';
 import { WarningBanner } from '@/components/report/WarningBanner';
-import { VisaReportLoadingSkeleton, VisaErrorState } from '@/components/report/VisaLoadingState';
+import { VisaReportLoadingSkeleton } from '@/components/report/VisaLoadingState';
 import { ConfidenceStamp } from '@/components/report/ConfidenceBadge';
 import type { VisaIntelligence } from '@/types/visa';
 import { fetchVisaReport } from '@/lib/api/visa';

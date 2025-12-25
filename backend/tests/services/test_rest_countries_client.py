@@ -5,14 +5,14 @@ Tests both sync and async methods with real API calls.
 """
 
 import pytest
-import httpx
-from app.services.country.rest_countries_client import RestCountriesClient, CountryInfo
+
+from app.services.country.rest_countries_client import CountryInfo, RestCountriesClient
 
 
 class TestRestCountriesClient:
     """Test suite for RestCountriesClient."""
 
-    @pytest.fixture
+    @pytest.fixture()
     def client(self):
         """Create REST Countries client instance."""
         return RestCountriesClient(timeout=10.0)
@@ -87,7 +87,7 @@ class TestRestCountriesClient:
 
     # Async Tests
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_get_france_by_name_async(self, client):
         """Test getting France by name (async)."""
         async with client:
@@ -99,7 +99,7 @@ class TestRestCountriesClient:
             assert "Paris" in result.capital
             assert result.region == "Europe"
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_get_usa_by_code_async(self, client):
         """Test getting USA by ISO code (async)."""
         async with client:
@@ -110,21 +110,21 @@ class TestRestCountriesClient:
             assert result.cca2 == "US"
             assert "Washington, D.C." in result.capital
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_invalid_country_name_async(self, client):
         """Test error handling for invalid country name (async)."""
         async with client:
             with pytest.raises(ValueError, match="Country not found"):
                 await client.get_country_by_name("InvalidCountryXYZ123")
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_empty_country_name_async(self, client):
         """Test error handling for empty country name (async)."""
         async with client:
             with pytest.raises(ValueError, match="Country name cannot be empty"):
                 await client.get_country_by_name("")
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_multiple_requests_async(self, client):
         """Test multiple async requests."""
         async with client:

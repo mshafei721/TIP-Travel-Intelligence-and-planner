@@ -25,7 +25,7 @@ function ResetPasswordContent() {
       } else {
         setSuccess(true)
       }
-    } catch (err) {
+    } catch {
       setError('An unexpected error occurred. Please try again.')
     } finally {
       setIsLoading(false)
@@ -51,7 +51,6 @@ function ResetPasswordContent() {
       <div className="w-full max-w-md space-y-8">
         <div className="rounded-lg border border-slate-200 bg-white p-8 shadow-sm">
           <PasswordResetForm
-            token={token}
             onResetPassword={handleResetPassword}
             isLoading={isLoading}
             success={success}

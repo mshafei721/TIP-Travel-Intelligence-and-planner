@@ -8,9 +8,10 @@ API Documentation: https://travel-buddy.ai/api/
 RapidAPI: https://rapidapi.com/TravelBuddyAI/api/visa-requirement
 """
 
-from dataclasses import dataclass, asdict
-from typing import Optional
+from dataclasses import asdict, dataclass
+
 import httpx
+
 from app.core.config import settings
 
 
@@ -36,12 +37,12 @@ class VisaCheckResult:
     destination_code: str
     visa_required: bool
     visa_type: str
-    max_stay_days: Optional[int] = None
-    passport_validity_months: Optional[int] = None
-    evisa_url: Optional[str] = None
-    embassy_url: Optional[str] = None
-    currency: Optional[str] = None
-    timezone: Optional[str] = None
+    max_stay_days: int | None = None
+    passport_validity_months: int | None = None
+    evisa_url: str | None = None
+    embassy_url: str | None = None
+    currency: str | None = None
+    timezone: str | None = None
 
     def to_dict(self) -> dict:
         """Convert to dictionary"""
@@ -61,7 +62,7 @@ class TravelBuddyClient:
         >>> print(f"Visa required: {result.visa_required}")
     """
 
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(self, api_key: str | None = None):
         """
         Initialize Travel Buddy AI client
 

@@ -13,18 +13,17 @@ error handling and result aggregation.
 """
 
 import asyncio
-from datetime import datetime, date
-from typing import Dict, List, Optional, Any
+from datetime import date, datetime
+from typing import Any
+
 from pydantic import BaseModel, ValidationError
 
-from app.agents.base import BaseAgent
-from app.agents.interfaces import AgentResult, SourceReference
-from app.agents.exceptions import AgentExecutionError
 from app.core.supabase import supabase
 
 # Import specialist agents as they become available
 try:
     from app.agents.visa.agent import VisaAgent
+
     VISA_AGENT_AVAILABLE = True
 except ImportError:
     VISA_AGENT_AVAILABLE = False
@@ -32,6 +31,7 @@ except ImportError:
 
 class TripData(BaseModel):
     """Trip data model for orchestrator input"""
+
     trip_id: str
     user_nationality: str
     destination_country: str
@@ -43,11 +43,12 @@ class TripData(BaseModel):
 
 class OrchestratorResult(BaseModel):
     """Result from orchestrator"""
+
     trip_id: str
     generated_at: datetime
-    sections: Dict[str, Any]
-    errors: List[Dict[str, str]]
-    metadata: Dict[str, Any]
+    sections: dict[str, Any]
+    errors: list[dict[str, str]]
+    metadata: dict[str, Any]
 
 
 class OrchestratorAgent:
@@ -60,11 +61,11 @@ class OrchestratorAgent:
 
     def __init__(self):
         """Initialize orchestrator with available agents"""
-        self.available_agents: Dict[str, Any] = {}
+        self.available_agents: dict[str, Any] = {}
 
         # Register available agents
         if VISA_AGENT_AVAILABLE:
-            self.available_agents['visa'] = VisaAgent
+            self.available_agents["visa"] = VisaAgent
 
         # Placeholder for future agents
         # self.available_agents['country'] = CountryAgent
@@ -76,9 +77,9 @@ class OrchestratorAgent:
         # self.available_agents['itinerary'] = ItineraryAgent
         # self.available_agents['flight'] = FlightAgent
 
-        self.errors: List[Dict[str, str]] = []
+        self.errors: list[dict[str, str]] = []
 
-    async def generate_report(self, trip_data: Dict[str, Any]) -> Dict[str, Any]:
+    async def generate_report(self, trip_data: dict[str, Any]) -> dict[str, Any]:
         """
         Generate complete travel report
 
@@ -96,9 +97,7 @@ class OrchestratorAgent:
 
         # Update job status to running
         await self._update_job_status(
-            validated_data.trip_id,
-            "running",
-            {"message": "Starting report generation"}
+            validated_data.trip_id, "running", {"message": "Starting report generation"}
         )
 
         # Run agents in phases
@@ -106,7 +105,7 @@ class OrchestratorAgent:
 
         try:
             # Phase 1: Independent agents (can run in parallel)
-            phase1_agents = ['visa']  # Add more as they become available
+            phase1_agents = ["visa"]  # Add more as they become available
             phase1_results = await self._run_phase(validated_data, phase1_agents)
             sections.update(phase1_results)
 
@@ -132,30 +131,24 @@ class OrchestratorAgent:
             await self._update_job_status(
                 validated_data.trip_id,
                 "completed",
-                {"sections_generated": list(sections.keys())}
+                {"sections_generated": list(sections.keys())},
             )
 
             # Aggregate and return results
-            return self._aggregate_results({
-                "trip_id": validated_data.trip_id,
-                "sections": sections,
-                "errors": self.errors
-            })
+            return self._aggregate_results(
+                {
+                    "trip_id": validated_data.trip_id,
+                    "sections": sections,
+                    "errors": self.errors,
+                }
+            )
 
         except Exception as e:
             # Update job status to failed
-            await self._update_job_status(
-                validated_data.trip_id,
-                "failed",
-                {"error": str(e)}
-            )
+            await self._update_job_status(validated_data.trip_id, "failed", {"error": str(e)})
             raise
 
-    async def _run_phase(
-        self,
-        trip_data: TripData,
-        agent_names: List[str]
-    ) -> Dict[str, Any]:
+    async def _run_phase(self, trip_data: TripData, agent_names: list[str]) -> dict[str, Any]:
         """
         Run a phase of agents
 
@@ -169,39 +162,31 @@ class OrchestratorAgent:
         results = {}
 
         # Filter to only available agents
-        available_agents_in_phase = [
-            name for name in agent_names
-            if name in self.available_agents
-        ]
+        available_agents_in_phase = [name for name in agent_names if name in self.available_agents]
 
         # Run agents in parallel
-        tasks = [
-            self._run_agent(trip_data, agent_name)
-            for agent_name in available_agents_in_phase
-        ]
+        tasks = [self._run_agent(trip_data, agent_name) for agent_name in available_agents_in_phase]
 
         # Gather results with error handling
         agent_results = await asyncio.gather(*tasks, return_exceptions=True)
 
         # Process results
-        for agent_name, result in zip(available_agents_in_phase, agent_results):
+        for agent_name, result in zip(available_agents_in_phase, agent_results, strict=False):
             if isinstance(result, Exception):
                 # Log error and continue
-                self.errors.append({
-                    "agent": agent_name,
-                    "error": str(result),
-                    "timestamp": datetime.utcnow().isoformat()
-                })
+                self.errors.append(
+                    {
+                        "agent": agent_name,
+                        "error": str(result),
+                        "timestamp": datetime.utcnow().isoformat(),
+                    }
+                )
             else:
                 results[agent_name] = result
 
         return results
 
-    async def _run_agent(
-        self,
-        trip_data: TripData,
-        agent_name: str
-    ) -> Dict[str, Any]:
+    async def _run_agent(self, trip_data: TripData, agent_name: str) -> dict[str, Any]:
         """
         Run a single agent
 
@@ -225,9 +210,9 @@ class OrchestratorAgent:
         # Run agent
         result = await agent_instance.run_async(agent_input)
 
-        return result.model_dump() if hasattr(result, 'model_dump') else result
+        return result.model_dump() if hasattr(result, "model_dump") else result
 
-    def _validate_trip_data(self, trip_data: Dict[str, Any]) -> TripData:
+    def _validate_trip_data(self, trip_data: dict[str, Any]) -> TripData:
         """
         Validate trip data
 
@@ -245,11 +230,7 @@ class OrchestratorAgent:
         except ValidationError as e:
             raise ValueError(f"Invalid trip data: {str(e)}")
 
-    def _create_agent_input(
-        self,
-        trip_data: TripData,
-        agent_name: str
-    ) -> Any:
+    def _create_agent_input(self, trip_data: TripData, agent_name: str) -> Any:
         """
         Create input for specific agent
 
@@ -261,8 +242,9 @@ class OrchestratorAgent:
             Agent-specific input object
         """
         # For visa agent
-        if agent_name == 'visa':
+        if agent_name == "visa":
             from app.agents.visa.models import VisaAgentInput
+
             duration_days = (trip_data.return_date - trip_data.departure_date).days
             return VisaAgentInput(
                 trip_id=trip_data.trip_id,
@@ -272,17 +254,13 @@ class OrchestratorAgent:
                 trip_purpose=trip_data.trip_purpose,
                 duration_days=duration_days,
                 departure_date=trip_data.departure_date,
-                traveler_count=1
+                traveler_count=1,
             )
 
         # Add more agent input creators as agents are implemented
         raise ValueError(f"Unknown agent: {agent_name}")
 
-    async def _save_results(
-        self,
-        trip_id: str,
-        sections: Dict[str, Any]
-    ) -> None:
+    async def _save_results(self, trip_id: str, sections: dict[str, Any]) -> None:
         """
         Save results to database
 
@@ -292,26 +270,25 @@ class OrchestratorAgent:
         """
         for section_type, content in sections.items():
             try:
-                supabase.table("report_sections").insert({
-                    "trip_id": trip_id,
-                    "section_type": section_type,
-                    "content": content,
-                    "generated_at": datetime.utcnow().isoformat()
-                }).execute()
+                supabase.table("report_sections").insert(
+                    {
+                        "trip_id": trip_id,
+                        "section_type": section_type,
+                        "content": content,
+                        "generated_at": datetime.utcnow().isoformat(),
+                    }
+                ).execute()
             except Exception as e:
-                self.errors.append({
-                    "operation": "save_results",
-                    "section": section_type,
-                    "error": str(e),
-                    "timestamp": datetime.utcnow().isoformat()
-                })
+                self.errors.append(
+                    {
+                        "operation": "save_results",
+                        "section": section_type,
+                        "error": str(e),
+                        "timestamp": datetime.utcnow().isoformat(),
+                    }
+                )
 
-    async def _update_job_status(
-        self,
-        trip_id: str,
-        status: str,
-        metadata: Dict[str, Any]
-    ) -> None:
+    async def _update_job_status(self, trip_id: str, status: str, metadata: dict[str, Any]) -> None:
         """
         Update agent job status
 
@@ -323,7 +300,7 @@ class OrchestratorAgent:
         try:
             update_data = {
                 "status": status,
-                "updated_at": datetime.utcnow().isoformat()
+                "updated_at": datetime.utcnow().isoformat(),
             }
 
             if status == "running":
@@ -333,19 +310,21 @@ class OrchestratorAgent:
             elif status == "failed":
                 update_data["error_message"] = metadata.get("error", "Unknown error")
 
-            supabase.table("agent_jobs").update(update_data).eq(
-                "trip_id", trip_id
-            ).eq("agent_type", "orchestrator").execute()
+            supabase.table("agent_jobs").update(update_data).eq("trip_id", trip_id).eq(
+                "agent_type", "orchestrator"
+            ).execute()
 
         except Exception as e:
             # Log but don't fail on status update errors
-            self.errors.append({
-                "operation": "update_job_status",
-                "error": str(e),
-                "timestamp": datetime.utcnow().isoformat()
-            })
+            self.errors.append(
+                {
+                    "operation": "update_job_status",
+                    "error": str(e),
+                    "timestamp": datetime.utcnow().isoformat(),
+                }
+            )
 
-    def _aggregate_results(self, data: Dict[str, Any]) -> Dict[str, Any]:
+    def _aggregate_results(self, data: dict[str, Any]) -> dict[str, Any]:
         """
         Aggregate results from all agents
 
@@ -375,11 +354,11 @@ class OrchestratorAgent:
             "metadata": {
                 "agent_count": len(sections),
                 "error_count": len(errors),
-                "orchestrator_version": "1.0.0"
-            }
+                "orchestrator_version": "1.0.0",
+            },
         }
 
-    def list_available_agents(self) -> List[str]:
+    def list_available_agents(self) -> list[str]:
         """
         List all available agents
 

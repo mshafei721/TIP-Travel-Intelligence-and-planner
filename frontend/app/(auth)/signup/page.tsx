@@ -25,7 +25,7 @@ export default function SignupPage() {
         // Auto-login successful, redirect to dashboard
         router.push('/')
       }
-    } catch (err) {
+    } catch {
       setError('An unexpected error occurred. Please try again.')
     } finally {
       setIsLoading(false)
@@ -49,7 +49,7 @@ export default function SignupPage() {
         setError(error.message)
         setIsLoading(false)
       }
-    } catch (err) {
+    } catch {
       setError('An unexpected error occurred. Please try again.')
       setIsLoading(false)
     }

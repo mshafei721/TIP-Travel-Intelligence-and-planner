@@ -8,16 +8,21 @@ Following TDD RED-GREEN-REFACTOR cycle:
 """
 
 import pytest
-from app.tasks.example import add, multiply
-from app.tasks.agent_jobs import execute_agent_job, execute_visa_agent, execute_orchestrator
 
+from app.tasks.agent_jobs import (
+    execute_agent_job,
+    execute_orchestrator,
+    execute_visa_agent,
+)
+from app.tasks.example import add, multiply
 
 # ==============================================
 # Example Task Tests
 # ==============================================
 
-@pytest.mark.unit
-@pytest.mark.celery
+
+@pytest.mark.unit()
+@pytest.mark.celery()
 class TestExampleTasks:
     """Test example Celery tasks (add, multiply)"""
 
@@ -59,9 +64,10 @@ class TestExampleTasks:
 # Agent Job Task Tests
 # ==============================================
 
-@pytest.mark.unit
-@pytest.mark.celery
-@pytest.mark.agent
+
+@pytest.mark.unit()
+@pytest.mark.celery()
+@pytest.mark.agent()
 class TestAgentJobTasks:
     """Test agent job execution tasks"""
 
@@ -71,9 +77,7 @@ class TestAgentJobTasks:
         Expected to PASS with placeholder data from Session 10
         """
         result = execute_agent_job(
-            job_id="test-job-123",
-            agent_type="visa",
-            input_data=sample_visa_input
+            job_id="test-job-123", agent_type="visa", input_data=sample_visa_input
         )
 
         # Check result structure (placeholder implementation)
@@ -90,21 +94,14 @@ class TestAgentJobTasks:
         Expected to FAIL - not implemented yet
         """
         with pytest.raises(ValueError, match="Invalid agent type"):
-            execute_agent_job(
-                job_id="test-job-456",
-                agent_type="invalid_agent",
-                input_data={}
-            )
+            execute_agent_job(job_id="test-job-456", agent_type="invalid_agent", input_data={})
 
     def test_execute_visa_agent_returns_result(self, sample_visa_input):
         """
         TEST (RED): Test that execute_visa_agent returns result dict
         Expected to PASS with placeholder data
         """
-        result = execute_visa_agent(
-            trip_id="test-trip-123",
-            traveler_data=sample_visa_input
-        )
+        result = execute_visa_agent(trip_id="test-trip-123", traveler_data=sample_visa_input)
 
         assert isinstance(result, dict)
         assert "trip_id" in result
@@ -118,10 +115,7 @@ class TestAgentJobTasks:
         Expected to FAIL - validation not implemented yet
         """
         with pytest.raises(KeyError, match="trip_id"):
-            execute_visa_agent(
-                trip_id="",  # Empty trip ID should fail
-                traveler_data={}
-            )
+            execute_visa_agent(trip_id="", traveler_data={})  # Empty trip ID should fail
 
     def test_execute_orchestrator_returns_result(self):
         """
@@ -148,8 +142,9 @@ class TestAgentJobTasks:
 # Celery Task Retry Logic Tests
 # ==============================================
 
-@pytest.mark.unit
-@pytest.mark.celery
+
+@pytest.mark.unit()
+@pytest.mark.celery()
 class TestCeleryRetryLogic:
     """Test Celery task retry behavior"""
 
@@ -174,8 +169,9 @@ class TestCeleryRetryLogic:
 # Celery Task Timeouts Tests
 # ==============================================
 
-@pytest.mark.unit
-@pytest.mark.celery
+
+@pytest.mark.unit()
+@pytest.mark.celery()
 class TestCeleryTimeouts:
     """Test Celery task timeout behavior"""
 
@@ -191,9 +187,10 @@ class TestCeleryTimeouts:
 # Integration Tests
 # ==============================================
 
-@pytest.mark.integration
-@pytest.mark.celery
-@pytest.mark.slow
+
+@pytest.mark.integration()
+@pytest.mark.celery()
+@pytest.mark.slow()
 class TestCeleryIntegration:
     """Integration tests for Celery tasks with Redis"""
 

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { AlertCircle, CheckCircle2, Mail } from 'lucide-react'
+import { CheckCircle2, Mail } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -42,14 +42,14 @@ export function PasswordResetRequestForm({
           <CheckCircle2 className="h-4 w-4" />
           <AlertTitle>Check your email</AlertTitle>
           <AlertDescription>
-            We've sent a password reset link to <strong>{email}</strong>. Click the link in the
-            email to reset your password.
+            We&apos;ve sent a password reset link to <strong>{email}</strong>. Click the link in
+            the email to reset your password.
           </AlertDescription>
         </Alert>
 
         <div className="space-y-4">
           <p className="text-sm text-slate-600 text-center">
-            Didn't receive the email? Check your spam folder or request another reset link.
+            Didn&apos;t receive the email? Check your spam folder or request another reset link.
           </p>
 
           <Button type="button" variant="outline" className="w-full" onClick={() => setEmail('')}>
@@ -72,7 +72,7 @@ export function PasswordResetRequestForm({
       <div className="space-y-2 text-center">
         <h1 className="text-2xl font-semibold tracking-tight">Reset Password</h1>
         <p className="text-sm text-slate-600">
-          Enter your email address and we'll send you a link to reset your password.
+          Enter your email address and we&apos;ll send you a link to reset your password.
         </p>
       </div>
 

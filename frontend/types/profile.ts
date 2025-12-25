@@ -210,6 +210,12 @@ export interface TravelPreferences {
 // Trip Template Types (aligned with backend)
 // ============================================
 
+export interface TripTemplatePreferences {
+  travel_style?: TravelStyle;
+  dietary_restrictions?: string[];
+  accessibility_needs?: string | null;
+}
+
 export interface TripTemplate {
   id: string;
   user_id: string;
@@ -217,7 +223,7 @@ export interface TripTemplate {
   description: string | null;
   traveler_details: Record<string, unknown> | null;
   destinations: Array<{ country: string; city?: string }>;
-  preferences: Record<string, unknown> | null;
+  preferences: TripTemplatePreferences | null;
   created_at: string;
   updated_at: string;
 }
@@ -227,7 +233,7 @@ export interface TripTemplateCreate {
   description?: string | null;
   traveler_details?: Record<string, unknown> | null;
   destinations: Array<{ country: string; city?: string }>;
-  preferences?: Record<string, unknown> | null;
+  preferences?: TripTemplatePreferences | null;
 }
 
 export interface TripTemplateUpdate {
@@ -235,7 +241,7 @@ export interface TripTemplateUpdate {
   description?: string | null;
   traveler_details?: Record<string, unknown> | null;
   destinations?: Array<{ country: string; city?: string }>;
-  preferences?: Record<string, unknown> | null;
+  preferences?: TripTemplatePreferences | null;
 }
 
 // ============================================
@@ -273,7 +279,7 @@ export interface ProfileSettings {
   travelPreferences: TravelPreferences;
   notifications: NotificationSettings;
   privacy: PrivacySettings;
-  templates: LegacyTripTemplate[];
+  templates: TripTemplate[];
 }
 
 /** @deprecated */

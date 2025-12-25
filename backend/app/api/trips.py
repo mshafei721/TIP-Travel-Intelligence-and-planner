@@ -1,32 +1,32 @@
 """Trips API endpoints"""
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status, Header
-from typing import Optional
-from datetime import datetime, date
+from datetime import date, datetime
 from uuid import uuid4
-from app.core.supabase import supabase
+
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
+
 from app.core.auth import verify_jwt_token
-from app.core.config import settings
-from app.models.trips import (
-    TripCreateRequest,
-    TripUpdateRequest,
-    TripResponse,
-    TripStatus,
-    DraftSaveRequest,
-    DraftResponse
-)
+from app.core.supabase import supabase
 from app.models.report import (
-    VisaReportResponse,
-    ReportNotFoundError,
-    ReportUnauthorizedError,
-    VisaRequirementResponse,
     ApplicationProcessResponse,
-    EntryRequirementResponse,
-    SourceReferenceResponse,
     CountryReportResponse,
     EmergencyContactResponse,
+    EntryRequirementResponse,
     PowerOutletResponse,
+    ReportNotFoundError,
+    ReportUnauthorizedError,
+    SourceReferenceResponse,
     TravelAdvisoryResponse,
+    VisaReportResponse,
+    VisaRequirementResponse,
+)
+from app.models.trips import (
+    DraftResponse,
+    DraftSaveRequest,
+    TripCreateRequest,
+    TripResponse,
+    TripStatus,
+    TripUpdateRequest,
 )
 
 router = APIRouter(prefix="/trips", tags=["trips"])
@@ -34,10 +34,10 @@ router = APIRouter(prefix="/trips", tags=["trips"])
 
 @router.get("")
 async def list_trips(
-    status_filter: Optional[str] = Query(None, description="Filter by trip status"),
+    status_filter: str | None = Query(None, description="Filter by trip status"),
     limit: int = Query(20, ge=1, le=100, description="Number of trips to return"),
-    cursor: Optional[str] = Query(None, description="Pagination cursor"),
-    token_payload: dict = Depends(verify_jwt_token)
+    cursor: str | None = Query(None, description="Pagination cursor"),
+    token_payload: dict = Depends(verify_jwt_token),
 ):
     """
     List trips for the authenticated user
@@ -55,9 +55,13 @@ async def list_trips(
 
     try:
         # Build query
-        query = supabase.table("trips").select(
-            "id, created_at, updated_at, status, trip_details, destinations"
-        ).eq("user_id", user_id).order("created_at", desc=True).limit(limit)
+        query = (
+            supabase.table("trips")
+            .select("id, created_at, updated_at, status, trip_details, destinations")
+            .eq("user_id", user_id)
+            .order("created_at", desc=True)
+            .limit(limit)
+        )
 
         # Apply status filter if provided
         if status_filter:
@@ -76,7 +80,9 @@ async def list_trips(
             destination_name = "Unknown"
             if trip.get("destinations") and len(trip["destinations"]) > 0:
                 first_dest = trip["destinations"][0]
-                destination_name = f"{first_dest.get('city', '')}, {first_dest.get('country', '')}".strip(", ")
+                destination_name = (
+                    f"{first_dest.get('city', '')}, {first_dest.get('country', '')}".strip(", ")
+                )
 
             # Extract dates from trip_details
             trip_details = trip.get("trip_details", {})
@@ -108,15 +114,17 @@ async def list_trips(
             else:
                 display_status = "completed"
 
-            items.append({
-                "id": trip["id"],
-                "destination": destination_name,
-                "startDate": start_date,
-                "endDate": end_date,
-                "status": display_status,
-                "createdAt": trip["created_at"],
-                "deletionDate": trip.get("auto_delete_at", "")
-            })
+            items.append(
+                {
+                    "id": trip["id"],
+                    "destination": destination_name,
+                    "startDate": start_date,
+                    "endDate": end_date,
+                    "status": display_status,
+                    "createdAt": trip["created_at"],
+                    "deletionDate": trip.get("auto_delete_at", ""),
+                }
+            )
 
         # Determine if there are more results (simple pagination)
         next_cursor = None
@@ -124,23 +132,17 @@ async def list_trips(
             # There might be more results
             next_cursor = items[-1]["createdAt"]
 
-        return {
-            "items": items,
-            "nextCursor": next_cursor
-        }
+        return {"items": items, "nextCursor": next_cursor}
 
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to fetch trips: {str(e)}"
+            detail=f"Failed to fetch trips: {str(e)}",
         )
 
 
 @router.get("/{trip_id}")
-async def get_trip(
-    trip_id: str,
-    token_payload: dict = Depends(verify_jwt_token)
-):
+async def get_trip(trip_id: str, token_payload: dict = Depends(verify_jwt_token)):
     """
     Get detailed trip information
 
@@ -153,15 +155,17 @@ async def get_trip(
     user_id = token_payload["user_id"]
 
     try:
-        response = supabase.table("trips").select("*").eq(
-            "id", trip_id
-        ).eq("user_id", user_id).single().execute()
+        response = (
+            supabase.table("trips")
+            .select("*")
+            .eq("id", trip_id)
+            .eq("user_id", user_id)
+            .single()
+            .execute()
+        )
 
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Trip not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Trip not found")
 
         return response.data
 
@@ -170,7 +174,7 @@ async def get_trip(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to fetch trip: {str(e)}"
+            detail=f"Failed to fetch trip: {str(e)}",
         )
 
 
@@ -178,7 +182,7 @@ async def get_trip(
 async def create_trip(
     trip_data: TripCreateRequest,
     token_payload: dict = Depends(verify_jwt_token),
-    idempotency_key: Optional[str] = Header(None, alias="X-Idempotency-Key")
+    idempotency_key: str | None = Header(None, alias="X-Idempotency-Key"),
 ):
     """
     Create a new trip
@@ -202,9 +206,13 @@ async def create_trip(
         # Check for duplicate request using idempotency key
         if idempotency_key:
             # Check if a trip with this idempotency key already exists
-            existing_response = supabase.table("trips").select("*").eq(
-                "user_id", user_id
-            ).eq("idempotency_key", idempotency_key).execute()
+            existing_response = (
+                supabase.table("trips")
+                .select("*")
+                .eq("user_id", user_id)
+                .eq("idempotency_key", idempotency_key)
+                .execute()
+            )
 
             if existing_response.data and len(existing_response.data) > 0:
                 # Return existing trip (idempotent operation)
@@ -218,7 +226,9 @@ async def create_trip(
             "status": TripStatus.DRAFT.value,
             "traveler_details": trip_data.traveler_details.model_dump(),
             "destinations": [dest.model_dump() for dest in trip_data.destinations],
-            "trip_details": trip_data.trip_details.model_dump(mode='json'),  # Convert dates to strings
+            "trip_details": trip_data.trip_details.model_dump(
+                mode="json"
+            ),  # Convert dates to strings
             "preferences": trip_data.preferences.model_dump(),
             "template_id": trip_data.template_id,
         }
@@ -233,7 +243,7 @@ async def create_trip(
         if not response.data or len(response.data) == 0:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to create trip: No data returned from database"
+                detail="Failed to create trip: No data returned from database",
             )
 
         return response.data[0]
@@ -243,7 +253,7 @@ async def create_trip(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to create trip: {str(e)}"
+            detail=f"Failed to create trip: {str(e)}",
         )
 
 
@@ -251,7 +261,7 @@ async def create_trip(
 async def update_trip(
     trip_id: str,
     trip_data: TripUpdateRequest,
-    token_payload: dict = Depends(verify_jwt_token)
+    token_payload: dict = Depends(verify_jwt_token),
 ):
     """
     Update an existing trip
@@ -277,23 +287,28 @@ async def update_trip(
 
     try:
         # First, verify the trip exists and belongs to the user
-        existing_response = supabase.table("trips").select("*").eq(
-            "id", trip_id
-        ).eq("user_id", user_id).single().execute()
+        existing_response = (
+            supabase.table("trips")
+            .select("*")
+            .eq("id", trip_id)
+            .eq("user_id", user_id)
+            .single()
+            .execute()
+        )
 
         if not existing_response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Trip not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Trip not found")
 
         existing_trip = existing_response.data
 
         # Check if trip status allows updates
-        if existing_trip["status"] not in [TripStatus.DRAFT.value, TripStatus.PENDING.value]:
+        if existing_trip["status"] not in [
+            TripStatus.DRAFT.value,
+            TripStatus.PENDING.value,
+        ]:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Cannot update trip with status '{existing_trip['status']}'. Only 'draft' and 'pending' trips can be updated."
+                detail=f"Cannot update trip with status '{existing_trip['status']}'. Only 'draft' and 'pending' trips can be updated.",
             )
 
         # Prepare update data (only include fields that are provided)
@@ -306,7 +321,7 @@ async def update_trip(
             update_record["destinations"] = [dest.model_dump() for dest in trip_data.destinations]
 
         if trip_data.trip_details is not None:
-            update_record["trip_details"] = trip_data.trip_details.model_dump(mode='json')
+            update_record["trip_details"] = trip_data.trip_details.model_dump(mode="json")
 
         if trip_data.preferences is not None:
             update_record["preferences"] = trip_data.preferences.model_dump()
@@ -316,14 +331,18 @@ async def update_trip(
             return existing_trip
 
         # Update trip in database
-        response = supabase.table("trips").update(update_record).eq(
-            "id", trip_id
-        ).eq("user_id", user_id).execute()
+        response = (
+            supabase.table("trips")
+            .update(update_record)
+            .eq("id", trip_id)
+            .eq("user_id", user_id)
+            .execute()
+        )
 
         if not response.data or len(response.data) == 0:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to update trip: No data returned from database"
+                detail="Failed to update trip: No data returned from database",
             )
 
         return response.data[0]
@@ -333,15 +352,12 @@ async def update_trip(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to update trip: {str(e)}"
+            detail=f"Failed to update trip: {str(e)}",
         )
 
 
 @router.delete("/{trip_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_trip(
-    trip_id: str,
-    token_payload: dict = Depends(verify_jwt_token)
-):
+async def delete_trip(trip_id: str, token_payload: dict = Depends(verify_jwt_token)):
     """
     Delete a trip
 
@@ -357,15 +373,17 @@ async def delete_trip(
 
     try:
         # First, verify the trip exists and belongs to the user
-        existing_response = supabase.table("trips").select("status").eq(
-            "id", trip_id
-        ).eq("user_id", user_id).single().execute()
+        existing_response = (
+            supabase.table("trips")
+            .select("status")
+            .eq("id", trip_id)
+            .eq("user_id", user_id)
+            .single()
+            .execute()
+        )
 
         if not existing_response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Trip not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Trip not found")
 
         trip_status = existing_response.data["status"]
 
@@ -373,37 +391,34 @@ async def delete_trip(
         if trip_status == TripStatus.PROCESSING.value:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Cannot delete trip that is currently processing. Please wait for completion."
+                detail="Cannot delete trip that is currently processing. Please wait for completion.",
             )
 
         if trip_status == TripStatus.COMPLETED.value:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Cannot delete completed trip. Completed trips are automatically deleted 30 days after return date."
+                detail="Cannot delete completed trip. Completed trips are automatically deleted 30 days after return date.",
             )
 
         # Delete trip
-        delete_response = supabase.table("trips").delete().eq(
-            "id", trip_id
-        ).eq("user_id", user_id).execute()
+        delete_response = (
+            supabase.table("trips").delete().eq("id", trip_id).eq("user_id", user_id).execute()
+        )
 
         # Return 204 No Content on success
-        return None
+        return
 
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to delete trip: {str(e)}"
+            detail=f"Failed to delete trip: {str(e)}",
         )
 
 
 @router.post("/{trip_id}/generate", status_code=status.HTTP_202_ACCEPTED)
-async def generate_trip_report(
-    trip_id: str,
-    token_payload: dict = Depends(verify_jwt_token)
-):
+async def generate_trip_report(trip_id: str, token_payload: dict = Depends(verify_jwt_token)):
     """
     Start AI report generation for a trip
 
@@ -424,15 +439,17 @@ async def generate_trip_report(
 
     try:
         # Verify trip exists and belongs to user
-        existing_response = supabase.table("trips").select("*").eq(
-            "id", trip_id
-        ).eq("user_id", user_id).single().execute()
+        existing_response = (
+            supabase.table("trips")
+            .select("*")
+            .eq("id", trip_id)
+            .eq("user_id", user_id)
+            .single()
+            .execute()
+        )
 
         if not existing_response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Trip not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Trip not found")
 
         existing_trip = existing_response.data
 
@@ -440,13 +457,13 @@ async def generate_trip_report(
         if existing_trip["status"] == TripStatus.PROCESSING.value:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Report generation already in progress for this trip"
+                detail="Report generation already in progress for this trip",
             )
 
         if existing_trip["status"] == TripStatus.COMPLETED.value:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Report already generated for this trip"
+                detail="Report already generated for this trip",
             )
 
         if existing_trip["status"] == TripStatus.FAILED.value:
@@ -454,18 +471,23 @@ async def generate_trip_report(
             pass
 
         # Update trip status to 'processing'
-        update_response = supabase.table("trips").update({
-            "status": TripStatus.PROCESSING.value
-        }).eq("id", trip_id).eq("user_id", user_id).execute()
+        update_response = (
+            supabase.table("trips")
+            .update({"status": TripStatus.PROCESSING.value})
+            .eq("id", trip_id)
+            .eq("user_id", user_id)
+            .execute()
+        )
 
         # Queue Celery task for report generation
         from app.tasks.agent_jobs import execute_orchestrator
+
         task = execute_orchestrator.delay(trip_id)
 
         return {
             "status": "queued",
             "task_id": task.id,
-            "message": "Report generation started. You will be notified when complete."
+            "message": "Report generation started. You will be notified when complete.",
         }
 
     except HTTPException:
@@ -473,23 +495,20 @@ async def generate_trip_report(
     except Exception as e:
         # Rollback status update on failure
         try:
-            supabase.table("trips").update({
-                "status": TripStatus.FAILED.value
-            }).eq("id", trip_id).eq("user_id", user_id).execute()
+            supabase.table("trips").update({"status": TripStatus.FAILED.value}).eq(
+                "id", trip_id
+            ).eq("user_id", user_id).execute()
         except:
             pass
 
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to start report generation: {str(e)}"
+            detail=f"Failed to start report generation: {str(e)}",
         )
 
 
 @router.get("/{trip_id}/status")
-async def get_generation_status(
-    trip_id: str,
-    token_payload: dict = Depends(verify_jwt_token)
-):
+async def get_generation_status(trip_id: str, token_payload: dict = Depends(verify_jwt_token)):
     """
     Get current report generation status for a trip
 
@@ -510,22 +529,28 @@ async def get_generation_status(
 
     try:
         # Get trip status
-        trip_response = supabase.table("trips").select("status, created_at, updated_at").eq(
-            "id", trip_id
-        ).eq("user_id", user_id).single().execute()
+        trip_response = (
+            supabase.table("trips")
+            .select("status, created_at, updated_at")
+            .eq("id", trip_id)
+            .eq("user_id", user_id)
+            .single()
+            .execute()
+        )
 
         if not trip_response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Trip not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Trip not found")
 
         trip = trip_response.data
 
         # Get agent jobs for this trip
-        jobs_response = supabase.table("agent_jobs").select("*").eq(
-            "trip_id", trip_id
-        ).order("created_at").execute()
+        jobs_response = (
+            supabase.table("agent_jobs")
+            .select("*")
+            .eq("trip_id", trip_id)
+            .order("created_at")
+            .execute()
+        )
 
         agent_jobs = jobs_response.data if jobs_response.data else []
 
@@ -541,11 +566,17 @@ async def get_generation_status(
             "status": trip["status"],
             "progress": progress,
             "current_agent": processing_job["agent_type"] if processing_job else None,
-            "agents_completed": [job["agent_type"] for job in agent_jobs if job["status"] == "completed"],
+            "agents_completed": [
+                job["agent_type"] for job in agent_jobs if job["status"] == "completed"
+            ],
             "agents_failed": [job["agent_type"] for job in agent_jobs if job["status"] == "failed"],
-            "error": processing_job.get("error") if processing_job and processing_job.get("status") == "failed" else None,
+            "error": (
+                processing_job.get("error")
+                if processing_job and processing_job.get("status") == "failed"
+                else None
+            ),
             "started_at": agent_jobs[0]["created_at"] if agent_jobs else None,
-            "completed_at": trip["updated_at"] if trip["status"] == "completed" else None
+            "completed_at": (trip["updated_at"] if trip["status"] == "completed" else None),
         }
 
     except HTTPException:
@@ -553,16 +584,13 @@ async def get_generation_status(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get generation status: {str(e)}"
+            detail=f"Failed to get generation status: {str(e)}",
         )
 
 
 # Draft Management Endpoints
 @router.post("/drafts", status_code=status.HTTP_201_CREATED, response_model=DraftResponse)
-async def save_draft(
-    draft_data: DraftSaveRequest,
-    token_payload: dict = Depends(verify_jwt_token)
-):
+async def save_draft(draft_data: DraftSaveRequest, token_payload: dict = Depends(verify_jwt_token)):
     """
     Save a trip draft (partial trip data for auto-save)
 
@@ -589,7 +617,7 @@ async def save_draft(
         draft_record = {
             "id": draft_id,
             "user_id": user_id,
-            "draft_data": draft_data.model_dump(exclude_none=True)
+            "draft_data": draft_data.model_dump(exclude_none=True),
         }
 
         # Insert draft into database
@@ -599,10 +627,18 @@ async def save_draft(
             "id": draft_id,
             "user_id": user_id,
             "status": TripStatus.DRAFT.value,
-            "traveler_details": draft_data.traveler_details.model_dump() if draft_data.traveler_details else {},
-            "destinations": [dest.model_dump() for dest in draft_data.destinations] if draft_data.destinations else [],
-            "trip_details": draft_data.trip_details.model_dump(mode='json') if draft_data.trip_details else {},
-            "preferences": draft_data.preferences.model_dump() if draft_data.preferences else {},
+            "traveler_details": (
+                draft_data.traveler_details.model_dump() if draft_data.traveler_details else {}
+            ),
+            "destinations": (
+                [dest.model_dump() for dest in draft_data.destinations]
+                if draft_data.destinations
+                else []
+            ),
+            "trip_details": (
+                draft_data.trip_details.model_dump(mode="json") if draft_data.trip_details else {}
+            ),
+            "preferences": (draft_data.preferences.model_dump() if draft_data.preferences else {}),
         }
 
         response = supabase.table("trips").insert(trip_record).execute()
@@ -610,7 +646,7 @@ async def save_draft(
         if not response.data or len(response.data) == 0:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to save draft"
+                detail="Failed to save draft",
             )
 
         return {
@@ -618,7 +654,7 @@ async def save_draft(
             "user_id": user_id,
             "created_at": response.data[0]["created_at"],
             "updated_at": response.data[0]["updated_at"],
-            "draft_data": draft_data.model_dump(exclude_none=True)
+            "draft_data": draft_data.model_dump(exclude_none=True),
         }
 
     except HTTPException:
@@ -626,14 +662,12 @@ async def save_draft(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to save draft: {str(e)}"
+            detail=f"Failed to save draft: {str(e)}",
         )
 
 
 @router.get("/drafts")
-async def get_drafts(
-    token_payload: dict = Depends(verify_jwt_token)
-):
+async def get_drafts(token_payload: dict = Depends(verify_jwt_token)):
     """
     Get all drafts for the authenticated user
 
@@ -644,9 +678,14 @@ async def get_drafts(
 
     try:
         # Get all draft trips
-        response = supabase.table("trips").select("*").eq(
-            "user_id", user_id
-        ).eq("status", TripStatus.DRAFT.value).order("updated_at", desc=True).execute()
+        response = (
+            supabase.table("trips")
+            .select("*")
+            .eq("user_id", user_id)
+            .eq("status", TripStatus.DRAFT.value)
+            .order("updated_at", desc=True)
+            .execute()
+        )
 
         if not response.data:
             return []
@@ -654,25 +693,27 @@ async def get_drafts(
         # Transform to draft format
         drafts = []
         for trip in response.data:
-            drafts.append({
-                "id": trip["id"],
-                "user_id": trip["user_id"],
-                "created_at": trip["created_at"],
-                "updated_at": trip["updated_at"],
-                "draft_data": {
-                    "traveler_details": trip.get("traveler_details"),
-                    "destinations": trip.get("destinations"),
-                    "trip_details": trip.get("trip_details"),
-                    "preferences": trip.get("preferences")
+            drafts.append(
+                {
+                    "id": trip["id"],
+                    "user_id": trip["user_id"],
+                    "created_at": trip["created_at"],
+                    "updated_at": trip["updated_at"],
+                    "draft_data": {
+                        "traveler_details": trip.get("traveler_details"),
+                        "destinations": trip.get("destinations"),
+                        "trip_details": trip.get("trip_details"),
+                        "preferences": trip.get("preferences"),
+                    },
                 }
-            })
+            )
 
         return drafts
 
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get drafts: {str(e)}"
+            detail=f"Failed to get drafts: {str(e)}",
         )
 
 
@@ -680,7 +721,7 @@ async def get_drafts(
 async def update_draft(
     draft_id: str,
     draft_data: DraftSaveRequest,
-    token_payload: dict = Depends(verify_jwt_token)
+    token_payload: dict = Depends(verify_jwt_token),
 ):
     """
     Update an existing draft
@@ -698,15 +739,18 @@ async def update_draft(
 
     try:
         # Verify draft exists
-        existing_response = supabase.table("trips").select("*").eq(
-            "id", draft_id
-        ).eq("user_id", user_id).eq("status", TripStatus.DRAFT.value).single().execute()
+        existing_response = (
+            supabase.table("trips")
+            .select("*")
+            .eq("id", draft_id)
+            .eq("user_id", user_id)
+            .eq("status", TripStatus.DRAFT.value)
+            .single()
+            .execute()
+        )
 
         if not existing_response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Draft not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Draft not found")
 
         # Prepare update data
         update_record = {}
@@ -718,7 +762,7 @@ async def update_draft(
             update_record["destinations"] = [dest.model_dump() for dest in draft_data.destinations]
 
         if draft_data.trip_details is not None:
-            update_record["trip_details"] = draft_data.trip_details.model_dump(mode='json')
+            update_record["trip_details"] = draft_data.trip_details.model_dump(mode="json")
 
         if draft_data.preferences is not None:
             update_record["preferences"] = draft_data.preferences.model_dump()
@@ -730,18 +774,22 @@ async def update_draft(
                 "user_id": user_id,
                 "created_at": existing_response.data["created_at"],
                 "updated_at": existing_response.data["updated_at"],
-                "draft_data": draft_data.model_dump(exclude_none=True)
+                "draft_data": draft_data.model_dump(exclude_none=True),
             }
 
         # Update draft
-        response = supabase.table("trips").update(update_record).eq(
-            "id", draft_id
-        ).eq("user_id", user_id).execute()
+        response = (
+            supabase.table("trips")
+            .update(update_record)
+            .eq("id", draft_id)
+            .eq("user_id", user_id)
+            .execute()
+        )
 
         if not response.data or len(response.data) == 0:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to update draft"
+                detail="Failed to update draft",
             )
 
         return {
@@ -749,7 +797,7 @@ async def update_draft(
             "user_id": user_id,
             "created_at": response.data[0]["created_at"],
             "updated_at": response.data[0]["updated_at"],
-            "draft_data": draft_data.model_dump(exclude_none=True)
+            "draft_data": draft_data.model_dump(exclude_none=True),
         }
 
     except HTTPException:
@@ -757,15 +805,12 @@ async def update_draft(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to update draft: {str(e)}"
+            detail=f"Failed to update draft: {str(e)}",
         )
 
 
 @router.delete("/drafts/{draft_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_draft(
-    draft_id: str,
-    token_payload: dict = Depends(verify_jwt_token)
-):
+async def delete_draft(draft_id: str, token_payload: dict = Depends(verify_jwt_token)):
     """
     Delete a draft
 
@@ -776,29 +821,30 @@ async def delete_draft(
 
     try:
         # Verify draft exists
-        existing_response = supabase.table("trips").select("id").eq(
-            "id", draft_id
-        ).eq("user_id", user_id).eq("status", TripStatus.DRAFT.value).single().execute()
+        existing_response = (
+            supabase.table("trips")
+            .select("id")
+            .eq("id", draft_id)
+            .eq("user_id", user_id)
+            .eq("status", TripStatus.DRAFT.value)
+            .single()
+            .execute()
+        )
 
         if not existing_response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Draft not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Draft not found")
 
         # Delete draft
-        supabase.table("trips").delete().eq(
-            "id", draft_id
-        ).eq("user_id", user_id).execute()
+        supabase.table("trips").delete().eq("id", draft_id).eq("user_id", user_id).execute()
 
-        return None
+        return
 
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to delete draft: {str(e)}"
+            detail=f"Failed to delete draft: {str(e)}",
         )
 
 
@@ -808,12 +854,9 @@ async def delete_draft(
     responses={
         404: {"model": ReportNotFoundError, "description": "Report not found"},
         403: {"model": ReportUnauthorizedError, "description": "Unauthorized access"},
-    }
+    },
 )
-async def get_visa_report(
-    trip_id: str,
-    token_payload: dict = Depends(verify_jwt_token)
-):
+async def get_visa_report(trip_id: str, token_payload: dict = Depends(verify_jwt_token)):
     """
     Get visa report for a trip
 
@@ -851,32 +894,35 @@ async def get_visa_report(
 
     try:
         # 1. Verify trip exists and user owns it
-        trip_response = supabase.table("trips").select("id, user_id").eq(
-            "id", trip_id
-        ).single().execute()
+        trip_response = (
+            supabase.table("trips").select("id, user_id").eq("id", trip_id).single().execute()
+        )
 
         if not trip_response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Trip not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Trip not found")
 
         # 2. Check ownership
         if trip_response.data["user_id"] != user_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="You do not have permission to access this report"
+                detail="You do not have permission to access this report",
             )
 
         # 3. Retrieve visa report from report_sections table
-        report_response = supabase.table("report_sections").select("*").eq(
-            "trip_id", trip_id
-        ).eq("section_type", "visa").order("generated_at", desc=True).limit(1).execute()
+        report_response = (
+            supabase.table("report_sections")
+            .select("*")
+            .eq("trip_id", trip_id)
+            .eq("section_type", "visa")
+            .order("generated_at", desc=True)
+            .limit(1)
+            .execute()
+        )
 
         if not report_response.data or len(report_response.data) == 0:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Visa report not found for this trip. Generate the trip report first using POST /trips/{id}/generate"
+                detail="Visa report not found for this trip. Generate the trip report first using POST /trips/{id}/generate",
             )
 
         # 4. Parse report data
@@ -884,7 +930,9 @@ async def get_visa_report(
         content = report["content"]
 
         # Convert confidence from integer (0-100) back to float (0.0-1.0)
-        confidence_float = float(report["confidence_score"]) / 100.0 if report.get("confidence_score") else 0.0
+        confidence_float = (
+            float(report["confidence_score"]) / 100.0 if report.get("confidence_score") else 0.0
+        )
 
         # 5. Build response
         return VisaReportResponse(
@@ -898,7 +946,7 @@ async def get_visa_report(
             tips=content.get("tips", []),
             warnings=content.get("warnings", []),
             sources=[SourceReferenceResponse(**source) for source in content.get("sources", [])],
-            last_verified=datetime.fromisoformat(content["last_verified"].replace("Z", "+00:00"))
+            last_verified=datetime.fromisoformat(content["last_verified"].replace("Z", "+00:00")),
         )
 
     except HTTPException:
@@ -907,12 +955,12 @@ async def get_visa_report(
         # Handle missing fields in content data
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Invalid report data format: missing field {str(e)}"
+            detail=f"Invalid report data format: missing field {str(e)}",
         )
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to retrieve visa report: {str(e)}"
+            detail=f"Failed to retrieve visa report: {str(e)}",
         )
 
 
@@ -922,12 +970,9 @@ async def get_visa_report(
     responses={
         404: {"model": ReportNotFoundError, "description": "Report not found"},
         403: {"model": ReportUnauthorizedError, "description": "Unauthorized access"},
-    }
+    },
 )
-async def get_destination_report(
-    trip_id: str,
-    token_payload: dict = Depends(verify_jwt_token)
-):
+async def get_destination_report(trip_id: str, token_payload: dict = Depends(verify_jwt_token)):
     """
     Get destination/country intelligence report for a trip
 
@@ -966,32 +1011,35 @@ async def get_destination_report(
 
     try:
         # 1. Verify trip exists and user owns it
-        trip_response = supabase.table("trips").select("id, user_id").eq(
-            "id", trip_id
-        ).single().execute()
+        trip_response = (
+            supabase.table("trips").select("id, user_id").eq("id", trip_id).single().execute()
+        )
 
         if not trip_response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Trip not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Trip not found")
 
         # 2. Check ownership
         if trip_response.data["user_id"] != user_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="You do not have permission to access this report"
+                detail="You do not have permission to access this report",
             )
 
         # 3. Retrieve country report from report_sections table
-        report_response = supabase.table("report_sections").select("*").eq(
-            "trip_id", trip_id
-        ).eq("section_type", "country").order("generated_at", desc=True).limit(1).execute()
+        report_response = (
+            supabase.table("report_sections")
+            .select("*")
+            .eq("trip_id", trip_id)
+            .eq("section_type", "country")
+            .order("generated_at", desc=True)
+            .limit(1)
+            .execute()
+        )
 
         if not report_response.data or len(report_response.data) == 0:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Destination report not found for this trip. Generate the trip report first using POST /trips/{id}/generate"
+                detail="Destination report not found for this trip. Generate the trip report first using POST /trips/{id}/generate",
             )
 
         # 4. Parse report data
@@ -999,7 +1047,9 @@ async def get_destination_report(
         content = report["content"]
 
         # Convert confidence from integer (0-100) back to float (0.0-1.0)
-        confidence_float = float(report["confidence_score"]) / 100.0 if report.get("confidence_score") else 0.0
+        confidence_float = (
+            float(report["confidence_score"]) / 100.0 if report.get("confidence_score") else 0.0
+        )
 
         # 5. Build response
         return CountryReportResponse(
@@ -1021,8 +1071,7 @@ async def get_destination_report(
             coordinates=content.get("coordinates"),
             borders=content.get("borders"),
             emergency_numbers=[
-                EmergencyContactResponse(**contact)
-                for contact in content["emergency_numbers"]
+                EmergencyContactResponse(**contact) for contact in content["emergency_numbers"]
             ],
             power_outlet=PowerOutletResponse(**content["power_outlet"]),
             driving_side=content["driving_side"],
@@ -1036,7 +1085,7 @@ async def get_destination_report(
             notable_facts=content.get("notable_facts", []),
             best_time_to_visit=content.get("best_time_to_visit"),
             sources=[SourceReferenceResponse(**source) for source in content.get("sources", [])],
-            warnings=content.get("warnings", [])
+            warnings=content.get("warnings", []),
         )
 
     except HTTPException:
@@ -1045,10 +1094,10 @@ async def get_destination_report(
         # Handle missing fields in content data
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Invalid report data format: missing field {str(e)}"
+            detail=f"Invalid report data format: missing field {str(e)}",
         )
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to retrieve destination report: {str(e)}"
+            detail=f"Failed to retrieve destination report: {str(e)}",
         )

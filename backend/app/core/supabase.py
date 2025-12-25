@@ -1,6 +1,7 @@
 """Supabase client for backend API"""
 
-from supabase import create_client, Client
+from supabase import Client, create_client
+
 from app.core.config import settings
 
 
@@ -11,7 +12,7 @@ def get_supabase_client() -> Client:
     """
     return create_client(
         supabase_url=settings.SUPABASE_URL,
-        supabase_key=settings.SUPABASE_SERVICE_ROLE_KEY
+        supabase_key=settings.SUPABASE_SERVICE_ROLE_KEY,
     )
 
 

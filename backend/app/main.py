@@ -6,8 +6,9 @@ FastAPI Application Entry Point
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+
+from app.api import healthcheck, profile, recommendations, templates, trips
 from app.core.config import settings
-from app.api import healthcheck, trips, profile, recommendations, templates
 
 # Create FastAPI application
 app = FastAPI(
@@ -40,12 +41,14 @@ app.include_router(templates.router, prefix="/api")
 @app.get("/", include_in_schema=False)
 async def root():
     """Root endpoint - redirects to API docs"""
-    return JSONResponse({
-        "message": f"Welcome to {settings.APP_NAME} API",
-        "version": settings.APP_VERSION,
-        "docs": "/api/docs",
-        "health": "/api/health"
-    })
+    return JSONResponse(
+        {
+            "message": f"Welcome to {settings.APP_NAME} API",
+            "version": settings.APP_VERSION,
+            "docs": "/api/docs",
+            "health": "/api/health",
+        }
+    )
 
 
 # Startup event
@@ -55,7 +58,7 @@ async def startup_event():
     print(f"[STARTUP] {settings.APP_NAME} v{settings.APP_VERSION} starting...")
     print(f"[STARTUP] Environment: {settings.ENVIRONMENT}")
     print(f"[STARTUP] CORS enabled for: {settings.cors_origins_list}")
-    print(f"[STARTUP] API docs available at: /api/docs")
+    print("[STARTUP] API docs available at: /api/docs")
 
 
 # Shutdown event

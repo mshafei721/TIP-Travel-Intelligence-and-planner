@@ -57,35 +57,41 @@ export function AutoSaveIndicator({
   const [shouldRender, setShouldRender] = useState(false)
 
   useEffect(() => {
+    let fadeInTimer: ReturnType<typeof setTimeout> | undefined
+    let hideTimer: ReturnType<typeof setTimeout> | undefined
+    let unmountTimer: ReturnType<typeof setTimeout> | undefined
+
     if (saveState === 'idle') {
       // Fade out
-      setIsVisible(false)
+      fadeInTimer = setTimeout(() => setIsVisible(false), 0)
       // Remove from DOM after animation
-      const timer = setTimeout(() => setShouldRender(false), 300)
-      return () => clearTimeout(timer)
-    }
-
-    // Show indicator
-    setShouldRender(true)
-    // Trigger fade-in after render
-    const fadeInTimer = setTimeout(() => setIsVisible(true), 10)
-
-    // Auto-hide after success
-    if (saveState === 'saved') {
-      const hideTimer = setTimeout(() => {
-        setIsVisible(false)
-        setTimeout(() => {
-          setShouldRender(false)
-        }, 300)
-      }, savedDuration)
+      unmountTimer = setTimeout(() => setShouldRender(false), 300)
 
       return () => {
-        clearTimeout(fadeInTimer)
-        clearTimeout(hideTimer)
+        if (fadeInTimer) clearTimeout(fadeInTimer)
+        if (unmountTimer) clearTimeout(unmountTimer)
       }
     }
 
-    return () => clearTimeout(fadeInTimer)
+    // Show indicator
+    const showTimer = setTimeout(() => setShouldRender(true), 0)
+    // Trigger fade-in after render
+    fadeInTimer = setTimeout(() => setIsVisible(true), 10)
+
+    // Auto-hide after success
+    if (saveState === 'saved') {
+      hideTimer = setTimeout(() => {
+        setIsVisible(false)
+        unmountTimer = setTimeout(() => setShouldRender(false), 300)
+      }, savedDuration)
+    }
+
+    return () => {
+      clearTimeout(showTimer)
+      if (fadeInTimer) clearTimeout(fadeInTimer)
+      if (hideTimer) clearTimeout(hideTimer)
+      if (unmountTimer) clearTimeout(unmountTimer)
+    }
   }, [saveState, savedDuration])
 
   if (!shouldRender) return null

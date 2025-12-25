@@ -13,6 +13,7 @@ Architecture:
 
 from celery import Celery
 from celery.schedules import crontab
+
 from app.core.config import settings
 
 # ==============================================
@@ -23,7 +24,7 @@ celery_app = Celery(
     "tip",
     broker=settings.CELERY_BROKER_URL,
     backend=settings.CELERY_RESULT_BACKEND,
-    include=["app.tasks"]  # Auto-discover tasks
+    include=["app.tasks"],  # Auto-discover tasks
 )
 
 # ==============================================
@@ -35,33 +36,26 @@ celery_app.conf.update(
     task_serializer="json",
     accept_content=["json"],
     result_serializer="json",
-
     # Timezone
     timezone="UTC",
     enable_utc=True,
-
     # Task routing and execution
     task_track_started=True,
     task_time_limit=30 * 60,  # 30 minutes max per task
     task_soft_time_limit=25 * 60,  # 25 minutes soft limit
     task_acks_late=True,  # Acknowledge after task completion
     worker_prefetch_multiplier=1,  # One task per worker at a time
-
     # Result backend settings
     result_expires=3600,  # Results expire after 1 hour
     result_extended=True,  # Store task args/kwargs with results
-
     # Worker settings
     worker_send_task_events=True,  # Send task events for monitoring
     worker_max_tasks_per_child=1000,  # Restart worker after 1000 tasks (prevent memory leaks)
-
     # Retry settings
     task_default_retry_delay=60,  # Retry after 1 minute
     task_max_retries=3,
-
     # Task priority (0-9, lower = higher priority)
     task_default_priority=5,
-
     # Beat schedule for periodic tasks
     beat_schedule={
         "cleanup-expired-tasks": {
@@ -78,6 +72,7 @@ celery_app.conf.update(
 # ==============================================
 # Task Base Class
 # ==============================================
+
 
 class BaseTipTask(celery_app.Task):
     """

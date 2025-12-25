@@ -8,13 +8,14 @@ Following TDD (RED-GREEN-REFACTOR):
 """
 
 import pytest
+
 from app.services.visa.travel_buddy_client import TravelBuddyClient, VisaCheckResult
 
 
 class TestTravelBuddyClient:
     """Test suite for Travel Buddy AI API client"""
 
-    @pytest.fixture
+    @pytest.fixture()
     def client(self):
         """Create client with test API key"""
         return TravelBuddyClient(api_key="test-key-123")
@@ -64,7 +65,7 @@ class TestTravelBuddyClient:
         with pytest.raises(Exception):  # Should raise an API error
             client_with_bad_key.check_visa(passport="US", destination="FR")
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_check_visa_async(self, client):
         """Test async visa checking"""
         result = await client.check_visa_async(passport="US", destination="JP")

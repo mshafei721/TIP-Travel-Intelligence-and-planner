@@ -25,7 +25,8 @@ Usage:
 """
 
 from abc import ABC, abstractmethod
-from typing import Dict, Any, List
+from typing import Any
+
 from app.agents.config import AgentConfig
 from app.agents.interfaces import AgentResult
 
@@ -59,7 +60,7 @@ class BaseAgent(ABC):
         self.config = config
 
     @abstractmethod
-    def configure_tools(self) -> List[Any]:
+    def configure_tools(self) -> list[Any]:
         """
         Configure agent-specific tools
 
@@ -80,10 +81,9 @@ class BaseAgent(ABC):
                     EmbassyScraperTool()
                 ]
         """
-        pass
 
     @abstractmethod
-    def create_task(self, input_data: Dict[str, Any]) -> Any:
+    def create_task(self, input_data: dict[str, Any]) -> Any:
         """
         Create task definition for agent execution
 
@@ -107,10 +107,9 @@ class BaseAgent(ABC):
                     expected_output="JSON with visa requirements"
                 )
         """
-        pass
 
     @abstractmethod
-    def run(self, input_data: Dict[str, Any]) -> AgentResult:
+    def run(self, input_data: dict[str, Any]) -> AgentResult:
         """
         Execute the agent and return results
 
@@ -153,9 +152,8 @@ class BaseAgent(ABC):
                 except Exception as e:
                     raise AgentExecutionError(f"Visa agent failed: {e}")
         """
-        pass
 
-    async def run_async(self, input_data: Dict[str, Any]) -> AgentResult:
+    async def run_async(self, input_data: dict[str, Any]) -> AgentResult:
         """
         Execute the agent asynchronously
 
@@ -172,6 +170,7 @@ class BaseAgent(ABC):
             AgentExecutionError: If agent fails to execute
         """
         import asyncio
+
         loop = asyncio.get_event_loop()
         return await loop.run_in_executor(None, self.run, input_data)
 

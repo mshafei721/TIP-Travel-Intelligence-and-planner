@@ -53,7 +53,7 @@ export function NotificationsSection({ notifications, onUpdate }: NotificationsS
         try {
           await onUpdate(debouncedSettings)
           setSaveState('saved')
-        } catch (error) {
+        } catch {
           setSaveState('error')
         }
       }

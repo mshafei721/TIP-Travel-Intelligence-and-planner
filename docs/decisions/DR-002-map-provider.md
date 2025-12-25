@@ -239,4 +239,3 @@ The map provider must support:
 **Approved By:** TIP Team
 **Effective Date:** 2025-12-22
 **Review Date:** Phase 9 (Attractions Agent implementation)
-

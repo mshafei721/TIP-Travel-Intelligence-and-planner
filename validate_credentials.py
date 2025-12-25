@@ -8,12 +8,12 @@ WITHOUT exposing actual secret values
 import os
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple
-import json
+from typing import Tuple
 
 # Try to import optional dependencies
 try:
     from dotenv import load_dotenv
+
     DOTENV_AVAILABLE = True
 except ImportError:
     DOTENV_AVAILABLE = False
@@ -21,6 +21,7 @@ except ImportError:
 
 try:
     import requests
+
     REQUESTS_AVAILABLE = True
 except ImportError:
     REQUESTS_AVAILABLE = False
@@ -28,6 +29,7 @@ except ImportError:
 
 try:
     import redis
+
     REDIS_AVAILABLE = True
 except ImportError:
     REDIS_AVAILABLE = False
@@ -41,17 +43,20 @@ BLUE = "\033[94m"
 RESET = "\033[0m"
 BOLD = "\033[1m"
 
+
 def print_header():
     """Print validation header"""
     print(f"\n{BLUE}{'='*60}{RESET}")
     print(f"{BOLD}TIP - Credential Validation{RESET}")
     print(f"{BLUE}{'='*60}{RESET}\n")
 
+
 def mask_secret(value: str, show_chars: int = 4) -> str:
     """Mask a secret value, showing only first/last few characters"""
     if not value or len(value) < show_chars * 2:
         return "***"
     return f"{value[:show_chars]}...{value[-show_chars:]}"
+
 
 def check_env_var(var_name: str, required: bool = True) -> Tuple[bool, str]:
     """Check if environment variable exists and has a value"""
@@ -65,14 +70,20 @@ def check_env_var(var_name: str, required: bool = True) -> Tuple[bool, str]:
 
     # Check if it's still a placeholder
     placeholders = [
-        "your_", "change_me", "xxxxx", "CHANGE_ME",
-        "fill_in", "add_your", "get_from"
+        "your_",
+        "change_me",
+        "xxxxx",
+        "CHANGE_ME",
+        "fill_in",
+        "add_your",
+        "get_from",
     ]
     if any(placeholder.lower() in value.lower() for placeholder in placeholders):
         return False, f"{RED}✗{RESET} Placeholder value detected"
 
     masked = mask_secret(value)
     return True, f"{GREEN}✓{RESET} Set ({masked})"
+
 
 def test_supabase_connection() -> Tuple[bool, str]:
     """Test Supabase connectivity"""
@@ -87,10 +98,7 @@ def test_supabase_connection() -> Tuple[bool, str]:
 
     try:
         # Test REST API health endpoint
-        headers = {
-            "apikey": anon_key,
-            "Authorization": f"Bearer {anon_key}"
-        }
+        headers = {"apikey": anon_key, "Authorization": f"Bearer {anon_key}"}
         response = requests.get(f"{url}/rest/v1/", headers=headers, timeout=10)
 
         if response.status_code in [200, 401, 404]:  # 401/404 means API is reachable
@@ -103,6 +111,7 @@ def test_supabase_connection() -> Tuple[bool, str]:
         return False, "Connection failed"
     except Exception as e:
         return False, f"Error: {str(e)[:30]}"
+
 
 def test_redis_connection() -> Tuple[bool, str]:
     """Test Redis connectivity"""
@@ -123,6 +132,7 @@ def test_redis_connection() -> Tuple[bool, str]:
     except Exception as e:
         return False, f"Error: {str(e)[:30]}"
 
+
 def validate_database_url() -> Tuple[bool, str]:
     """Validate DATABASE_URL format"""
     db_url = os.getenv("DATABASE_URL")
@@ -140,6 +150,7 @@ def validate_database_url() -> Tuple[bool, str]:
 
     masked = mask_secret(db_url, 10)
     return True, f"{GREEN}✓{RESET} Valid format ({masked})"
+
 
 def main():
     """Main validation function"""
@@ -163,7 +174,7 @@ def main():
     results = {
         "required_missing": [],
         "optional_missing": [],
-        "connectivity_failed": []
+        "connectivity_failed": [],
     }
 
     # ==============================================
@@ -177,7 +188,7 @@ def main():
         "SUPABASE_ANON_KEY",
         "SUPABASE_SERVICE_ROLE_KEY",
         "SUPABASE_JWT_SECRET",
-        "DATABASE_URL"
+        "DATABASE_URL",
     ]
 
     for var in required_supabase[:-1]:  # All except DATABASE_URL
@@ -200,11 +211,7 @@ def main():
         results["connectivity_failed"].append(("Supabase", status))
 
     print(f"\n{BOLD}Redis & Celery:{RESET}")
-    redis_vars = [
-        "REDIS_URL",
-        "CELERY_BROKER_URL",
-        "CELERY_RESULT_BACKEND"
-    ]
+    redis_vars = ["REDIS_URL", "CELERY_BROKER_URL", "CELERY_RESULT_BACKEND"]
 
     for var in redis_vars:
         is_ok, status = check_env_var(var, required=True)
@@ -220,12 +227,7 @@ def main():
         results["connectivity_failed"].append(("Redis", status))
 
     print(f"\n{BOLD}Application Settings:{RESET}")
-    app_vars = [
-        "SECRET_KEY",
-        "FRONTEND_URL",
-        "BACKEND_URL",
-        "ENVIRONMENT"
-    ]
+    app_vars = ["SECRET_KEY", "FRONTEND_URL", "BACKEND_URL", "ENVIRONMENT"]
 
     for var in app_vars:
         is_ok, status = check_env_var(var, required=True)
@@ -279,15 +281,18 @@ def main():
         print(f"{BLUE}{'='*60}{RESET}\n")
         return 0
     elif not results["required_missing"]:
-        print(f"{YELLOW}⚠ Credentials configured but connectivity issues detected{RESET}")
-        print(f"   Fix connectivity issues before proceeding")
+        print(
+            f"{YELLOW}⚠ Credentials configured but connectivity issues detected{RESET}"
+        )
+        print("   Fix connectivity issues before proceeding")
         print(f"{BLUE}{'='*60}{RESET}\n")
         return 1
     else:
         print(f"{RED}✗ Configuration incomplete{RESET}")
-        print(f"   Please add missing credentials to .env file")
+        print("   Please add missing credentials to .env file")
         print(f"{BLUE}{'='*60}{RESET}\n")
         return 1
+
 
 if __name__ == "__main__":
     try:

@@ -21,7 +21,7 @@ function VerifyEmailContent() {
 
       // Verify the email using the token from the URL
       // Supabase handles this automatically when the user clicks the link
-      const { data, error: verifyError } = await supabase.auth.verifyOtp({
+      const { error: verifyError } = await supabase.auth.verifyOtp({
         token_hash: token,
         type: 'email',
       })
@@ -31,7 +31,7 @@ function VerifyEmailContent() {
       } else {
         setSuccess(true)
       }
-    } catch (err) {
+    } catch {
       setError('An unexpected error occurred. Please try again.')
     } finally {
       setIsLoading(false)
@@ -57,7 +57,6 @@ function VerifyEmailContent() {
       <div className="w-full max-w-md space-y-8">
         <div className="rounded-lg border border-slate-200 bg-white p-8 shadow-sm">
           <EmailVerificationPage
-            token={token}
             onVerify={handleVerify}
             isLoading={isLoading}
             success={success}

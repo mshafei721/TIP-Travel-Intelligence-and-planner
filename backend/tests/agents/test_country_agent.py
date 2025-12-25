@@ -8,13 +8,15 @@ NOTE: These tests require:
 - Internet connection for REST Countries API
 """
 
-import pytest
 from datetime import date, datetime
+
+import pytest
+
 from app.agents.country.agent import CountryAgent
 from app.agents.country.models import CountryAgentInput, CountryAgentOutput
 
 
-@pytest.fixture
+@pytest.fixture()
 def sample_input():
     """Create sample Country Agent input."""
     return CountryAgentInput(
@@ -27,7 +29,7 @@ def sample_input():
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def country_agent():
     """Create Country Agent instance."""
     return CountryAgent()
@@ -84,8 +86,8 @@ class TestCountryAgentInput:
 class TestCountryAgentExecution:
     """Test Country Agent execution with real API calls."""
 
-    @pytest.mark.integration
-    @pytest.mark.slow
+    @pytest.mark.integration()
+    @pytest.mark.slow()
     def test_france_country_info(self, country_agent, sample_input):
         """Test getting France country information."""
         result = country_agent.run(sample_input)
@@ -103,8 +105,8 @@ class TestCountryAgentExecution:
         assert result.driving_side == "right"
         assert result.confidence_score >= 0.7
 
-    @pytest.mark.integration
-    @pytest.mark.slow
+    @pytest.mark.integration()
+    @pytest.mark.slow()
     def test_japan_country_info(self, country_agent):
         """Test getting Japan country information."""
         input_data = CountryAgentInput(
@@ -124,8 +126,8 @@ class TestCountryAgentExecution:
         assert "Japanese" in result.official_languages
         assert result.confidence_score >= 0.7
 
-    @pytest.mark.integration
-    @pytest.mark.slow
+    @pytest.mark.integration()
+    @pytest.mark.slow()
     def test_usa_country_info(self, country_agent):
         """Test getting USA country information."""
         input_data = CountryAgentInput(
@@ -149,8 +151,8 @@ class TestCountryAgentExecution:
 class TestCountryAgentOutputStructure:
     """Test Country Agent output structure and required fields."""
 
-    @pytest.mark.integration
-    @pytest.mark.slow
+    @pytest.mark.integration()
+    @pytest.mark.slow()
     def test_output_has_basic_info(self, country_agent, sample_input):
         """Test output contains basic country information."""
         result = country_agent.run(sample_input)
@@ -165,8 +167,8 @@ class TestCountryAgentOutputStructure:
         assert result.population > 0
         assert result.area_km2 is not None
 
-    @pytest.mark.integration
-    @pytest.mark.slow
+    @pytest.mark.integration()
+    @pytest.mark.slow()
     def test_output_has_languages(self, country_agent, sample_input):
         """Test output contains language information."""
         result = country_agent.run(sample_input)
@@ -174,8 +176,8 @@ class TestCountryAgentOutputStructure:
         assert len(result.official_languages) > 0
         assert all(isinstance(lang, str) for lang in result.official_languages)
 
-    @pytest.mark.integration
-    @pytest.mark.slow
+    @pytest.mark.integration()
+    @pytest.mark.slow()
     def test_output_has_time_zones(self, country_agent, sample_input):
         """Test output contains time zone information."""
         result = country_agent.run(sample_input)
@@ -183,8 +185,8 @@ class TestCountryAgentOutputStructure:
         assert len(result.time_zones) > 0
         assert all(isinstance(tz, str) for tz in result.time_zones)
 
-    @pytest.mark.integration
-    @pytest.mark.slow
+    @pytest.mark.integration()
+    @pytest.mark.slow()
     def test_output_has_emergency_numbers(self, country_agent, sample_input):
         """Test output contains emergency contact information."""
         result = country_agent.run(sample_input)
@@ -194,8 +196,8 @@ class TestCountryAgentOutputStructure:
             assert contact.service is not None
             assert contact.number is not None
 
-    @pytest.mark.integration
-    @pytest.mark.slow
+    @pytest.mark.integration()
+    @pytest.mark.slow()
     def test_output_has_power_outlet_info(self, country_agent, sample_input):
         """Test output contains power outlet information."""
         result = country_agent.run(sample_input)
@@ -205,8 +207,8 @@ class TestCountryAgentOutputStructure:
         assert result.power_outlet.voltage is not None
         assert result.power_outlet.frequency is not None
 
-    @pytest.mark.integration
-    @pytest.mark.slow
+    @pytest.mark.integration()
+    @pytest.mark.slow()
     def test_output_has_safety_rating(self, country_agent, sample_input):
         """Test output contains safety rating."""
         result = country_agent.run(sample_input)
@@ -214,8 +216,8 @@ class TestCountryAgentOutputStructure:
         assert result.safety_rating >= 0.0
         assert result.safety_rating <= 5.0
 
-    @pytest.mark.integration
-    @pytest.mark.slow
+    @pytest.mark.integration()
+    @pytest.mark.slow()
     def test_output_has_metadata(self, country_agent, sample_input):
         """Test output contains required metadata."""
         result = country_agent.run(sample_input)
@@ -231,8 +233,8 @@ class TestCountryAgentOutputStructure:
 class TestCountryAgentEdgeCases:
     """Test Country Agent edge cases."""
 
-    @pytest.mark.integration
-    @pytest.mark.slow
+    @pytest.mark.integration()
+    @pytest.mark.slow()
     def test_country_with_multiple_capitals(self, country_agent):
         """Test country with multiple capitals (South Africa)."""
         input_data = CountryAgentInput(
@@ -247,8 +249,8 @@ class TestCountryAgentEdgeCases:
         assert result.country_code == "ZA"
         assert len(result.capital) >= 1  # South Africa has 3 capitals
 
-    @pytest.mark.integration
-    @pytest.mark.slow
+    @pytest.mark.integration()
+    @pytest.mark.slow()
     def test_small_island_nation(self, country_agent):
         """Test small island nation (Maldives)."""
         input_data = CountryAgentInput(
@@ -265,8 +267,8 @@ class TestCountryAgentEdgeCases:
         assert result.area_km2 is not None
         assert result.area_km2 < 1000  # Very small area
 
-    @pytest.mark.integration
-    @pytest.mark.slow
+    @pytest.mark.integration()
+    @pytest.mark.slow()
     def test_landlocked_country(self, country_agent):
         """Test landlocked country (Switzerland)."""
         input_data = CountryAgentInput(

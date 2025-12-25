@@ -6,6 +6,7 @@ Tasks are structured workflows that use the agent's tools to gather and analyze 
 """
 
 from crewai import Task
+
 from .prompts import (
     VISA_RESEARCH_TASK_PROMPT,
     VISA_VERIFICATION_TASK_PROMPT,

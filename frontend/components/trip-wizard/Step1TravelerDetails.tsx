@@ -58,15 +58,21 @@ export default function Step1TravelerDetails({ data, onChange }: Step1Props) {
 
   // Validate party size and ages
   useEffect(() => {
-    if (data.partySize > 1 && data.partyAges.length !== data.partySize - 1) {
+    const shouldHaveAges = data.partySize > 1
+    const desiredCount = Math.max(data.partySize - 1, 0)
+
+    if (shouldHaveAges && data.partyAges.length !== desiredCount) {
       onChange({
         ...data,
-        partyAges: Array(data.partySize - 1).fill(0),
+        partyAges: Array(desiredCount).fill(0),
       })
-    } else if (data.partySize === 1) {
+      return
+    }
+
+    if (!shouldHaveAges && data.partyAges.length > 0) {
       onChange({ ...data, partyAges: [] })
     }
-  }, [data.partySize])
+  }, [data, onChange])
 
   // Update party age
   const updatePartyAge = (index: number, age: number) => {
@@ -92,7 +98,7 @@ export default function Step1TravelerDetails({ data, onChange }: Step1Props) {
           Traveler Details
         </h2>
         <p className="text-sm text-slate-600 dark:text-slate-400">
-          Tell us about who's traveling
+          Tell us about who&apos;s traveling
         </p>
       </div>
 

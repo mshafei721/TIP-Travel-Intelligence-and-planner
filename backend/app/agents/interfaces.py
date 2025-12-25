@@ -4,9 +4,10 @@ Agent Interfaces
 Pydantic models for agent input/output to ensure type safety and validation.
 """
 
-from pydantic import BaseModel, Field, field_validator
 from datetime import datetime
-from typing import Dict, Any, List, Optional
+from typing import Any
+
+from pydantic import BaseModel, Field, field_validator
 
 
 class SourceReference(BaseModel):
@@ -17,25 +18,20 @@ class SourceReference(BaseModel):
     Ensures transparency and allows users to verify information.
     """
 
-    url: str = Field(
-        description="URL of the source (API endpoint, website, document)"
-    )
+    url: str = Field(description="URL of the source (API endpoint, website, document)")
 
-    title: str = Field(
-        description="Human-readable title of the source"
-    )
+    title: str = Field(description="Human-readable title of the source")
 
-    verified_at: datetime = Field(
-        description="Timestamp when this source was last verified"
-    )
+    verified_at: datetime = Field(description="Timestamp when this source was last verified")
 
     class Config:
         """Pydantic config"""
+
         json_schema_extra = {
             "example": {
                 "url": "https://www.travel.state.gov/content/travel/en/international-travel/International-Travel-Country-Information-Pages.html",
                 "title": "U.S. Department of State - International Travel",
-                "verified_at": "2025-12-24T10:30:00Z"
+                "verified_at": "2025-12-24T10:30:00Z",
             }
         }
 
@@ -57,36 +53,26 @@ class AgentResult(BaseModel):
         error: Error message if agent failed (None if successful)
     """
 
-    agent_type: str = Field(
-        description="Type of agent (visa, country, weather, etc.)"
-    )
+    agent_type: str = Field(description="Type of agent (visa, country, weather, etc.)")
 
-    trip_id: str = Field(
-        description="Trip ID this result is associated with"
-    )
+    trip_id: str = Field(description="Trip ID this result is associated with")
 
-    generated_at: datetime = Field(
-        description="Timestamp when this result was generated"
-    )
+    generated_at: datetime = Field(description="Timestamp when this result was generated")
 
     confidence_score: float = Field(
-        ge=0.0,
-        le=1.0,
-        description="Confidence score between 0.0 (low) and 1.0 (high)"
+        ge=0.0, le=1.0, description="Confidence score between 0.0 (low) and 1.0 (high)"
     )
 
-    data: Dict[str, Any] = Field(
+    data: dict[str, Any] = Field(
         description="Agent-specific result data (structure varies by agent)"
     )
 
-    sources: List[SourceReference] = Field(
-        default_factory=list,
-        description="List of sources used to generate this result"
+    sources: list[SourceReference] = Field(
+        default_factory=list, description="List of sources used to generate this result"
     )
 
-    error: Optional[str] = Field(
-        default=None,
-        description="Error message if agent failed, None if successful"
+    error: str | None = Field(
+        default=None, description="Error message if agent failed, None if successful"
     )
 
     @field_validator("confidence_score")
@@ -115,6 +101,7 @@ class AgentResult(BaseModel):
 
     class Config:
         """Pydantic config"""
+
         json_schema_extra = {
             "example": {
                 "agent_type": "visa",
@@ -124,15 +111,15 @@ class AgentResult(BaseModel):
                 "data": {
                     "visa_required": False,
                     "visa_type": "visa-free",
-                    "max_stay_days": 90
+                    "max_stay_days": 90,
                 },
                 "sources": [
                     {
                         "url": "https://www.joinsherpa.com/visa-requirements",
                         "title": "Sherpa API - Visa Requirements",
-                        "verified_at": "2025-12-24T10:29:00Z"
+                        "verified_at": "2025-12-24T10:29:00Z",
                     }
                 ],
-                "error": None
+                "error": None,
             }
         }

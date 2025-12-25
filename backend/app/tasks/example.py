@@ -8,6 +8,7 @@ These tasks demonstrate:
 """
 
 from celery import shared_task
+
 from app.core.celery_app import BaseTipTask
 
 

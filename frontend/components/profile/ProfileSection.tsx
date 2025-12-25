@@ -45,7 +45,7 @@ export function ProfileSection({
         try {
           await onProfileUpdate({ name: debouncedName })
           setSaveState('saved')
-        } catch (error) {
+        } catch {
           setSaveState('error')
         }
       }

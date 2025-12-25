@@ -1,13 +1,14 @@
 """Tests for trip creation and management endpoints"""
 
-import pytest
 from datetime import date, timedelta
 from unittest.mock import Mock, patch
 from uuid import uuid4
 
+import pytest
+
 
 # Valid trip data fixtures
-@pytest.fixture
+@pytest.fixture()
 def valid_trip_data():
     """Valid trip creation data"""
     return {
@@ -18,21 +19,15 @@ def valid_trip_data():
             "residence_country": "US",
             "origin_city": "New York",
             "party_size": 2,
-            "party_ages": [30, 28]
+            "party_ages": [30, 28],
         },
-        "destinations": [
-            {
-                "country": "France",
-                "city": "Paris",
-                "duration_days": 7
-            }
-        ],
+        "destinations": [{"country": "France", "city": "Paris", "duration_days": 7}],
         "trip_details": {
             "departure_date": (date.today() + timedelta(days=30)).isoformat(),
             "return_date": (date.today() + timedelta(days=40)).isoformat(),
             "budget": 5000.00,
             "currency": "USD",
-            "trip_purpose": "tourism"
+            "trip_purpose": "tourism",
         },
         "preferences": {
             "travel_style": "balanced",
@@ -40,12 +35,12 @@ def valid_trip_data():
             "dietary_restrictions": [],
             "accessibility_needs": [],
             "accommodation_type": "hotel",
-            "transportation_preference": "public"
-        }
+            "transportation_preference": "public",
+        },
     }
 
 
-@pytest.fixture
+@pytest.fixture()
 def multi_city_trip_data():
     """Valid multi-city trip data"""
     return {
@@ -56,31 +51,19 @@ def multi_city_trip_data():
             "residence_country": "GB",
             "origin_city": "London",
             "party_size": 1,
-            "party_ages": [35]
+            "party_ages": [35],
         },
         "destinations": [
-            {
-                "country": "Italy",
-                "city": "Rome",
-                "duration_days": 5
-            },
-            {
-                "country": "Italy",
-                "city": "Florence",
-                "duration_days": 3
-            },
-            {
-                "country": "Italy",
-                "city": "Venice",
-                "duration_days": 2
-            }
+            {"country": "Italy", "city": "Rome", "duration_days": 5},
+            {"country": "Italy", "city": "Florence", "duration_days": 3},
+            {"country": "Italy", "city": "Venice", "duration_days": 2},
         ],
         "trip_details": {
             "departure_date": (date.today() + timedelta(days=60)).isoformat(),
             "return_date": (date.today() + timedelta(days=70)).isoformat(),
             "budget": 3000.00,
             "currency": "EUR",
-            "trip_purpose": "tourism"
+            "trip_purpose": "tourism",
         },
         "preferences": {
             "travel_style": "balanced",
@@ -88,8 +71,8 @@ def multi_city_trip_data():
             "dietary_restrictions": ["vegetarian"],
             "accessibility_needs": [],
             "accommodation_type": "airbnb",
-            "transportation_preference": "public"
-        }
+            "transportation_preference": "public",
+        },
     }
 
 
@@ -138,8 +121,12 @@ class TestCreateTrip:
         """Should reject trip with return before departure"""
         invalid_data = {**valid_trip_data}
         # Set return date before departure date
-        invalid_data["trip_details"]["return_date"] = (date.today() + timedelta(days=20)).isoformat()
-        invalid_data["trip_details"]["departure_date"] = (date.today() + timedelta(days=30)).isoformat()
+        invalid_data["trip_details"]["return_date"] = (
+            date.today() + timedelta(days=20)
+        ).isoformat()
+        invalid_data["trip_details"]["departure_date"] = (
+            date.today() + timedelta(days=30)
+        ).isoformat()
 
         response = client.post("/api/trips", json=invalid_data, headers=auth_headers)
 
@@ -203,7 +190,11 @@ class TestCreateTrip:
         """Should reject party_ages > party_size"""
         invalid_data = {**valid_trip_data}
         invalid_data["traveler_details"]["party_size"] = 2
-        invalid_data["traveler_details"]["party_ages"] = [30, 28, 25]  # 3 ages for 2 people
+        invalid_data["traveler_details"]["party_ages"] = [
+            30,
+            28,
+            25,
+        ]  # 3 ages for 2 people
 
         response = client.post("/api/trips", json=invalid_data, headers=auth_headers)
         assert response.status_code == 422
@@ -225,7 +216,7 @@ class TestUpdateTrip:
                 "return_date": (date.today() + timedelta(days=55)).isoformat(),
                 "budget": 6000.00,
                 "currency": "USD",
-                "trip_purpose": "business"
+                "trip_purpose": "business",
             }
         }
 
@@ -247,7 +238,10 @@ class TestUpdateTrip:
 
     def test_update_trip_unauthorized(self, client, valid_trip_data):
         """Should reject update without authentication"""
-        response = client.put(f"/api/trips/{str(uuid4())}", json={"preferences": {"travel_style": "luxury"}})
+        response = client.put(
+            f"/api/trips/{str(uuid4())}",
+            json={"preferences": {"travel_style": "luxury"}},
+        )
         assert response.status_code == 401
 
 
@@ -283,8 +277,10 @@ class TestDeleteTrip:
 class TestGenerateReport:
     """Test POST /api/trips/{id}/generate - Start AI report generation"""
 
-    @patch('app.tasks.agent_jobs.execute_orchestrator')
-    def test_generate_report_queues_task(self, mock_orchestrator, client, auth_headers, valid_trip_data):
+    @patch("app.tasks.agent_jobs.execute_orchestrator")
+    def test_generate_report_queues_task(
+        self, mock_orchestrator, client, auth_headers, valid_trip_data
+    ):
         """Should queue Celery task for report generation"""
         # Create trip
         create_response = client.post("/api/trips", json=valid_trip_data, headers=auth_headers)
@@ -345,7 +341,7 @@ class TestDraftManagement:
                 "residence_country": "US",
                 "origin_city": "New York",
                 "party_size": 1,
-                "party_ages": []
+                "party_ages": [],
             }
         }
 
@@ -368,15 +364,9 @@ class TestDraftManagement:
                 "residence_country": "GB",
                 "origin_city": "London",
                 "party_size": 1,
-                "party_ages": []
+                "party_ages": [],
             },
-            "destinations": [
-                {
-                    "country": "Spain",
-                    "city": "Barcelona",
-                    "duration_days": 5
-                }
-            ]
+            "destinations": [{"country": "Spain", "city": "Barcelona", "duration_days": 5}],
         }
 
         create_response = client.post("/api/trips/drafts", json=partial_data, headers=auth_headers)
@@ -394,13 +384,25 @@ class TestDraftManagement:
     def test_update_draft(self, client, auth_headers):
         """Should update existing draft"""
         # Create draft
-        initial_data = {"traveler_details": {"name": "Test User", "email": "test@example.com", "nationality": "US", "residence_country": "US", "origin_city": "NYC", "party_size": 1, "party_ages": []}}
+        initial_data = {
+            "traveler_details": {
+                "name": "Test User",
+                "email": "test@example.com",
+                "nationality": "US",
+                "residence_country": "US",
+                "origin_city": "NYC",
+                "party_size": 1,
+                "party_ages": [],
+            }
+        }
         create_response = client.post("/api/trips/drafts", json=initial_data, headers=auth_headers)
         draft_id = create_response.json()["id"]
 
         # Update draft
         update_data = {"destinations": [{"country": "Japan", "city": "Tokyo", "duration_days": 7}]}
-        response = client.put(f"/api/trips/drafts/{draft_id}", json=update_data, headers=auth_headers)
+        response = client.put(
+            f"/api/trips/drafts/{draft_id}", json=update_data, headers=auth_headers
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -409,7 +411,17 @@ class TestDraftManagement:
     def test_delete_draft(self, client, auth_headers):
         """Should delete draft"""
         # Create draft
-        draft_data = {"traveler_details": {"name": "Delete Me", "email": "delete@example.com", "nationality": "US", "residence_country": "US", "origin_city": "NYC", "party_size": 1, "party_ages": []}}
+        draft_data = {
+            "traveler_details": {
+                "name": "Delete Me",
+                "email": "delete@example.com",
+                "nationality": "US",
+                "residence_country": "US",
+                "origin_city": "NYC",
+                "party_size": 1,
+                "party_ages": [],
+            }
+        }
         create_response = client.post("/api/trips/drafts", json=draft_data, headers=auth_headers)
         draft_id = create_response.json()["id"]
 

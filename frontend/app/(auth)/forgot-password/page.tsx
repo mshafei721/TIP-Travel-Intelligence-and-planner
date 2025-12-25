@@ -17,7 +17,7 @@ export default function ForgotPasswordPage() {
       if (!result.error) {
         setEmailSent(true)
       }
-    } catch (err) {
+    } catch {
       // Even on error, show success message for security
       // (don't reveal whether email exists)
       setEmailSent(true)

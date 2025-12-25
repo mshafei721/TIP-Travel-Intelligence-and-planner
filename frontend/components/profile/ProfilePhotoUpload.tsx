@@ -3,7 +3,6 @@
 import { useState, useRef, DragEvent, ChangeEvent } from 'react'
 import { Upload, User, Loader2, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
 import type { SaveState } from '@/types/profile'
 
 export interface ProfilePhotoUploadProps {
@@ -169,6 +168,7 @@ export function ProfilePhotoUpload({
         {saveState === 'saving' ? (
           <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
         ) : preview ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={preview}
             alt="Profile"

@@ -9,9 +9,11 @@ These tasks handle async execution of AI agents for report generation:
 Each agent job is tracked in the agent_jobs table with status updates.
 """
 
+from typing import Any
+
 from celery import shared_task
+
 from app.core.celery_app import BaseTipTask
-from typing import Dict, Any
 
 
 @shared_task(
@@ -20,7 +22,9 @@ from typing import Dict, Any
     name="app.tasks.agent_jobs.execute_agent_job",
     time_limit=1800,  # 30 minutes
 )
-def execute_agent_job(self, job_id: str, agent_type: str, input_data: Dict[str, Any]) -> Dict[str, Any]:
+def execute_agent_job(
+    self, job_id: str, agent_type: str, input_data: dict[str, Any]
+) -> dict[str, Any]:
     """
     Execute an individual agent job
 
@@ -44,8 +48,16 @@ def execute_agent_job(self, job_id: str, agent_type: str, input_data: Dict[str, 
     """
     # Validate agent type
     valid_agent_types = [
-        "visa", "country", "weather", "currency", "culture",
-        "food", "attractions", "itinerary", "flight", "orchestrator"
+        "visa",
+        "country",
+        "weather",
+        "currency",
+        "culture",
+        "food",
+        "attractions",
+        "itinerary",
+        "flight",
+        "orchestrator",
     ]
     if agent_type not in valid_agent_types:
         raise ValueError(f"Invalid agent type: {agent_type}. Must be one of {valid_agent_types}")
@@ -74,7 +86,7 @@ def execute_agent_job(self, job_id: str, agent_type: str, input_data: Dict[str, 
     name="app.tasks.agent_jobs.execute_visa_agent",
     time_limit=1800,  # 30 minutes
 )
-def execute_visa_agent(self, trip_id: str, traveler_data: Dict[str, Any]) -> Dict[str, Any]:
+def execute_visa_agent(self, trip_id: str, traveler_data: dict[str, Any]) -> dict[str, Any]:
     """
     Execute Visa Agent for visa requirements analysis
 
@@ -98,6 +110,7 @@ def execute_visa_agent(self, trip_id: str, traveler_data: Dict[str, Any]) -> Dic
     Production implementation using CrewAI + Travel Buddy AI.
     """
     from datetime import date
+
     from app.agents.visa.agent import VisaAgent
     from app.agents.visa.models import VisaAgentInput
 
@@ -147,21 +160,27 @@ def execute_visa_agent(self, trip_id: str, traveler_data: Dict[str, Any]) -> Dic
         from app.core.supabase import supabase
 
         # Convert result to dict for JSON storage
-        content_data = result.model_dump(mode='json')
+        content_data = result.model_dump(mode="json")
 
         # Convert confidence (0.0-1.0) to integer (0-100) for database
         confidence_integer = int(result.confidence * 100)
 
         # Store in report_sections table
-        report_response = supabase.table("report_sections").insert({
-            "trip_id": trip_id,
-            "section_type": "visa",
-            "title": "Visa Requirements",
-            "content": content_data,
-            "confidence_score": confidence_integer,
-            "sources": [source.model_dump() for source in result.sources],
-            "generated_at": result.generated_at.isoformat(),
-        }).execute()
+        report_response = (
+            supabase.table("report_sections")
+            .insert(
+                {
+                    "trip_id": trip_id,
+                    "section_type": "visa",
+                    "title": "Visa Requirements",
+                    "content": content_data,
+                    "confidence_score": confidence_integer,
+                    "sources": [source.model_dump() for source in result.sources],
+                    "generated_at": result.generated_at.isoformat(),
+                }
+            )
+            .execute()
+        )
 
         if not report_response.data:
             raise Exception("Failed to store visa report in database")
@@ -200,7 +219,7 @@ def execute_visa_agent(self, trip_id: str, traveler_data: Dict[str, Any]) -> Dic
     name="app.tasks.agent_jobs.execute_country_agent",
     time_limit=1800,  # 30 minutes
 )
-def execute_country_agent(self, trip_id: str, trip_data: Dict[str, Any]) -> Dict[str, Any]:
+def execute_country_agent(self, trip_id: str, trip_data: dict[str, Any]) -> dict[str, Any]:
     """
     Execute Country Agent for comprehensive country intelligence
 
@@ -223,6 +242,7 @@ def execute_country_agent(self, trip_id: str, trip_data: Dict[str, Any]) -> Dict
     Production implementation using CrewAI + REST Countries API.
     """
     from datetime import date
+
     from app.agents.country.agent import CountryAgent
     from app.agents.country.models import CountryAgentInput
 
@@ -275,21 +295,27 @@ def execute_country_agent(self, trip_id: str, trip_data: Dict[str, Any]) -> Dict
         from app.core.supabase import supabase
 
         # Convert result to dict for JSON storage
-        content_data = result.model_dump(mode='json')
+        content_data = result.model_dump(mode="json")
 
         # Convert confidence (0.0-1.0) to integer (0-100) for database
         confidence_integer = int(result.confidence_score * 100)
 
         # Store in report_sections table
-        report_response = supabase.table("report_sections").insert({
-            "trip_id": trip_id,
-            "section_type": "country",
-            "title": f"Country Information: {result.country_name}",
-            "content": content_data,
-            "confidence_score": confidence_integer,
-            "sources": [source.model_dump() for source in result.sources],
-            "generated_at": result.generated_at.isoformat(),
-        }).execute()
+        report_response = (
+            supabase.table("report_sections")
+            .insert(
+                {
+                    "trip_id": trip_id,
+                    "section_type": "country",
+                    "title": f"Country Information: {result.country_name}",
+                    "content": content_data,
+                    "confidence_score": confidence_integer,
+                    "sources": [source.model_dump() for source in result.sources],
+                    "generated_at": result.generated_at.isoformat(),
+                }
+            )
+            .execute()
+        )
 
         if not report_response.data:
             raise Exception("Failed to store country report in database")
@@ -328,7 +354,7 @@ def execute_country_agent(self, trip_id: str, trip_data: Dict[str, Any]) -> Dict
     name="app.tasks.agent_jobs.execute_orchestrator",
     time_limit=3600,  # 60 minutes
 )
-def execute_orchestrator(self, trip_id: str) -> Dict[str, Any]:
+def execute_orchestrator(self, trip_id: str) -> dict[str, Any]:
     """
     Execute Orchestrator Agent to coordinate all sub-agents
 

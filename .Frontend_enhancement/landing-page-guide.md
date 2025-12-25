@@ -23,7 +23,7 @@ For a "Decision-Grade" system like TIP, the landing page must shift from *inspir
 
 ### 2. The Problem / Agitation (The "Stakes" Section)
 *   **Framework:** PAS (Problem-Agitation-Solution).
-*   **Content:** Highlight the pain of 20+ tabs open, outdated visa blogs, and the fear of being turned away at the border. 
+*   **Content:** Highlight the pain of 20+ tabs open, outdated visa blogs, and the fear of being turned away at the border.
 *   **Copy:** "A single visa error can end your trip before it starts. Why trust a 2-year-old blog post with your travel legality?"
 
 ### 3. Solution / Benefits (The "After" State)
@@ -41,7 +41,7 @@ Use a 3-column grid focusing on the Agents:
 *   **Cultural Guardrails:** Local laws that matter (e.g., prohibited behaviors flagged in red).
 
 ### 6. Objection Handling (The "FAQ" for Skimmers)
-*   *Objection:* "How is this better than ChatGPT?" 
+*   *Objection:* "How is this better than ChatGPT?"
 *   *Answer:* "Generic AI hallucinates laws. TIP uses a multi-agent pipeline that verifies every data point against official government sources."
 
 ### 7. Final CTA Section

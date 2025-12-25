@@ -61,7 +61,7 @@ export function TravelerDetailsSection({
         try {
           await onUpdate(debouncedDetails)
           setSaveState('saved')
-        } catch (error) {
+        } catch {
           setSaveState('error')
         }
       }

@@ -7,7 +7,6 @@ API Documentation: https://restcountries.com/
 """
 
 import httpx
-from typing import Optional
 from pydantic import BaseModel, Field
 
 
@@ -20,23 +19,21 @@ class CountryInfo(BaseModel):
     cca3: str = Field(..., description="ISO 3166-1 alpha-3 code")
     capital: list[str] = Field(default_factory=list, description="Capital cities")
     region: str = Field(..., description="Geographic region")
-    subregion: Optional[str] = Field(None, description="Geographic subregion")
+    subregion: str | None = Field(None, description="Geographic subregion")
     population: int = Field(..., description="Population")
-    area: Optional[float] = Field(None, description="Area in km²")
-    languages: dict[str, str] = Field(
-        default_factory=dict, description="Languages (code: name)"
-    )
+    area: float | None = Field(None, description="Area in km²")
+    languages: dict[str, str] = Field(default_factory=dict, description="Languages (code: name)")
     timezones: list[str] = Field(default_factory=list, description="Time zones")
-    latlng: Optional[list[float]] = Field(None, description="Coordinates [lat, lng]")
-    borders: Optional[list[str]] = Field(None, description="Bordering country codes")
+    latlng: list[float] | None = Field(None, description="Coordinates [lat, lng]")
+    borders: list[str] | None = Field(None, description="Bordering country codes")
     currencies: dict[str, dict[str, str]] = Field(
         default_factory=dict, description="Currencies (code: {name, symbol})"
     )
-    idd_root: Optional[str] = Field(None, description="International dialing root")
-    idd_suffixes: Optional[list[str]] = Field(None, description="Dialing suffixes")
+    idd_root: str | None = Field(None, description="International dialing root")
+    idd_suffixes: list[str] | None = Field(None, description="Dialing suffixes")
     car_side: str = Field(..., description="Driving side: 'left' or 'right'")
-    flags_svg: Optional[str] = Field(None, description="SVG flag URL")
-    flags_png: Optional[str] = Field(None, description="PNG flag URL")
+    flags_svg: str | None = Field(None, description="SVG flag URL")
+    flags_png: str | None = Field(None, description="PNG flag URL")
 
 
 class RestCountriesClient:
