@@ -18,6 +18,9 @@ on:
     branches: [ main, develop ]
     paths:
       - 'backend/**'
+  workflow_call:
+    # Allow this workflow to be called from other workflows
+    secrets: inherit
 
 jobs:
   # ==============================================
