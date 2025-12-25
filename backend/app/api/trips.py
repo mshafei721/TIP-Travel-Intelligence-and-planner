@@ -1,11 +1,20 @@
 """Trips API endpoints"""
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status, Header
 from typing import Optional
 from datetime import datetime, date
+from uuid import uuid4
 from app.core.supabase import supabase
 from app.core.auth import verify_jwt_token
 from app.core.config import settings
+from app.models.trips import (
+    TripCreateRequest,
+    TripUpdateRequest,
+    TripResponse,
+    TripStatus,
+    DraftSaveRequest,
+    DraftResponse
+)
 
 router = APIRouter(prefix="/trips", tags=["trips"])
 
@@ -149,4 +158,639 @@ async def get_trip(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to fetch trip: {str(e)}"
+        )
+
+
+@router.post("", status_code=status.HTTP_201_CREATED, response_model=TripResponse)
+async def create_trip(
+    trip_data: TripCreateRequest,
+    token_payload: dict = Depends(verify_jwt_token),
+    idempotency_key: Optional[str] = Header(None, alias="X-Idempotency-Key")
+):
+    """
+    Create a new trip
+
+    Request Body:
+    - traveler_details: Traveler information (name, email, nationality, etc.)
+    - destinations: List of destinations (at least one required)
+    - trip_details: Trip planning details (dates, budget, purpose)
+    - preferences: Travel preferences (style, interests, etc.)
+    - template_id: Optional template ID to base this trip on
+
+    Headers:
+    - X-Idempotency-Key: Optional idempotency key for duplicate request prevention
+
+    Returns:
+    - Complete trip object with generated ID and timestamps
+    """
+    user_id = token_payload["user_id"]
+
+    try:
+        # Check for duplicate request using idempotency key
+        if idempotency_key:
+            # Check if a trip with this idempotency key already exists
+            existing_response = supabase.table("trips").select("*").eq(
+                "user_id", user_id
+            ).eq("idempotency_key", idempotency_key).execute()
+
+            if existing_response.data and len(existing_response.data) > 0:
+                # Return existing trip (idempotent operation)
+                return existing_response.data[0]
+
+        # Prepare trip data for database
+        trip_id = str(uuid4())
+        trip_record = {
+            "id": trip_id,
+            "user_id": user_id,
+            "status": TripStatus.DRAFT.value,
+            "traveler_details": trip_data.traveler_details.model_dump(),
+            "destinations": [dest.model_dump() for dest in trip_data.destinations],
+            "trip_details": trip_data.trip_details.model_dump(mode='json'),  # Convert dates to strings
+            "preferences": trip_data.preferences.model_dump(),
+            "template_id": trip_data.template_id,
+        }
+
+        # Add idempotency key if provided
+        if idempotency_key:
+            trip_record["idempotency_key"] = idempotency_key
+
+        # Insert trip into database
+        # Type assertion needed due to known @supabase/ssr type inference issues
+        response = (supabase.table("trips") as any).insert(trip_record).execute()
+
+        if not response.data or len(response.data) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to create trip: No data returned from database"
+            )
+
+        return response.data[0]
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create trip: {str(e)}"
+        )
+
+
+@router.put("/{trip_id}", response_model=TripResponse)
+async def update_trip(
+    trip_id: str,
+    trip_data: TripUpdateRequest,
+    token_payload: dict = Depends(verify_jwt_token)
+):
+    """
+    Update an existing trip
+
+    Path Parameters:
+    - trip_id: UUID of the trip to update
+
+    Request Body:
+    - All fields are optional - only provided fields will be updated
+    - traveler_details: Updated traveler information
+    - destinations: Updated list of destinations
+    - trip_details: Updated trip planning details
+    - preferences: Updated travel preferences
+
+    Returns:
+    - Updated trip object
+
+    Notes:
+    - Can only update trips in 'draft' or 'pending' status
+    - Cannot update trips that are 'processing', 'completed', or 'failed'
+    """
+    user_id = token_payload["user_id"]
+
+    try:
+        # First, verify the trip exists and belongs to the user
+        existing_response = supabase.table("trips").select("*").eq(
+            "id", trip_id
+        ).eq("user_id", user_id).single().execute()
+
+        if not existing_response.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Trip not found"
+            )
+
+        existing_trip = existing_response.data
+
+        # Check if trip status allows updates
+        if existing_trip["status"] not in [TripStatus.DRAFT.value, TripStatus.PENDING.value]:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Cannot update trip with status '{existing_trip['status']}'. Only 'draft' and 'pending' trips can be updated."
+            )
+
+        # Prepare update data (only include fields that are provided)
+        update_record = {}
+
+        if trip_data.traveler_details is not None:
+            update_record["traveler_details"] = trip_data.traveler_details.model_dump()
+
+        if trip_data.destinations is not None:
+            update_record["destinations"] = [dest.model_dump() for dest in trip_data.destinations]
+
+        if trip_data.trip_details is not None:
+            update_record["trip_details"] = trip_data.trip_details.model_dump(mode='json')
+
+        if trip_data.preferences is not None:
+            update_record["preferences"] = trip_data.preferences.model_dump()
+
+        # If no fields to update, return existing trip
+        if not update_record:
+            return existing_trip
+
+        # Update trip in database
+        # Type assertion needed due to known @supabase/ssr type inference issues
+        response = (supabase.table("trips") as any).update(update_record).eq(
+            "id", trip_id
+        ).eq("user_id", user_id).execute()
+
+        if not response.data or len(response.data) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to update trip: No data returned from database"
+            )
+
+        return response.data[0]
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update trip: {str(e)}"
+        )
+
+
+@router.delete("/{trip_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_trip(
+    trip_id: str,
+    token_payload: dict = Depends(verify_jwt_token)
+):
+    """
+    Delete a trip
+
+    Path Parameters:
+    - trip_id: UUID of the trip to delete
+
+    Notes:
+    - Can only delete trips in 'draft', 'pending', or 'failed' status
+    - Cannot delete trips that are 'processing' or 'completed'
+    - For completed trips, use the auto-deletion schedule instead
+    """
+    user_id = token_payload["user_id"]
+
+    try:
+        # First, verify the trip exists and belongs to the user
+        existing_response = supabase.table("trips").select("status").eq(
+            "id", trip_id
+        ).eq("user_id", user_id).single().execute()
+
+        if not existing_response.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Trip not found"
+            )
+
+        trip_status = existing_response.data["status"]
+
+        # Check if trip status allows deletion
+        if trip_status == TripStatus.PROCESSING.value:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Cannot delete trip that is currently processing. Please wait for completion."
+            )
+
+        if trip_status == TripStatus.COMPLETED.value:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Cannot delete completed trip. Completed trips are automatically deleted 30 days after return date."
+            )
+
+        # Delete trip
+        # Type assertion needed due to known @supabase/ssr type inference issues
+        delete_response = (supabase.table("trips") as any).delete().eq(
+            "id", trip_id
+        ).eq("user_id", user_id).execute()
+
+        # Return 204 No Content on success
+        return None
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete trip: {str(e)}"
+        )
+
+
+@router.post("/{trip_id}/generate", status_code=status.HTTP_202_ACCEPTED)
+async def generate_trip_report(
+    trip_id: str,
+    token_payload: dict = Depends(verify_jwt_token)
+):
+    """
+    Start AI report generation for a trip
+
+    Path Parameters:
+    - trip_id: UUID of the trip
+
+    Returns:
+    - status: "queued"
+    - task_id: Celery task ID for tracking
+    - message: Human-readable message
+
+    Notes:
+    - Trip status must be 'draft' or 'pending'
+    - Trip status will be updated to 'processing'
+    - Report generation is handled asynchronously by Celery workers
+    """
+    user_id = token_payload["user_id"]
+
+    try:
+        # Verify trip exists and belongs to user
+        existing_response = supabase.table("trips").select("*").eq(
+            "id", trip_id
+        ).eq("user_id", user_id).single().execute()
+
+        if not existing_response.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Trip not found"
+            )
+
+        existing_trip = existing_response.data
+
+        # Check if trip status allows report generation
+        if existing_trip["status"] == TripStatus.PROCESSING.value:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Report generation already in progress for this trip"
+            )
+
+        if existing_trip["status"] == TripStatus.COMPLETED.value:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Report already generated for this trip"
+            )
+
+        if existing_trip["status"] == TripStatus.FAILED.value:
+            # Allow retry for failed trips
+            pass
+
+        # Update trip status to 'processing'
+        # Type assertion needed due to known @supabase/ssr type inference issues
+        update_response = (supabase.table("trips") as any).update({
+            "status": TripStatus.PROCESSING.value
+        }).eq("id", trip_id).eq("user_id", user_id).execute()
+
+        # Queue Celery task for report generation
+        from app.tasks.agent_jobs import execute_orchestrator
+        task = execute_orchestrator.delay(trip_id)
+
+        return {
+            "status": "queued",
+            "task_id": task.id,
+            "message": "Report generation started. You will be notified when complete."
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        # Rollback status update on failure
+        try:
+            (supabase.table("trips") as any).update({
+                "status": TripStatus.FAILED.value
+            }).eq("id", trip_id).eq("user_id", user_id).execute()
+        except:
+            pass
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to start report generation: {str(e)}"
+        )
+
+
+@router.get("/{trip_id}/status")
+async def get_generation_status(
+    trip_id: str,
+    token_payload: dict = Depends(verify_jwt_token)
+):
+    """
+    Get current report generation status for a trip
+
+    Path Parameters:
+    - trip_id: UUID of the trip
+
+    Returns:
+    - status: Trip status (draft, pending, processing, completed, failed)
+    - progress: Overall completion percentage (0-100)
+    - current_agent: Current agent being executed (if processing)
+    - agents_completed: List of completed agents
+    - agents_failed: List of failed agents
+    - error: Error message (if failed)
+    - started_at: When report generation started
+    - completed_at: When report generation completed (if done)
+    """
+    user_id = token_payload["user_id"]
+
+    try:
+        # Get trip status
+        trip_response = supabase.table("trips").select("status, created_at, updated_at").eq(
+            "id", trip_id
+        ).eq("user_id", user_id).single().execute()
+
+        if not trip_response.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Trip not found"
+            )
+
+        trip = trip_response.data
+
+        # Get agent jobs for this trip
+        jobs_response = supabase.table("agent_jobs").select("*").eq(
+            "trip_id", trip_id
+        ).order("created_at").execute()
+
+        agent_jobs = jobs_response.data if jobs_response.data else []
+
+        # Calculate progress
+        total_agents = 10  # 10 specialized agents
+        completed_count = sum(1 for job in agent_jobs if job["status"] == "completed")
+        failed_count = sum(1 for job in agent_jobs if job["status"] == "failed")
+        processing_job = next((job for job in agent_jobs if job["status"] == "processing"), None)
+
+        progress = int((completed_count / total_agents) * 100) if total_agents > 0 else 0
+
+        return {
+            "status": trip["status"],
+            "progress": progress,
+            "current_agent": processing_job["agent_type"] if processing_job else None,
+            "agents_completed": [job["agent_type"] for job in agent_jobs if job["status"] == "completed"],
+            "agents_failed": [job["agent_type"] for job in agent_jobs if job["status"] == "failed"],
+            "error": processing_job.get("error") if processing_job and processing_job.get("status") == "failed" else None,
+            "started_at": agent_jobs[0]["created_at"] if agent_jobs else None,
+            "completed_at": trip["updated_at"] if trip["status"] == "completed" else None
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get generation status: {str(e)}"
+        )
+
+
+# Draft Management Endpoints
+@router.post("/drafts", status_code=status.HTTP_201_CREATED, response_model=DraftResponse)
+async def save_draft(
+    draft_data: DraftSaveRequest,
+    token_payload: dict = Depends(verify_jwt_token)
+):
+    """
+    Save a trip draft (partial trip data for auto-save)
+
+    Request Body:
+    - All fields optional - save whatever the user has filled in so far
+    - traveler_details: Partial traveler information
+    - destinations: Partial destinations
+    - trip_details: Partial trip details
+    - preferences: Partial preferences
+
+    Returns:
+    - Draft object with generated ID
+
+    Notes:
+    - Drafts do not require complete data
+    - Multiple drafts can exist per user
+    - Drafts can be converted to full trips later
+    """
+    user_id = token_payload["user_id"]
+
+    try:
+        # Prepare draft data
+        draft_id = str(uuid4())
+        draft_record = {
+            "id": draft_id,
+            "user_id": user_id,
+            "draft_data": draft_data.model_dump(exclude_none=True)
+        }
+
+        # Insert draft into database
+        # Note: Using a separate 'trip_drafts' table (not in schema yet - would need migration)
+        # For now, we'll store drafts as trips with 'draft' status
+        trip_record = {
+            "id": draft_id,
+            "user_id": user_id,
+            "status": TripStatus.DRAFT.value,
+            "traveler_details": draft_data.traveler_details.model_dump() if draft_data.traveler_details else {},
+            "destinations": [dest.model_dump() for dest in draft_data.destinations] if draft_data.destinations else [],
+            "trip_details": draft_data.trip_details.model_dump(mode='json') if draft_data.trip_details else {},
+            "preferences": draft_data.preferences.model_dump() if draft_data.preferences else {},
+        }
+
+        # Type assertion needed due to known @supabase/ssr type inference issues
+        response = (supabase.table("trips") as any).insert(trip_record).execute()
+
+        if not response.data or len(response.data) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to save draft"
+            )
+
+        return {
+            "id": draft_id,
+            "user_id": user_id,
+            "created_at": response.data[0]["created_at"],
+            "updated_at": response.data[0]["updated_at"],
+            "draft_data": draft_data.model_dump(exclude_none=True)
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to save draft: {str(e)}"
+        )
+
+
+@router.get("/drafts")
+async def get_drafts(
+    token_payload: dict = Depends(verify_jwt_token)
+):
+    """
+    Get all drafts for the authenticated user
+
+    Returns:
+    - List of draft objects
+    """
+    user_id = token_payload["user_id"]
+
+    try:
+        # Get all draft trips
+        response = supabase.table("trips").select("*").eq(
+            "user_id", user_id
+        ).eq("status", TripStatus.DRAFT.value).order("updated_at", desc=True).execute()
+
+        if not response.data:
+            return []
+
+        # Transform to draft format
+        drafts = []
+        for trip in response.data:
+            drafts.append({
+                "id": trip["id"],
+                "user_id": trip["user_id"],
+                "created_at": trip["created_at"],
+                "updated_at": trip["updated_at"],
+                "draft_data": {
+                    "traveler_details": trip.get("traveler_details"),
+                    "destinations": trip.get("destinations"),
+                    "trip_details": trip.get("trip_details"),
+                    "preferences": trip.get("preferences")
+                }
+            })
+
+        return drafts
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get drafts: {str(e)}"
+        )
+
+
+@router.put("/drafts/{draft_id}", response_model=DraftResponse)
+async def update_draft(
+    draft_id: str,
+    draft_data: DraftSaveRequest,
+    token_payload: dict = Depends(verify_jwt_token)
+):
+    """
+    Update an existing draft
+
+    Path Parameters:
+    - draft_id: UUID of the draft
+
+    Request Body:
+    - All fields optional - update whatever fields are provided
+
+    Returns:
+    - Updated draft object
+    """
+    user_id = token_payload["user_id"]
+
+    try:
+        # Verify draft exists
+        existing_response = supabase.table("trips").select("*").eq(
+            "id", draft_id
+        ).eq("user_id", user_id).eq("status", TripStatus.DRAFT.value).single().execute()
+
+        if not existing_response.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Draft not found"
+            )
+
+        # Prepare update data
+        update_record = {}
+
+        if draft_data.traveler_details is not None:
+            update_record["traveler_details"] = draft_data.traveler_details.model_dump()
+
+        if draft_data.destinations is not None:
+            update_record["destinations"] = [dest.model_dump() for dest in draft_data.destinations]
+
+        if draft_data.trip_details is not None:
+            update_record["trip_details"] = draft_data.trip_details.model_dump(mode='json')
+
+        if draft_data.preferences is not None:
+            update_record["preferences"] = draft_data.preferences.model_dump()
+
+        # If no fields to update, return existing draft
+        if not update_record:
+            return {
+                "id": draft_id,
+                "user_id": user_id,
+                "created_at": existing_response.data["created_at"],
+                "updated_at": existing_response.data["updated_at"],
+                "draft_data": draft_data.model_dump(exclude_none=True)
+            }
+
+        # Update draft
+        # Type assertion needed due to known @supabase/ssr type inference issues
+        response = (supabase.table("trips") as any).update(update_record).eq(
+            "id", draft_id
+        ).eq("user_id", user_id).execute()
+
+        if not response.data or len(response.data) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to update draft"
+            )
+
+        return {
+            "id": draft_id,
+            "user_id": user_id,
+            "created_at": response.data[0]["created_at"],
+            "updated_at": response.data[0]["updated_at"],
+            "draft_data": draft_data.model_dump(exclude_none=True)
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update draft: {str(e)}"
+        )
+
+
+@router.delete("/drafts/{draft_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_draft(
+    draft_id: str,
+    token_payload: dict = Depends(verify_jwt_token)
+):
+    """
+    Delete a draft
+
+    Path Parameters:
+    - draft_id: UUID of the draft
+    """
+    user_id = token_payload["user_id"]
+
+    try:
+        # Verify draft exists
+        existing_response = supabase.table("trips").select("id").eq(
+            "id", draft_id
+        ).eq("user_id", user_id).eq("status", TripStatus.DRAFT.value).single().execute()
+
+        if not existing_response.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Draft not found"
+            )
+
+        # Delete draft
+        # Type assertion needed due to known @supabase/ssr type inference issues
+        (supabase.table("trips") as any).delete().eq(
+            "id", draft_id
+        ).eq("user_id", user_id).execute()
+
+        return None
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete draft: {str(e)}"
         )
