@@ -214,7 +214,9 @@ describe('TravelPreferencesSection', () => {
 
   describe('Auto-save functionality', () => {
     it('should show saving indicator when update is in progress', async () => {
-      const slowUpdate = jest.fn(() => new Promise((resolve) => setTimeout(resolve, 1000)));
+      const slowUpdate = jest.fn(
+        (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 1000)),
+      );
 
       const user = userEvent.setup();
       render(<TravelPreferencesSection preferences={mockPreferences} onUpdate={slowUpdate} />);
@@ -240,7 +242,9 @@ describe('TravelPreferencesSection', () => {
     });
 
     it('should show error indicator when update fails', async () => {
-      const failingUpdate = jest.fn(() => Promise.reject(new Error('Update failed')));
+      const failingUpdate = jest.fn(
+        (): Promise<void> => Promise.reject(new Error('Update failed')),
+      );
 
       const user = userEvent.setup();
       render(<TravelPreferencesSection preferences={mockPreferences} onUpdate={failingUpdate} />);
@@ -254,7 +258,9 @@ describe('TravelPreferencesSection', () => {
     });
 
     it('should disable checkboxes when saving', async () => {
-      const slowUpdate = jest.fn(() => new Promise((resolve) => setTimeout(resolve, 1000)));
+      const slowUpdate = jest.fn(
+        (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 1000)),
+      );
 
       const user = userEvent.setup();
       render(<TravelPreferencesSection preferences={mockPreferences} onUpdate={slowUpdate} />);
@@ -269,7 +275,9 @@ describe('TravelPreferencesSection', () => {
     });
 
     it('should disable textarea when saving', async () => {
-      const slowUpdate = jest.fn(() => new Promise((resolve) => setTimeout(resolve, 1000)));
+      const slowUpdate = jest.fn(
+        (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 1000)),
+      );
 
       const user = userEvent.setup();
       render(<TravelPreferencesSection preferences={mockPreferences} onUpdate={slowUpdate} />);

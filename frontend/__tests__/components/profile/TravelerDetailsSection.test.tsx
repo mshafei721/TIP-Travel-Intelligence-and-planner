@@ -164,7 +164,9 @@ describe('TravelerDetailsSection', () => {
   });
 
   it('should show saving indicator when save is in progress', async () => {
-    const slowUpdate = jest.fn(() => new Promise((resolve) => setTimeout(resolve, 1000)));
+    const slowUpdate = jest.fn(
+      (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 1000)),
+    );
 
     const user = userEvent.setup();
     render(<TravelerDetailsSection travelerDetails={mockTravelerDetails} onUpdate={slowUpdate} />);
@@ -209,7 +211,9 @@ describe('TravelerDetailsSection', () => {
   });
 
   it('should disable fields when saving', async () => {
-    const slowUpdate = jest.fn(() => new Promise((resolve) => setTimeout(resolve, 1000)));
+    const slowUpdate = jest.fn(
+      (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 1000)),
+    );
 
     const user = userEvent.setup();
     render(<TravelerDetailsSection travelerDetails={mockTravelerDetails} onUpdate={slowUpdate} />);
