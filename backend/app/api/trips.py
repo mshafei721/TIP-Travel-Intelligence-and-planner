@@ -224,8 +224,7 @@ async def create_trip(
             trip_record["idempotency_key"] = idempotency_key
 
         # Insert trip into database
-        # Type assertion needed due to known @supabase/ssr type inference issues
-        response = (supabase.table("trips") as any).insert(trip_record).execute()
+        response = supabase.table("trips").insert(trip_record).execute()
 
         if not response.data or len(response.data) == 0:
             raise HTTPException(
@@ -313,8 +312,7 @@ async def update_trip(
             return existing_trip
 
         # Update trip in database
-        # Type assertion needed due to known @supabase/ssr type inference issues
-        response = (supabase.table("trips") as any).update(update_record).eq(
+        response = supabase.table("trips").update(update_record).eq(
             "id", trip_id
         ).eq("user_id", user_id).execute()
 
@@ -381,8 +379,7 @@ async def delete_trip(
             )
 
         # Delete trip
-        # Type assertion needed due to known @supabase/ssr type inference issues
-        delete_response = (supabase.table("trips") as any).delete().eq(
+        delete_response = supabase.table("trips").delete().eq(
             "id", trip_id
         ).eq("user_id", user_id).execute()
 
@@ -453,8 +450,7 @@ async def generate_trip_report(
             pass
 
         # Update trip status to 'processing'
-        # Type assertion needed due to known @supabase/ssr type inference issues
-        update_response = (supabase.table("trips") as any).update({
+        update_response = supabase.table("trips").update({
             "status": TripStatus.PROCESSING.value
         }).eq("id", trip_id).eq("user_id", user_id).execute()
 
@@ -473,7 +469,7 @@ async def generate_trip_report(
     except Exception as e:
         # Rollback status update on failure
         try:
-            (supabase.table("trips") as any).update({
+            supabase.table("trips").update({
                 "status": TripStatus.FAILED.value
             }).eq("id", trip_id).eq("user_id", user_id).execute()
         except:
@@ -605,8 +601,7 @@ async def save_draft(
             "preferences": draft_data.preferences.model_dump() if draft_data.preferences else {},
         }
 
-        # Type assertion needed due to known @supabase/ssr type inference issues
-        response = (supabase.table("trips") as any).insert(trip_record).execute()
+        response = supabase.table("trips").insert(trip_record).execute()
 
         if not response.data or len(response.data) == 0:
             raise HTTPException(
@@ -735,8 +730,7 @@ async def update_draft(
             }
 
         # Update draft
-        # Type assertion needed due to known @supabase/ssr type inference issues
-        response = (supabase.table("trips") as any).update(update_record).eq(
+        response = supabase.table("trips").update(update_record).eq(
             "id", draft_id
         ).eq("user_id", user_id).execute()
 
@@ -789,8 +783,7 @@ async def delete_draft(
             )
 
         # Delete draft
-        # Type assertion needed due to known @supabase/ssr type inference issues
-        (supabase.table("trips") as any).delete().eq(
+        supabase.table("trips").delete().eq(
             "id", draft_id
         ).eq("user_id", user_id).execute()
 
