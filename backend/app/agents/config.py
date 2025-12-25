@@ -2,6 +2,7 @@
 Agent Configuration
 
 Configuration schema for AI agents using Pydantic for validation.
+Supports multiple agent types including visa, country, weather, culture, and food agents.
 """
 
 from pydantic import BaseModel, Field
