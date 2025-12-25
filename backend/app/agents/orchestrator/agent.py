@@ -28,6 +28,20 @@ try:
 except ImportError:
     VISA_AGENT_AVAILABLE = False
 
+try:
+    from app.agents.country.agent import CountryAgent
+
+    COUNTRY_AGENT_AVAILABLE = True
+except ImportError:
+    COUNTRY_AGENT_AVAILABLE = False
+
+try:
+    from app.agents.weather.agent import WeatherAgent
+
+    WEATHER_AGENT_AVAILABLE = True
+except ImportError:
+    WEATHER_AGENT_AVAILABLE = False
+
 
 class TripData(BaseModel):
     """Trip data model for orchestrator input"""
@@ -67,9 +81,13 @@ class OrchestratorAgent:
         if VISA_AGENT_AVAILABLE:
             self.available_agents["visa"] = VisaAgent
 
+        if COUNTRY_AGENT_AVAILABLE:
+            self.available_agents["country"] = CountryAgent
+
+        if WEATHER_AGENT_AVAILABLE:
+            self.available_agents["weather"] = WeatherAgent
+
         # Placeholder for future agents
-        # self.available_agents['country'] = CountryAgent
-        # self.available_agents['weather'] = WeatherAgent
         # self.available_agents['currency'] = CurrencyAgent
         # self.available_agents['culture'] = CultureAgent
         # self.available_agents['food'] = FoodAgent
@@ -105,12 +123,13 @@ class OrchestratorAgent:
 
         try:
             # Phase 1: Independent agents (can run in parallel)
-            phase1_agents = ["visa"]  # Add more as they become available
+            # These agents don't depend on each other and can run simultaneously
+            phase1_agents = ["visa", "country", "weather"]
             phase1_results = await self._run_phase(validated_data, phase1_agents)
             sections.update(phase1_results)
 
             # Phase 2: Dependent agents (future implementation)
-            # phase2_agents = ['country', 'weather', 'currency', 'culture']
+            # phase2_agents = ['currency', 'culture']
             # phase2_results = await self._run_phase(validated_data, phase2_agents)
             # sections.update(phase2_results)
 
@@ -255,6 +274,34 @@ class OrchestratorAgent:
                 duration_days=duration_days,
                 departure_date=trip_data.departure_date,
                 traveler_count=1,
+            )
+
+        # For country agent
+        if agent_name == "country":
+            from app.agents.country.models import CountryAgentInput
+
+            return CountryAgentInput(
+                trip_id=trip_data.trip_id,
+                destination_country=trip_data.destination_country,
+                destination_city=trip_data.destination_city,
+                departure_date=trip_data.departure_date,
+                return_date=trip_data.return_date,
+                traveler_nationality=trip_data.user_nationality,
+            )
+
+        # For weather agent
+        if agent_name == "weather":
+            from app.agents.weather.models import WeatherAgentInput
+
+            return WeatherAgentInput(
+                trip_id=trip_data.trip_id,
+                user_nationality=trip_data.user_nationality,
+                destination_country=trip_data.destination_country,
+                destination_city=trip_data.destination_city,
+                departure_date=trip_data.departure_date,
+                return_date=trip_data.return_date,
+                latitude=None,  # Will be populated by geocoding in future
+                longitude=None,  # Will be populated by geocoding in future
             )
 
         # Add more agent input creators as agents are implemented
