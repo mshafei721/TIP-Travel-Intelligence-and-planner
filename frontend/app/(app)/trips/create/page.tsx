@@ -1,19 +1,26 @@
+import { Suspense } from 'react'
+import TripCreationWizard from '@/components/trip-wizard/TripCreationWizard'
+
+export const metadata = {
+  title: 'Create New Trip | TIP',
+  description: 'Plan your journey with personalized travel intelligence',
+}
+
 export default function CreateTripPage() {
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">
-          Create New Trip
-        </h1>
-        <p className="mt-2 text-slate-600 dark:text-slate-400">
-          Start planning your next adventure
-        </p>
-      </div>
+    <Suspense fallback={<TripWizardLoading />}>
+      <TripCreationWizard />
+    </Suspense>
+  )
+}
 
-      <div className="rounded-lg border border-slate-200 bg-white p-8 text-center dark:border-slate-800 dark:bg-slate-900">
-        <p className="text-slate-600 dark:text-slate-400">
-          Trip creation wizard placeholder - will be implemented in future milestones
-        </p>
+function TripWizardLoading() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-amber-50/20 dark:from-slate-950 dark:via-slate-900 dark:to-slate-900
+                  flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-16 h-16 mx-auto mb-4 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-slate-600 dark:text-slate-400">Loading trip wizard...</p>
       </div>
     </div>
   )
