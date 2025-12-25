@@ -139,7 +139,7 @@ export function TravelPreferencesSection({
                 <Checkbox
                   id={`dietary-${option}`}
                   checked={prefs.dietaryRestrictions.includes(option)}
-                  onCheckedChange={() => toggleDietaryRestriction(option)}
+                  onChange={() => toggleDietaryRestriction(option)}
                   disabled={saveState === 'saving'}
                 />
                 <label
