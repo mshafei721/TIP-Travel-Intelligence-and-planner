@@ -251,6 +251,7 @@ def test_attractions_agent_run_minimal_input():
 # ============================================================================
 
 
+@pytest.mark.integration
 def test_attractions_agent_confidence_calculation():
     """Test confidence score calculation."""
     agent = AttractionsAgent()
@@ -306,6 +307,7 @@ def test_attractions_agent_confidence_calculation():
 # ============================================================================
 
 
+@pytest.mark.integration
 def test_attractions_agent_fallback_result():
     """Test fallback result creation."""
     agent = AttractionsAgent()
@@ -332,6 +334,7 @@ def test_attractions_agent_fallback_result():
 # ============================================================================
 
 
+@pytest.mark.integration
 def test_attractions_agent_extract_json_from_markdown():
     """Test JSON extraction from markdown code blocks."""
     agent = AttractionsAgent()
@@ -355,6 +358,7 @@ def test_attractions_agent_extract_json_from_markdown():
     assert len(result["top_attractions"]) == 1
 
 
+@pytest.mark.integration
 def test_attractions_agent_extract_json_plain():
     """Test JSON extraction from plain text."""
     agent = AttractionsAgent()

@@ -76,6 +76,7 @@ class TestCurrencyAgentInput:
         assert input_data.base_currency == "USD"
 
 
+@pytest.mark.integration
 class TestCurrencyAgent:
     """Tests for CurrencyAgent execution."""
 

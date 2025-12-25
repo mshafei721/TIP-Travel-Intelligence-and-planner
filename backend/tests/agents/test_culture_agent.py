@@ -294,6 +294,7 @@ def test_dress_code_info_model():
 # ============================================================================
 
 
+@pytest.mark.integration
 def test_extract_json_from_markdown():
     """Test JSON extraction from markdown."""
     agent = CultureAgent()
@@ -310,6 +311,7 @@ def test_extract_json_from_markdown():
     assert result.get("greeting_customs") == ["Bow"]
 
 
+@pytest.mark.integration
 def test_extract_json_from_plain_text():
     """Test JSON extraction from plain text."""
     agent = CultureAgent()
@@ -320,6 +322,7 @@ def test_extract_json_from_plain_text():
     assert result.get("greeting_customs") == ["Handshake"]
 
 
+@pytest.mark.integration
 def test_extract_json_from_invalid_text():
     """Test JSON extraction from invalid text."""
     agent = CultureAgent()
@@ -329,6 +332,7 @@ def test_extract_json_from_invalid_text():
     assert result is None
 
 
+@pytest.mark.integration
 def test_calculate_confidence_high():
     """Test confidence calculation with complete data."""
     agent = CultureAgent()
@@ -350,6 +354,7 @@ def test_calculate_confidence_high():
     assert confidence >= 0.8  # Should be high with complete data
 
 
+@pytest.mark.integration
 def test_calculate_confidence_low():
     """Test confidence calculation with minimal data."""
     agent = CultureAgent()
@@ -363,6 +368,7 @@ def test_calculate_confidence_low():
     assert confidence < 0.5  # Should be low with minimal data
 
 
+@pytest.mark.integration
 def test_fallback_result_creation():
     """Test fallback result creation."""
     agent = CultureAgent()
@@ -415,12 +421,14 @@ def test_culture_agent_run_with_minimal_country():
     assert result.confidence_score > 0.0
 
 
+@pytest.mark.integration
 def test_culture_agent_agent_type():
     """Test agent type property."""
     agent = CultureAgent()
     assert agent.agent_type == "culture"
 
 
+@pytest.mark.integration
 def test_culture_agent_config():
     """Test agent configuration."""
     agent = CultureAgent()

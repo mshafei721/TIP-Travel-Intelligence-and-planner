@@ -19,8 +19,23 @@ from app.main import app
 # API Key Detection
 # ============================================================================
 
-ANTHROPIC_API_KEY_AVAILABLE = bool(os.getenv("ANTHROPIC_API_KEY"))
-WEATHERAPI_KEY_AVAILABLE = bool(os.getenv("WEATHERAPI_KEY"))
+
+def _is_valid_api_key(key: str | None) -> bool:
+    """Check if an API key appears to be valid (not a dummy/test value)."""
+    if not key:
+        return False
+    # Check for common dummy/test key patterns
+    dummy_patterns = ["dummy", "test", "fake", "placeholder", "xxx", "your-", "your_"]
+    key_lower = key.lower()
+    return not any(pattern in key_lower for pattern in dummy_patterns)
+
+
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
+WEATHERAPI_KEY = os.getenv("WEATHERAPI_KEY")
+
+# Keys must exist AND not be dummy values
+ANTHROPIC_API_KEY_AVAILABLE = _is_valid_api_key(ANTHROPIC_API_KEY)
+WEATHERAPI_KEY_AVAILABLE = _is_valid_api_key(WEATHERAPI_KEY)
 
 
 def pytest_configure(config):
@@ -41,10 +56,10 @@ def pytest_collection_modifyitems(config, items):
     allowing tests to run locally when keys are configured.
     """
     skip_anthropic = pytest.mark.skip(
-        reason="ANTHROPIC_API_KEY not set - skipping integration test"
+        reason="ANTHROPIC_API_KEY not set or is a dummy value - skipping integration test"
     )
     skip_weather = pytest.mark.skip(
-        reason="WEATHERAPI_KEY not set - skipping weather test"
+        reason="WEATHERAPI_KEY not set or is a dummy value - skipping weather test"
     )
     skip_external_api = pytest.mark.skip(
         reason="External API tests - skipping in CI"

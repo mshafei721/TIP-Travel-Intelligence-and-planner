@@ -141,6 +141,7 @@ class TestWeatherAgentOutput:
         assert output.is_good_time_to_visit is True
 
 
+@pytest.mark.integration
 class TestWeatherAgent:
     """Test Weather Agent."""
 

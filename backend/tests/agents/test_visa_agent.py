@@ -27,6 +27,7 @@ from app.agents.visa.models import (
 )
 
 
+@pytest.mark.integration
 class TestVisaAgent:
     """Test suite for Visa Agent"""
 

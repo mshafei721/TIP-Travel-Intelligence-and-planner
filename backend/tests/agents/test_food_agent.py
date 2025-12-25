@@ -290,6 +290,7 @@ def test_street_food_model():
 # ============================================================================
 
 
+@pytest.mark.integration
 def test_extract_json_from_markdown():
     """Test JSON extraction from markdown."""
     agent = FoodAgent()
@@ -305,6 +306,7 @@ def test_extract_json_from_markdown():
     assert result.get("dining_etiquette") == ["Use chopsticks"]
 
 
+@pytest.mark.integration
 def test_extract_json_from_plain_text():
     """Test JSON extraction from plain text."""
     agent = FoodAgent()
@@ -315,6 +317,7 @@ def test_extract_json_from_plain_text():
     assert result.get("water_safety") == "safe"
 
 
+@pytest.mark.integration
 def test_extract_json_from_invalid_text():
     """Test JSON extraction from invalid text."""
     agent = FoodAgent()
@@ -324,6 +327,7 @@ def test_extract_json_from_invalid_text():
     assert result is None
 
 
+@pytest.mark.integration
 def test_calculate_confidence_high():
     """Test confidence calculation with complete data."""
     agent = FoodAgent()
@@ -342,6 +346,7 @@ def test_calculate_confidence_high():
     assert confidence >= 0.8
 
 
+@pytest.mark.integration
 def test_calculate_confidence_low():
     """Test confidence calculation with minimal data."""
     agent = FoodAgent()
@@ -355,6 +360,7 @@ def test_calculate_confidence_low():
     assert confidence < 0.5
 
 
+@pytest.mark.integration
 def test_fallback_result_creation():
     """Test fallback result creation."""
     agent = FoodAgent()
@@ -400,12 +406,14 @@ def test_food_agent_run_with_dietary_restrictions():
     assert result.trip_id == "test-dietary-001"
 
 
+@pytest.mark.integration
 def test_food_agent_agent_type():
     """Test agent type property."""
     agent = FoodAgent()
     assert agent.agent_type == "food"
 
 
+@pytest.mark.integration
 def test_food_agent_config():
     """Test agent configuration."""
     agent = FoodAgent()
