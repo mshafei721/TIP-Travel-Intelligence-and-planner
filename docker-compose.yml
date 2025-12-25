@@ -2,7 +2,7 @@
 # TIP - Travel Intelligence & Planner
 # Docker Compose - Local Development Environment
 # ==============================================
-version: '3.8'
+# Note: 'version' is deprecated and ignored by modern Docker Compose
 
 services:
   # ==============================================
@@ -35,7 +35,8 @@ services:
     ports:
       - "8000:8000"
     env_file:
-      - .env
+      - path: .env
+        required: false
     environment:
       - REDIS_URL=redis://redis:6379
       - CELERY_BROKER_URL=redis://redis:6379/0
@@ -64,7 +65,8 @@ services:
     container_name: tip-celery-worker
     command: celery -A app.core.celery_app worker --loglevel=info --concurrency=4 --pool=prefork
     env_file:
-      - .env
+      - path: .env
+        required: false
     environment:
       - REDIS_URL=redis://redis:6379
       - CELERY_BROKER_URL=redis://redis:6379/0
@@ -89,7 +91,8 @@ services:
     container_name: tip-celery-beat
     command: celery -A app.core.celery_app beat --loglevel=info
     env_file:
-      - .env
+      - path: .env
+        required: false
     environment:
       - REDIS_URL=redis://redis:6379
       - CELERY_BROKER_URL=redis://redis:6379/0
@@ -116,7 +119,8 @@ services:
     ports:
       - "5555:5555"
     env_file:
-      - .env
+      - path: .env
+        required: false
     environment:
       - REDIS_URL=redis://redis:6379
       - CELERY_BROKER_URL=redis://redis:6379/0
