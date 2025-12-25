@@ -61,11 +61,11 @@ class TestBaseAgent:
         """BaseAgent should be abstract and cannot be instantiated directly"""
         with pytest.raises(TypeError):
             # This should fail because BaseAgent has abstract methods
-            BaseAgent(config=AgentConfig())
+            BaseAgent(config=AgentConfig(agent_type="base"))
 
     def test_mock_agent_instantiation(self):
         """MockAgent should instantiate successfully with default config"""
-        config = AgentConfig()
+        config = AgentConfig(agent_type="mock")
         agent = MockAgent(config=config)
 
         assert agent is not None
@@ -75,6 +75,7 @@ class TestBaseAgent:
     def test_mock_agent_instantiation_with_custom_config(self):
         """MockAgent should accept custom configuration"""
         config = AgentConfig(
+            agent_type="mock",
             llm_model="claude-3-opus-20240229",
             temperature=0.5,
             max_tokens=2000,
@@ -90,14 +91,14 @@ class TestBaseAgent:
     def test_configure_tools_is_abstract(self):
         """configure_tools must be implemented by subclasses"""
         # MockAgent implements this, so it should work
-        agent = MockAgent(config=AgentConfig())
+        agent = MockAgent(config=AgentConfig(agent_type="mock"))
         tools = agent.configure_tools()
 
         assert isinstance(tools, list)
 
     def test_create_task_is_abstract(self):
         """create_task must be implemented by subclasses"""
-        agent = MockAgent(config=AgentConfig())
+        agent = MockAgent(config=AgentConfig(agent_type="mock"))
         task = agent.create_task({"trip_id": "test-123"})
 
         assert task is not None
@@ -105,7 +106,7 @@ class TestBaseAgent:
 
     def test_run_is_abstract(self):
         """run must be implemented by subclasses"""
-        agent = MockAgent(config=AgentConfig())
+        agent = MockAgent(config=AgentConfig(agent_type="mock"))
         result = agent.run({"trip_id": "test-456"})
 
         assert isinstance(result, AgentResult)
@@ -115,7 +116,7 @@ class TestBaseAgent:
 
     def test_agent_result_structure(self):
         """AgentResult should have all required fields"""
-        agent = MockAgent(config=AgentConfig())
+        agent = MockAgent(config=AgentConfig(agent_type="mock"))
         result = agent.run({"trip_id": "test-789"})
 
         # Required fields
@@ -140,7 +141,7 @@ class TestBaseAgent:
 
     def test_source_reference_structure(self):
         """SourceReference should have all required fields"""
-        agent = MockAgent(config=AgentConfig())
+        agent = MockAgent(config=AgentConfig(agent_type="mock"))
         result = agent.run({"trip_id": "test-101"})
 
         assert len(result.sources) > 0
@@ -156,7 +157,7 @@ class TestBaseAgent:
 
     def test_agent_config_defaults(self):
         """AgentConfig should have sensible defaults"""
-        config = AgentConfig()
+        config = AgentConfig(agent_type="mock")
 
         assert config.llm_model == "claude-3-5-sonnet-20241022"
         assert config.temperature == 0.1
