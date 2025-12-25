@@ -6,6 +6,7 @@ import re
 from datetime import datetime
 
 from crewai import Agent, Crew
+from langchain_anthropic import ChatAnthropic
 
 from ..base import BaseAgent
 from ..config import AgentConfig
@@ -67,15 +68,40 @@ class CultureAgent(BaseAgent):
         """Return agent type identifier."""
         return "culture"
 
-    @property
-    def config(self) -> AgentConfig:
-        """Return agent configuration."""
-        return AgentConfig(
-            name="Culture Agent",
-            agent_type=self.agent_type,
-            description="Cross-cultural intelligence and etiquette specialist",
-            version="1.0.0",
+    def __init__(
+        self,
+        config: AgentConfig | None = None,
+        llm_model: str = "claude-3-5-sonnet-20241022",
+    ):
+        """
+        Initialize Culture Agent.
+
+        Args:
+            config: Agent configuration (optional)
+            llm_model: Claude AI model to use
+        """
+        # Initialize config
+        if config is None:
+            config = AgentConfig(
+                name="Culture Agent",
+                agent_type=self.agent_type,
+                description="Cross-cultural intelligence and etiquette specialist",
+                version="1.0.0",
+            )
+
+        super().__init__(config)
+
+        # Initialize Claude AI LLM
+        self.llm = ChatAnthropic(
+            model=llm_model,
+            temperature=0.1,  # Low temperature for factual information
+            timeout=60.0,
         )
+
+        # Create CrewAI agent
+        self.agent = self._create_agent()
+
+        logger.info(f"CultureAgent initialized with model: {llm_model}")
 
     def _create_agent(self) -> Agent:
         """

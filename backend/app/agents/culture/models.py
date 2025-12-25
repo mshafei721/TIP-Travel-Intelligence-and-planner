@@ -92,6 +92,9 @@ class EtiquetteRule(BaseModel):
 class CultureAgentOutput(AgentResult):
     """Output model for Culture Agent."""
 
+    # AgentResult requires data field - we provide it as empty since we use specific fields
+    data: dict = Field(default_factory=dict, description="Legacy field for compatibility")
+
     # Greetings & Communication
     greeting_customs: list[str] = Field(
         ..., description="How people greet each other"
