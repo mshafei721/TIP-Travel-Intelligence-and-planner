@@ -642,3 +642,104 @@ def execute_currency_agent(self, trip_id: str, trip_data: dict[str, Any]) -> dic
             "sources": [],
             "error": str(e),
         }
+
+
+@shared_task(
+    bind=True,
+    base=BaseTipTask,
+    name="app.tasks.agent_jobs.execute_culture_agent",
+    time_limit=1800,  # 30 minutes
+)
+def execute_culture_agent(self, trip_id: str, trip_data: dict[str, Any]) -> dict[str, Any]:
+    """
+    Execute Culture Agent for cultural intelligence and etiquette guidance
+
+    Args:
+        trip_id: Trip ID from database
+        trip_data: Trip details including:
+            - destination_country: str (country name)
+            - destination_city: str (optional, city name)
+            - departure_date: str (ISO format)
+            - return_date: str (ISO format)
+            - traveler_nationality: str (optional, ISO Alpha-2)
+
+    Returns:
+        Cultural intelligence analysis with confidence and sources
+
+    Raises:
+        KeyError: If trip_id is missing or empty
+        ValueError: If required trip_data fields are missing
+
+    Production implementation using CrewAI with cultural knowledge bases.
+    """
+    from datetime import date
+
+    from app.agents.culture.agent import CultureAgent
+    from app.agents.culture.models import CultureAgentInput
+
+    # Validate trip_id
+    if not trip_id or trip_id.strip() == "":
+        raise KeyError("trip_id is required and cannot be empty")
+
+    print(f"[Task {self.request.id}] Executing Culture Agent for trip {trip_id}")
+
+    try:
+        # Validate required fields
+        required_fields = [
+            "destination_country",
+            "departure_date",
+            "return_date",
+        ]
+        for field in required_fields:
+            if field not in trip_data:
+                raise ValueError(f"Missing required field: {field}")
+
+        # Parse dates
+        departure_date_str = trip_data["departure_date"]
+        return_date_str = trip_data["return_date"]
+
+        if isinstance(departure_date_str, str):
+            departure_date = date.fromisoformat(departure_date_str)
+        else:
+            departure_date = departure_date_str
+
+        if isinstance(return_date_str, str):
+            return_date = date.fromisoformat(return_date_str)
+        else:
+            return_date = return_date_str
+
+        # Create CultureAgentInput
+        input_data = CultureAgentInput(
+            trip_id=trip_id,
+            destination_country=trip_data["destination_country"],
+            destination_city=trip_data.get("destination_city"),
+            departure_date=departure_date,
+            return_date=return_date,
+            traveler_nationality=trip_data.get("traveler_nationality"),
+        )
+
+        # Initialize and run Culture Agent
+        agent = CultureAgent()
+        result = agent.run(input_data)
+
+        # Return structured response
+        return {
+            "trip_id": trip_id,
+            "agent_type": result.agent_type,
+            "status": "success",
+            "data": result.model_dump(mode="json"),
+            "confidence": result.confidence_score,
+            "sources": [s.model_dump() for s in result.sources],
+        }
+
+    except Exception as e:
+        print(f"[Task {self.request.id}] Error in Culture Agent: {str(e)}")
+        return {
+            "trip_id": trip_id,
+            "agent_type": "culture",
+            "status": "failed",
+            "data": {},
+            "confidence": 0.0,
+            "sources": [],
+            "error": str(e),
+        }
