@@ -18,16 +18,28 @@ import type {
 const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
 
 /**
- * Get authentication token from localStorage or session
- * In production, this should use your auth provider (Supabase, Auth0, etc.)
+ * Get authentication token from Supabase session
  */
 async function getAuthToken(): Promise<string | null> {
-  // TODO: Replace with actual token retrieval from Supabase
-  // For now, return null - auth middleware should handle this
   if (typeof window === 'undefined') return null
 
-  // Example: return localStorage.getItem('supabase.auth.token')
-  return null
+  try {
+    // Dynamically import Supabase client (browser-only)
+    const { createClient } = await import('@/lib/supabase/client')
+    const supabase = createClient()
+
+    const { data: { session }, error } = await supabase.auth.getSession()
+
+    if (error || !session) {
+      console.warn('Failed to get Supabase session:', error)
+      return null
+    }
+
+    return session.access_token
+  } catch (error) {
+    console.error('Error getting auth token:', error)
+    return null
+  }
 }
 
 /**

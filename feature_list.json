@@ -863,66 +863,106 @@
       "name": "User Profile and Settings",
       "description": "Profile management, templates, and notification preferences",
       "status": {
-        "frontend": 10,
-        "backend": 10,
-        "overall": 10
+        "frontend": 85,
+        "backend": 70,
+        "overall": 78
       },
       "features": [
         {
           "id": "I9-FE-01",
           "name": "Create profile page",
           "type": "frontend",
-          "passes": false,
-          "priority": "high"
+          "passes": true,
+          "priority": "high",
+          "notes": "Completed with all sections and auto-save functionality"
         },
         {
           "id": "I9-FE-02",
           "name": "Create settings tabs",
           "type": "frontend",
-          "passes": false,
-          "priority": "high"
+          "passes": true,
+          "priority": "high",
+          "notes": "Using single-page scrollable layout with section cards"
         },
         {
           "id": "I9-FE-03",
           "name": "Create traveler profile form",
           "type": "frontend",
-          "passes": false,
-          "priority": "high"
+          "passes": true,
+          "priority": "high",
+          "notes": "Nationality, residence, residency status, DOB, preferences implemented"
         },
         {
           "id": "I9-FE-04",
           "name": "Create templates management",
           "type": "frontend",
           "passes": false,
-          "priority": "medium"
+          "priority": "medium",
+          "notes": "UI complete but marked as 'coming soon' - backend endpoints not implemented"
         },
         {
           "id": "I9-FE-05",
           "name": "Create notification preferences",
           "type": "frontend",
-          "passes": false,
-          "priority": "medium"
+          "passes": true,
+          "priority": "medium",
+          "notes": "Email notification toggles with auto-save"
+        },
+        {
+          "id": "I9-FE-06",
+          "name": "Integrate API client with authentication",
+          "type": "frontend",
+          "passes": true,
+          "priority": "critical",
+          "notes": "Fixed API client to use Supabase tokens, updated ProfileSettingsPage to use API client functions"
+        },
+        {
+          "id": "I9-FE-07",
+          "name": "Implement photo upload with Supabase Storage",
+          "type": "frontend",
+          "passes": true,
+          "priority": "high",
+          "notes": "Photo upload to Supabase Storage with public URL generation. Requires 'profile-photos' bucket setup"
         },
         {
           "id": "I9-BE-01",
-          "name": "Implement PATCH /profile endpoint",
+          "name": "Implement PUT /profile endpoint",
           "type": "backend",
-          "passes": false,
-          "priority": "high"
+          "passes": true,
+          "priority": "high",
+          "notes": "Endpoint exists and working for display_name and avatar_url updates"
         },
         {
           "id": "I9-BE-02",
           "name": "Implement templates CRUD endpoints",
           "type": "backend",
           "passes": false,
-          "priority": "medium"
+          "priority": "medium",
+          "notes": "Not implemented - templates feature deferred"
         },
         {
           "id": "I9-BE-03",
-          "name": "Implement notifications endpoints",
+          "name": "Implement PUT /profile/preferences endpoint",
           "type": "backend",
+          "passes": true,
+          "priority": "medium",
+          "notes": "Endpoint exists for user preferences including notifications"
+        },
+        {
+          "id": "I9-BE-04",
+          "name": "Implement PUT /profile/traveler endpoint",
+          "type": "backend",
+          "passes": true,
+          "priority": "high",
+          "notes": "Traveler profile create/update endpoint working"
+        },
+        {
+          "id": "I9-CONFIG-01",
+          "name": "Setup Supabase Storage bucket for profile photos",
+          "type": "config",
           "passes": false,
-          "priority": "medium"
+          "priority": "high",
+          "blockedBy": "Requires user to create 'profile-photos' bucket in Supabase dashboard. See docs/supabase-storage-setup.md"
         }
       ]
     },

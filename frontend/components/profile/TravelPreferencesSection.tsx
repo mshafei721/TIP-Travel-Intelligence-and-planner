@@ -10,24 +10,19 @@ import type { TravelPreferences, TravelStyle, SaveState } from '@/types/profile'
 
 const TRAVEL_STYLES: { value: TravelStyle; label: string; description: string }[] = [
   {
-    value: 'relaxed',
-    label: 'Relaxed',
-    description: 'Slow pace, lots of downtime, focus on rest and leisure',
+    value: 'budget',
+    label: 'Budget',
+    description: 'Cost-effective options, hostels, local transport',
   },
   {
     value: 'balanced',
     label: 'Balanced',
-    description: 'Mix of activities and free time, moderate pace',
+    description: 'Mix of comfort and value, mid-range hotels',
   },
   {
-    value: 'packed',
-    label: 'Packed',
-    description: 'Maximize experiences, busy schedule, fast pace',
-  },
-  {
-    value: 'budget-focused',
-    label: 'Budget-Focused',
-    description: 'Prioritize cost savings, affordable options',
+    value: 'luxury',
+    label: 'Luxury',
+    description: 'Premium experiences, 4-5 star hotels, private transport',
   },
 ]
 
@@ -144,7 +139,7 @@ export function TravelPreferencesSection({
                 <Checkbox
                   id={`dietary-${option}`}
                   checked={prefs.dietaryRestrictions.includes(option)}
-                  onChange={() => toggleDietaryRestriction(option)}
+                  onCheckedChange={() => toggleDietaryRestriction(option)}
                   disabled={saveState === 'saving'}
                 />
                 <label

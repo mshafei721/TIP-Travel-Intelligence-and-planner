@@ -81,7 +81,7 @@ export function NotificationsSection({ notifications, onUpdate }: NotificationsS
             <Checkbox
               id={option.key}
               checked={settings[option.key]}
-              onChange={() => toggleNotification(option.key)}
+              onCheckedChange={() => toggleNotification(option.key)}
               disabled={saveState === 'saving'}
               className="mt-1"
             />

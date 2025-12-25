@@ -56,9 +56,9 @@ export default async function ProfilePage() {
         accessibilityNeeds: profileResponse.travelerProfile?.accessibility_needs || undefined,
       },
       notifications: {
-        deletionReminders: profileResponse.notificationSettings.deletionReminders,
-        reportCompletion: profileResponse.notificationSettings.reportCompletion,
-        productUpdates: profileResponse.notificationSettings.productUpdates,
+        deletionReminders: true, // Default until backend supports this
+        reportCompletion: profileResponse.user.preferences?.email_notifications ?? true,
+        productUpdates: profileResponse.user.preferences?.marketing_emails ?? false,
       },
       privacy: {
         dataRetentionAcknowledged: false, // TODO: Add to backend
