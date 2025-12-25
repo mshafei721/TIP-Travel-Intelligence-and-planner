@@ -237,6 +237,8 @@ This is NOT urgent - current solution is production-ready and maintainable.
 3. `fcca4cb` - "fix(frontend): correct Checkbox prop from onCheckedChange to onChange"
 4. `96700a2` - "docs: update with Checkbox prop fix details"
 5. `4251390` - "fix(frontend): remove null from photoUrl type to match component expectations"
+6. `c62ec93` - "docs: add third build fix (photoUrl null handling)"
+7. `306cc51` - "fix(frontend): update TemplateModal travel styles to match backend enum"
 
 **Branch**: `main`
 **Pushed**: ✅ Yes
@@ -276,6 +278,29 @@ Type 'null' is not assignable to type 'string | undefined'.
    ```typescript
    photoUrl: profileResponse.user.avatar_url ?? undefined
    ```
+
+### Additional Fix #3 (306cc51)
+
+A fourth build error was discovered:
+
+```
+Type '"relaxed"' is not assignable to type 'TravelStyle'.
+```
+
+**Location**: `TemplateModal.tsx:11`
+
+**Cause**: The `TemplateModal` component was using outdated travel style values from an earlier iteration of the type system.
+
+**Fix**: Updated `TRAVEL_STYLES` array to match current backend enum:
+```typescript
+// Before
+const TRAVEL_STYLES: TravelStyle[] = ['relaxed', 'balanced', 'packed', 'budget-focused']
+
+// After
+const TRAVEL_STYLES: TravelStyle[] = ['budget', 'balanced', 'luxury']
+```
+
+This matches the fix previously applied to `TravelPreferencesSection` and aligns with the backend API enum definition.
 
 ## Next Steps
 
