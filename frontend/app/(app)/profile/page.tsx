@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { ProfileSettingsPage } from '@/components/profile/ProfileSettingsPage'
+import { getProfile, getStatistics } from '@/lib/api/profile'
 import type { ProfileSettings } from '@/types/profile'
 
 /**
@@ -8,8 +9,11 @@ import type { ProfileSettings } from '@/types/profile'
  *
  * Features:
  * - Server-side authentication check
- * - Fetches user profile and settings from Supabase
+ * - Fetches user profile from FastAPI backend
  * - Renders profile settings UI with all sections
+ *
+ * Note: This page uses the legacy ProfileSettings type for backwards compatibility
+ * with existing components. New pages should use the ProfileResponse type.
  */
 export default async function ProfilePage() {
   const supabase = await createClient()
@@ -24,76 +28,48 @@ export default async function ProfilePage() {
     redirect('/login')
   }
 
-  // Fetch user profile
-  const { data: profileData, error: profileError } = await (supabase
-    .from('user_profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single() as any)
+  try {
+    // Fetch profile from backend API
+    const profileResponse = await getProfile()
+    const statistics = await getStatistics()
 
-  if (profileError) {
-    console.error('Error fetching profile:', profileError)
-    throw new Error('Failed to load profile')
-  }
-
-  // Fetch traveler profile (if exists)
-  const { data: travelerData } = await (supabase
-    .from('traveler_profiles')
-    .select('*')
-    .eq('user_id', user.id)
-    .single() as any)
-
-  // Fetch trip templates
-  const { data: templatesData } = await (supabase
-    .from('trip_templates')
-    .select('*')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false }) as any)
-
-  // Construct profile settings
-  const profileSettings: ProfileSettings = {
-    profile: {
-      id: profileData.id,
-      name: profileData.name || '',
-      email: user.email || '',
-      photoUrl: profileData.photo_url,
-      authProvider: user.app_metadata?.provider === 'google' ? 'google' : 'email',
-      createdAt: profileData.created_at,
-      updatedAt: profileData.updated_at,
-    },
-    travelerDetails: {
-      nationality: travelerData?.nationality || '',
-      residenceCountry: travelerData?.residence_country || '',
-      residencyStatus: travelerData?.residency_status || 'citizen',
-      dateOfBirth: travelerData?.date_of_birth || '',
-    },
-    travelPreferences: {
-      travelStyle: travelerData?.travel_style || 'balanced',
-      dietaryRestrictions: travelerData?.dietary_restrictions || [],
-      accessibilityNeeds: travelerData?.accessibility_needs,
-    },
-    notifications: {
-      deletionReminders: profileData.notification_deletion_reminders ?? true,
-      reportCompletion: profileData.notification_report_completion ?? true,
-      productUpdates: profileData.notification_product_updates ?? false,
-    },
-    privacy: {
-      dataRetentionAcknowledged: profileData.data_retention_acknowledged ?? false,
-      allowAnalytics: profileData.allow_analytics ?? true,
-    },
-    templates: (templatesData || []).map((t: any) => ({
-      id: t.id,
-      name: t.name,
-      destinations: t.destinations,
-      datePattern: t.date_pattern,
-      preferences: {
-        travelStyle: t.travel_style,
-        dietaryRestrictions: t.dietary_restrictions || [],
+    // Map new API response to legacy ProfileSettings type for existing components
+    const profileSettings: ProfileSettings = {
+      profile: {
+        id: profileResponse.user.id,
+        name: profileResponse.user.display_name || '',
+        email: user.email || '',
+        photoUrl: profileResponse.user.avatar_url,
+        authProvider: user.app_metadata?.provider === 'google' ? 'google' : 'email',
+        createdAt: profileResponse.user.created_at,
+        updatedAt: profileResponse.user.updated_at,
       },
-      createdAt: t.created_at,
-      updatedAt: t.updated_at,
-    })),
-  }
+      travelerDetails: {
+        nationality: profileResponse.travelerProfile?.nationality || '',
+        residenceCountry: profileResponse.travelerProfile?.residency_country || '',
+        residencyStatus: (profileResponse.travelerProfile?.residency_status as any) || 'citizen',
+        dateOfBirth: profileResponse.travelerProfile?.date_of_birth || '',
+      },
+      travelPreferences: {
+        travelStyle: profileResponse.travelerProfile?.travel_style || 'balanced',
+        dietaryRestrictions: profileResponse.travelerProfile?.dietary_restrictions || [],
+        accessibilityNeeds: profileResponse.travelerProfile?.accessibility_needs || undefined,
+      },
+      notifications: {
+        deletionReminders: profileResponse.notificationSettings.deletionReminders,
+        reportCompletion: profileResponse.notificationSettings.reportCompletion,
+        productUpdates: profileResponse.notificationSettings.productUpdates,
+      },
+      privacy: {
+        dataRetentionAcknowledged: false, // TODO: Add to backend
+        allowAnalytics: true, // TODO: Add to backend
+      },
+      templates: [], // TODO: Fetch from backend when template API is ready
+    }
 
-  return <ProfileSettingsPage initialSettings={profileSettings} />
+    return <ProfileSettingsPage initialSettings={profileSettings} />
+  } catch (error) {
+    console.error('Error fetching profile:', error)
+    throw new Error('Failed to load profile. Please try again later.')
+  }
 }
