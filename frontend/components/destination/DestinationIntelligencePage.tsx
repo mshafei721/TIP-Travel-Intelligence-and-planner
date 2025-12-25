@@ -5,6 +5,7 @@ import CountryOverviewCard from './CountryOverviewCard';
 import WeatherCard from './WeatherCard';
 import CurrencyCard from './CurrencyCard';
 import CultureCard from './CultureCard';
+import FoodCard from './FoodCard';
 import UnusualLawsCard from './UnusualLawsCard';
 import SafetyCard from './SafetyCard';
 import NewsCard from './NewsCard';
@@ -100,6 +101,18 @@ export default function DestinationIntelligencePage({
           <CultureCard
             data={data.culture}
             isExpanded={allowMultipleExpanded ? undefined : isCardExpanded('culture')}
+            isLoading={isLoading}
+            onExpand={handleCardExpand}
+            onCollapse={handleCardCollapse}
+            onLinkClick={handleLinkClick}
+          />
+        </div>
+
+        {/* Food Card */}
+        <div>
+          <FoodCard
+            data={data.food}
+            isExpanded={allowMultipleExpanded ? undefined : isCardExpanded('food')}
             isLoading={isLoading}
             onExpand={handleCardExpand}
             onCollapse={handleCardCollapse}

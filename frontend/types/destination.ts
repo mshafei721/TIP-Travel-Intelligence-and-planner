@@ -6,6 +6,7 @@ export interface DestinationIntelligence {
   weather: WeatherForecast;
   currency: CurrencyInfo;
   culture: CulturalNorms;
+  food: FoodInfo;
   laws: UnusualLaws;
   safety: SafetyInfo;
   news: NewsItem[];
@@ -102,6 +103,61 @@ export interface CulturalNorms {
   religiousConsiderations?: string;
   languageTips?: string[];
   etiquetteGuides?: ExternalLink[];
+}
+
+export interface FoodInfo {
+  mustTryDishes: LocalDish[];
+  streetFood: StreetFoodInfo;
+  diningEtiquette: string[];
+  dietaryOptions: DietaryOptions;
+  priceRanges: MealPriceRange[];
+  recommendations: FoodRecommendation[];
+  safetyTips: string[];
+  foodGuides?: ExternalLink[];
+}
+
+export interface LocalDish {
+  name: string;
+  description: string;
+  type: 'main' | 'appetizer' | 'dessert' | 'beverage' | 'snack';
+  spicyLevel?: 'mild' | 'medium' | 'hot' | 'very-hot';
+  isVegetarian?: boolean;
+  isVegan?: boolean;
+  commonIngredients?: string[];
+}
+
+export interface StreetFoodInfo {
+  popular: string[];
+  safetyRating: 'excellent' | 'good' | 'fair' | 'poor';
+  bestLocations?: string[];
+  tips: string[];
+}
+
+export interface DietaryOptions {
+  vegetarian: 'widespread' | 'common' | 'limited' | 'rare';
+  vegan: 'widespread' | 'common' | 'limited' | 'rare';
+  halal: 'widespread' | 'common' | 'limited' | 'rare';
+  kosher: 'widespread' | 'common' | 'limited' | 'rare';
+  glutenFree: 'widespread' | 'common' | 'limited' | 'rare';
+  notes?: string;
+}
+
+export interface MealPriceRange {
+  mealType: 'street-food' | 'casual-dining' | 'mid-range' | 'fine-dining';
+  priceRange: {
+    min: number;
+    max: number;
+    currency: string;
+  };
+  description?: string;
+}
+
+export interface FoodRecommendation {
+  name: string;
+  type: 'restaurant' | 'market' | 'food-court' | 'cafe' | 'bakery';
+  specialty: string;
+  priceLevel: '$' | '$$' | '$$$' | '$$$$';
+  location?: string;
 }
 
 export interface UnusualLaws {

@@ -6,7 +6,7 @@ import { fetchDestinationReport } from '@/lib/api/destination';
 import { sampleDestinationData } from '@/lib/mock-data/destination-sample';
 import DestinationIntelligencePage from '@/components/destination/DestinationIntelligencePage';
 import LoadingState from '@/components/destination/LoadingState';
-import type { DestinationIntelligence, CountryOverview } from '@/types/destination';
+import type { DestinationIntelligence } from '@/types/destination';
 
 export default function TripDestinationPage() {
   const params = useParams();
@@ -38,12 +38,13 @@ export default function TripDestinationPage() {
           const countryData = result.data;
 
           // Merge with mock data for sections not yet implemented
-          // (Weather, Currency, Culture, Laws, Safety, News)
+          // (Weather, Currency, Culture, Food, Laws, Safety, News)
           const fullData: DestinationIntelligence = {
             countryOverview: countryData,
             weather: sampleDestinationData.weather,
             currency: sampleDestinationData.currency,
             culture: sampleDestinationData.culture,
+            food: sampleDestinationData.food,
             laws: sampleDestinationData.laws,
             safety: sampleDestinationData.safety,
             news: sampleDestinationData.news,

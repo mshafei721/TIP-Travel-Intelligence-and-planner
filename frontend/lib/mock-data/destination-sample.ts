@@ -156,6 +156,80 @@ export const sampleDestinationData: DestinationIntelligence = {
       'Carry business cards with Japanese on one side',
     ],
   },
+  food: {
+    mustTryDishes: [
+      {
+        name: 'Sushi',
+        description: 'Fresh seafood served over seasoned rice.',
+        type: 'main',
+      },
+      {
+        name: 'Ramen',
+        description: 'Noodle soup with rich broth and toppings.',
+        type: 'main',
+      },
+      {
+        name: 'Matcha Tea',
+        description: 'Traditional green tea prepared as a fine powder.',
+        type: 'beverage',
+        isVegetarian: true,
+        isVegan: true,
+      },
+    ],
+    streetFood: {
+      popular: ['Takoyaki', 'Taiyaki', 'Yakitori'],
+      safetyRating: 'good',
+      tips: ['Choose busy stalls', 'Carry cash for small vendors'],
+    },
+    diningEtiquette: [
+      'Say "itadakimasu" before eating and "gochisousama" after.',
+      'Do not stick chopsticks upright in rice.',
+      'Slurping noodles is acceptable and shows enjoyment.',
+    ],
+    dietaryOptions: {
+      vegetarian: 'limited',
+      vegan: 'rare',
+      halal: 'limited',
+      kosher: 'rare',
+      glutenFree: 'limited',
+      notes: 'Specialty restaurants are more common in major cities.',
+    },
+    priceRanges: [
+      {
+        mealType: 'street-food',
+        priceRange: { min: 300, max: 800, currency: 'JPY' },
+        description: 'Snacks and quick bites.',
+      },
+      {
+        mealType: 'casual-dining',
+        priceRange: { min: 800, max: 1500, currency: 'JPY' },
+      },
+      {
+        mealType: 'mid-range',
+        priceRange: { min: 2000, max: 5000, currency: 'JPY' },
+      },
+    ],
+    recommendations: [
+      {
+        name: 'Tsukiji Outer Market',
+        type: 'market',
+        specialty: 'Fresh seafood',
+        priceLevel: '$$',
+        location: 'Tokyo',
+      },
+      {
+        name: 'Local Ramen Shop',
+        type: 'restaurant',
+        specialty: 'Tonkotsu ramen',
+        priceLevel: '$',
+        location: 'Various cities',
+      },
+    ],
+    safetyTips: [
+      'Check for allergies and dietary labels.',
+      'Avoid raw seafood if you are sensitive.',
+    ],
+  },
   laws: {
     restrictions: [
       {
