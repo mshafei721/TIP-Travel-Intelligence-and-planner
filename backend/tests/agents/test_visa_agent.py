@@ -42,6 +42,7 @@ class TestVisaAgent:
         assert agent.name == "visa"
         assert agent.description is not None
 
+    @pytest.mark.integration
     def test_us_to_france_visa_free(self, agent):
         """
         Test: US citizen to France (visa-free, Schengen 90 days)
@@ -79,6 +80,7 @@ class TestVisaAgent:
         assert len(result.sources) > 0
         assert all(isinstance(s, SourceReference) for s in result.sources)
 
+    @pytest.mark.integration
     def test_india_to_usa_visa_required(self, agent):
         """
         Test: Indian citizen to USA (visa required, B1/B2)
@@ -115,6 +117,7 @@ class TestVisaAgent:
         # Verify confidence score
         assert result.confidence_score >= 0.8
 
+    @pytest.mark.integration
     def test_us_to_japan_visa_free(self, agent):
         """
         Test: US citizen to Japan (visa-free 90 days for tourism)
@@ -140,6 +143,7 @@ class TestVisaAgent:
         assert result.visa_requirement.max_stay_days == 90
         assert result.confidence_score >= 0.9
 
+    @pytest.mark.integration
     def test_business_vs_tourism_purpose(self, agent):
         """Test that trip purpose affects visa requirements"""
         tourism_input = VisaAgentInput(
@@ -171,19 +175,21 @@ class TestVisaAgent:
 
     def test_invalid_country_code(self, agent):
         """Test invalid country code raises validation error"""
-        invalid_input = VisaAgentInput(
-            trip_id="test-invalid",
-            user_nationality="INVALID",  # Invalid code
-            destination_country="FR",
-            destination_city="Paris",
-            trip_purpose="tourism",
-            duration_days=14,
-            departure_date=date(2025, 6, 1),
-        )
+        from pydantic import ValidationError
 
-        with pytest.raises(ValueError, match="Invalid.*country code"):
-            agent.run(invalid_input)
+        # Pydantic validates country code length (max 2 chars)
+        with pytest.raises(ValidationError):
+            VisaAgentInput(
+                trip_id="test-invalid",
+                user_nationality="INVALID",  # Invalid code - too long
+                destination_country="FR",
+                destination_city="Paris",
+                trip_purpose="tourism",
+                duration_days=14,
+                departure_date=date(2025, 6, 1),
+            )
 
+    @pytest.mark.integration
     def test_output_contains_all_required_fields(self, agent):
         """Test that output contains all required fields"""
         input_data = VisaAgentInput(
@@ -216,6 +222,7 @@ class TestVisaAgent:
         assert isinstance(result.sources, list)
         assert isinstance(result.confidence_score, float)
 
+    @pytest.mark.integration
     def test_confidence_score_range(self, agent):
         """Test confidence score is between 0.0 and 1.0"""
         input_data = VisaAgentInput(
@@ -232,6 +239,7 @@ class TestVisaAgent:
 
         assert 0.0 <= result.confidence_score <= 1.0
 
+    @pytest.mark.integration
     def test_sources_contain_references(self, agent):
         """Test that sources contain proper references"""
         input_data = VisaAgentInput(

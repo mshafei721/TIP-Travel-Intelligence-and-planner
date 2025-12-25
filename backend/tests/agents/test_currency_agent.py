@@ -116,6 +116,7 @@ class TestCurrencyAgent:
         assert len(agent.agent.tools) == 5  # 5 tools
 
     # Output structure tests
+    @pytest.mark.integration
     def test_output_structure(self, agent, sample_input):
         """Test that output has correct structure."""
         result = agent.run(sample_input)
@@ -126,6 +127,7 @@ class TestCurrencyAgent:
         assert isinstance(result.generated_at, datetime)
         assert 0.0 <= result.confidence_score <= 1.0
 
+    @pytest.mark.integration
     def test_output_has_currency_info(self, agent, sample_input):
         """Test that output contains currency information."""
         result = agent.run(sample_input)
@@ -137,6 +139,7 @@ class TestCurrencyAgent:
         assert result.exchange_rate > 0
         assert result.base_currency == sample_input.base_currency
 
+    @pytest.mark.integration
     def test_output_has_atm_info(self, agent, sample_input):
         """Test that output contains ATM information."""
         result = agent.run(sample_input)
@@ -146,6 +149,7 @@ class TestCurrencyAgent:
         assert result.credit_card_acceptance in ["widespread", "common", "limited", "rare"]
         assert len(result.recommended_payment_methods) > 0
 
+    @pytest.mark.integration
     def test_output_has_tipping_info(self, agent, sample_input):
         """Test that output contains tipping information."""
         result = agent.run(sample_input)
@@ -153,6 +157,7 @@ class TestCurrencyAgent:
         assert result.tipping_customs
         # tipping_percentage can be None for countries without tipping
 
+    @pytest.mark.integration
     def test_output_has_cost_info(self, agent, sample_input):
         """Test that output contains cost information."""
         result = agent.run(sample_input)
@@ -164,6 +169,7 @@ class TestCurrencyAgent:
         assert "mid_range" in result.daily_budget_recommendation
         assert "luxury" in result.daily_budget_recommendation
 
+    @pytest.mark.integration
     def test_output_has_exchange_tips(self, agent, sample_input):
         """Test that output contains exchange tips."""
         result = agent.run(sample_input)
@@ -172,6 +178,7 @@ class TestCurrencyAgent:
         assert len(result.best_exchange_locations) > 0
         assert len(result.avoid_exchange_locations) > 0
 
+    @pytest.mark.integration
     def test_output_has_safety_info(self, agent, sample_input):
         """Test that output contains safety information."""
         result = agent.run(sample_input)
@@ -179,6 +186,7 @@ class TestCurrencyAgent:
         assert len(result.money_safety_tips) > 0
         # common_scams can be empty list for safe countries
 
+    @pytest.mark.integration
     def test_output_has_sources(self, agent, sample_input):
         """Test that output includes source attribution."""
         result = agent.run(sample_input)
@@ -189,6 +197,7 @@ class TestCurrencyAgent:
         assert any("exchange" in s.lower() or "currency" in s.lower() for s in source_names)
 
     # Different countries tests
+    @pytest.mark.integration
     def test_japan_currency(self, agent):
         """Test currency info for Japan."""
         input_data = CurrencyAgentInput(
@@ -205,6 +214,7 @@ class TestCurrencyAgent:
         assert "yen" in result.local_currency.name.lower()
         assert result.exchange_rate > 100  # USD to JPY typically > 100
 
+    @pytest.mark.integration
     def test_france_currency(self, agent):
         """Test currency info for France (Euro)."""
         input_data = CurrencyAgentInput(
@@ -221,6 +231,7 @@ class TestCurrencyAgent:
         assert "euro" in result.local_currency.name.lower()
         assert 0.5 < result.exchange_rate < 1.5  # Reasonable EUR rate
 
+    @pytest.mark.integration
     def test_uk_currency(self, agent):
         """Test currency info for United Kingdom."""
         input_data = CurrencyAgentInput(
@@ -238,6 +249,7 @@ class TestCurrencyAgent:
         assert 0.5 < result.exchange_rate < 1.0  # GBP usually < 1 USD
 
     # Confidence scoring tests
+    @pytest.mark.integration
     def test_confidence_score_range(self, agent, sample_input):
         """Test confidence score is in valid range."""
         result = agent.run(sample_input)
@@ -270,6 +282,7 @@ class TestCurrencyAgent:
         assert complete_conf > incomplete_conf
 
     # Error handling tests
+    @pytest.mark.integration
     def test_handles_parsing_failure_gracefully(self, agent, sample_input):
         """Test that agent handles parsing failures gracefully."""
         # The agent should return fallback data if parsing fails

@@ -6,10 +6,12 @@ import re
 from datetime import datetime
 
 from crewai import Agent, Crew
+from langchain_anthropic import ChatAnthropic
 
 from ..base import BaseAgent
 from ..config import AgentConfig
 from ..interfaces import SourceReference
+from app.core.config import settings
 from .models import (
     CurrencyAgentInput,
     CurrencyAgentOutput,
@@ -72,6 +74,25 @@ class CurrencyAgent(BaseAgent):
             description="Travel currency and financial intelligence specialist",
             version="1.0.0",
         )
+
+    def __init__(self, anthropic_api_key: str | None = None):
+        """
+        Initialize Currency Agent with CrewAI.
+
+        Args:
+            anthropic_api_key: Anthropic API key for Claude (defaults to settings)
+        """
+        super().__init__()
+
+        # Initialize Claude AI (Anthropic)
+        self.llm = ChatAnthropic(
+            model="claude-3-5-sonnet-20241022",
+            temperature=0.1,  # Low temperature for factual accuracy
+            anthropic_api_key=anthropic_api_key or settings.ANTHROPIC_API_KEY,
+        )
+
+        # Initialize CrewAI Agent
+        self.agent = self._create_agent()
 
     def _create_agent(self) -> Agent:
         """

@@ -20,7 +20,7 @@ from langchain_anthropic import ChatAnthropic
 from app.agents.base import BaseAgent
 from app.agents.config import AgentConfig
 from app.agents.exceptions import AgentExecutionError
-from app.agents.interfaces import AgentResult, SourceReference
+from app.agents.interfaces import SourceReference
 from app.core.config import settings
 
 from .models import (
@@ -66,8 +66,18 @@ class VisaAgent(BaseAgent):
         ...     departure_date=date(2025, 6, 1),
         ... )
         >>> result = agent.run(input_data)
-        >>> print(result.data["visa_requirement"]["visa_required"])  # False
+        >>> print(result.visa_requirement.visa_required)  # False
     """
+
+    @property
+    def name(self) -> str:
+        """Return agent name."""
+        return "visa"
+
+    @property
+    def description(self) -> str:
+        """Return agent description."""
+        return "Visa requirements specialist with CrewAI and Claude AI"
 
     def __init__(self, anthropic_api_key: str | None = None):
         """
@@ -78,11 +88,11 @@ class VisaAgent(BaseAgent):
         """
         super().__init__(
             config=AgentConfig(
-                name="visa",
+                agent_type="visa",
+                name="Visa Agent",
                 description="Visa requirements specialist with CrewAI and Claude AI",
                 version="1.0.0",
-                timeout=180,  # 3 minutes for CrewAI processing
-                max_retries=3,
+                timeout_seconds=180,  # 3 minutes for CrewAI processing
             )
         )
 
@@ -110,7 +120,7 @@ class VisaAgent(BaseAgent):
             allow_delegation=False,  # Single agent, no delegation needed
         )
 
-    def _run(self, input_data: VisaAgentInput) -> AgentResult:
+    def run(self, input_data: VisaAgentInput) -> VisaAgentOutput:
         """
         Execute visa requirements analysis using CrewAI
 
@@ -118,11 +128,17 @@ class VisaAgent(BaseAgent):
             input_data: VisaAgentInput with traveler and trip details
 
         Returns:
-            AgentResult with VisaAgentOutput data
+            VisaAgentOutput with visa requirements data
 
         Raises:
             AgentExecutionError: If analysis fails
         """
+        # Validate input country codes
+        if len(input_data.user_nationality) > 3 or not input_data.user_nationality.isupper():
+            raise ValueError(f"Invalid user country code: {input_data.user_nationality}")
+        if len(input_data.destination_country) > 3 or not input_data.destination_country.isupper():
+            raise ValueError(f"Invalid destination country code: {input_data.destination_country}")
+
         try:
             # Create CrewAI task
             task = create_single_step_task(self.crew_agent, input_data)
@@ -141,16 +157,11 @@ class VisaAgent(BaseAgent):
             # Parse and validate result
             output = self._parse_crew_result(crew_result, input_data)
 
-            # Build AgentResult
-            return AgentResult(
-                agent_name=self.name,
-                success=True,
-                data=output.model_dump(),
-                confidence=output.confidence_score,
-                sources=[s.model_dump() for s in output.sources],
-                execution_time=0.0,  # Will be set by BaseAgent
-            )
+            return output
 
+        except ValueError:
+            # Re-raise validation errors
+            raise
         except Exception as e:
             raise AgentExecutionError(
                 agent_name=self.name,

@@ -57,6 +57,7 @@ class TestOrchestratorAgent:
         assert "generated_at" in result
 
     @pytest.mark.asyncio()
+    @pytest.mark.integration
     async def test_orchestrator_runs_visa_agent(self):
         """Test that orchestrator runs visa agent"""
         orchestrator = OrchestratorAgent()
@@ -106,6 +107,7 @@ class TestOrchestratorAgent:
             assert len(result["errors"]) > 0
 
     @pytest.mark.asyncio()
+    @pytest.mark.integration
     async def test_orchestrator_runs_agents_in_phases(self):
         """Test that orchestrator runs agents in correct phases"""
         orchestrator = OrchestratorAgent()

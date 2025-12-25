@@ -147,7 +147,13 @@ class TestWeatherAgent:
     @pytest.fixture()
     def config(self):
         """Provide agent config."""
-        return AgentConfig(model_name="claude-3-5-sonnet-20241022", temperature=0.1)
+        return AgentConfig(
+            agent_type="weather",
+            name="Weather Agent",
+            description="Weather forecasting specialist",
+            llm_model="claude-3-5-sonnet-20241022",
+            temperature=0.1,
+        )
 
     @pytest.fixture()
     def agent(self, config):

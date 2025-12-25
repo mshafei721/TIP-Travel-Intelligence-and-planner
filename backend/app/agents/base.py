@@ -25,7 +25,7 @@ Usage:
 """
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Optional
 
 from app.agents.config import AgentConfig
 from app.agents.interfaces import AgentResult
@@ -42,14 +42,21 @@ class BaseAgent(ABC):
 
     Attributes:
         config: Agent configuration (LLM model, temperature, etc.)
+
+    Note:
+        Subclasses can either:
+        1. Pass config to __init__ (traditional approach for testing)
+        2. Define a @property config that returns AgentConfig (for CrewAI agents)
     """
 
-    def __init__(self, config: AgentConfig):
+    _config: Optional[AgentConfig] = None
+
+    def __init__(self, config: Optional[AgentConfig] = None):
         """
-        Initialize base agent with configuration
+        Initialize base agent with optional configuration
 
         Args:
-            config: Agent configuration object
+            config: Agent configuration object (optional - can use property instead)
 
         Raises:
             TypeError: If instantiated directly (must use subclass)
@@ -57,7 +64,28 @@ class BaseAgent(ABC):
         if type(self) is BaseAgent:
             raise TypeError("BaseAgent cannot be instantiated directly. Use a subclass.")
 
-        self.config = config
+        if config is not None:
+            self._config = config
+
+    @property
+    def config(self) -> AgentConfig:
+        """
+        Get agent configuration.
+
+        Can be overridden by subclasses to provide dynamic config.
+        """
+        if self._config is not None:
+            return self._config
+        # Subclasses should override this property if not using __init__ config
+        raise NotImplementedError(
+            f"{self.__class__.__name__} must either pass config to __init__ "
+            "or override the config property"
+        )
+
+    @config.setter
+    def config(self, value: AgentConfig) -> None:
+        """Set agent configuration."""
+        self._config = value
 
     def configure_tools(self) -> list[Any]:
         """
