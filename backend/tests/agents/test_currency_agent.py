@@ -4,10 +4,12 @@ Tests for Currency Agent
 Comprehensive test suite for CurrencyAgent implementation.
 """
 
-import pytest
 from datetime import date, datetime
+
+import pytest
+
 from app.agents.currency import CurrencyAgent, CurrencyAgentInput, CurrencyAgentOutput
-from app.agents.currency.models import LocalCurrency, CostEstimate
+from app.agents.currency.models import LocalCurrency
 
 
 class TestCurrencyAgentInput:
@@ -22,7 +24,7 @@ class TestCurrencyAgentInput:
             departure_date=date(2025, 6, 1),
             return_date=date(2025, 6, 10),
             traveler_nationality="US",
-            base_currency="USD"
+            base_currency="USD",
         )
 
         assert input_data.trip_id == "trip_123"
@@ -37,7 +39,7 @@ class TestCurrencyAgentInput:
                 trip_id="trip_123",
                 destination_country="",
                 departure_date=date(2025, 6, 1),
-                return_date=date(2025, 6, 10)
+                return_date=date(2025, 6, 10),
             )
 
     def test_invalid_dates_validation(self):
@@ -47,7 +49,7 @@ class TestCurrencyAgentInput:
                 trip_id="trip_123",
                 destination_country="Japan",
                 departure_date=date(2025, 6, 10),
-                return_date=date(2025, 6, 1)  # Before departure
+                return_date=date(2025, 6, 1),  # Before departure
             )
 
     def test_currency_normalization(self):
@@ -57,7 +59,7 @@ class TestCurrencyAgentInput:
             destination_country="Japan",
             departure_date=date(2025, 6, 1),
             return_date=date(2025, 6, 10),
-            base_currency="usd"
+            base_currency="usd",
         )
 
         assert input_data.base_currency == "USD"
@@ -68,7 +70,7 @@ class TestCurrencyAgentInput:
             trip_id="trip_123",
             destination_country="Japan",
             departure_date=date(2025, 6, 1),
-            return_date=date(2025, 6, 10)
+            return_date=date(2025, 6, 10),
         )
 
         assert input_data.base_currency == "USD"
@@ -77,12 +79,12 @@ class TestCurrencyAgentInput:
 class TestCurrencyAgent:
     """Tests for CurrencyAgent execution."""
 
-    @pytest.fixture
+    @pytest.fixture()
     def agent(self):
         """Create CurrencyAgent instance."""
         return CurrencyAgent()
 
-    @pytest.fixture
+    @pytest.fixture()
     def sample_input(self):
         """Create sample input data."""
         return CurrencyAgentInput(
@@ -92,7 +94,7 @@ class TestCurrencyAgent:
             departure_date=date(2025, 6, 1),
             return_date=date(2025, 6, 10),
             traveler_nationality="US",
-            base_currency="USD"
+            base_currency="USD",
         )
 
     # Agent configuration tests
@@ -155,9 +157,7 @@ class TestCurrencyAgent:
         """Test that output contains cost information."""
         result = agent.run(sample_input)
 
-        assert result.cost_of_living_level in [
-            "very-low", "low", "moderate", "high", "very-high"
-        ]
+        assert result.cost_of_living_level in ["very-low", "low", "moderate", "high", "very-high"]
         assert isinstance(result.cost_estimates, list)
         assert isinstance(result.daily_budget_recommendation, dict)
         assert "budget" in result.daily_budget_recommendation
@@ -196,7 +196,7 @@ class TestCurrencyAgent:
             destination_country="Japan",
             departure_date=date(2025, 6, 1),
             return_date=date(2025, 6, 10),
-            base_currency="USD"
+            base_currency="USD",
         )
 
         result = agent.run(input_data)
@@ -212,7 +212,7 @@ class TestCurrencyAgent:
             destination_country="France",
             departure_date=date(2025, 7, 1),
             return_date=date(2025, 7, 10),
-            base_currency="USD"
+            base_currency="USD",
         )
 
         result = agent.run(input_data)
@@ -228,7 +228,7 @@ class TestCurrencyAgent:
             destination_country="United Kingdom",
             departure_date=date(2025, 8, 1),
             return_date=date(2025, 8, 10),
-            base_currency="USD"
+            base_currency="USD",
         )
 
         result = agent.run(input_data)
@@ -256,12 +256,12 @@ class TestCurrencyAgent:
             "cost_of_living_level": "high",
             "cost_estimates": [{"category": f"Item {i}"} for i in range(10)],
             "money_safety_tips": ["Tip 1", "Tip 2", "Tip 3", "Tip 4"],
-            "currency_exchange_tips": ["Tip 1", "Tip 2", "Tip 3"]
+            "currency_exchange_tips": ["Tip 1", "Tip 2", "Tip 3"],
         }
 
         incomplete_result = {
             "local_currency": {"code": "JPY", "name": "Japanese Yen", "symbol": "¥"},
-            "exchange_rate": 149.5
+            "exchange_rate": 149.5,
         }
 
         complete_conf = agent._calculate_confidence(complete_result)
@@ -283,11 +283,11 @@ class TestCurrencyAgent:
     # Helper method tests
     def test_extract_json_from_markdown(self, agent):
         """Test JSON extraction from markdown."""
-        markdown_text = '''Here is the result:
+        markdown_text = """Here is the result:
 ```json
 {"test": "value", "number": 123}
 ```
-That's all.'''
+That's all."""
 
         result = agent._extract_json_from_text(markdown_text)
         assert result == {"test": "value", "number": 123}

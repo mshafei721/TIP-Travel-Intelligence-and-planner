@@ -5,7 +5,9 @@ Tools for currency research, exchange rates, and financial intelligence.
 """
 
 import logging
+
 from crewai.tools import tool
+
 from app.services.currency import CurrencyExchangeClient
 
 logger = logging.getLogger(__name__)
@@ -15,10 +17,7 @@ currency_client = CurrencyExchangeClient()
 
 
 @tool("Get exchange rates")
-def get_exchange_rates(
-    base_currency: str,
-    target_currency: str
-) -> str:
+def get_exchange_rates(base_currency: str, target_currency: str) -> str:
     """
     Get current exchange rate between two currencies.
 
@@ -31,8 +30,7 @@ def get_exchange_rates(
     """
     try:
         rate_data = currency_client.get_exchange_rate(
-            base_currency=base_currency,
-            target_currency=target_currency
+            base_currency=base_currency, target_currency=target_currency
         )
 
         result = {
@@ -40,10 +38,12 @@ def get_exchange_rates(
             "target_currency": rate_data.target_currency,
             "exchange_rate": rate_data.rate,
             "date": rate_data.date.isoformat(),
-            "conversion_example": f"1 {rate_data.base_currency} = {rate_data.rate} {rate_data.target_currency}"
+            "conversion_example": f"1 {rate_data.base_currency} = {rate_data.rate} {rate_data.target_currency}",
         }
 
-        logger.info(f"Exchange rate: 1 {rate_data.base_currency} = {rate_data.rate} {rate_data.target_currency}")
+        logger.info(
+            f"Exchange rate: 1 {rate_data.base_currency} = {rate_data.rate} {rate_data.target_currency}"
+        )
         return str(result)
 
     except Exception as e:
@@ -148,41 +148,85 @@ def get_atm_payment_info(country: str) -> str:
 
     # Categorize countries
     widespread_atm = [
-        "japan", "south korea", "singapore", "hong kong", "australia",
-        "united states", "canada", "united kingdom", "france", "germany",
-        "italy", "spain", "netherlands", "switzerland", "sweden", "norway", "denmark"
+        "japan",
+        "south korea",
+        "singapore",
+        "hong kong",
+        "australia",
+        "united states",
+        "canada",
+        "united kingdom",
+        "france",
+        "germany",
+        "italy",
+        "spain",
+        "netherlands",
+        "switzerland",
+        "sweden",
+        "norway",
+        "denmark",
     ]
 
     common_atm = [
-        "thailand", "malaysia", "philippines", "vietnam", "indonesia",
-        "china", "india", "mexico", "brazil", "argentina", "chile",
-        "turkey", "greece", "portugal", "poland", "czech republic"
+        "thailand",
+        "malaysia",
+        "philippines",
+        "vietnam",
+        "indonesia",
+        "china",
+        "india",
+        "mexico",
+        "brazil",
+        "argentina",
+        "chile",
+        "turkey",
+        "greece",
+        "portugal",
+        "poland",
+        "czech republic",
     ]
 
     if any(c in country_lower for c in widespread_atm):
-        return str({
-            "atm_availability": "widespread",
-            "atm_fees": "Typically $2-5 per withdrawal, plus foreign transaction fees from your bank",
-            "credit_card_acceptance": "widespread",
-            "recommended_payment_methods": ["Credit/Debit cards", "ATM withdrawals", "Mobile payments"],
-            "notes": "Major credit cards widely accepted. Contactless payments common."
-        })
+        return str(
+            {
+                "atm_availability": "widespread",
+                "atm_fees": "Typically $2-5 per withdrawal, plus foreign transaction fees from your bank",
+                "credit_card_acceptance": "widespread",
+                "recommended_payment_methods": [
+                    "Credit/Debit cards",
+                    "ATM withdrawals",
+                    "Mobile payments",
+                ],
+                "notes": "Major credit cards widely accepted. Contactless payments common.",
+            }
+        )
     elif any(c in country_lower for c in common_atm):
-        return str({
-            "atm_availability": "common",
-            "atm_fees": "Variable, typically $2-7 per withdrawal plus foreign transaction fees",
-            "credit_card_acceptance": "common",
-            "recommended_payment_methods": ["Cash (local currency)", "ATM withdrawals", "Credit cards at major establishments"],
-            "notes": "Cash still preferred in many places. Keep mix of cash and cards."
-        })
+        return str(
+            {
+                "atm_availability": "common",
+                "atm_fees": "Variable, typically $2-7 per withdrawal plus foreign transaction fees",
+                "credit_card_acceptance": "common",
+                "recommended_payment_methods": [
+                    "Cash (local currency)",
+                    "ATM withdrawals",
+                    "Credit cards at major establishments",
+                ],
+                "notes": "Cash still preferred in many places. Keep mix of cash and cards.",
+            }
+        )
     else:
-        return str({
-            "atm_availability": "limited",
-            "atm_fees": "Variable, can be higher in tourist areas",
-            "credit_card_acceptance": "limited",
-            "recommended_payment_methods": ["Cash (local currency)", "Exchange currency before arrival"],
-            "notes": "Cash preferred. ATMs may be limited outside major cities."
-        })
+        return str(
+            {
+                "atm_availability": "limited",
+                "atm_fees": "Variable, can be higher in tourist areas",
+                "credit_card_acceptance": "limited",
+                "recommended_payment_methods": [
+                    "Cash (local currency)",
+                    "Exchange currency before arrival",
+                ],
+                "notes": "Cash preferred. ATMs may be limited outside major cities.",
+            }
+        )
 
 
 @tool("Get tipping customs")
@@ -203,53 +247,53 @@ def get_tipping_customs(country: str) -> str:
         "japan": {
             "culture": "Tipping is not customary and can be considered rude",
             "percentage": 0,
-            "notes": "Exceptional service is built into the culture. Tipping may cause confusion or offense."
+            "notes": "Exceptional service is built into the culture. Tipping may cause confusion or offense.",
         },
         "united states": {
             "culture": "Tipping is expected and major source of service worker income",
-            "percentage": 15-20,
-            "notes": "15-20% at restaurants, $1-2 per drink at bars, 15-20% for taxis, $2-5 per bag for hotel staff"
+            "percentage": 15 - 20,
+            "notes": "15-20% at restaurants, $1-2 per drink at bars, 15-20% for taxis, $2-5 per bag for hotel staff",
         },
         "canada": {
             "culture": "Tipping is customary and expected",
-            "percentage": 15-20,
-            "notes": "Similar to US. 15-20% at restaurants, $1-2 per drink, 10-15% for taxis"
+            "percentage": 15 - 20,
+            "notes": "Similar to US. 15-20% at restaurants, $1-2 per drink, 10-15% for taxis",
         },
         "united kingdom": {
             "culture": "Tipping is appreciated but not always expected",
-            "percentage": 10-15,
-            "notes": "10-15% at restaurants if service charge not included. Round up taxi fares. £1-2 per bag for porters."
+            "percentage": 10 - 15,
+            "notes": "10-15% at restaurants if service charge not included. Round up taxi fares. £1-2 per bag for porters.",
         },
         "france": {
             "culture": "Service charge usually included, small tip appreciated",
-            "percentage": 5-10,
-            "notes": "Service charge (15%) typically included. Round up or add 5-10% for excellent service."
+            "percentage": 5 - 10,
+            "notes": "Service charge (15%) typically included. Round up or add 5-10% for excellent service.",
         },
         "germany": {
             "culture": "Small tips appreciated, round up bills",
-            "percentage": 5-10,
-            "notes": "Round up bills or add 5-10%. Say 'stimmt so' (keep the change) when paying."
+            "percentage": 5 - 10,
+            "notes": "Round up bills or add 5-10%. Say 'stimmt so' (keep the change) when paying.",
         },
         "australia": {
             "culture": "Tipping not obligatory but becoming more common",
             "percentage": 10,
-            "notes": "10% at restaurants for good service. Not required for cafes or bars."
+            "notes": "10% at restaurants for good service. Not required for cafes or bars.",
         },
         "china": {
             "culture": "Tipping not expected in most situations",
             "percentage": 0,
-            "notes": "Generally not expected. May be accepted at high-end hotels and restaurants in major cities."
+            "notes": "Generally not expected. May be accepted at high-end hotels and restaurants in major cities.",
         },
         "thailand": {
             "culture": "Not required but appreciated for good service",
             "percentage": 10,
-            "notes": "10% at restaurants if service charge not included. 20-50 baht for hotel staff. Not needed for street food or taxis."
+            "notes": "10% at restaurants if service charge not included. 20-50 baht for hotel staff. Not needed for street food or taxis.",
         },
         "mexico": {
             "culture": "Tipping is customary and expected",
-            "percentage": 10-15,
-            "notes": "10-15% at restaurants. $1-2 USD per day for housekeeping. 10-20 pesos for parking attendants."
-        }
+            "percentage": 10 - 15,
+            "notes": "10-15% at restaurants. $1-2 USD per day for housekeeping. 10-20 pesos for parking attendants.",
+        },
     }
 
     # Find matching country
@@ -259,11 +303,13 @@ def get_tipping_customs(country: str) -> str:
             return str(data)
 
     # Default for unknown countries
-    return str({
-        "culture": "Tipping customs vary. Research specific to this destination recommended.",
-        "percentage": None,
-        "notes": "Check local travel guides or ask locals about tipping expectations."
-    })
+    return str(
+        {
+            "culture": "Tipping customs vary. Research specific to this destination recommended.",
+            "percentage": None,
+            "notes": "Check local travel guides or ask locals about tipping expectations.",
+        }
+    )
 
 
 @tool("Get cost of living estimates")
@@ -307,12 +353,8 @@ def get_cost_estimates(country: str, city: str = None) -> str:
 
     result = {
         "cost_level": cost_level,
-        "daily_budget": {
-            "budget": budget,
-            "mid_range": mid_range,
-            "luxury": luxury
-        },
-        "notes": f"Estimated daily budgets in USD for {country}. Actual costs vary by city and season."
+        "daily_budget": {"budget": budget, "mid_range": mid_range, "luxury": luxury},
+        "notes": f"Estimated daily budgets in USD for {country}. Actual costs vary by city and season.",
     }
 
     logger.info(f"Cost level for {country}: {cost_level}")

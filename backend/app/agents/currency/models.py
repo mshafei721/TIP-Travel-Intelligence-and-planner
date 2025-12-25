@@ -5,6 +5,7 @@ Defines input and output data structures for the Currency Agent.
 """
 
 from datetime import date
+
 from pydantic import BaseModel, Field, field_validator
 
 from ..interfaces import AgentResult
@@ -71,7 +72,9 @@ class CurrencyAgentOutput(AgentResult):
     base_currency: str = Field(..., description="Base currency code (e.g., USD)")
 
     # ATM & Banking
-    atm_availability: str = Field(..., description="ATM availability level (widespread/common/limited/rare)")
+    atm_availability: str = Field(
+        ..., description="ATM availability level (widespread/common/limited/rare)"
+    )
     atm_fees: str = Field(..., description="Typical ATM fees and surcharges")
     credit_card_acceptance: str = Field(..., description="Credit card acceptance level")
     recommended_payment_methods: list[str] = Field(..., description="Best payment methods")
@@ -83,12 +86,10 @@ class CurrencyAgentOutput(AgentResult):
 
     # Cost of Living
     cost_of_living_level: str = Field(
-        ...,
-        description="Overall cost level (very-low/low/moderate/high/very-high)"
+        ..., description="Overall cost level (very-low/low/moderate/high/very-high)"
     )
     cost_estimates: list[CostEstimate] = Field(
-        ...,
-        description="Typical costs for common items/services"
+        ..., description="Typical costs for common items/services"
     )
 
     # Exchange Tips
@@ -98,11 +99,14 @@ class CurrencyAgentOutput(AgentResult):
 
     # Budget Planning
     daily_budget_recommendation: dict[str, float] = Field(
-        ...,
-        description="Recommended daily budget by travel style (budget/mid-range/luxury)"
+        ..., description="Recommended daily budget by travel style (budget/mid-range/luxury)"
     )
 
     # Additional Information
-    currency_restrictions: str | None = Field(None, description="Currency import/export restrictions")
-    common_scams: list[str] = Field(default_factory=list, description="Common currency-related scams")
+    currency_restrictions: str | None = Field(
+        None, description="Currency import/export restrictions"
+    )
+    common_scams: list[str] = Field(
+        default_factory=list, description="Common currency-related scams"
+    )
     money_safety_tips: list[str] = Field(..., description="Tips for safely handling money")

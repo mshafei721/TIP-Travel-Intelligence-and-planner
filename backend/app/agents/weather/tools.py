@@ -1,18 +1,18 @@
 """Tools for Weather Agent."""
 
 import os
-from datetime import date
+from datetime import date, timedelta
 from typing import Any
 
 from crewai.tools import tool
 
-from app.services.weather import VisualCrossingClient
+from app.services.weather import WeatherAPIClient
 
 
 @tool("Get Weather Forecast")
 def get_weather_forecast(location: str, start_date: str, end_date: str) -> dict[str, Any]:
     """
-    Get weather forecast for a location and date range using Visual Crossing API.
+    Get weather forecast for a location and date range using WeatherAPI.com.
 
     This tool provides accurate weather forecasts including:
     - Daily temperature ranges (min/max/average)
@@ -35,7 +35,6 @@ def get_weather_forecast(location: str, start_date: str, end_date: str) -> dict[
         - longitude: Location longitude
         - timezone: Location timezone
         - days: List of daily forecasts with weather details
-        - alerts: Any active weather alerts (if available)
 
     Example:
         >>> get_weather_forecast("Tokyo, Japan", "2024-06-15", "2024-06-20")
@@ -55,38 +54,63 @@ def get_weather_forecast(location: str, start_date: str, end_date: str) -> dict[
         }
     """
     try:
-        api_key = os.getenv("VISUAL_CROSSING_API_KEY")
+        api_key = os.getenv("WEATHERAPI_KEY")
         if not api_key:
             return {
-                "error": "Visual Crossing API key not configured",
-                "message": "Please set VISUAL_CROSSING_API_KEY environment variable",
+                "error": "WeatherAPI key not configured",
+                "message": "Please set WEATHERAPI_KEY environment variable",
             }
 
-        client = VisualCrossingClient(api_key=api_key)
+        client = WeatherAPIClient(api_key=api_key)
 
         # Convert string dates to date objects
         start = date.fromisoformat(start_date)
         end = date.fromisoformat(end_date)
+        today = date.today()
+
+        # Calculate days for forecast (WeatherAPI uses days from today, max 14 days in paid, 3 in free)
+        days_diff = (end - today).days + 1
+        days_to_fetch = min(max(days_diff, 1), 14)  # Limit to 14 days
 
         # Get forecast
         weather_data = client.get_forecast(
             location=location,
-            start_date=start,
-            end_date=end,
-            unit_group="metric",
-            include_alerts=True,
+            days=days_to_fetch,
+            aqi=False,
+            alerts=True,
         )
+
+        # Transform response to match expected format
+        formatted_days = []
+        for day in weather_data.forecast.forecastday:
+            day_date = date.fromisoformat(day.date)
+            # Only include days within the requested range
+            if start <= day_date <= end:
+                formatted_day = {
+                    "date": day.date,
+                    "tempmax": day.day.get("maxtemp_c"),
+                    "tempmin": day.day.get("mintemp_c"),
+                    "temp": day.day.get("avgtemp_c"),
+                    "conditions": day.day.get("condition", {}).get("text", ""),
+                    "icon": day.day.get("condition", {}).get("icon", ""),
+                    "precip": day.day.get("totalprecip_mm"),
+                    "precipprob": day.day.get("daily_chance_of_rain"),
+                    "humidity": day.day.get("avghumidity"),
+                    "windspeed": day.day.get("maxwind_kph"),
+                    "uvindex": day.day.get("uv"),
+                    "sunrise": day.astro.get("sunrise"),
+                    "sunset": day.astro.get("sunset"),
+                    "description": day.day.get("condition", {}).get("text", ""),
+                }
+                formatted_days.append(formatted_day)
 
         # Convert to dictionary for CrewAI
         return {
-            "location": weather_data.resolvedAddress,
-            "latitude": weather_data.latitude,
-            "longitude": weather_data.longitude,
-            "timezone": weather_data.timezone,
-            "days": [day.model_dump() for day in weather_data.days],
-            "alerts": (
-                [alert.model_dump() for alert in weather_data.alerts] if weather_data.alerts else []
-            ),
+            "location": f"{weather_data.location.name}, {weather_data.location.country}",
+            "latitude": weather_data.location.lat,
+            "longitude": weather_data.location.lon,
+            "timezone": weather_data.location.tz_id,
+            "days": formatted_days,
         }
 
     except ValueError as e:

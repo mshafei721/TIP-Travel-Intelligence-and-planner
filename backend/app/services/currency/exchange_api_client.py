@@ -11,10 +11,10 @@ Features:
 - Historical data support
 """
 
-import httpx
 import logging
 from datetime import date, datetime
-from typing import Dict, Optional
+
+import httpx
 from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
@@ -27,7 +27,9 @@ class ExchangeRateData(BaseModel):
     target_currency: str = Field(..., description="Target currency code (e.g., JPY)")
     rate: float = Field(..., description="Exchange rate")
     rate_date: date = Field(..., description="Date of exchange rate")
-    last_updated: datetime = Field(default_factory=datetime.utcnow, description="Last updated timestamp")
+    last_updated: datetime = Field(
+        default_factory=datetime.utcnow, description="Last updated timestamp"
+    )
 
 
 class CurrencyExchangeClient:
@@ -47,13 +49,13 @@ class CurrencyExchangeClient:
             timeout: HTTP request timeout in seconds
         """
         self.timeout = timeout
-        self._currencies_cache: Optional[Dict[str, str]] = None
+        self._currencies_cache: dict[str, str] | None = None
 
     def _get_url(self, version: str = "latest") -> str:
         """Get base URL with version."""
         return self.BASE_URL.format(version=version)
 
-    def get_all_currencies(self) -> Dict[str, str]:
+    def get_all_currencies(self) -> dict[str, str]:
         """
         Get list of all available currencies.
 
@@ -87,9 +89,9 @@ class CurrencyExchangeClient:
     def get_exchange_rates(
         self,
         base_currency: str,
-        target_currencies: Optional[list[str]] = None,
-        date_str: Optional[str] = None
-    ) -> Dict[str, float]:
+        target_currencies: list[str] | None = None,
+        date_str: str | None = None,
+    ) -> dict[str, float]:
         """
         Get exchange rates for a base currency.
 
@@ -127,10 +129,7 @@ class CurrencyExchangeClient:
                 # Filter to target currencies if specified
                 if target_currencies:
                     target_currencies_lower = [c.lower() for c in target_currencies]
-                    rates = {
-                        k: v for k, v in rates.items()
-                        if k.lower() in target_currencies_lower
-                    }
+                    rates = {k: v for k, v in rates.items() if k.lower() in target_currencies_lower}
 
                 logger.info(f"Fetched {len(rates)} exchange rates for {base_currency}")
                 return rates
@@ -140,10 +139,7 @@ class CurrencyExchangeClient:
             raise
 
     def get_exchange_rate(
-        self,
-        base_currency: str,
-        target_currency: str,
-        date_str: Optional[str] = None
+        self, base_currency: str, target_currency: str, date_str: str | None = None
     ) -> ExchangeRateData:
         """
         Get exchange rate between two currencies.
@@ -161,9 +157,7 @@ class CurrencyExchangeClient:
             ValueError: If currencies are invalid
         """
         rates = self.get_exchange_rates(
-            base_currency=base_currency,
-            target_currencies=[target_currency],
-            date_str=date_str
+            base_currency=base_currency, target_currencies=[target_currency], date_str=date_str
         )
 
         target_currency_lower = target_currency.lower()
@@ -177,15 +171,15 @@ class CurrencyExchangeClient:
             base_currency=base_currency.upper(),
             target_currency=target_currency.upper(),
             rate=rate,
-            rate_date=rate_date
+            rate_date=rate_date,
         )
 
     async def aget_exchange_rates(
         self,
         base_currency: str,
-        target_currencies: Optional[list[str]] = None,
-        date_str: Optional[str] = None
-    ) -> Dict[str, float]:
+        target_currencies: list[str] | None = None,
+        date_str: str | None = None,
+    ) -> dict[str, float]:
         """
         Async version of get_exchange_rates.
 
@@ -222,10 +216,7 @@ class CurrencyExchangeClient:
                 # Filter to target currencies if specified
                 if target_currencies:
                     target_currencies_lower = [c.lower() for c in target_currencies]
-                    rates = {
-                        k: v for k, v in rates.items()
-                        if k.lower() in target_currencies_lower
-                    }
+                    rates = {k: v for k, v in rates.items() if k.lower() in target_currencies_lower}
 
                 logger.info(f"Fetched {len(rates)} exchange rates for {base_currency}")
                 return rates
@@ -235,10 +226,7 @@ class CurrencyExchangeClient:
             raise
 
     async def aget_exchange_rate(
-        self,
-        base_currency: str,
-        target_currency: str,
-        date_str: Optional[str] = None
+        self, base_currency: str, target_currency: str, date_str: str | None = None
     ) -> ExchangeRateData:
         """
         Async version of get_exchange_rate.
@@ -256,9 +244,7 @@ class CurrencyExchangeClient:
             ValueError: If currencies are invalid
         """
         rates = await self.aget_exchange_rates(
-            base_currency=base_currency,
-            target_currencies=[target_currency],
-            date_str=date_str
+            base_currency=base_currency, target_currencies=[target_currency], date_str=date_str
         )
 
         target_currency_lower = target_currency.lower()
@@ -272,5 +258,5 @@ class CurrencyExchangeClient:
             base_currency=base_currency.upper(),
             target_currency=target_currency.upper(),
             rate=rate,
-            rate_date=rate_date
+            rate_date=rate_date,
         )

@@ -4,15 +4,17 @@ Tests for Currency Exchange API Client
 Tests the fawazahmed0/exchange-api integration.
 """
 
-import pytest
 from datetime import date
+
+import pytest
+
 from app.services.currency import CurrencyExchangeClient, ExchangeRateData
 
 
 class TestCurrencyExchangeClient:
     """Tests for CurrencyExchangeClient."""
 
-    @pytest.fixture
+    @pytest.fixture()
     def client(self):
         """Create client instance."""
         return CurrencyExchangeClient(timeout=15.0)
@@ -40,10 +42,7 @@ class TestCurrencyExchangeClient:
     # Exchange rate tests
     def test_get_exchange_rates_usd_to_jpy(self, client):
         """Test getting USD to JPY exchange rate."""
-        rates = client.get_exchange_rates(
-            base_currency="usd",
-            target_currencies=["jpy"]
-        )
+        rates = client.get_exchange_rates(base_currency="usd", target_currencies=["jpy"])
 
         assert isinstance(rates, dict)
         assert "jpy" in rates
@@ -53,8 +52,7 @@ class TestCurrencyExchangeClient:
     def test_get_exchange_rates_eur_to_multiple(self, client):
         """Test getting EUR to multiple currencies."""
         rates = client.get_exchange_rates(
-            base_currency="eur",
-            target_currencies=["usd", "gbp", "jpy"]
+            base_currency="eur", target_currencies=["usd", "gbp", "jpy"]
         )
 
         assert isinstance(rates, dict)
@@ -75,10 +73,7 @@ class TestCurrencyExchangeClient:
 
     def test_get_exchange_rate_single(self, client):
         """Test getting single exchange rate."""
-        rate_data = client.get_exchange_rate(
-            base_currency="usd",
-            target_currency="eur"
-        )
+        rate_data = client.get_exchange_rate(base_currency="usd", target_currency="eur")
 
         assert isinstance(rate_data, ExchangeRateData)
         assert rate_data.base_currency == "USD"
@@ -100,25 +95,21 @@ class TestCurrencyExchangeClient:
         assert abs(rate2.rate - rate3.rate) < 0.1
 
     # Async tests
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_aget_exchange_rates(self, client):
         """Test async exchange rates."""
         rates = await client.aget_exchange_rates(
-            base_currency="usd",
-            target_currencies=["eur", "gbp"]
+            base_currency="usd", target_currencies=["eur", "gbp"]
         )
 
         assert isinstance(rates, dict)
         assert "eur" in rates
         assert "gbp" in rates
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_aget_exchange_rate_single(self, client):
         """Test async single exchange rate."""
-        rate_data = await client.aget_exchange_rate(
-            base_currency="usd",
-            target_currency="jpy"
-        )
+        rate_data = await client.aget_exchange_rate(base_currency="usd", target_currency="jpy")
 
         assert isinstance(rate_data, ExchangeRateData)
         assert rate_data.base_currency == "USD"
@@ -134,38 +125,26 @@ class TestCurrencyExchangeClient:
     def test_invalid_target_currency(self, client):
         """Test handling of invalid target currency."""
         with pytest.raises(ValueError, match="Invalid target currency"):
-            client.get_exchange_rate(
-                base_currency="usd",
-                target_currency="INVALID"
-            )
+            client.get_exchange_rate(base_currency="usd", target_currency="INVALID")
 
     # Edge cases
     def test_same_currency_conversion(self, client):
         """Test converting currency to itself."""
-        rate_data = client.get_exchange_rate(
-            base_currency="usd",
-            target_currency="usd"
-        )
+        rate_data = client.get_exchange_rate(base_currency="usd", target_currency="usd")
 
         # USD to USD should be 1.0
         assert rate_data.rate == 1.0
 
     def test_cryptocurrency_support(self, client):
         """Test that cryptocurrencies are supported."""
-        rates = client.get_exchange_rates(
-            base_currency="usd",
-            target_currencies=["btc"]
-        )
+        rates = client.get_exchange_rates(base_currency="usd", target_currencies=["btc"])
 
         assert "btc" in rates
         assert rates["btc"] > 0  # Should have a rate for Bitcoin
 
     def test_precious_metals_support(self, client):
         """Test that precious metals are supported."""
-        rates = client.get_exchange_rates(
-            base_currency="usd",
-            target_currencies=["xau"]  # Gold
-        )
+        rates = client.get_exchange_rates(base_currency="usd", target_currencies=["xau"])  # Gold
 
         assert "xau" in rates
         assert rates["xau"] > 0

@@ -6,13 +6,11 @@ import re
 from datetime import datetime
 
 from crewai import Agent, Crew
-from langchain_anthropic import ChatAnthropic
 
 from ..base import BaseAgent
 from ..config import AgentConfig
-from ..interfaces import AgentResult, SourceReference
+from ..interfaces import SourceReference
 from .models import (
-    CostEstimate,
     CurrencyAgentInput,
     CurrencyAgentOutput,
     LocalCurrency,
@@ -24,9 +22,6 @@ from .prompts import (
 )
 from .tasks import (
     create_comprehensive_currency_task,
-    create_cost_analysis_task,
-    create_currency_research_task,
-    create_safety_task,
 )
 from .tools import (
     get_atm_payment_info,
@@ -75,7 +70,7 @@ class CurrencyAgent(BaseAgent):
             name="Currency Agent",
             agent_type=self.agent_type,
             description="Travel currency and financial intelligence specialist",
-            version="1.0.0"
+            version="1.0.0",
         )
 
     def _create_agent(self) -> Agent:
@@ -98,7 +93,7 @@ class CurrencyAgent(BaseAgent):
                 get_cost_estimates,
             ],
             verbose=True,
-            allow_delegation=False
+            allow_delegation=False,
         )
 
     def _extract_json_from_text(self, text: str) -> dict | None:
@@ -112,7 +107,7 @@ class CurrencyAgent(BaseAgent):
             Parsed JSON dict or None if extraction fails
         """
         # Try to find JSON block in markdown code fences
-        json_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', text, re.DOTALL)
+        json_match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL)
         if json_match:
             try:
                 return json.loads(json_match.group(1))
@@ -120,7 +115,7 @@ class CurrencyAgent(BaseAgent):
                 pass
 
         # Try to find raw JSON object
-        json_match = re.search(r'\{.*\}', text, re.DOTALL)
+        json_match = re.search(r"\{.*\}", text, re.DOTALL)
         if json_match:
             try:
                 return json.loads(json_match.group(0))
@@ -168,7 +163,10 @@ class CurrencyAgent(BaseAgent):
             score += 0.1
 
         # Check for exchange tips (0.1)
-        if result.get("currency_exchange_tips") and len(result.get("currency_exchange_tips", [])) > 2:
+        if (
+            result.get("currency_exchange_tips")
+            and len(result.get("currency_exchange_tips", [])) > 2
+        ):
             score += 0.1
 
         return min(score, 1.0)
@@ -193,15 +191,11 @@ class CurrencyAgent(BaseAgent):
             task = create_comprehensive_currency_task(
                 agent=self.agent,
                 destination_country=input_data.destination_country,
-                base_currency=input_data.base_currency
+                base_currency=input_data.base_currency,
             )
 
             # Create crew and execute
-            crew = Crew(
-                agents=[self.agent],
-                tasks=[task],
-                verbose=True
-            )
+            crew = Crew(agents=[self.agent], tasks=[task], verbose=True)
 
             # Execute crew
             result = crew.kickoff()
@@ -230,19 +224,18 @@ class CurrencyAgent(BaseAgent):
                     SourceReference(
                         source="fawazahmed0/exchange-api",
                         url="https://github.com/fawazahmed0/exchange-api",
-                        retrieved_at=datetime.utcnow()
+                        retrieved_at=datetime.utcnow(),
                     ),
                     SourceReference(
                         source="Currency Knowledge Base",
                         url="internal",
-                        retrieved_at=datetime.utcnow()
-                    )
+                        retrieved_at=datetime.utcnow(),
+                    ),
                 ],
                 warnings=[],
                 # Currency data
                 local_currency=parsed_result.get(
-                    "local_currency",
-                    LocalCurrency(code="USD", name="US Dollar", symbol="$")
+                    "local_currency", LocalCurrency(code="USD", name="US Dollar", symbol="$")
                 ),
                 exchange_rate=parsed_result.get("exchange_rate", 1.0),
                 base_currency=input_data.base_currency,
@@ -250,8 +243,7 @@ class CurrencyAgent(BaseAgent):
                 atm_fees=parsed_result.get("atm_fees", "Variable fees apply"),
                 credit_card_acceptance=parsed_result.get("credit_card_acceptance", "common"),
                 recommended_payment_methods=parsed_result.get(
-                    "recommended_payment_methods",
-                    ["Cash", "Credit cards"]
+                    "recommended_payment_methods", ["Cash", "Credit cards"]
                 ),
                 tipping_customs=parsed_result.get("tipping_customs", "Tipping customs vary"),
                 tipping_percentage=parsed_result.get("tipping_percentage"),
@@ -259,26 +251,22 @@ class CurrencyAgent(BaseAgent):
                 cost_of_living_level=parsed_result.get("cost_of_living_level", "moderate"),
                 cost_estimates=parsed_result.get("cost_estimates", []),
                 currency_exchange_tips=parsed_result.get(
-                    "currency_exchange_tips",
-                    ["Use ATMs for best rates", "Avoid airport exchanges"]
+                    "currency_exchange_tips", ["Use ATMs for best rates", "Avoid airport exchanges"]
                 ),
                 best_exchange_locations=parsed_result.get(
-                    "best_exchange_locations",
-                    ["Banks", "ATMs"]
+                    "best_exchange_locations", ["Banks", "ATMs"]
                 ),
                 avoid_exchange_locations=parsed_result.get(
-                    "avoid_exchange_locations",
-                    ["Airport kiosks", "Hotels"]
+                    "avoid_exchange_locations", ["Airport kiosks", "Hotels"]
                 ),
                 daily_budget_recommendation=parsed_result.get(
                     "daily_budget_recommendation",
-                    {"budget": 50.0, "mid_range": 100.0, "luxury": 200.0}
+                    {"budget": 50.0, "mid_range": 100.0, "luxury": 200.0},
                 ),
                 currency_restrictions=parsed_result.get("currency_restrictions"),
                 common_scams=parsed_result.get("common_scams", []),
                 money_safety_tips=parsed_result.get(
-                    "money_safety_tips",
-                    ["Keep valuables secure", "Use ATMs in safe locations"]
+                    "money_safety_tips", ["Keep valuables secure", "Use ATMs in safe locations"]
                 ),
             )
 
@@ -300,11 +288,7 @@ class CurrencyAgent(BaseAgent):
             Dictionary with minimal currency information
         """
         return {
-            "local_currency": {
-                "code": "USD",
-                "name": "US Dollar",
-                "symbol": "$"
-            },
+            "local_currency": {"code": "USD", "name": "US Dollar", "symbol": "$"},
             "exchange_rate": 1.0,
             "base_currency": input_data.base_currency,
             "atm_availability": "common",
@@ -317,18 +301,14 @@ class CurrencyAgent(BaseAgent):
             "currency_exchange_tips": [
                 "Use ATMs for best exchange rates",
                 "Avoid airport currency exchange kiosks",
-                "Notify your bank before traveling"
+                "Notify your bank before traveling",
             ],
             "best_exchange_locations": ["Banks", "ATMs"],
             "avoid_exchange_locations": ["Airport kiosks", "Hotels", "Tourist areas"],
-            "daily_budget_recommendation": {
-                "budget": 50.0,
-                "mid_range": 100.0,
-                "luxury": 200.0
-            },
+            "daily_budget_recommendation": {"budget": 50.0, "mid_range": 100.0, "luxury": 200.0},
             "money_safety_tips": [
                 "Keep cash secure in multiple locations",
                 "Use ATMs in well-lit, secure areas",
-                "Carry backup payment methods"
-            ]
+                "Carry backup payment methods",
+            ],
         }

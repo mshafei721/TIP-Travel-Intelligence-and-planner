@@ -1,14 +1,16 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { DayTimeline } from '@/components/itinerary/DayTimeline';
 import { FlightOptions } from '@/components/itinerary/FlightOptions';
 import { ActivityModal } from '@/components/itinerary/ActivityModal';
 import { ConfirmDialog } from '@/components/itinerary/ConfirmDialog';
+import { MapView } from '@/components/itinerary/MapView';
 import { sampleItinerary } from '@/lib/mock-data/itinerary-sample';
 import type { Activity, TimeOfDay, TripItinerary } from '@/types/itinerary';
-import { Calendar, MapPin, Plane, ChevronRight } from 'lucide-react';
+import { Calendar, MapPin, Plane, ChevronRight, Map as MapIcon, List } from 'lucide-react';
 
 interface ItineraryPageProps {
   params: {
@@ -19,6 +21,10 @@ interface ItineraryPageProps {
 export default function ItineraryPage({ params }: ItineraryPageProps) {
   // State for itinerary data (using sample data, in production this would come from API)
   const [itinerary, setItinerary] = useState<TripItinerary>(sampleItinerary);
+
+  // View mode state
+  const [viewMode, setViewMode] = useState<'timeline' | 'map'>('timeline');
+  const [mapSelectedDay, setMapSelectedDay] = useState<number | null>(null);
 
   // Modal state
   const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
@@ -36,7 +42,7 @@ export default function ItineraryPage({ params }: ItineraryPageProps) {
   const totalDays = itinerary.days.length;
   const totalActivities = itinerary.days.reduce(
     (acc, day) => acc + day.timeBlocks.reduce((a, b) => a + b.activities.length, 0),
-    0
+    0,
   );
 
   // Get activities for time conflict detection
@@ -163,9 +169,7 @@ export default function ItineraryPage({ params }: ItineraryPageProps) {
     setItinerary((prev) => ({
       ...prev,
       flights: prev.flights.map((flight) =>
-        flight.id === flightId
-          ? { ...flight, bookingStatus: 'selected' as const }
-          : flight
+        flight.id === flightId ? { ...flight, bookingStatus: 'selected' as const } : flight,
       ),
     }));
   };
@@ -190,23 +194,18 @@ export default function ItineraryPage({ params }: ItineraryPageProps) {
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           {/* Breadcrumb */}
           <div className="mb-4 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-            <a
-              href="/trips"
-              className="hover:text-blue-600 dark:hover:text-blue-400"
-            >
+            <Link href="/trips" className="hover:text-blue-600 dark:hover:text-blue-400">
               My Trips
-            </a>
+            </Link>
             <ChevronRight className="h-4 w-4" />
-            <a
+            <Link
               href={`/trips/${params.id}`}
               className="hover:text-blue-600 dark:hover:text-blue-400"
             >
               {itinerary.tripName}
-            </a>
+            </Link>
             <ChevronRight className="h-4 w-4" />
-            <span className="font-medium text-slate-900 dark:text-slate-50">
-              Itinerary
-            </span>
+            <span className="font-medium text-slate-900 dark:text-slate-50">Itinerary</span>
           </div>
 
           {/* Title */}
@@ -245,6 +244,32 @@ export default function ItineraryPage({ params }: ItineraryPageProps) {
 
             {/* Actions */}
             <div className="flex gap-2">
+              {/* View Mode Toggle */}
+              <div className="flex rounded-lg border border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-800 p-1">
+                <button
+                  onClick={() => setViewMode('timeline')}
+                  className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-all ${
+                    viewMode === 'timeline'
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700'
+                  }`}
+                >
+                  <List className="h-4 w-4" />
+                  Timeline
+                </button>
+                <button
+                  onClick={() => setViewMode('map')}
+                  className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-all ${
+                    viewMode === 'map'
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700'
+                  }`}
+                >
+                  <MapIcon className="h-4 w-4" />
+                  Map
+                </button>
+              </div>
+
               <button className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">
                 Export PDF
               </button>
@@ -306,9 +331,7 @@ export default function ItineraryPage({ params }: ItineraryPageProps) {
                 <dl className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <dt className="text-slate-600 dark:text-slate-400">Days</dt>
-                    <dd className="font-semibold text-slate-900 dark:text-slate-50">
-                      {totalDays}
-                    </dd>
+                    <dd className="font-semibold text-slate-900 dark:text-slate-50">{totalDays}</dd>
                   </div>
                   <div className="flex justify-between">
                     <dt className="text-slate-600 dark:text-slate-400">Activities</dt>
@@ -332,19 +355,69 @@ export default function ItineraryPage({ params }: ItineraryPageProps) {
           {/* Main itinerary */}
           <main className="lg:col-span-9">
             <div className="space-y-8">
-              {/* Days */}
-              {itinerary.days.map((day) => (
-                <div key={day.dayNumber} id={`day-${day.dayNumber}`}>
-                  <DayTimeline
-                    day={day}
-                    onEditActivity={handleEditActivity}
-                    onRemoveActivity={handleRemoveActivity}
-                    onViewOnMap={handleViewOnMap}
-                    onAddActivity={handleAddActivity}
-                    readOnly={false}
+              {/* Timeline View */}
+              {viewMode === 'timeline' && (
+                <>
+                  {/* Days */}
+                  {itinerary.days.map((day) => (
+                    <div key={day.dayNumber} id={`day-${day.dayNumber}`}>
+                      <DayTimeline
+                        day={day}
+                        onEditActivity={handleEditActivity}
+                        onRemoveActivity={handleRemoveActivity}
+                        onViewOnMap={handleViewOnMap}
+                        onAddActivity={handleAddActivity}
+                        readOnly={false}
+                      />
+                    </div>
+                  ))}
+                </>
+              )}
+
+              {/* Map View */}
+              {viewMode === 'map' && (
+                <div className="space-y-4">
+                  {/* Day Filter for Map */}
+                  <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                        Filter by day:
+                      </span>
+                      <button
+                        onClick={() => setMapSelectedDay(null)}
+                        className={`rounded-md px-3 py-1 text-sm font-medium transition-all ${
+                          mapSelectedDay === null
+                            ? 'bg-blue-600 text-white shadow-sm'
+                            : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+                        }`}
+                      >
+                        All Days
+                      </button>
+                      {itinerary.days.map((day) => (
+                        <button
+                          key={day.dayNumber}
+                          onClick={() => setMapSelectedDay(day.dayNumber)}
+                          className={`rounded-md px-3 py-1 text-sm font-medium transition-all ${
+                            mapSelectedDay === day.dayNumber
+                              ? 'bg-blue-600 text-white shadow-sm'
+                              : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+                          }`}
+                        >
+                          Day {day.dayNumber}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Map Container */}
+                  <MapView
+                    days={itinerary.days}
+                    selectedDayNumber={mapSelectedDay}
+                    onActivityClick={handleEditActivity}
+                    className="h-[600px]"
                   />
                 </div>
-              ))}
+              )}
 
               {/* Flights section */}
               {itinerary.flights.length > 0 && (

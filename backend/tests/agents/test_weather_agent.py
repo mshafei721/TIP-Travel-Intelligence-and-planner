@@ -203,14 +203,14 @@ class TestWeatherAgent:
             agent.run(invalid_input)
 
     @pytest.mark.skipif(
-        not os.getenv("VISUAL_CROSSING_API_KEY"),
-        reason="Requires VISUAL_CROSSING_API_KEY and ANTHROPIC_API_KEY",
+        not os.getenv("WEATHERAPI_KEY"),
+        reason="Requires WEATHERAPI_KEY and ANTHROPIC_API_KEY",
     )
     def test_agent_execution_real(self, agent, sample_input):
         """
         Test agent execution with real APIs.
 
-        Note: Requires both VISUAL_CROSSING_API_KEY and ANTHROPIC_API_KEY.
+        Note: Requires both WEATHERAPI_KEY and ANTHROPIC_API_KEY.
         """
         result = agent.run(sample_input)
 
@@ -224,7 +224,7 @@ class TestWeatherAgent:
     def test_agent_fallback_on_error(self, agent, sample_input, monkeypatch):
         """Test agent creates fallback output on error."""
         # Remove API key to force error
-        monkeypatch.delenv("VISUAL_CROSSING_API_KEY", raising=False)
+        monkeypatch.delenv("WEATHERAPI_KEY", raising=False)
 
         result = agent.run(sample_input)
 
@@ -282,7 +282,7 @@ class TestWeatherAgent:
             "weather_alerts": [],
             "travel_tips": ["Best time for outdoor activities: Early morning"],
             "confidence_score": 0.9,
-            "sources": ["Visual Crossing Weather API"],
+            "sources": ["WeatherAPI.com"],
             "warnings": [],
             "is_good_time_to_visit": true,
             "seasonal_recommendation": "Excellent time to visit"
@@ -345,7 +345,7 @@ class TestWeatherAgent:
     def test_output_has_metadata(self, agent, sample_input, monkeypatch):
         """Test output includes proper metadata."""
         # Force fallback to test quickly
-        monkeypatch.delenv("VISUAL_CROSSING_API_KEY", raising=False)
+        monkeypatch.delenv("WEATHERAPI_KEY", raising=False)
 
         result = agent.run(sample_input)
 
