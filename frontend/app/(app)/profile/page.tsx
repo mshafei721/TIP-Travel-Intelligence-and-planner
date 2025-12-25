@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { ProfileSettingsPage } from '@/components/profile/ProfileSettingsPage'
 import { getProfile, getStatistics } from '@/lib/api/profile'
-import type { ProfileSettings } from '@/types/profile'
+import type { ProfileSettings, LegacyUserProfile, TravelerDetails, TravelPreferences, NotificationSettings, PrivacySettings, TripTemplate } from '@/types/profile'
 
 /**
  * Profile Settings Page (Server Component)

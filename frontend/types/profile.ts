@@ -176,6 +176,21 @@ export const LANGUAGE_OPTIONS = [
 // Legacy Types (keeping for compatibility)
 // ============================================
 
+/**
+ * Legacy UserProfile interface for component compatibility.
+ * Uses camelCase field names instead of snake_case database names.
+ * Used by ProfileSection and other UI components.
+ */
+export interface LegacyUserProfile {
+  id: string
+  name: string
+  email: string
+  photoUrl?: string | null
+  authProvider: 'email' | 'google'
+  createdAt: string
+  updatedAt: string
+}
+
 /** @deprecated Use UserProfile instead */
 export interface TravelerDetails {
   nationality: string
@@ -215,9 +230,9 @@ export interface PrivacySettings {
   allowAnalytics: boolean
 }
 
-/** @deprecated */
+/** @deprecated Use ProfileResponse with adapters */
 export interface ProfileSettings {
-  profile: UserProfile
+  profile: LegacyUserProfile
   travelerDetails: TravelerDetails
   travelPreferences: TravelPreferences
   notifications: NotificationSettings

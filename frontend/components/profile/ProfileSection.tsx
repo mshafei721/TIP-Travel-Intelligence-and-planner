@@ -8,11 +8,11 @@ import { Button } from '@/components/ui/button'
 import { SectionCard } from './SectionCard'
 import { ProfilePhotoUpload } from './ProfilePhotoUpload'
 import { useDebounce } from '@/hooks/useDebounce'
-import type { UserProfile, SaveState } from '@/types/profile'
+import type { LegacyUserProfile, SaveState } from '@/types/profile'
 
 export interface ProfileSectionProps {
-  profile: UserProfile
-  onProfileUpdate: (data: Partial<UserProfile>) => Promise<void>
+  profile: LegacyUserProfile
+  onProfileUpdate: (data: Partial<LegacyUserProfile>) => Promise<void>
   onPhotoUpload: (file: File) => Promise<string>
   onChangePassword?: () => void
 }

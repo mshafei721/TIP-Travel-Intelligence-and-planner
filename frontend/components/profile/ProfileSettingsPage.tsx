@@ -9,7 +9,7 @@ import { SavedTemplatesSection } from './SavedTemplatesSection'
 import { NotificationsSection } from './NotificationsSection'
 import { PrivacySection } from './PrivacySection'
 import { AccountSection } from './AccountSection'
-import type { ProfileSettings, UserProfile, TravelerDetails, TravelPreferences, NotificationSettings, TripTemplate } from '@/types/profile'
+import type { ProfileSettings, LegacyUserProfile, TravelerDetails, TravelPreferences, NotificationSettings, TripTemplate } from '@/types/profile'
 import * as profileApi from '@/lib/api/profile'
 
 export interface ProfileSettingsPageProps {
@@ -33,7 +33,7 @@ export function ProfileSettingsPage({ initialSettings }: ProfileSettingsPageProp
   const [isUploading, setIsUploading] = useState(false)
 
   // Profile update handlers
-  const handleProfileUpdate = async (data: Partial<UserProfile>) => {
+  const handleProfileUpdate = async (data: Partial<LegacyUserProfile>) => {
     try {
       await profileApi.updateProfile({
         display_name: data.name || undefined,
