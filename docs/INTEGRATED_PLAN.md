@@ -7,80 +7,6 @@
 - Contracts and schema are defined as initial artifacts for implementation: `contracts/openapi.yaml`, `contracts/types.ts`, and `db/schema.sql`.
 - Quality gates cover a11y (WCAG 2.1 AA), security baselines, contract tests, CI pipelines, observability, and rollback discipline.
 
-## 1.1 Implementation Status (Updated 2025-12-24)
-
-> ⚠️ **IMPORTANT**: This section is the SINGLE SOURCE OF TRUTH for project status.
-
-### Current Status by Increment
-
-| Increment | Name | Frontend | Backend | Agents | Overall | Notes |
-|-----------|------|----------|---------|--------|---------|-------|
-| I1 | Foundation | ✅ 100% | 🟡 60% | N/A | 🟡 80% | Missing: Redis, Celery, Docker, CI/CD |
-| I2 | Auth & Account | ✅ 95% | 🟡 50% | N/A | 🟡 75% | Missing: Google OAuth config in Supabase |
-| I3 | Dashboard | ✅ 90% | 🟡 40% | N/A | 🟡 65% | Backend uses static recommendations, no AI |
-| I4 | Trip Creation | ❌ 0% | ❌ 0% | N/A | ❌ 0% | Not started |
-| I5 | Visa Intel | ❌ 0% | ❌ 0% | ❌ 0% | ❌ 0% | **CRITICAL**: Requires Visa Agent |
-| I6 | Destination Intel | ❌ 0% | ❌ 0% | ❌ 0% | ❌ 0% | Requires 5 agents + external APIs |
-| I7 | Itinerary | ❌ 0% | ❌ 0% | ❌ 0% | ❌ 0% | Requires Itinerary + Flight agents |
-| I8 | Reports | ❌ 0% | ❌ 0% | N/A | ❌ 0% | PDF generation not implemented |
-| I9 | Profile & Settings | ❌ 10% | ❌ 10% | N/A | ❌ 10% | Basic profile API exists |
-| I10 | Error States | 🟡 30% | ❌ 0% | N/A | 🟡 15% | 404/500 pages exist |
-
-### Backend Infrastructure Checklist
-
-| Component | Status | Required For | Notes |
-|-----------|--------|--------------|-------|
-| FastAPI app | ✅ Done | I1+ | Basic structure with health endpoint |
-| Supabase client | ✅ Done | I1+ | Working in backend |
-| Database schema | ✅ Done | I1+ | 9 tables with RLS |
-| Redis instance | ❌ Not Done | I5+ | Required for Celery, caching |
-| Celery workers | ❌ Not Done | I5+ | Required for async agent jobs |
-| Docker Compose | ❌ Not Done | I1+ | Local dev orchestration |
-| CI/CD pipeline | ❌ Not Done | I1+ | GitHub Actions |
-| BaseAgent class | ❌ Not Done | I5+ | Agent foundation |
-| Orchestrator | ❌ Not Done | I5+ | Agent coordination |
-| Playwright scrapers | ❌ Not Done | I5+ | Embassy/visa scraping |
-
-### Agent Implementation Status
-
-| Agent | Increment | Status | External APIs Needed |
-|-------|-----------|--------|---------------------|
-| Orchestrator | I5 | ❌ 0% | None |
-| Visa Agent | I5 | ❌ 0% | Sherpa API or IATA |
-| Country Agent | I6 | ❌ 0% | REST Countries |
-| Weather Agent | I6 | ❌ 0% | Visual Crossing |
-| Currency Agent | I6 | ❌ 0% | Fixer.io |
-| Culture Agent | I6 | ❌ 0% | Web scraping |
-| Food Agent | I6 | ❌ 0% | Web scraping |
-| Attractions Agent | I7 | ❌ 0% | Mapbox, scraping |
-| Itinerary Agent | I7 | ❌ 0% | LLM (GPT-4/Claude) |
-| Flight Agent | I7 | ❌ 0% | Skyscanner/Amadeus |
-
-### Legacy Phase Mapping (Deprecated)
-
-> The `comprehensive_plan.md` P0-P15 phase system is deprecated. Use I1-I10 increments instead.
-
-| Old Phase | Maps To | Notes |
-|-----------|---------|-------|
-| P0 Research | Pre-I1 | ✅ Complete |
-| P1 Foundation | I1 + I2 | Infrastructure + Auth |
-| P2 Orchestrator | I5 (part of) | Agent infrastructure |
-| P3 Visa Agent | I5 | Visa intelligence |
-| P4 Country Agent | I6 | Destination intel |
-| P5 Weather Agent | I6 | Destination intel |
-| P6 Currency Agent | I6 | Destination intel |
-| P7 Culture Agent | I6 | Destination intel |
-| P8 Food Agent | I6 | Destination intel |
-| P9 Attractions Agent | I7 | Itinerary support |
-| P10 Itinerary Agent | I7 | Itinerary |
-| P11 Flight Agent | I7 | Itinerary |
-| P12 Trip Creation | I4 | Trip creation |
-| P13 Report Generation | I8 | Reports |
-| P14 Data Lifecycle | I8 + I10 | Deletion, cleanup |
-| P15 Polish | I10 | Error states, hardening |
-
----
-
 ## 2. Artifact Inventory
 | Path | Type | Purpose | Last Modified |
 | --- | --- | --- | --- |
@@ -184,7 +110,7 @@ Note: `docs/user_flows` exists but contains no files.
 ## 6. Target Architecture
 
 ### Frontend
-- Framework: Next.js 14 App Router with React Server Components and client components where interactivity is required. (`docs/phase1_implementation_guide.md`)
+- Framework: Next.js 16 App Router with React Server Components and client components where interactivity is required. (`docs/phase1_implementation_guide.md`)
 - Routing map:
   - Auth (no shell): `/login`, `/signup`, `/forgot-password`, `/reset-password`, `/verify-email`
   - App shell: `/dashboard`, `/trips`, `/trips/create`, `/trips/[id]`, `/trips/[id]/visa`, `/trips/[id]/destination`, `/trips/[id]/itinerary`, `/profile`

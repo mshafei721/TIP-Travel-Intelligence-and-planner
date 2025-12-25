@@ -865,7 +865,8 @@
       "status": {
         "frontend": 85,
         "backend": 70,
-        "overall": 78
+        "config": 100,
+        "overall": 82
       },
       "features": [
         {
@@ -960,9 +961,9 @@
           "id": "I9-CONFIG-01",
           "name": "Setup Supabase Storage bucket for profile photos",
           "type": "config",
-          "passes": false,
+          "passes": true,
           "priority": "high",
-          "blockedBy": "Requires user to create 'profile-photos' bucket in Supabase dashboard. See docs/supabase-storage-setup.md"
+          "notes": "Bucket created and all 4 storage policies configured via Supabase MCP: INSERT, SELECT, UPDATE, DELETE"
         }
       ]
     },
