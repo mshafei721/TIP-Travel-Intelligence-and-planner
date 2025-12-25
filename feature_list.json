@@ -1,7 +1,7 @@
 {
   "project": "TIP - Travel Intelligence & Planner",
-  "version": "2.0.4",
-  "lastUpdated": "2025-12-25T14:00:00Z",
+  "version": "2.0.5",
+  "lastUpdated": "2025-12-25T15:10:00Z",
   "structure": "I1-I10 Increments (unified FE+BE)",
   "notes": [
     "This file now uses the INTEGRATED_PLAN.md I1-I10 increment structure",
@@ -11,9 +11,9 @@
   ],
   "summary": {
     "totalIncrements": 10,
-    "totalFeatures": 99,
-    "completedFeatures": 43,
-    "percentComplete": 43
+    "totalFeatures": 103,
+    "completedFeatures": 52,
+    "percentComplete": 50
   },
   "increments": [
     {
@@ -607,53 +607,91 @@
       "name": "Destination Intelligence",
       "description": "Country, weather, currency, culture, food intelligence cards",
       "status": {
-        "frontend": 0,
+        "frontend": 90,
         "backend": 0,
         "agents": 20,
-        "overall": 7
+        "overall": 40
       },
       "features": [
         {
           "id": "I6-FE-01",
           "name": "Create destination section page",
           "type": "frontend",
-          "passes": false,
-          "priority": "high"
+          "passes": true,
+          "priority": "high",
+          "implementation": "DestinationIntelligencePage container with masonry grid layout, expandable card management, and demo page at /trips/destination. Includes LoadingState skeleton component."
         },
         {
           "id": "I6-FE-02",
           "name": "Create CountryCard component",
           "type": "frontend",
-          "passes": false,
-          "priority": "high"
+          "passes": true,
+          "priority": "high",
+          "implementation": "CountryOverviewCard with flag display, key facts grid (capital, population, timezones, driving side), languages, currency, political system, bordering countries, and official links."
         },
         {
           "id": "I6-FE-03",
           "name": "Create WeatherCard component",
           "type": "frontend",
-          "passes": false,
-          "priority": "high"
+          "passes": true,
+          "priority": "high",
+          "implementation": "WeatherCard with animated weather icons (CSS animations for sun, clouds, rain, snow, wind), daily forecasts with temperature ranges, precipitation, humidity, wind speed, best time to visit, climate type, and packing recommendations."
         },
         {
           "id": "I6-FE-04",
           "name": "Create CurrencyCard component",
           "type": "frontend",
-          "passes": false,
-          "priority": "high"
+          "passes": true,
+          "priority": "high",
+          "implementation": "CurrencyCard with exchange rates, ATM/credit card availability badges, tipping customs, cost of living estimates with gradient indicators, and currency exchange tips."
         },
         {
           "id": "I6-FE-05",
           "name": "Create CultureCard component",
           "type": "frontend",
-          "passes": false,
-          "priority": "high"
+          "passes": true,
+          "priority": "high",
+          "implementation": "CultureCard with dress code, greetings, customs, do's and don'ts (color-coded green/red), religious considerations, language tips, and etiquette guide links."
         },
         {
           "id": "I6-FE-06",
           "name": "Create FoodCard component",
           "type": "frontend",
           "passes": false,
-          "priority": "medium"
+          "priority": "medium",
+          "note": "Not yet implemented - created UnusualLawsCard, SafetyCard, and NewsCard instead as higher priority"
+        },
+        {
+          "id": "I6-FE-07",
+          "name": "Create UnusualLawsCard component",
+          "type": "frontend",
+          "passes": true,
+          "priority": "high",
+          "implementation": "UnusualLawsCard with legal restrictions (severity-based styling: info/warning/critical), import restrictions, photography restrictions, internet restrictions, and legal resource links."
+        },
+        {
+          "id": "I6-FE-08",
+          "name": "Create SafetyCard component",
+          "type": "frontend",
+          "passes": true,
+          "priority": "high",
+          "implementation": "SafetyCard with 5-star safety rating, safety alerts (severity-based), crime rates (overall/petty theft/violent crime), emergency contact numbers, health risks with vaccination requirements, and travel advisory links."
+        },
+        {
+          "id": "I6-FE-09",
+          "name": "Create NewsCard component",
+          "type": "frontend",
+          "passes": true,
+          "priority": "high",
+          "implementation": "NewsCard with sortable news articles (by relevance and date), category icons, relevance badges (high/medium/low), source attribution, date formatting (relative and absolute), and external link handling."
+        },
+        {
+          "id": "I6-FE-10",
+          "name": "Create IntelligenceCard base component",
+          "type": "frontend",
+          "passes": true,
+          "priority": "critical",
+          "implementation": "Reusable IntelligenceCard component with smooth expand/collapse animations (CSS transitions), hover effects (gradient border, lift), dark mode support, accessibility (keyboard navigation, ARIA labels), loading states, and icon support. Used by all 7 destination cards."
         },
         {
           "id": "I6-AGENT-01",
