@@ -12,12 +12,26 @@ class AgentConfig(BaseModel):
     Configuration for AI agents
 
     Attributes:
+        agent_type: Type identifier for the agent (visa, country, weather, etc.)
+        name: Human-readable agent name
+        description: Agent purpose and capabilities
+        version: Agent version for tracking
         llm_model: Claude model to use (default: claude-3-5-sonnet-20241022)
         temperature: LLM temperature for randomness (0.0 = deterministic, 1.0 = creative)
         max_tokens: Maximum tokens in LLM response
         verbose: Enable verbose logging for debugging
         timeout_seconds: Maximum execution time before timeout
     """
+
+    agent_type: str = Field(
+        ..., description="Agent type identifier (visa, country, weather, culture, food, etc.)"
+    )
+
+    name: str | None = Field(None, description="Human-readable agent name")
+
+    description: str | None = Field(None, description="Agent purpose and capabilities")
+
+    version: str | None = Field(None, description="Agent version")
 
     llm_model: str = Field(
         default="claude-3-5-sonnet-20241022",

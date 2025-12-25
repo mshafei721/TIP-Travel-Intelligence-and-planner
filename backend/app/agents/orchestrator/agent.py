@@ -42,6 +42,34 @@ try:
 except ImportError:
     WEATHER_AGENT_AVAILABLE = False
 
+try:
+    from app.agents.currency.agent import CurrencyAgent
+
+    CURRENCY_AGENT_AVAILABLE = True
+except ImportError:
+    CURRENCY_AGENT_AVAILABLE = False
+
+try:
+    from app.agents.culture.agent import CultureAgent
+
+    CULTURE_AGENT_AVAILABLE = True
+except ImportError:
+    CULTURE_AGENT_AVAILABLE = False
+
+try:
+    from app.agents.food.agent import FoodAgent
+
+    FOOD_AGENT_AVAILABLE = True
+except ImportError:
+    FOOD_AGENT_AVAILABLE = False
+
+try:
+    from app.agents.attractions.agent import AttractionsAgent
+
+    ATTRACTIONS_AGENT_AVAILABLE = True
+except ImportError:
+    ATTRACTIONS_AGENT_AVAILABLE = False
+
 
 class TripData(BaseModel):
     """Trip data model for orchestrator input"""
@@ -87,11 +115,19 @@ class OrchestratorAgent:
         if WEATHER_AGENT_AVAILABLE:
             self.available_agents["weather"] = WeatherAgent
 
+        if CURRENCY_AGENT_AVAILABLE:
+            self.available_agents["currency"] = CurrencyAgent
+
+        if CULTURE_AGENT_AVAILABLE:
+            self.available_agents["culture"] = CultureAgent
+
+        if FOOD_AGENT_AVAILABLE:
+            self.available_agents["food"] = FoodAgent
+
+        if ATTRACTIONS_AGENT_AVAILABLE:
+            self.available_agents["attractions"] = AttractionsAgent
+
         # Placeholder for future agents
-        # self.available_agents['currency'] = CurrencyAgent
-        # self.available_agents['culture'] = CultureAgent
-        # self.available_agents['food'] = FoodAgent
-        # self.available_agents['attractions'] = AttractionsAgent
         # self.available_agents['itinerary'] = ItineraryAgent
         # self.available_agents['flight'] = FlightAgent
 
@@ -124,22 +160,23 @@ class OrchestratorAgent:
         try:
             # Phase 1: Independent agents (can run in parallel)
             # These agents don't depend on each other and can run simultaneously
-            phase1_agents = ["visa", "country", "weather"]
+            phase1_agents = ["visa", "country", "weather", "currency", "culture"]
             phase1_results = await self._run_phase(validated_data, phase1_agents)
             sections.update(phase1_results)
 
-            # Phase 2: Dependent agents (future implementation)
-            # phase2_agents = ['currency', 'culture']
-            # phase2_results = await self._run_phase(validated_data, phase2_agents)
-            # sections.update(phase2_results)
+            # Phase 2: Dependent agents (depend on culture/country)
+            phase2_agents = ["food", "attractions"]
+            phase2_results = await self._run_phase(validated_data, phase2_agents)
+            sections.update(phase2_results)
 
             # Phase 3: Synthesis agents (future implementation)
-            # phase3_agents = ['food', 'attractions']
+            # Itinerary agent will depend on all Phase 1-2 results
+            # phase3_agents = ['itinerary']
             # phase3_results = await self._run_phase(validated_data, phase3_agents)
             # sections.update(phase3_results)
 
             # Phase 4: Final agents (future implementation)
-            # phase4_agents = ['itinerary', 'flight']
+            # phase4_agents = ['flight']
             # phase4_results = await self._run_phase(validated_data, phase4_agents)
             # sections.update(phase4_results)
 
