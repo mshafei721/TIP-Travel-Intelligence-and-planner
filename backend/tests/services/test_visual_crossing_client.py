@@ -234,15 +234,17 @@ class TestVisualCrossingClient:
         self, mock_client_class, client, sample_weather_response
     ):
         """Test async forecast with mocked client."""
+        from unittest.mock import AsyncMock
+
         # Setup mock
         mock_response = Mock()
         mock_response.json.return_value = sample_weather_response
         mock_response.raise_for_status = Mock()
 
         mock_client = Mock()
-        mock_client.__aenter__ = Mock(return_value=mock_client)
-        mock_client.__aexit__ = Mock(return_value=None)
-        mock_client.get = Mock(return_value=mock_response)
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=None)
+        mock_client.get = AsyncMock(return_value=mock_response)
 
         mock_client_class.return_value = mock_client
 

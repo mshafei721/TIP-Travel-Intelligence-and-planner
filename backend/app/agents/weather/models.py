@@ -1,17 +1,18 @@
 """Data models for Weather Agent."""
 
-from datetime import date, datetime
-from typing import Literal
+from datetime import date as DateType
+from datetime import datetime
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
-from ..interfaces import AgentInput, AgentResult
+from ..interfaces import AgentResult
 
 
 class DailyForecast(BaseModel):
     """Daily weather forecast model."""
 
-    date: date = Field(description="Date of the forecast")
+    date: DateType = Field(description="Date of the forecast")
     temp_max: float = Field(description="Maximum temperature (Celsius)")
     temp_min: float = Field(description="Minimum temperature (Celsius)")
     temp_avg: float | None = Field(None, description="Average temperature (Celsius)")
@@ -45,15 +46,15 @@ class ClimateInfo(BaseModel):
     seasonal_notes: list[str] = Field(default_factory=list, description="Seasonal considerations")
 
 
-class WeatherAgentInput(AgentInput):
+class WeatherAgentInput(BaseModel):
     """Input model for Weather Agent."""
 
     trip_id: str = Field(description="Unique trip identifier")
     user_nationality: str = Field(description="User's nationality (ISO 3166-1 alpha-2)")
     destination_country: str = Field(description="Destination country name")
     destination_city: str = Field(description="Destination city name")
-    departure_date: date = Field(description="Trip departure date")
-    return_date: date = Field(description="Trip return date")
+    departure_date: DateType = Field(description="Trip departure date")
+    return_date: DateType = Field(description="Trip return date")
     latitude: float | None = Field(None, description="Destination latitude for precise location")
     longitude: float | None = Field(None, description="Destination longitude for precise location")
 
@@ -65,6 +66,10 @@ class WeatherAgentOutput(AgentResult):
     agent_type: Literal["weather"] = Field(default="weather", description="Agent type identifier")
     generated_at: datetime = Field(
         default_factory=datetime.utcnow, description="Generation timestamp"
+    )
+    data: dict[str, Any] = Field(
+        default_factory=dict,
+        description="Complete weather data in dictionary format (for AgentResult compatibility)",
     )
 
     # Location

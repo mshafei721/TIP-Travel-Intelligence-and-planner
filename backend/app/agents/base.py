@@ -59,10 +59,9 @@ class BaseAgent(ABC):
 
         self.config = config
 
-    @abstractmethod
     def configure_tools(self) -> list[Any]:
         """
-        Configure agent-specific tools
+        Configure agent-specific tools (optional - can be overridden by subclasses)
 
         Tools can include:
         - External API clients (Sherpa, IATA, weather APIs, etc.)
@@ -73,6 +72,10 @@ class BaseAgent(ABC):
         Returns:
             List of tool objects for the agent to use
 
+        Note:
+            This method is optional. Current CrewAI agents create tools
+            directly in their initialization methods instead.
+
         Example:
             def configure_tools(self):
                 return [
@@ -81,11 +84,11 @@ class BaseAgent(ABC):
                     EmbassyScraperTool()
                 ]
         """
+        return []
 
-    @abstractmethod
     def create_task(self, input_data: dict[str, Any]) -> Any:
         """
-        Create task definition for agent execution
+        Create task definition for agent execution (optional - can be overridden by subclasses)
 
         The task defines:
         - What the agent should do
@@ -99,6 +102,10 @@ class BaseAgent(ABC):
         Returns:
             Task object (implementation varies by agent framework)
 
+        Note:
+            This method is optional. Current CrewAI agents create tasks
+            directly in their run() methods using helper functions.
+
         Example:
             def create_task(self, input_data):
                 return Task(
@@ -107,6 +114,7 @@ class BaseAgent(ABC):
                     expected_output="JSON with visa requirements"
                 )
         """
+        return None
 
     @abstractmethod
     def run(self, input_data: dict[str, Any]) -> AgentResult:

@@ -2,13 +2,15 @@
 
 import json
 import logging
-from datetime import date, datetime
+from datetime import date as DateType
+from datetime import datetime
 
 from crewai import Agent, Crew
+from langchain_anthropic import ChatAnthropic
 
 from ..base import BaseAgent
 from ..config import AgentConfig
-from ..interfaces import AgentInput, AgentResult
+from ..interfaces import AgentResult
 from .models import (
     ClimateInfo,
     DailyForecast,
@@ -57,7 +59,15 @@ class WeatherAgent(BaseAgent):
         Args:
             config: Agent configuration. If None, uses default config with Claude 3.5 Sonnet.
         """
-        super().__init__(config)
+        super().__init__(config or AgentConfig(agent_type="weather"))
+
+        # Initialize Claude AI LLM
+        self.llm = ChatAnthropic(
+            model="claude-3-5-sonnet-20241022",
+            temperature=0.1,  # Low temperature for factual accuracy
+            timeout=60.0,
+        )
+
         self.crew_agent = self._create_agent()
 
     def _create_agent(self) -> Agent:
@@ -82,7 +92,7 @@ class WeatherAgent(BaseAgent):
             allow_delegation=False,
         )
 
-    def run(self, agent_input: AgentInput) -> AgentResult:
+    def run(self, agent_input: WeatherAgentInput) -> AgentResult:
         """
         Execute Weather Agent to generate weather intelligence.
 
@@ -174,7 +184,7 @@ class WeatherAgent(BaseAgent):
             for day_data in data.get("forecast", []):
                 try:
                     forecast = DailyForecast(
-                        date=date.fromisoformat(day_data.get("date")),
+                        date=DateType.fromisoformat(day_data.get("date")),
                         temp_max=float(day_data.get("temp_max", 0)),
                         temp_min=float(day_data.get("temp_min", 0)),
                         temp_avg=(
@@ -243,6 +253,7 @@ class WeatherAgent(BaseAgent):
                 trip_id=input_data.trip_id,
                 agent_type="weather",
                 generated_at=datetime.utcnow(),
+                data=data,  # Complete weather data dict for AgentResult compatibility
                 location=data.get(
                     "location",
                     f"{input_data.destination_city}, {input_data.destination_country}",
@@ -293,10 +304,21 @@ class WeatherAgent(BaseAgent):
         """
         logger.warning(f"Creating fallback weather output due to: {error}")
 
+        fallback_data = {
+            "location": f"{input_data.destination_city}, {input_data.destination_country}",
+            "forecast": [],
+            "average_temp": 20.0,
+            "temp_range_min": 15.0,
+            "temp_range_max": 25.0,
+            "precipitation_chance": 30.0,
+            "error": error,
+        }
+
         return WeatherAgentOutput(
             trip_id=input_data.trip_id,
             agent_type="weather",
             generated_at=datetime.utcnow(),
+            data=fallback_data,  # Fallback data dict for AgentResult compatibility
             location=f"{input_data.destination_city}, {input_data.destination_country}",
             latitude=input_data.latitude,
             longitude=input_data.longitude,

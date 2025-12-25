@@ -2,7 +2,6 @@
 
 import os
 from datetime import date, datetime, timedelta
-from unittest.mock import Mock, patch
 
 import pytest
 
@@ -103,9 +102,7 @@ class TestWeatherAgentOutput:
         ]
 
         packing = [
-            PackingSuggestion(
-                item="Light jacket", reason="Cool mornings", priority="recommended"
-            )
+            PackingSuggestion(item="Light jacket", reason="Cool mornings", priority="recommended")
         ]
 
         climate = ClimateInfo(
@@ -147,19 +144,17 @@ class TestWeatherAgentOutput:
 class TestWeatherAgent:
     """Test Weather Agent."""
 
-    @pytest.fixture
+    @pytest.fixture()
     def config(self):
         """Provide agent config."""
-        return AgentConfig(
-            model_name="claude-3-5-sonnet-20241022", temperature=0.1
-        )
+        return AgentConfig(model_name="claude-3-5-sonnet-20241022", temperature=0.1)
 
-    @pytest.fixture
+    @pytest.fixture()
     def agent(self, config):
         """Create Weather Agent instance."""
         return WeatherAgent(config=config)
 
-    @pytest.fixture
+    @pytest.fixture()
     def sample_input(self):
         """Sample agent input."""
         return WeatherAgentInput(
@@ -196,7 +191,7 @@ class TestWeatherAgent:
         invalid_input = VisaAgentInput(
             trip_id="test123",
             user_nationality="US",
-            destination_country="Japan",
+            destination_country="JP",  # Use ISO code for VisaAgentInput
             destination_city="Tokyo",
             departure_date=date.today(),
             return_date=date.today() + timedelta(days=7),
