@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import type { TripTemplate, TravelStyle, TravelPreferences } from '@/types/profile'
 
-const TRAVEL_STYLES: TravelStyle[] = ['relaxed', 'balanced', 'packed', 'budget-focused']
+const TRAVEL_STYLES: TravelStyle[] = ['budget', 'balanced', 'luxury']
 const DIETARY_OPTIONS = ['Vegetarian', 'Vegan', 'Gluten-free', 'Dairy-free', 'Nut allergy', 'Halal', 'Kosher']
 
 export interface TemplateModalProps {
