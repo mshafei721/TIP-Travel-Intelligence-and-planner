@@ -15,6 +15,15 @@ from app.models.trips import (
     DraftSaveRequest,
     DraftResponse
 )
+from app.models.report import (
+    VisaReportResponse,
+    ReportNotFoundError,
+    ReportUnauthorizedError,
+    VisaRequirementResponse,
+    ApplicationProcessResponse,
+    EntryRequirementResponse,
+    SourceReferenceResponse,
+)
 
 router = APIRouter(prefix="/trips", tags=["trips"])
 
@@ -793,4 +802,118 @@ async def delete_draft(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to delete draft: {str(e)}"
+        )
+
+
+@router.get(
+    "/{trip_id}/report/visa",
+    response_model=VisaReportResponse,
+    responses={
+        404: {"model": ReportNotFoundError, "description": "Report not found"},
+        403: {"model": ReportUnauthorizedError, "description": "Unauthorized access"},
+    }
+)
+async def get_visa_report(
+    trip_id: str,
+    token_payload: dict = Depends(verify_jwt_token)
+):
+    """
+    Get visa report for a trip
+
+    Retrieves the generated visa requirements analysis for the specified trip.
+
+    Path Parameters:
+    - trip_id: UUID of the trip
+
+    Returns:
+    - Complete visa report with requirements, application process, and entry requirements
+
+    Errors:
+    - 404: Visa report not found (generate it first using POST /trips/{trip_id}/generate)
+    - 403: User does not own this trip
+    - 500: Database error
+
+    Example:
+        GET /trips/550e8400-e29b-41d4-a716-446655440000/report/visa
+
+        Response:
+        {
+            "report_id": "...",
+            "trip_id": "...",
+            "generated_at": "2025-12-25T10:00:00Z",
+            "confidence_score": 0.95,
+            "visa_requirement": {
+                "visa_required": false,
+                "visa_type": "visa-free",
+                "max_stay_days": 90
+            },
+            ...
+        }
+    """
+    user_id = token_payload["user_id"]
+
+    try:
+        # 1. Verify trip exists and user owns it
+        trip_response = supabase.table("trips").select("id, user_id").eq(
+            "id", trip_id
+        ).single().execute()
+
+        if not trip_response.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Trip not found"
+            )
+
+        # 2. Check ownership
+        if trip_response.data["user_id"] != user_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to access this report"
+            )
+
+        # 3. Retrieve visa report from report_sections table
+        report_response = supabase.table("report_sections").select("*").eq(
+            "trip_id", trip_id
+        ).eq("section_type", "visa").order("generated_at", desc=True).limit(1).execute()
+
+        if not report_response.data or len(report_response.data) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Visa report not found for this trip. Generate the trip report first using POST /trips/{id}/generate"
+            )
+
+        # 4. Parse report data
+        report = report_response.data[0]
+        content = report["content"]
+
+        # Convert confidence from integer (0-100) back to float (0.0-1.0)
+        confidence_float = float(report["confidence_score"]) / 100.0 if report.get("confidence_score") else 0.0
+
+        # 5. Build response
+        return VisaReportResponse(
+            report_id=report["id"],
+            trip_id=report["trip_id"],
+            generated_at=datetime.fromisoformat(report["generated_at"].replace("Z", "+00:00")),
+            confidence_score=confidence_float,
+            visa_requirement=VisaRequirementResponse(**content["visa_requirement"]),
+            application_process=ApplicationProcessResponse(**content["application_process"]),
+            entry_requirements=EntryRequirementResponse(**content["entry_requirements"]),
+            tips=content.get("tips", []),
+            warnings=content.get("warnings", []),
+            sources=[SourceReferenceResponse(**source) for source in content.get("sources", [])],
+            last_verified=datetime.fromisoformat(content["last_verified"].replace("Z", "+00:00"))
+        )
+
+    except HTTPException:
+        raise
+    except KeyError as e:
+        # Handle missing fields in content data
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Invalid report data format: missing field {str(e)}"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to retrieve visa report: {str(e)}"
         )

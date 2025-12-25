@@ -144,10 +144,31 @@ def execute_visa_agent(self, trip_id: str, traveler_data: Dict[str, Any]) -> Dic
         result = agent.run(input_data)
 
         # Store result in database (Supabase report_sections table)
-        # TODO: Add database storage in next step
+        from app.core.supabase import supabase
+
+        # Convert result to dict for JSON storage
+        content_data = result.model_dump(mode='json')
+
+        # Convert confidence (0.0-1.0) to integer (0-100) for database
+        confidence_integer = int(result.confidence * 100)
+
+        # Store in report_sections table
+        report_response = supabase.table("report_sections").insert({
+            "trip_id": trip_id,
+            "section_type": "visa",
+            "title": "Visa Requirements",
+            "content": content_data,
+            "confidence_score": confidence_integer,
+            "sources": [source.model_dump() for source in result.sources],
+            "generated_at": result.generated_at.isoformat(),
+        }).execute()
+
+        if not report_response.data:
+            raise Exception("Failed to store visa report in database")
 
         print(f"[Task {self.request.id}] Completed Visa Agent for trip {trip_id}")
         print(f"[Task {self.request.id}] Confidence: {result.confidence}")
+        print(f"[Task {self.request.id}] Stored report ID: {report_response.data[0]['id']}")
 
         return {
             "trip_id": trip_id,
