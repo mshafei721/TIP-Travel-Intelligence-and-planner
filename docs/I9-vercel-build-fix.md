@@ -235,11 +235,13 @@ This is NOT urgent - current solution is production-ready and maintainable.
 1. `aa4c5ab` - "fix(frontend): resolve type mismatch between database and component interfaces"
 2. `d9b4fe7` - "docs: add I9 Vercel build fix completion report"
 3. `fcca4cb` - "fix(frontend): correct Checkbox prop from onCheckedChange to onChange"
+4. `96700a2` - "docs: update with Checkbox prop fix details"
+5. `4251390` - "fix(frontend): remove null from photoUrl type to match component expectations"
 
 **Branch**: `main`
 **Pushed**: ✅ Yes
 
-### Additional Fix (fcca4cb)
+### Additional Fix #1 (fcca4cb)
 
 After the initial type fix, a second build error was discovered:
 
@@ -252,6 +254,28 @@ Type '{ onCheckedChange: () => void; ... }' is not assignable to type 'CheckboxP
 **Fix**: Changed `onCheckedChange` to `onChange` in:
 - `NotificationsSection.tsx:84`
 - `TravelPreferencesSection.tsx:142`
+
+### Additional Fix #2 (4251390)
+
+A third build error was found:
+
+```
+Type 'string | null | undefined' is not assignable to type 'string | undefined'.
+Type 'null' is not assignable to type 'string | undefined'.
+```
+
+**Location**: `ProfileSection.tsx:69` when passing `profile.photoUrl` to `ProfilePhotoUpload`
+
+**Cause**:
+- `LegacyUserProfile.photoUrl` was typed as `string | null | undefined`
+- `ProfilePhotoUpload.currentPhotoUrl` expects `string | undefined` (no `null`)
+
+**Fix**:
+1. Changed `LegacyUserProfile.photoUrl` type from `string | null | undefined` to `string | undefined`
+2. Updated adapter in `profile/page.tsx:42` to convert null to undefined:
+   ```typescript
+   photoUrl: profileResponse.user.avatar_url ?? undefined
+   ```
 
 ## Next Steps
 
