@@ -1,6 +1,122 @@
 import { createClient } from '@/lib/supabase/client';
 
 /**
+ * Trip generation status response
+ */
+export interface TripGenerationStatus {
+  status: 'draft' | 'pending' | 'processing' | 'completed' | 'failed';
+  progress: number; // 0-100
+  current_agent: string | null;
+  agents_completed: string[];
+  agents_failed: string[];
+  error: string | null;
+  started_at: string | null;
+  completed_at: string | null;
+}
+
+/**
+ * Start AI report generation for a trip
+ */
+export async function generateTripReport(tripId: string): Promise<{
+  success: boolean;
+  task_id?: string;
+  error?: string;
+}> {
+  try {
+    const supabase = createClient();
+
+    // Get the auth token
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session) {
+      return { success: false, error: 'Not authenticated' };
+    }
+
+    // Call backend to start report generation
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/trips/${tripId}/generate`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+      },
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ detail: 'Generation failed' }));
+      return {
+        success: false,
+        error: errorData.detail || `HTTP ${response.status}: ${response.statusText}`,
+      };
+    }
+
+    const data = await response.json();
+
+    return {
+      success: true,
+      task_id: data.task_id,
+    };
+  } catch (error) {
+    console.error('Error starting report generation:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to start generation',
+    };
+  }
+}
+
+/**
+ * Get current report generation status for a trip
+ */
+export async function getTripGenerationStatus(
+  tripId: string,
+): Promise<{ success: boolean; status?: TripGenerationStatus; error?: string }> {
+  try {
+    const supabase = createClient();
+
+    // Get the auth token
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session) {
+      return { success: false, error: 'Not authenticated' };
+    }
+
+    // Call backend status endpoint
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/trips/${tripId}/status`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ detail: 'Failed to get status' }));
+      return {
+        success: false,
+        error: errorData.detail || `HTTP ${response.status}: ${response.statusText}`,
+      };
+    }
+
+    const data = await response.json();
+
+    return {
+      success: true,
+      status: data,
+    };
+  } catch (error) {
+    console.error('Error getting generation status:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to get status',
+    };
+  }
+}
+
+/**
  * Export trip report as PDF
  * Note: This requires backend implementation of PDF generation
  */
