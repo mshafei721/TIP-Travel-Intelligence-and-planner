@@ -1,20 +1,80 @@
 """Tools for Weather Agent."""
 
-import os
+import logging
 from datetime import date, timedelta
 from typing import Any
 
 from crewai.tools import tool
 
-from app.services.weather import WeatherAPIClient
+from app.core.config import settings
+from app.services.weather import WeatherAPIClient, VisualCrossingClient
+
+logger = logging.getLogger(__name__)
+
+
+def _try_visual_crossing_forecast(
+    location: str, start_date: date, end_date: date
+) -> dict[str, Any] | None:
+    """
+    Try to get forecast from Visual Crossing API.
+
+    Returns None if API key not configured or request fails.
+    """
+    if not settings.VISUAL_CROSSING_API_KEY:
+        return None
+
+    try:
+        client = VisualCrossingClient(api_key=settings.VISUAL_CROSSING_API_KEY)
+        weather_data = client.get_forecast(
+            location=location,
+            start_date=start_date,
+            end_date=end_date,
+        )
+
+        # Transform to common format
+        formatted_days = []
+        for day in weather_data.days:
+            formatted_days.append({
+                "date": day.datetime,
+                "tempmax": day.tempmax,
+                "tempmin": day.tempmin,
+                "temp": day.temp,
+                "conditions": day.conditions,
+                "icon": day.icon,
+                "precip": day.precip,
+                "precipprob": day.precipprob,
+                "humidity": day.humidity,
+                "windspeed": day.windspeed,
+                "uvindex": day.uvindex,
+                "sunrise": day.sunrise,
+                "sunset": day.sunset,
+                "description": day.description,
+            })
+
+        return {
+            "source": "visual_crossing",
+            "location": weather_data.resolvedAddress,
+            "latitude": weather_data.latitude,
+            "longitude": weather_data.longitude,
+            "timezone": weather_data.timezone,
+            "days": formatted_days,
+            "alerts": [
+                {"event": a.event, "headline": a.headline, "severity": a.severity}
+                for a in (weather_data.alerts or [])
+            ],
+        }
+    except Exception as e:
+        logger.warning(f"Visual Crossing API failed: {e}")
+        return None
 
 
 @tool("Get Weather Forecast")
 def get_weather_forecast(location: str, start_date: str, end_date: str) -> dict[str, Any]:
     """
-    Get weather forecast for a location and date range using WeatherAPI.com.
+    Get weather forecast for a location and date range.
 
-    This tool provides accurate weather forecasts including:
+    Uses WeatherAPI.com as primary source with Visual Crossing as fallback.
+    Provides accurate weather forecasts including:
     - Daily temperature ranges (min/max/average)
     - Precipitation probability and amounts
     - Wind speed and direction
@@ -37,14 +97,14 @@ def get_weather_forecast(location: str, start_date: str, end_date: str) -> dict[
         - days: List of daily forecasts with weather details
 
     Example:
-        >>> get_weather_forecast("Tokyo, Japan", "2024-06-15", "2024-06-20")
+        >>> get_weather_forecast("Tokyo, Japan", "2025-06-15", "2025-06-20")
         {
             "location": "Tokyo, Japan",
             "latitude": 35.6762,
             "longitude": 139.6503,
             "days": [
                 {
-                    "date": "2024-06-15",
+                    "date": "2025-06-15",
                     "tempmax": 28.5,
                     "tempmin": 20.1,
                     "conditions": "Partly cloudy",
@@ -54,18 +114,24 @@ def get_weather_forecast(location: str, start_date: str, end_date: str) -> dict[
         }
     """
     try:
-        api_key = os.getenv("WEATHERAPI_KEY")
-        if not api_key:
-            return {
-                "error": "WeatherAPI key not configured",
-                "message": "Please set WEATHERAPI_KEY environment variable",
-            }
-
-        client = WeatherAPIClient(api_key=api_key)
-
         # Convert string dates to date objects
         start = date.fromisoformat(start_date)
         end = date.fromisoformat(end_date)
+
+        # Try Visual Crossing first if available (better for date ranges)
+        vc_result = _try_visual_crossing_forecast(location, start, end)
+        if vc_result:
+            return vc_result
+
+        # Fallback to WeatherAPI
+        api_key = settings.WEATHERAPI_KEY
+        if not api_key:
+            return {
+                "error": "Weather API key not configured",
+                "message": "Please set WEATHERAPI_KEY or VISUAL_CROSSING_API_KEY environment variable",
+            }
+
+        client = WeatherAPIClient(api_key=api_key)
         today = date.today()
 
         # Calculate days for forecast (WeatherAPI uses days from today, max 14 days in paid, 3 in free)

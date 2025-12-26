@@ -2,17 +2,42 @@
 Flight Agent - Tools
 
 Tools for flight search, airport information, and booking guidance.
+Integrates with Amadeus API when credentials are available,
+falls back to AI knowledge base otherwise.
 """
 
+import json
 import logging
-import re
 from datetime import date as DateType
-from datetime import datetime, timedelta
-from typing import Any
+from datetime import datetime
 
 from crewai.tools import tool
 
+from app.core.config import settings
+
 logger = logging.getLogger(__name__)
+
+# Lazy import to avoid circular dependencies
+_flight_client = None
+
+
+def _get_flight_client():
+    """Get or create Amadeus flight client (lazy initialization)."""
+    global _flight_client
+    if _flight_client is None:
+        if settings.AMADEUS_API_KEY and settings.AMADEUS_API_SECRET:
+            from app.services.flight.amadeus_client import AmadeusFlightClient
+
+            _flight_client = AmadeusFlightClient(test_mode=True)
+            logger.info("Amadeus flight client initialized")
+        else:
+            logger.warning("Amadeus API not configured - using AI knowledge base")
+    return _flight_client
+
+
+def _has_api_credentials() -> bool:
+    """Check if Amadeus API credentials are configured."""
+    return bool(settings.AMADEUS_API_KEY and settings.AMADEUS_API_SECRET)
 
 
 @tool("Search Flight Routes")
@@ -26,37 +51,123 @@ def search_flight_routes(
     """
     Search for available flight routes between origin and destination.
 
-    Uses AI knowledge base to identify major airlines, typical routes, connection
-    hubs, and estimated flight durations. This tool provides route structure which
-    can be used to build realistic flight options.
+    Uses Amadeus API when available, falls back to AI knowledge base.
+    Returns actual flight offers with real-time pricing when API is configured.
 
     Args:
-        origin_city: Departure city (e.g., "New York" or "New York, USA")
-        destination_city: Arrival city (e.g., "Tokyo" or "Tokyo, Japan")
+        origin_city: Departure city or IATA airport code (e.g., "JFK" or "New York")
+        destination_city: Arrival city or IATA airport code (e.g., "LHR" or "London")
         departure_date: Departure date in ISO format (YYYY-MM-DD)
         return_date: Return date in ISO format (optional for one-way)
         cabin_class: Cabin class (economy, premium_economy, business, first)
 
     Returns:
-        JSON string with route information including:
-        - Major airlines operating this route
-        - Whether direct flights are available
-        - Common connection hubs if no direct flights
-        - Estimated flight durations
-        - Typical number of daily flights
-        - Peak/off-peak season information
+        JSON string with flight offers including prices, airlines, and schedules
 
     Example:
-        >>> search_flight_routes("New York", "London", "2024-06-15", "2024-06-22")
+        >>> search_flight_routes("JFK", "LHR", "2025-06-15", "2025-06-22")
     """
     logger.info(
         f"Searching flight routes: {origin_city} -> {destination_city} "
         f"({departure_date} to {return_date})"
     )
 
-    # Note: In production, this would call a real flight API like Amadeus
-    # For now, we rely on the LLM's knowledge base to generate realistic routes
+    client = _get_flight_client()
 
+    # Try real API search if client is available
+    if client and _has_api_credentials():
+        try:
+            # Parse dates
+            dep_date = datetime.strptime(departure_date, "%Y-%m-%d").date()
+            ret_date = (
+                datetime.strptime(return_date, "%Y-%m-%d").date()
+                if return_date
+                else None
+            )
+
+            # Map cabin class to API format
+            cabin_map = {
+                "economy": "ECONOMY",
+                "premium_economy": "PREMIUM_ECONOMY",
+                "business": "BUSINESS",
+                "first": "FIRST",
+            }
+            travel_class = cabin_map.get(cabin_class.lower(), "ECONOMY")
+
+            # Search flights
+            result = client.search_flights(
+                origin=origin_city.upper()[:3],  # Use first 3 chars as IATA code
+                destination=destination_city.upper()[:3],
+                departure_date=dep_date,
+                return_date=ret_date,
+                travel_class=travel_class,
+                max_offers=10,
+            )
+
+            # Format response
+            offers_data = []
+            for offer in result.offers[:5]:  # Limit to top 5
+                segments_info = []
+                for seg in offer.outbound_segments:
+                    segments_info.append(
+                        {
+                            "from": seg.departure_airport,
+                            "to": seg.arrival_airport,
+                            "departure": seg.departure_time,
+                            "arrival": seg.arrival_time,
+                            "airline": seg.carrier_name or seg.carrier_code,
+                            "flight": f"{seg.carrier_code}{seg.flight_number}",
+                            "duration": seg.duration,
+                            "stops": seg.stops,
+                        }
+                    )
+
+                return_info = []
+                for seg in offer.return_segments:
+                    return_info.append(
+                        {
+                            "from": seg.departure_airport,
+                            "to": seg.arrival_airport,
+                            "departure": seg.departure_time,
+                            "arrival": seg.arrival_time,
+                            "airline": seg.carrier_name or seg.carrier_code,
+                            "flight": f"{seg.carrier_code}{seg.flight_number}",
+                            "duration": seg.duration,
+                        }
+                    )
+
+                offers_data.append(
+                    {
+                        "price": offer.total_price,
+                        "currency": offer.currency,
+                        "cabin_class": offer.cabin_class,
+                        "airline": offer.validating_airline,
+                        "baggage": offer.included_baggage,
+                        "is_direct": len(offer.outbound_segments) == 1,
+                        "outbound": segments_info,
+                        "return": return_info if return_info else None,
+                        "seats_available": offer.number_of_bookable_seats,
+                        "last_ticketing_date": offer.last_ticketing_date,
+                    }
+                )
+
+            response = {
+                "source": "amadeus_api",
+                "origin": result.origin,
+                "destination": result.destination,
+                "departure_date": result.departure_date,
+                "return_date": result.return_date,
+                "total_offers": result.total_offers,
+                "offers": offers_data,
+                "carriers": result.dictionaries.get("carriers", {}),
+            }
+
+            return json.dumps(response, indent=2)
+
+        except Exception as e:
+            logger.warning(f"Amadeus API search failed: {e}. Falling back to AI.")
+
+    # Fallback to AI knowledge base
     search_context = {
         "origin": origin_city,
         "destination": destination_city,
@@ -64,11 +175,14 @@ def search_flight_routes(
         "return_date": return_date,
         "cabin_class": cabin_class,
         "request_time": datetime.utcnow().isoformat(),
+        "source": "ai_knowledge_base",
     }
 
     return f"""Search flight routes from {origin_city} to {destination_city}.
 Departure: {departure_date}, Return: {return_date or 'One-way'}
 Cabin Class: {cabin_class}
+
+NOTE: Real-time API not available. Using AI knowledge base for estimates.
 
 Provide detailed information about:
 1. Major airlines serving this route
@@ -76,9 +190,9 @@ Provide detailed information about:
 3. Common connection hubs (if no direct flights)
 4. Estimated flight times
 5. Typical frequency (flights per day/week)
-6. Seasonal patterns or peak travel times
+6. Estimated price ranges in USD
 
-Context: {search_context}"""
+Context: {json.dumps(search_context)}"""
 
 
 @tool("Get Airport Information")
@@ -86,28 +200,53 @@ def get_airport_info(city: str, country: str | None = None) -> str:
     """
     Get comprehensive airport information for a city.
 
-    Retrieves details about major airports serving a city, including IATA codes,
-    full names, terminals, and ground transportation options.
+    Uses Amadeus API when available for accurate IATA codes and locations.
 
     Args:
-        city: City name (e.g., "Paris", "New York")
+        city: City name or IATA code (e.g., "Paris", "JFK")
         country: Country name for disambiguation (optional, e.g., "France", "USA")
 
     Returns:
-        JSON string with airport information including:
-        - IATA airport codes
-        - Full airport names
-        - Number of terminals
-        - Distance to city center
-        - Transportation options (metro, bus, taxi, rideshare)
-        - Average costs and travel times
-        - Key facilities (lounges, wifi, shopping)
+        JSON string with airport information including IATA codes and facilities
 
     Example:
         >>> get_airport_info("Paris", "France")
     """
     logger.info(f"Getting airport info for: {city}, {country}")
 
+    client = _get_flight_client()
+
+    # Try real API lookup if client is available
+    if client and _has_api_credentials():
+        try:
+            # If city looks like IATA code (3 letters), look it up directly
+            if len(city) == 3 and city.isalpha():
+                result = client.get_airport_info(city.upper())
+
+                if "error" not in result:
+                    response = {
+                        "source": "amadeus_api",
+                        "airports": [
+                            {
+                                "iata_code": result["iata_code"],
+                                "name": result["name"],
+                                "city": result["city"],
+                                "country": result["country"],
+                                "country_code": result["country_code"],
+                                "timezone": result["timezone"],
+                                "coordinates": {
+                                    "latitude": result["latitude"],
+                                    "longitude": result["longitude"],
+                                },
+                            }
+                        ],
+                    }
+                    return json.dumps(response, indent=2)
+
+        except Exception as e:
+            logger.warning(f"Amadeus airport lookup failed: {e}. Falling back to AI.")
+
+    # Fallback to AI knowledge base
     location = f"{city}, {country}" if country else city
 
     return f"""Provide comprehensive airport information for {location}.
@@ -155,7 +294,9 @@ def calculate_layover_requirements(
     Example:
         >>> calculate_layover_requirements("DXB", "Emirates", "British Airways")
     """
-    logger.info(f"Analyzing layover at {layover_airport}: {origin_airline} -> {destination_airline}")
+    logger.info(
+        f"Analyzing layover at {layover_airport}: {origin_airline} -> {destination_airline}"
+    )
 
     return f"""Analyze layover connection at {layover_airport}.
 
@@ -196,27 +337,70 @@ def estimate_flight_pricing(
     """
     Estimate flight pricing based on route, timing, and historical patterns.
 
-    Provides price range estimates using knowledge of typical pricing for the route,
-    seasonal variations, and booking timing factors.
+    Uses real API data when available, otherwise provides AI-based estimates.
 
     Args:
-        origin: Origin city
-        destination: Destination city
+        origin: Origin city or IATA code
+        destination: Destination city or IATA code
         departure_date: Departure date (YYYY-MM-DD)
         cabin_class: Cabin class (economy, premium_economy, business, first)
         is_direct: Whether it's a direct flight
 
     Returns:
-        JSON with estimated pricing:
-        - Low/medium/high price range in USD
-        - Factors affecting price (season, advance booking, etc.)
-        - Comparison to typical prices for route
-        - Budget airline availability
+        JSON with estimated pricing including low/medium/high ranges
 
     Example:
-        >>> estimate_flight_pricing("London", "New York", "2024-07-15", "economy", True)
+        >>> estimate_flight_pricing("JFK", "LHR", "2025-07-15", "economy", True)
     """
     logger.info(f"Estimating prices: {origin} -> {destination} on {departure_date}")
+
+    client = _get_flight_client()
+
+    # Try real API search for actual prices
+    if client and _has_api_credentials():
+        try:
+            dep_date = datetime.strptime(departure_date, "%Y-%m-%d").date()
+
+            cabin_map = {
+                "economy": "ECONOMY",
+                "premium_economy": "PREMIUM_ECONOMY",
+                "business": "BUSINESS",
+                "first": "FIRST",
+            }
+            travel_class = cabin_map.get(cabin_class.lower(), "ECONOMY")
+
+            result = client.search_flights(
+                origin=origin.upper()[:3],
+                destination=destination.upper()[:3],
+                departure_date=dep_date,
+                travel_class=travel_class,
+                non_stop=is_direct,
+                max_offers=20,
+            )
+
+            if result.offers:
+                prices = [o.total_price for o in result.offers]
+                currencies = [o.currency for o in result.offers]
+
+                response = {
+                    "source": "amadeus_api",
+                    "route": f"{origin} → {destination}",
+                    "departure_date": departure_date,
+                    "cabin_class": cabin_class,
+                    "direct_flights_only": is_direct,
+                    "pricing": {
+                        "low": min(prices),
+                        "average": sum(prices) / len(prices),
+                        "high": max(prices),
+                        "currency": currencies[0] if currencies else "USD",
+                        "sample_size": len(prices),
+                    },
+                    "note": "Prices are real-time from Amadeus API",
+                }
+                return json.dumps(response, indent=2)
+
+        except Exception as e:
+            logger.warning(f"Amadeus pricing search failed: {e}. Falling back to AI.")
 
     # Parse date to determine season
     try:
@@ -251,7 +435,10 @@ Return as structured JSON with confidence level."""
 
 @tool("Get Booking Timing Advice")
 def get_booking_timing_advice(
-    origin: str, destination: str, departure_date: str, current_price: float | None = None
+    origin: str,
+    destination: str,
+    departure_date: str,
+    current_price: float | None = None,
 ) -> str:
     """
     Provide optimal booking timing and price tracking recommendations.
@@ -274,7 +461,7 @@ def get_booking_timing_advice(
         - Alternative date suggestions
 
     Example:
-        >>> get_booking_timing_advice("Paris", "Tokyo", "2024-08-20", 850.0)
+        >>> get_booking_timing_advice("Paris", "Tokyo", "2025-08-20", 850.0)
     """
     logger.info(f"Getting booking advice: {origin} -> {destination} on {departure_date}")
 

@@ -1,10 +1,17 @@
 """Authentication utilities for FastAPI"""
 
 import logging
-from datetime import datetime, timezone
+from typing import Optional
 
-from fastapi import Header, HTTPException, Request, status
-from jose import ExpiredSignatureError, JWTClaimsError, JWTError, jwt
+from fastapi import Depends, Header, HTTPException, Request, status
+from jose import ExpiredSignatureError, JWTError, jwt
+
+# JWTClaimsError may not exist in older versions of python-jose
+try:
+    from jose import JWTClaimsError
+except ImportError:
+    # Fallback: treat JWTClaimsError as JWTError
+    JWTClaimsError = JWTError
 
 from app.core.config import settings
 
@@ -12,8 +19,8 @@ logger = logging.getLogger(__name__)
 
 
 def verify_jwt_token(
-    authorization: str | None = Header(None),
-    request: Request | None = None,
+    request: Request,
+    authorization: Optional[str] = Header(None),
 ) -> dict:
     """
     Verify JWT token from Authorization header.
@@ -22,8 +29,8 @@ def verify_jwt_token(
     Uses secure error messages that don't leak internal details.
 
     Args:
+        request: FastAPI request object (auto-injected)
         authorization: Bearer token from header
-        request: Optional request object for context
 
     Returns:
         dict: Decoded token payload containing user_id
@@ -34,7 +41,7 @@ def verify_jwt_token(
     if not authorization:
         logger.warning(
             "Missing authorization header",
-            extra={"path": request.url.path if request else "unknown"}
+            extra={"path": request.url.path}
         )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -80,8 +87,7 @@ def verify_jwt_token(
             )
 
         # Set user_id on request state for rate limiting and logging
-        if request:
-            request.state.user_id = user_id
+        request.state.user_id = user_id
 
         return {"user_id": user_id, **payload}
 

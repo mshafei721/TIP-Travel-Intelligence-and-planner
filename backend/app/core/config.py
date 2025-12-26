@@ -50,9 +50,24 @@ class Settings(BaseSettings):
     FEATURE_ANALYTICS: bool = True
 
     # External APIs (optional - features degrade gracefully without them)
-    RAPIDAPI_KEY: str = ""  # Travel Buddy AI / Sherpa API
+    RAPIDAPI_KEY: str = ""  # Travel Buddy AI / Sherpa API / Skyscanner
     ANTHROPIC_API_KEY: str = ""  # Claude AI for CrewAI agents
-    WEATHERAPI_KEY: str = ""  # Weather API
+
+    # Weather APIs
+    WEATHERAPI_KEY: str = ""  # WeatherAPI.com
+    VISUAL_CROSSING_API_KEY: str = ""  # Visual Crossing Weather API
+
+    # Flight APIs
+    SKYSCANNER_API_KEY: str = ""  # Skyscanner via RapidAPI
+    AMADEUS_API_KEY: str = ""  # Amadeus API Key (optional)
+    AMADEUS_API_SECRET: str = ""  # Amadeus API Secret (optional)
+
+    # Map & Attractions
+    MAPBOX_ACCESS_TOKEN: str = ""  # Mapbox for maps
+    OPENTRIPMAP_API_KEY: str = ""  # OpenTripMap for attractions
+
+    # Visa APIs (alternatives to Travel Buddy)
+    SHERPA_API_KEY: str = ""  # Sherpa visa API (optional)
 
     @property
     def cors_origins_list(self) -> list[str]:

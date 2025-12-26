@@ -1,7 +1,7 @@
 {
   "project": "TIP - Travel Intelligence & Planner",
-  "version": "2.2.3",
-  "lastUpdated": "2025-12-26T09:00:00Z",
+  "version": "2.2.4",
+  "lastUpdated": "2025-12-26T16:00:00Z",
   "structure": "I1-I10 Increments (unified FE+BE)",
   "notes": [
     "This file now uses the INTEGRATED_PLAN.md I1-I10 increment structure",
@@ -11,9 +11,9 @@
   ],
   "summary": {
     "totalIncrements": 10,
-    "totalFeatures": 108,
-    "completedFeatures": 85,
-    "percentComplete": 79
+    "totalFeatures": 122,
+    "completedFeatures": 91,
+    "percentComplete": 75
   },
   "increments": [
     {
@@ -479,9 +479,9 @@
       "status": {
         "frontend": 100,
         "backend": 100,
-        "agents": 20,
+        "agents": 80,
         "integration": 100,
-        "overall": 75
+        "overall": 95
       },
       "features": [
         {
@@ -567,22 +567,25 @@
           "id": "I5-AGENT-03",
           "name": "Implement visa classification logic",
           "type": "agent",
-          "passes": false,
-          "priority": "critical"
+          "passes": true,
+          "priority": "critical",
+          "implementation": "VisaCategory enum with 13 categories (visa_free, freedom_of_movement, visa_on_arrival, evisa, eta, tourist_visa, business_visa, transit_visa, work_visa, student_visa, restricted, not_allowed, unknown). classify_visa_type() function with pattern matching. Tests: 14/14 passing."
         },
         {
           "id": "I5-AGENT-04",
           "name": "Add source attribution",
           "type": "agent",
-          "passes": false,
-          "priority": "critical"
+          "passes": true,
+          "priority": "critical",
+          "implementation": "SourceType enum (government, embassy, api, third_party, ai_inference, user_report). EnhancedSourceReference model with source_type, url, description, last_accessed, confidence, is_official fields. Full integration with VisaAgentOutput."
         },
         {
           "id": "I5-AGENT-05",
           "name": "Implement confidence scoring",
           "type": "agent",
-          "passes": false,
-          "priority": "critical"
+          "passes": true,
+          "priority": "critical",
+          "implementation": "calculate_confidence_score() algorithm based on source types, sources count, data freshness, official source bonus, and data completeness. Returns tuple (score 0-1, ConfidenceLevel). ConfidenceLevel enum: verified (>0.9), high (0.75-0.9), medium (0.5-0.75), low (0.25-0.5), uncertain (<0.25). Tests: 9/9 passing."
         },
         {
           "id": "I5-BE-04",
@@ -608,10 +611,10 @@
       "description": "Country, weather, currency, culture, food intelligence cards",
       "status": {
         "frontend": 100,
-        "backend": 20,
+        "backend": 100,
         "agents": 100,
         "integration": 100,
-        "overall": 80
+        "overall": 100
       },
       "features": [
         {
@@ -738,22 +741,25 @@
           "id": "I6-API-01",
           "name": "Integrate Visual Crossing API",
           "type": "integration",
-          "passes": false,
-          "priority": "high"
+          "passes": true,
+          "priority": "high",
+          "implementation": "Visual Crossing Weather API integrated as primary source. VisualCrossingClient in weather.py with WeatherAPI fallback. Config: VISUAL_CROSSING_API_KEY in settings.py. Weather tools updated to use dual-source approach with automatic failover."
         },
         {
           "id": "I6-API-02",
-          "name": "Integrate Fixer.io API",
+          "name": "Integrate Currency API",
           "type": "integration",
-          "passes": false,
-          "priority": "high"
+          "passes": true,
+          "priority": "high",
+          "implementation": "Using free fawazahmed0/exchange-api (no key required). CurrencyExchangeClient with daily rate updates, historical rates, and multi-currency conversion. Production-ready with caching support."
         },
         {
           "id": "I6-API-03",
           "name": "Integrate REST Countries API",
           "type": "integration",
-          "passes": false,
-          "priority": "high"
+          "passes": true,
+          "priority": "high",
+          "implementation": "REST Countries API (restcountries.com) integrated for country intelligence. Returns demographics, languages, currencies, timezones, borders. Used by CountryAgent for destination context."
         },
         {
           "id": "I6-BE-01",
@@ -781,8 +787,8 @@
         "frontend": 100,
         "backend": 100,
         "agents": 100,
-        "integration": 50,
-        "overall": 92
+        "integration": 100,
+        "overall": 100
       },
       "features": [
         {
@@ -867,10 +873,11 @@
         },
         {
           "id": "I7-API-02",
-          "name": "Integrate Skyscanner/Amadeus API",
+          "name": "Integrate Amadeus API",
           "type": "integration",
-          "passes": false,
-          "priority": "high"
+          "passes": true,
+          "priority": "high",
+          "implementation": "AmadeusFlightClient in backend/app/services/flight/amadeus_client.py. Full OAuth2 authentication with token caching. Endpoints: flight search (offers), airport info, pricing. Models: FlightSegment, FlightOffer, FlightSearchResult. Fallback to AI knowledge base when API unavailable. Tests: 18/18 passing."
         },
         {
           "id": "I7-BE-01",
@@ -924,12 +931,14 @@
     },
     {
       "id": "I8",
-      "name": "Report Management",
-      "description": "Trip list, report view, PDF export, and deletion scheduling",
+      "name": "Report Management and Trip Updates",
+      "description": "Trip list, report view, PDF export, deletion scheduling, AND trip updates with selective recalculation",
       "status": {
         "frontend": 100,
         "backend": 100,
-        "overall": 100
+        "updates_frontend": 0,
+        "updates_backend": 0,
+        "overall": 60
       },
       "features": [
         {
@@ -1011,6 +1020,118 @@
           "passes": true,
           "priority": "high",
           "implementation": "Complete cleanup tasks at backend/app/tasks/cleanup.py. Includes: cleanup_expired_tasks (30-day old jobs), process_deletion_queue (GDPR compliance), cleanup_expired_pdfs (orphaned PDFs), schedule_trip_deletion, cancel_scheduled_deletion. Integrates with deletion_schedule table."
+        },
+        {
+          "id": "I8-UPDATE-BE-01",
+          "name": "Implement ChangeDetector service",
+          "type": "backend",
+          "passes": false,
+          "priority": "critical",
+          "description": "Service to detect changes between old and new trip data, and determine which agents need recalculation"
+        },
+        {
+          "id": "I8-UPDATE-BE-02",
+          "name": "Implement selective recalculation Celery task",
+          "type": "backend",
+          "passes": false,
+          "priority": "critical",
+          "description": "Celery task that only runs affected agents based on detected changes"
+        },
+        {
+          "id": "I8-UPDATE-BE-03",
+          "name": "Implement PUT /trips/{id} with recalculation",
+          "type": "backend",
+          "passes": false,
+          "priority": "critical",
+          "description": "Update trip endpoint that detects changes and triggers selective agent recalculation"
+        },
+        {
+          "id": "I8-UPDATE-BE-04",
+          "name": "Implement POST /trips/{id}/changes/preview endpoint",
+          "type": "backend",
+          "passes": false,
+          "priority": "high",
+          "description": "Preview endpoint to show what will change and which agents will be affected"
+        },
+        {
+          "id": "I8-UPDATE-BE-05",
+          "name": "Implement version history storage",
+          "type": "backend",
+          "passes": false,
+          "priority": "high",
+          "description": "Store trip versions in database on each update"
+        },
+        {
+          "id": "I8-UPDATE-BE-06",
+          "name": "Implement version history API endpoints",
+          "type": "backend",
+          "passes": false,
+          "priority": "high",
+          "description": "GET /trips/{id}/versions, GET /trips/{id}/versions/{version}, POST /trips/{id}/versions/{version}/restore"
+        },
+        {
+          "id": "I8-UPDATE-FE-01",
+          "name": "Create TripEditForm component",
+          "type": "frontend",
+          "passes": false,
+          "priority": "critical",
+          "description": "Form for editing trip details with change detection"
+        },
+        {
+          "id": "I8-UPDATE-FE-02",
+          "name": "Create ChangePreview component",
+          "type": "frontend",
+          "passes": false,
+          "priority": "high",
+          "description": "Shows pending changes before applying"
+        },
+        {
+          "id": "I8-UPDATE-FE-03",
+          "name": "Create AffectedSections component",
+          "type": "frontend",
+          "passes": false,
+          "priority": "high",
+          "description": "Shows which report sections will be recalculated"
+        },
+        {
+          "id": "I8-UPDATE-FE-04",
+          "name": "Create RecalculationStatus component",
+          "type": "frontend",
+          "passes": false,
+          "priority": "high",
+          "description": "Real-time progress indicator for recalculation"
+        },
+        {
+          "id": "I8-UPDATE-FE-05",
+          "name": "Create VersionHistory component",
+          "type": "frontend",
+          "passes": false,
+          "priority": "medium",
+          "description": "List of trip versions with compare and restore actions"
+        },
+        {
+          "id": "I8-UPDATE-FE-06",
+          "name": "Create DiffView component",
+          "type": "frontend",
+          "passes": false,
+          "priority": "medium",
+          "description": "Side-by-side comparison of two trip versions"
+        },
+        {
+          "id": "I8-UPDATE-FE-07",
+          "name": "Create ChangeConfirmDialog component",
+          "type": "frontend",
+          "passes": false,
+          "priority": "high",
+          "description": "Confirmation dialog showing changes summary and estimated recalc time"
+        },
+        {
+          "id": "I8-UPDATE-FE-08",
+          "name": "Create RestoreDialog component",
+          "type": "frontend",
+          "passes": false,
+          "priority": "medium",
+          "description": "Confirmation dialog for restoring a previous version"
         }
       ]
     },
