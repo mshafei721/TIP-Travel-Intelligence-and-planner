@@ -13,12 +13,17 @@ from app.models.report import (
     EmergencyContactResponse,
     EntryRequirementResponse,
     FlightReportResponse,
+    FullReportResponse,
     ItineraryReportResponse,
+    PDFExportError,
+    PDFExportResponse,
     PowerOutletResponse,
     ReportNotFoundError,
+    ReportSectionResponse,
     ReportUnauthorizedError,
     SourceReferenceResponse,
     TravelAdvisoryResponse,
+    TripInfoResponse,
     VisaReportResponse,
     VisaRequirementResponse,
 )
@@ -1324,4 +1329,226 @@ async def get_flight_report(trip_id: str, token_payload: dict = Depends(verify_j
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to retrieve flight report: {str(e)}",
+        )
+
+
+@router.get(
+    "/{trip_id}/report",
+    response_model=FullReportResponse,
+    responses={
+        404: {"model": ReportNotFoundError, "description": "Trip not found"},
+        403: {"model": ReportUnauthorizedError, "description": "Unauthorized access"},
+    },
+)
+async def get_full_report(trip_id: str, token_payload: dict = Depends(verify_jwt_token)):
+    """
+    Get complete aggregated report for a trip
+
+    Retrieves all generated report sections and combines them into a unified report.
+    This endpoint returns the full trip intelligence including visa, destination,
+    weather, itinerary, and flight information.
+
+    Path Parameters:
+    - trip_id: UUID of the trip
+
+    Returns:
+    - Complete aggregated report with all available sections
+    - List of available and missing sections
+    - Overall confidence score
+
+    Errors:
+    - 404: Trip not found
+    - 403: User does not own this trip
+    - 500: Database error
+
+    Example:
+        GET /trips/550e8400-e29b-41d4-a716-446655440000/report
+
+        Response:
+        {
+            "trip_id": "...",
+            "trip_info": {...},
+            "sections": {
+                "visa": {...},
+                "country": {...},
+                "itinerary": {...}
+            },
+            "available_sections": ["visa", "country", "itinerary"],
+            "missing_sections": ["flight", "weather"],
+            "overall_confidence": 0.85,
+            "is_complete": false
+        }
+    """
+    from app.services.report_aggregator import report_aggregator
+
+    user_id = token_payload["user_id"]
+
+    try:
+        # 1. Verify trip exists and user owns it
+        trip_response = (
+            supabase.table("trips").select("id, user_id").eq("id", trip_id).single().execute()
+        )
+
+        if not trip_response.data:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Trip not found")
+
+        # 2. Check ownership
+        if trip_response.data["user_id"] != user_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to access this report",
+            )
+
+        # 3. Aggregate report
+        report = await report_aggregator.aggregate_report(trip_id)
+
+        if not report:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Trip not found or no report data available",
+            )
+
+        # 4. Convert to response format
+        sections_response = {}
+        for section_type, section in report.sections.items():
+            sections_response[section_type] = ReportSectionResponse(
+                section_type=section.section_type,
+                title=section.title,
+                content=section.content,
+                confidence_score=section.confidence_score,
+                generated_at=section.generated_at,
+                sources=section.sources,
+            )
+
+        return FullReportResponse(
+            trip_id=report.trip_id,
+            trip_info=TripInfoResponse(
+                trip_id=report.trip_info.trip_id,
+                title=report.trip_info.title,
+                destination_country=report.trip_info.destination_country,
+                destination_city=report.trip_info.destination_city,
+                departure_date=report.trip_info.departure_date,
+                return_date=report.trip_info.return_date,
+                travelers=report.trip_info.travelers,
+                status=report.trip_info.status,
+                created_at=report.trip_info.created_at,
+            ),
+            sections=sections_response,
+            available_sections=report.available_sections,
+            missing_sections=report.missing_sections,
+            overall_confidence=report.overall_confidence,
+            generated_at=report.generated_at,
+            is_complete=report.is_complete,
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to retrieve report: {str(e)}",
+        )
+
+
+@router.post(
+    "/{trip_id}/report/pdf",
+    response_model=PDFExportResponse,
+    responses={
+        404: {"model": ReportNotFoundError, "description": "Trip not found"},
+        403: {"model": ReportUnauthorizedError, "description": "Unauthorized access"},
+        500: {"model": PDFExportError, "description": "PDF generation failed"},
+    },
+)
+async def export_report_pdf(trip_id: str, token_payload: dict = Depends(verify_jwt_token)):
+    """
+    Export trip report as PDF
+
+    Generates a PDF document containing the complete trip report.
+    The PDF is stored in Supabase Storage and a download URL is returned.
+
+    Path Parameters:
+    - trip_id: UUID of the trip
+
+    Returns:
+    - PDF download URL
+
+    Errors:
+    - 404: Trip not found or no report sections available
+    - 403: User does not own this trip
+    - 500: PDF generation failed
+
+    Example:
+        POST /trips/550e8400-e29b-41d4-a716-446655440000/report/pdf
+
+        Response:
+        {
+            "success": true,
+            "pdf_url": "https://storage.supabase.co/..../report.pdf",
+            "message": "PDF generated successfully"
+        }
+    """
+    from app.services.pdf_generator import PDFGenerationError, pdf_generator
+    from app.services.report_aggregator import report_aggregator
+
+    user_id = token_payload["user_id"]
+
+    try:
+        # 1. Verify trip exists and user owns it
+        trip_response = (
+            supabase.table("trips").select("id, user_id").eq("id", trip_id).single().execute()
+        )
+
+        if not trip_response.data:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Trip not found")
+
+        # 2. Check ownership
+        if trip_response.data["user_id"] != user_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to export this report",
+            )
+
+        # 3. Aggregate report
+        report = await report_aggregator.aggregate_report(trip_id)
+
+        if not report or len(report.sections) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="No report sections available. Generate the trip report first.",
+            )
+
+        # 4. Generate PDF
+        pdf_bytes = await pdf_generator.generate_pdf(report)
+
+        # 5. Save to storage
+        pdf_url = await pdf_generator.save_pdf_to_storage(trip_id, pdf_bytes, user_id)
+
+        if pdf_url:
+            return PDFExportResponse(
+                success=True,
+                pdf_url=pdf_url,
+                message="PDF generated successfully",
+            )
+        else:
+            # Fallback: Return PDF as base64 data URL if storage fails
+            import base64
+
+            pdf_base64 = base64.b64encode(pdf_bytes).decode("utf-8")
+            return PDFExportResponse(
+                success=True,
+                pdf_url=f"data:application/pdf;base64,{pdf_base64}",
+                message="PDF generated (inline data)",
+            )
+
+    except HTTPException:
+        raise
+    except PDFGenerationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"PDF generation failed: {str(e)}",
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to export PDF: {str(e)}",
         )

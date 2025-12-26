@@ -1,6 +1,7 @@
 'use client';
 
 import { AppShell } from '@/components/shell';
+import { ToastProvider, ToastContainer } from '@/components/ui/toast';
 
 const navigationItems = [
   { label: 'Dashboard', href: '/dashboard' },
@@ -22,8 +23,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AppShell navigationItems={navigationItems} user={mockUser} onLogout={handleLogout}>
-      {children}
-    </AppShell>
+    <ToastProvider>
+      <AppShell navigationItems={navigationItems} user={mockUser} onLogout={handleLogout}>
+        {children}
+      </AppShell>
+      <ToastContainer />
+    </ToastProvider>
   );
 }

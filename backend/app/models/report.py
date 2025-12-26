@@ -230,3 +230,70 @@ class FlightReportResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# Full Report Models (Aggregated)
+
+
+class TripInfoResponse(BaseModel):
+    """Basic trip information for the report header."""
+
+    trip_id: str
+    title: str
+    destination_country: str
+    destination_city: str | None = None
+    departure_date: str
+    return_date: str | None = None
+    travelers: int = 1
+    status: str
+    created_at: datetime
+
+
+class ReportSectionResponse(BaseModel):
+    """Individual report section in aggregated report."""
+
+    section_type: str
+    title: str
+    content: dict
+    confidence_score: float
+    generated_at: datetime
+    sources: list[dict] = Field(default_factory=list)
+
+
+class FullReportResponse(BaseModel):
+    """
+    Complete aggregated report response
+
+    This is the API response format for GET /trips/{id}/report
+    Returns all report sections combined into a single response.
+    """
+
+    trip_id: str
+    trip_info: TripInfoResponse
+    sections: dict[str, ReportSectionResponse] = Field(default_factory=dict)
+    available_sections: list[str] = Field(default_factory=list)
+    missing_sections: list[str] = Field(default_factory=list)
+    overall_confidence: float = 0.0
+    generated_at: datetime
+    is_complete: bool = False
+
+    class Config:
+        from_attributes = True
+
+
+class PDFExportResponse(BaseModel):
+    """Response for PDF export endpoint."""
+
+    success: bool
+    pdf_url: str | None = None
+    message: str | None = None
+
+    class Config:
+        from_attributes = True
+
+
+class PDFExportError(BaseModel):
+    """Error response for PDF export."""
+
+    detail: str = "PDF generation failed"
+    code: str = "PDF_GENERATION_ERROR"

@@ -16,8 +16,11 @@ from app.tasks.agent_jobs import (
     execute_visa_agent,
 )
 from app.tasks.cleanup import (
+    cancel_scheduled_deletion,
+    cleanup_expired_pdfs,
     cleanup_expired_tasks,
     process_deletion_queue,
+    schedule_trip_deletion,
 )
 from app.tasks.example import add, multiply
 
@@ -28,7 +31,10 @@ __all__ = [
     "execute_orchestrator",
     # Cleanup tasks
     "cleanup_expired_tasks",
+    "cleanup_expired_pdfs",
     "process_deletion_queue",
+    "schedule_trip_deletion",
+    "cancel_scheduled_deletion",
     # Example tasks
     "add",
     "multiply",
