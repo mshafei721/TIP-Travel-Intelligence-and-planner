@@ -37,9 +37,13 @@ def _is_valid_api_key(key: str | None) -> bool:
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 WEATHERAPI_KEY = os.getenv("WEATHERAPI_KEY")
 
+# Check if running in CI environment
+IS_CI = os.getenv("CI", "").lower() in ("true", "1", "yes")
+
 # Keys must exist AND not be dummy values
-ANTHROPIC_API_KEY_AVAILABLE = _is_valid_api_key(ANTHROPIC_API_KEY)
-WEATHERAPI_KEY_AVAILABLE = _is_valid_api_key(WEATHERAPI_KEY)
+# In CI, we skip integration tests even with valid keys to avoid flaky API-dependent tests
+ANTHROPIC_API_KEY_AVAILABLE = _is_valid_api_key(ANTHROPIC_API_KEY) and not IS_CI
+WEATHERAPI_KEY_AVAILABLE = _is_valid_api_key(WEATHERAPI_KEY) and not IS_CI
 
 
 def pytest_configure(config):
@@ -60,10 +64,10 @@ def pytest_collection_modifyitems(config, items):
     allowing tests to run locally when keys are configured.
     """
     skip_anthropic = pytest.mark.skip(
-        reason="ANTHROPIC_API_KEY not set or is a dummy value - skipping integration test"
+        reason="ANTHROPIC_API_KEY not available (missing, dummy value, or CI environment) - skipping integration test"
     )
     skip_weather = pytest.mark.skip(
-        reason="WEATHERAPI_KEY not set or is a dummy value - skipping weather test"
+        reason="WEATHERAPI_KEY not available (missing, dummy value, or CI environment) - skipping weather test"
     )
     skip_external_api = pytest.mark.skip(
         reason="External API tests - skipping in CI"

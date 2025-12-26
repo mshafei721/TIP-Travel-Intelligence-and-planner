@@ -1145,3 +1145,162 @@ def execute_itinerary_agent(self, trip_id: str, trip_data: dict[str, Any]) -> di
             "sources": [],
             "error": str(e),
         }
+
+
+@shared_task(
+    bind=True,
+    base=BaseTipTask,
+    name="app.tasks.agent_jobs.execute_flight_agent",
+    time_limit=1800,  # 30 minutes
+)
+def execute_flight_agent(self, trip_id: str, trip_data: dict[str, Any]) -> dict[str, Any]:
+    """
+    Execute Flight Agent for flight search and booking recommendations
+
+    Args:
+        trip_id: Trip ID from database
+        trip_data: Trip details including:
+            - origin_city: str (departure city)
+            - destination_city: str (arrival city)
+            - departure_date: str (ISO format)
+            - return_date: str (ISO format, optional for one-way)
+            - passengers: int (default: 1)
+            - cabin_class: str (economy, premium_economy, business, first)
+            - budget_usd: float (optional)
+            - direct_flights_only: bool (default: False)
+            - flexible_dates: bool (default: True)
+
+    Returns:
+        Flight recommendations with pricing, booking guidance, and airport info
+
+    Raises:
+        KeyError: If trip_id is missing or empty
+        ValueError: If required trip_data fields are missing
+
+    Production implementation using CrewAI for AI-powered flight search.
+    In production, integrate with Amadeus Self-Service API or similar for real-time data.
+    """
+    from datetime import date
+
+    from app.agents.flight.agent import FlightAgent
+    from app.agents.flight.models import CabinClass, FlightAgentInput
+
+    # Validate trip_id
+    if not trip_id or trip_id.strip() == "":
+        raise KeyError("trip_id is required and cannot be empty")
+
+    print(f"[Task {self.request.id}] Executing Flight Agent for trip {trip_id}")
+
+    try:
+        # Validate required fields
+        required_fields = [
+            "origin_city",
+            "destination_city",
+            "departure_date",
+        ]
+        for field in required_fields:
+            if field not in trip_data:
+                raise ValueError(f"Missing required field: {field}")
+
+        # Parse dates
+        departure_date_str = trip_data["departure_date"]
+        return_date_str = trip_data.get("return_date")
+
+        if isinstance(departure_date_str, str):
+            departure_date = date.fromisoformat(departure_date_str)
+        else:
+            departure_date = departure_date_str
+
+        return_date = None
+        if return_date_str:
+            if isinstance(return_date_str, str):
+                return_date = date.fromisoformat(return_date_str)
+            else:
+                return_date = return_date_str
+
+        # Parse cabin class
+        cabin_class_str = trip_data.get("cabin_class", "economy")
+        try:
+            cabin_class = CabinClass(cabin_class_str)
+        except ValueError:
+            cabin_class = CabinClass.ECONOMY
+
+        # Create FlightAgentInput
+        input_data = FlightAgentInput(
+            trip_id=trip_id,
+            origin_city=trip_data["origin_city"],
+            destination_city=trip_data["destination_city"],
+            departure_date=departure_date,
+            return_date=return_date,
+            passengers=trip_data.get("passengers", 1),
+            cabin_class=cabin_class,
+            budget_usd=trip_data.get("budget_usd"),
+            direct_flights_only=trip_data.get("direct_flights_only", False),
+            flexible_dates=trip_data.get("flexible_dates", True),
+        )
+
+        # Initialize and run Flight Agent
+        agent = FlightAgent()
+        result = agent.run(input_data)
+
+        # Store result in database (Supabase report_sections table)
+        from app.core.supabase import supabase
+
+        # Convert result to dict for JSON storage
+        content_data = result.model_dump(mode="json")
+
+        # Convert confidence (0.0-1.0) to integer (0-100) for database
+        confidence_integer = int(result.confidence_score * 100)
+
+        # Store in report_sections table
+        report_response = (
+            supabase.table("report_sections")
+            .insert(
+                {
+                    "trip_id": trip_id,
+                    "section_type": "flight",
+                    "title": f"Flights: {trip_data['origin_city']} → {trip_data['destination_city']}",
+                    "content": content_data,
+                    "confidence_score": confidence_integer,
+                    "sources": [source.model_dump() for source in result.sources],
+                    "generated_at": result.generated_at.isoformat(),
+                }
+            )
+            .execute()
+        )
+
+        if not report_response.data:
+            raise Exception("Failed to store flight report in database")
+
+        trip_type = "round-trip" if return_date else "one-way"
+        print(f"[Task {self.request.id}] Completed Flight Agent for trip {trip_id}")
+        print(
+            f"[Task {self.request.id}] Route: {trip_data['origin_city']} → {trip_data['destination_city']}"
+        )
+        print(f"[Task {self.request.id}] Type: {trip_type}")
+        print(f"[Task {self.request.id}] Passengers: {input_data.passengers}")
+        print(f"[Task {self.request.id}] Cabin: {cabin_class.value}")
+        print(f"[Task {self.request.id}] Confidence: {result.confidence_score}")
+        print(f"[Task {self.request.id}] Stored report ID: {report_response.data[0]['id']}")
+
+        return {
+            "trip_id": trip_id,
+            "agent_type": "flight",
+            "status": "completed",
+            "data": content_data,
+            "confidence": result.confidence_score,
+            "sources": [source.model_dump() for source in result.sources],
+            "error": None,
+        }
+
+    except Exception as e:
+        print(f"[Task {self.request.id}] Error in Flight Agent: {str(e)}")
+        return {
+            "trip_id": trip_id,
+            "agent_type": "flight",
+            "status": "failed",
+            "data": {},
+            "confidence": 0.0,
+            "sources": [],
+            "error": str(e),
+        }

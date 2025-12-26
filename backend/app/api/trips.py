@@ -12,6 +12,8 @@ from app.models.report import (
     CountryReportResponse,
     EmergencyContactResponse,
     EntryRequirementResponse,
+    FlightReportResponse,
+    ItineraryReportResponse,
     PowerOutletResponse,
     ReportNotFoundError,
     ReportUnauthorizedError,
@@ -1100,4 +1102,226 @@ async def get_destination_report(trip_id: str, token_payload: dict = Depends(ver
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to retrieve destination report: {str(e)}",
+        )
+
+
+@router.get(
+    "/{trip_id}/report/itinerary",
+    response_model=ItineraryReportResponse,
+    responses={
+        404: {"model": ReportNotFoundError, "description": "Report not found"},
+        403: {"model": ReportUnauthorizedError, "description": "Unauthorized access"},
+    },
+)
+async def get_itinerary_report(trip_id: str, token_payload: dict = Depends(verify_jwt_token)):
+    """
+    Get itinerary report for a trip
+
+    Retrieves the generated day-by-day itinerary for the specified trip,
+    including activities, accommodations, transportation, and budget breakdown.
+
+    Path Parameters:
+    - trip_id: UUID of the trip
+
+    Returns:
+    - Complete itinerary report with daily plans, accommodations, and tips
+
+    Errors:
+    - 404: Itinerary report not found (generate it first using POST /trips/{trip_id}/generate)
+    - 403: User does not own this trip
+    - 500: Database error
+
+    Example:
+        GET /trips/550e8400-e29b-41d4-a716-446655440000/report/itinerary
+
+        Response:
+        {
+            "report_id": "...",
+            "trip_id": "...",
+            "generated_at": "2025-12-26T10:00:00Z",
+            "confidence_score": 0.85,
+            "content": {
+                "daily_plans": [...],
+                "accommodations": [...],
+                "transportation": [...],
+                "budget_summary": {...}
+            },
+            "sources": [...],
+            "warnings": [...]
+        }
+    """
+    user_id = token_payload["user_id"]
+
+    try:
+        # 1. Verify trip exists and user owns it
+        trip_response = (
+            supabase.table("trips").select("id, user_id").eq("id", trip_id).single().execute()
+        )
+
+        if not trip_response.data:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Trip not found")
+
+        # 2. Check ownership
+        if trip_response.data["user_id"] != user_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to access this report",
+            )
+
+        # 3. Retrieve itinerary report from report_sections table
+        report_response = (
+            supabase.table("report_sections")
+            .select("*")
+            .eq("trip_id", trip_id)
+            .eq("section_type", "itinerary")
+            .order("generated_at", desc=True)
+            .limit(1)
+            .execute()
+        )
+
+        if not report_response.data or len(report_response.data) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Itinerary report not found for this trip. Generate the trip report first using POST /trips/{id}/generate",
+            )
+
+        # 4. Parse report data
+        report = report_response.data[0]
+        content = report["content"]
+
+        # Convert confidence from integer (0-100) back to float (0.0-1.0)
+        confidence_float = (
+            float(report["confidence_score"]) / 100.0 if report.get("confidence_score") else 0.0
+        )
+
+        # 5. Build response
+        return ItineraryReportResponse(
+            report_id=report["id"],
+            trip_id=report["trip_id"],
+            generated_at=datetime.fromisoformat(report["generated_at"].replace("Z", "+00:00")),
+            confidence_score=confidence_float,
+            content=content,
+            sources=[
+                SourceReferenceResponse(**source) for source in report.get("sources", [])
+            ],
+            warnings=content.get("warnings", []),
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to retrieve itinerary report: {str(e)}",
+        )
+
+
+@router.get(
+    "/{trip_id}/report/flight",
+    response_model=FlightReportResponse,
+    responses={
+        404: {"model": ReportNotFoundError, "description": "Report not found"},
+        403: {"model": ReportUnauthorizedError, "description": "Unauthorized access"},
+    },
+)
+async def get_flight_report(trip_id: str, token_payload: dict = Depends(verify_jwt_token)):
+    """
+    Get flight report for a trip
+
+    Retrieves the generated flight recommendations for the specified trip,
+    including flight options, pricing, airport information, and booking tips.
+
+    Path Parameters:
+    - trip_id: UUID of the trip
+
+    Returns:
+    - Complete flight report with recommended flights, pricing, and airport info
+
+    Errors:
+    - 404: Flight report not found (generate it first using POST /trips/{trip_id}/generate)
+    - 403: User does not own this trip
+    - 500: Database error
+
+    Example:
+        GET /trips/550e8400-e29b-41d4-a716-446655440000/report/flight
+
+        Response:
+        {
+            "report_id": "...",
+            "trip_id": "...",
+            "generated_at": "2025-12-26T10:00:00Z",
+            "confidence_score": 0.80,
+            "content": {
+                "recommended_flights": [...],
+                "price_range": {"min": 450, "max": 1200, "average": 750},
+                "airport_info": {...},
+                "booking_tips": [...]
+            },
+            "sources": [...],
+            "warnings": [...]
+        }
+    """
+    user_id = token_payload["user_id"]
+
+    try:
+        # 1. Verify trip exists and user owns it
+        trip_response = (
+            supabase.table("trips").select("id, user_id").eq("id", trip_id).single().execute()
+        )
+
+        if not trip_response.data:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Trip not found")
+
+        # 2. Check ownership
+        if trip_response.data["user_id"] != user_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to access this report",
+            )
+
+        # 3. Retrieve flight report from report_sections table
+        report_response = (
+            supabase.table("report_sections")
+            .select("*")
+            .eq("trip_id", trip_id)
+            .eq("section_type", "flight")
+            .order("generated_at", desc=True)
+            .limit(1)
+            .execute()
+        )
+
+        if not report_response.data or len(report_response.data) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Flight report not found for this trip. Generate the trip report first using POST /trips/{id}/generate",
+            )
+
+        # 4. Parse report data
+        report = report_response.data[0]
+        content = report["content"]
+
+        # Convert confidence from integer (0-100) back to float (0.0-1.0)
+        confidence_float = (
+            float(report["confidence_score"]) / 100.0 if report.get("confidence_score") else 0.0
+        )
+
+        # 5. Build response
+        return FlightReportResponse(
+            report_id=report["id"],
+            trip_id=report["trip_id"],
+            generated_at=datetime.fromisoformat(report["generated_at"].replace("Z", "+00:00")),
+            confidence_score=confidence_float,
+            content=content,
+            sources=[
+                SourceReferenceResponse(**source) for source in report.get("sources", [])
+            ],
+            warnings=content.get("warnings", []),
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to retrieve flight report: {str(e)}",
         )
