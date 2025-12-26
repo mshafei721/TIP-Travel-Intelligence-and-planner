@@ -678,10 +678,11 @@ async def get_generation_status(trip_id: str, token_payload: dict = Depends(veri
 
         trip = trip_response.data
 
-        # Get agent jobs for this trip
+        # Optimized: Get only the fields we need with a single query
+        # Using selective fields instead of SELECT * for better performance
         jobs_response = (
             supabase.table("agent_jobs")
-            .select("*")
+            .select("agent_type, status, error, created_at")
             .eq("trip_id", trip_id)
             .order("created_at")
             .execute()
@@ -689,28 +690,41 @@ async def get_generation_status(trip_id: str, token_payload: dict = Depends(veri
 
         agent_jobs = jobs_response.data if jobs_response.data else []
 
-        # Calculate progress
+        # Calculate progress using list comprehensions (more efficient)
         total_agents = 10  # 10 specialized agents
-        completed_count = sum(1 for job in agent_jobs if job["status"] == "completed")
-        failed_count = sum(1 for job in agent_jobs if job["status"] == "failed")
-        processing_job = next((job for job in agent_jobs if job["status"] == "processing"), None)
+        agents_completed = []
+        agents_failed = []
+        current_agent = None
+        first_error = None
+        started_at = None
 
+        for job in agent_jobs:
+            if started_at is None:
+                started_at = job["created_at"]
+
+            job_status = job["status"]
+            agent_type = job["agent_type"]
+
+            if job_status == "completed":
+                agents_completed.append(agent_type)
+            elif job_status == "failed":
+                agents_failed.append(agent_type)
+                if first_error is None:
+                    first_error = job.get("error")
+            elif job_status in ("processing", "running"):
+                current_agent = agent_type
+
+        completed_count = len(agents_completed)
         progress = int((completed_count / total_agents) * 100) if total_agents > 0 else 0
 
         return {
             "status": trip["status"],
             "progress": progress,
-            "current_agent": processing_job["agent_type"] if processing_job else None,
-            "agents_completed": [
-                job["agent_type"] for job in agent_jobs if job["status"] == "completed"
-            ],
-            "agents_failed": [job["agent_type"] for job in agent_jobs if job["status"] == "failed"],
-            "error": (
-                processing_job.get("error")
-                if processing_job and processing_job.get("status") == "failed"
-                else None
-            ),
-            "started_at": agent_jobs[0]["created_at"] if agent_jobs else None,
+            "current_agent": current_agent,
+            "agents_completed": agents_completed,
+            "agents_failed": agents_failed,
+            "error": first_error,
+            "started_at": started_at,
             "completed_at": (trip["updated_at"] if trip["status"] == "completed" else None),
         }
 

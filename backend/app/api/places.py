@@ -102,22 +102,39 @@ async def search_opentripmap(
 
         places = response.json().get("features", [])
 
-        # Get details for each place (with rate limiting)
-        detailed_places = []
-        for place in places[:limit]:
-            xid = place["properties"].get("xid")
-            if xid:
-                try:
-                    detail_response = await client.get(
-                        f"{OPENTRIPMAP_BASE_URL}/xid/{xid}",
-                        params={"apikey": OPENTRIPMAP_API_KEY},
-                        timeout=5.0,
-                    )
-                    if detail_response.status_code == 200:
-                        detailed_places.append(detail_response.json())
-                    await asyncio.sleep(0.1)  # Rate limiting
-                except Exception:
-                    pass
+        # Get details for each place in parallel (with semaphore for rate limiting)
+        async def fetch_place_details(xid: str) -> dict | None:
+            """Fetch details for a single place."""
+            try:
+                detail_response = await client.get(
+                    f"{OPENTRIPMAP_BASE_URL}/xid/{xid}",
+                    params={"apikey": OPENTRIPMAP_API_KEY},
+                    timeout=5.0,
+                )
+                if detail_response.status_code == 200:
+                    return detail_response.json()
+            except Exception:
+                pass
+            return None
+
+        # Collect all place IDs to fetch
+        xids = [
+            place["properties"].get("xid")
+            for place in places[:limit]
+            if place["properties"].get("xid")
+        ]
+
+        # Fetch all details in parallel (max 5 concurrent requests for rate limiting)
+        semaphore = asyncio.Semaphore(5)
+
+        async def fetch_with_semaphore(xid: str) -> dict | None:
+            async with semaphore:
+                result = await fetch_place_details(xid)
+                await asyncio.sleep(0.05)  # Small delay for rate limiting
+                return result
+
+        results = await asyncio.gather(*[fetch_with_semaphore(xid) for xid in xids])
+        detailed_places = [r for r in results if r is not None]
 
         return detailed_places
 

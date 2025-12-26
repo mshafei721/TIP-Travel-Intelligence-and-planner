@@ -1,5 +1,6 @@
 'use client';
 
+import { memo, useMemo, useCallback } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import type { BudgetRange } from '@/types/analytics';
 
@@ -18,20 +19,32 @@ const COLORS = [
   '#8b5cf6', // purple - high budget
 ];
 
-export function BudgetChart({ data, averageBudget, currency = 'USD', className }: BudgetChartProps) {
-  const chartData = data.map((item) => ({
-    name: item.range_label,
-    value: item.count,
-    percentage: item.percentage,
-  }));
+export const BudgetChart = memo(function BudgetChart({
+  data,
+  averageBudget,
+  currency = 'USD',
+  className,
+}: BudgetChartProps) {
+  const chartData = useMemo(
+    () =>
+      data.map((item) => ({
+        name: item.range_label,
+        value: item.count,
+        percentage: item.percentage,
+      })),
+    [data],
+  );
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency,
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
+  const formatCurrency = useCallback(
+    (value: number) => {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency,
+        maximumFractionDigits: 0,
+      }).format(value);
+    },
+    [currency],
+  );
 
   return (
     <div className={className}>
@@ -96,4 +109,4 @@ export function BudgetChart({ data, averageBudget, currency = 'USD', className }
       )}
     </div>
   );
-}
+});

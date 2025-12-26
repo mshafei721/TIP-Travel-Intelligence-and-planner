@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import { cn } from '@/lib/utils';
 import { LucideIcon } from 'lucide-react';
 
@@ -11,7 +12,7 @@ interface SettingsSectionProps {
   className?: string;
 }
 
-export function SettingsSection({
+export const SettingsSection = memo(function SettingsSection({
   title,
   description,
   icon: Icon,
@@ -22,7 +23,7 @@ export function SettingsSection({
     <div
       className={cn(
         'rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900',
-        className
+        className,
       )}
     >
       <div className="mb-6 flex items-start gap-3">
@@ -41,4 +42,4 @@ export function SettingsSection({
       <div className="space-y-4">{children}</div>
     </div>
   );
-}
+});

@@ -1,10 +1,25 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Palette, Bell, Shield, Bot, Download, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+import {
+  Palette,
+  Bell,
+  Shield,
+  Bot,
+  Download,
+  Loader2,
+  CheckCircle,
+  AlertCircle,
+} from 'lucide-react';
 import { SettingsSection, SettingsToggle, SettingsSelect } from '@/components/settings';
 import { getAllSettings, updateAllSettings, requestDataExport } from '@/lib/api/settings';
-import type { UserSettings, AppearanceSettingsUpdate, NotificationSettingsUpdate, PrivacySettingsUpdate, AIPreferencesUpdate } from '@/types/settings';
+import type {
+  UserSettings,
+  AppearanceSettingsUpdate,
+  NotificationSettingsUpdate,
+  PrivacySettingsUpdate,
+  AIPreferencesUpdate,
+} from '@/types/settings';
 import { THEME_OPTIONS, VISIBILITY_OPTIONS, DETAIL_LEVEL_OPTIONS } from '@/types/settings';
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
@@ -14,7 +29,9 @@ export default function SettingsPage() {
   const [error, setError] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const [settings, setSettings] = useState<UserSettings | null>(null);
-  const [exportStatus, setExportStatus] = useState<'idle' | 'exporting' | 'success' | 'error'>('idle');
+  const [exportStatus, setExportStatus] = useState<'idle' | 'exporting' | 'success' | 'error'>(
+    'idle',
+  );
 
   const fetchSettings = useCallback(async () => {
     setLoading(true);
@@ -176,19 +193,25 @@ export default function SettingsPage() {
             label="Trip Updates"
             description="Get notified about changes to your trips"
             checked={settings.notifications.email_trip_updates}
-            onChange={(email_trip_updates) => saveSettings({ notifications: { email_trip_updates } })}
+            onChange={(email_trip_updates) =>
+              saveSettings({ notifications: { email_trip_updates } })
+            }
           />
           <SettingsToggle
             label="Report Ready"
             description="Notify when AI reports are complete"
             checked={settings.notifications.email_report_ready}
-            onChange={(email_report_ready) => saveSettings({ notifications: { email_report_ready } })}
+            onChange={(email_report_ready) =>
+              saveSettings({ notifications: { email_report_ready } })
+            }
           />
           <SettingsToggle
             label="Weekly Digest"
             description="Receive a weekly summary of your activity"
             checked={settings.notifications.email_weekly_digest}
-            onChange={(email_weekly_digest) => saveSettings({ notifications: { email_weekly_digest } })}
+            onChange={(email_weekly_digest) =>
+              saveSettings({ notifications: { email_weekly_digest } })
+            }
           />
           <SettingsToggle
             label="Marketing Emails"
@@ -200,13 +223,17 @@ export default function SettingsPage() {
             label="Trip Reminders"
             description="Push notifications for upcoming trips"
             checked={settings.notifications.push_trip_reminders}
-            onChange={(push_trip_reminders) => saveSettings({ notifications: { push_trip_reminders } })}
+            onChange={(push_trip_reminders) =>
+              saveSettings({ notifications: { push_trip_reminders } })
+            }
           />
           <SettingsToggle
             label="Agent Completion"
             description="Notify when AI agents complete tasks"
             checked={settings.notifications.push_agent_completion}
-            onChange={(push_agent_completion) => saveSettings({ notifications: { push_agent_completion } })}
+            onChange={(push_agent_completion) =>
+              saveSettings({ notifications: { push_agent_completion } })
+            }
           />
         </SettingsSection>
 
@@ -222,7 +249,11 @@ export default function SettingsPage() {
             value={settings.privacy.profile_visibility}
             options={VISIBILITY_OPTIONS}
             onChange={(profile_visibility) =>
-              saveSettings({ privacy: { profile_visibility: profile_visibility as 'public' | 'private' | 'friends_only' } })
+              saveSettings({
+                privacy: {
+                  profile_visibility: profile_visibility as 'public' | 'private' | 'friends_only',
+                },
+              })
             }
           />
           <SettingsToggle
@@ -235,7 +266,9 @@ export default function SettingsPage() {
             label="Share Recommendations"
             description="Allow sharing AI recommendations with others"
             checked={settings.privacy.allow_recommendations_sharing}
-            onChange={(allow_recommendations_sharing) => saveSettings({ privacy: { allow_recommendations_sharing } })}
+            onChange={(allow_recommendations_sharing) =>
+              saveSettings({ privacy: { allow_recommendations_sharing } })
+            }
           />
           <SettingsToggle
             label="Analytics"
@@ -257,20 +290,28 @@ export default function SettingsPage() {
             value={settings.ai_preferences.detail_level}
             options={DETAIL_LEVEL_OPTIONS}
             onChange={(detail_level) =>
-              saveSettings({ ai_preferences: { detail_level: detail_level as 'minimal' | 'standard' | 'detailed' } })
+              saveSettings({
+                ai_preferences: {
+                  detail_level: detail_level as 'minimal' | 'standard' | 'detailed',
+                },
+              })
             }
           />
           <SettingsToggle
             label="Budget Suggestions"
             description="Include budget recommendations"
             checked={settings.ai_preferences.include_budget_suggestions}
-            onChange={(include_budget_suggestions) => saveSettings({ ai_preferences: { include_budget_suggestions } })}
+            onChange={(include_budget_suggestions) =>
+              saveSettings({ ai_preferences: { include_budget_suggestions } })
+            }
           />
           <SettingsToggle
             label="Local Tips"
             description="Include local insider tips and recommendations"
             checked={settings.ai_preferences.include_local_tips}
-            onChange={(include_local_tips) => saveSettings({ ai_preferences: { include_local_tips } })}
+            onChange={(include_local_tips) =>
+              saveSettings({ ai_preferences: { include_local_tips } })
+            }
           />
         </SettingsSection>
       </div>

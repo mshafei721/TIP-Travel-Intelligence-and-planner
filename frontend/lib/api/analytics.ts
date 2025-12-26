@@ -12,62 +12,7 @@ import type {
   DestinationAnalyticsResponse,
   BudgetAnalyticsResponse,
 } from '@/types/analytics';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
-
-/**
- * Get authentication token from Supabase session
- */
-async function getAuthToken(): Promise<string | null> {
-  if (typeof window === 'undefined') return null;
-
-  try {
-    const { createClient } = await import('@/lib/supabase/client');
-    const supabase = createClient();
-
-    const {
-      data: { session },
-      error,
-    } = await supabase.auth.getSession();
-
-    if (error || !session) {
-      console.warn('Failed to get Supabase session:', error);
-      return null;
-    }
-
-    return session.access_token;
-  } catch (error) {
-    console.error('Error getting auth token:', error);
-    return null;
-  }
-}
-
-/**
- * Generic API request helper
- */
-async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const token = await getAuthToken();
-
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    ...options.headers,
-  };
-
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...options,
-    headers,
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({
-      detail: 'An unexpected error occurred',
-    }));
-    throw new Error(error.detail || `HTTP ${response.status}`);
-  }
-
-  return response.json();
-}
+import { apiRequest } from './auth-utils';
 
 // ============================================
 // Usage Analytics API Functions
@@ -103,10 +48,10 @@ export async function getAgentUsageStats(period: DateRange = 'month'): Promise<A
  */
 export async function getTripAnalytics(
   period: DateRange = 'year',
-  limitDestinations: number = 10
+  limitDestinations: number = 10,
 ): Promise<TripAnalyticsResponse> {
   return apiRequest<TripAnalyticsResponse>(
-    `/api/analytics/trips?period=${period}&limit_destinations=${limitDestinations}`
+    `/api/analytics/trips?period=${period}&limit_destinations=${limitDestinations}`,
   );
 }
 
@@ -115,16 +60,18 @@ export async function getTripAnalytics(
  */
 export async function getDestinationAnalytics(
   period: DateRange = 'year',
-  limit: number = 20
+  limit: number = 20,
 ): Promise<DestinationAnalyticsResponse> {
   return apiRequest<DestinationAnalyticsResponse>(
-    `/api/analytics/trips/destinations?period=${period}&limit=${limit}`
+    `/api/analytics/trips/destinations?period=${period}&limit=${limit}`,
   );
 }
 
 /**
  * Get budget analytics
  */
-export async function getBudgetAnalytics(period: DateRange = 'year'): Promise<BudgetAnalyticsResponse> {
+export async function getBudgetAnalytics(
+  period: DateRange = 'year',
+): Promise<BudgetAnalyticsResponse> {
   return apiRequest<BudgetAnalyticsResponse>(`/api/analytics/trips/budgets?period=${period}`);
 }

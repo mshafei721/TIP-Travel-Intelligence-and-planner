@@ -2,9 +2,26 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { MapPin, Plane, Clock, Bot, TrendingUp, DollarSign } from 'lucide-react';
-import { StatCard, UsageChart, DestinationChart, BudgetChart, AgentUsageChart } from '@/components/analytics';
-import { getUsageStats, getUsageTrends, getAgentUsageStats, getTripAnalytics } from '@/lib/api/analytics';
-import type { DateRange, UsageStats, UsageTrend, AgentUsageStats, TripAnalytics } from '@/types/analytics';
+import {
+  StatCard,
+  UsageChart,
+  DestinationChart,
+  BudgetChart,
+  AgentUsageChart,
+} from '@/components/analytics';
+import {
+  getUsageStats,
+  getUsageTrends,
+  getAgentUsageStats,
+  getTripAnalytics,
+} from '@/lib/api/analytics';
+import type {
+  DateRange,
+  UsageStats,
+  UsageTrend,
+  AgentUsageStats,
+  TripAnalytics,
+} from '@/types/analytics';
 import { DATE_RANGE_OPTIONS } from '@/types/analytics';
 
 export default function AnalyticsPage() {
@@ -127,7 +144,11 @@ export default function AnalyticsPage() {
             />
             <StatCard
               title="Avg Trip Duration"
-              value={tripAnalytics?.avg_trip_duration_days ? `${tripAnalytics.avg_trip_duration_days.toFixed(1)} days` : 'N/A'}
+              value={
+                tripAnalytics?.avg_trip_duration_days
+                  ? `${tripAnalytics.avg_trip_duration_days.toFixed(1)} days`
+                  : 'N/A'
+              }
               description="Average trip length"
               icon={Clock}
             />

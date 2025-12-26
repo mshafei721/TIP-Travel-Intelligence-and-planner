@@ -1,5 +1,6 @@
 'use client';
 
+import { memo, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 
 interface Option {
@@ -17,7 +18,7 @@ interface SettingsSelectProps {
   disabled?: boolean;
 }
 
-export function SettingsSelect({
+export const SettingsSelect = memo(function SettingsSelect({
   label,
   description,
   value,
@@ -25,11 +26,18 @@ export function SettingsSelect({
   onChange,
   disabled,
 }: SettingsSelectProps) {
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      onChange(e.target.value);
+    },
+    [onChange],
+  );
+
   return (
     <div
       className={cn(
         'flex flex-col gap-2 rounded-lg border border-slate-200 p-4 dark:border-slate-700',
-        disabled && 'opacity-50'
+        disabled && 'opacity-50',
       )}
     >
       <div className="flex items-center justify-between gap-4">
@@ -41,7 +49,7 @@ export function SettingsSelect({
         </div>
         <select
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={handleChange}
           disabled={disabled}
           className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
         >
@@ -54,4 +62,4 @@ export function SettingsSelect({
       </div>
     </div>
   );
-}
+});

@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import { cn } from '@/lib/utils';
 import { LucideIcon } from 'lucide-react';
 
@@ -15,7 +16,7 @@ interface StatCardProps {
   className?: string;
 }
 
-export function StatCard({
+export const StatCard = memo(function StatCard({
   title,
   value,
   description,
@@ -27,7 +28,7 @@ export function StatCard({
     <div
       className={cn(
         'rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900',
-        className
+        className,
       )}
     >
       <div className="flex items-center justify-between">
@@ -44,7 +45,7 @@ export function StatCard({
           <span
             className={cn(
               'text-sm font-medium',
-              trend.isPositive ? 'text-green-600' : 'text-red-600'
+              trend.isPositive ? 'text-green-600' : 'text-red-600',
             )}
           >
             {trend.isPositive ? '+' : ''}
@@ -57,4 +58,4 @@ export function StatCard({
       )}
     </div>
   );
-}
+});

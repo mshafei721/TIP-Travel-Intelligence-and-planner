@@ -19,9 +19,17 @@ export const THEME_OPTIONS: { value: Theme; label: string; description: string }
   { value: 'system', label: 'System', description: 'Match your device settings' },
 ];
 
-export const VISIBILITY_OPTIONS: { value: ProfileVisibility; label: string; description: string }[] = [
+export const VISIBILITY_OPTIONS: {
+  value: ProfileVisibility;
+  label: string;
+  description: string;
+}[] = [
   { value: 'public', label: 'Public', description: 'Anyone can see your profile' },
-  { value: 'friends_only', label: 'Friends Only', description: 'Only friends can see your profile' },
+  {
+    value: 'friends_only',
+    label: 'Friends Only',
+    description: 'Only friends can see your profile',
+  },
   { value: 'private', label: 'Private', description: 'Only you can see your profile' },
 ];
 

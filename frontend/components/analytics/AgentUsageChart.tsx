@@ -1,5 +1,6 @@
 'use client';
 
+import { memo, useMemo } from 'react';
 import {
   BarChart,
   Bar,
@@ -17,15 +18,22 @@ interface AgentUsageChartProps {
   className?: string;
 }
 
-export function AgentUsageChart({ data, className }: AgentUsageChartProps) {
-  const chartData = data.map((item) => ({
-    name: item.display_name,
-    successful: item.successful_invocations,
-    failed: item.failed_invocations,
-    total: item.total_invocations,
-    success_rate: item.success_rate,
-    avg_time: item.avg_response_time_seconds,
-  }));
+export const AgentUsageChart = memo(function AgentUsageChart({
+  data,
+  className,
+}: AgentUsageChartProps) {
+  const chartData = useMemo(
+    () =>
+      data.map((item) => ({
+        name: item.display_name,
+        successful: item.successful_invocations,
+        failed: item.failed_invocations,
+        total: item.total_invocations,
+        success_rate: item.success_rate,
+        avg_time: item.avg_response_time_seconds,
+      })),
+    [data],
+  );
 
   return (
     <div className={className}>
@@ -39,10 +47,7 @@ export function AgentUsageChart({ data, className }: AgentUsageChartProps) {
       ) : (
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={chartData}
-              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-            >
+            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
               <XAxis
                 dataKey="name"
@@ -52,10 +57,7 @@ export function AgentUsageChart({ data, className }: AgentUsageChartProps) {
                 textAnchor="end"
                 height={80}
               />
-              <YAxis
-                tick={{ fill: '#64748b', fontSize: 12 }}
-                axisLine={{ stroke: '#e2e8f0' }}
-              />
+              <YAxis tick={{ fill: '#64748b', fontSize: 12 }} axisLine={{ stroke: '#e2e8f0' }} />
               <Tooltip
                 contentStyle={{
                   backgroundColor: '#fff',
@@ -94,4 +96,4 @@ export function AgentUsageChart({ data, className }: AgentUsageChartProps) {
       )}
     </div>
   );
-}
+});

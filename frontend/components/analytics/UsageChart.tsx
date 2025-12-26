@@ -1,5 +1,6 @@
 'use client';
 
+import { memo, useMemo } from 'react';
 import {
   LineChart,
   Line,
@@ -17,15 +18,19 @@ interface UsageChartProps {
   className?: string;
 }
 
-export function UsageChart({ data, className }: UsageChartProps) {
-  // Format data for display
-  const chartData = data.map((item) => ({
-    ...item,
-    date: new Date(item.date).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-    }),
-  }));
+export const UsageChart = memo(function UsageChart({ data, className }: UsageChartProps) {
+  // Memoize formatted data for display
+  const chartData = useMemo(
+    () =>
+      data.map((item) => ({
+        ...item,
+        date: new Date(item.date).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+        }),
+      })),
+    [data],
+  );
 
   return (
     <div className={className}>
@@ -34,20 +39,14 @@ export function UsageChart({ data, className }: UsageChartProps) {
       </h3>
       <div className="h-80">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart
-            data={chartData}
-            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-          >
+          <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
             <XAxis
               dataKey="date"
               tick={{ fill: '#64748b', fontSize: 12 }}
               axisLine={{ stroke: '#e2e8f0' }}
             />
-            <YAxis
-              tick={{ fill: '#64748b', fontSize: 12 }}
-              axisLine={{ stroke: '#e2e8f0' }}
-            />
+            <YAxis tick={{ fill: '#64748b', fontSize: 12 }} axisLine={{ stroke: '#e2e8f0' }} />
             <Tooltip
               contentStyle={{
                 backgroundColor: '#fff',
@@ -89,4 +88,4 @@ export function UsageChart({ data, className }: UsageChartProps) {
       </div>
     </div>
   );
-}
+});
