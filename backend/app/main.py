@@ -11,6 +11,7 @@ from app.api import healthcheck, profile, recommendations, templates, trips
 from app.core.config import settings
 from app.core.exception_handlers import register_exception_handlers
 from app.core.logging_config import RequestLogger, configure_logging
+from app.core.security import check_security_on_startup, register_security_middleware
 from app.core.sentry import configure_sentry
 
 # Create FastAPI application
@@ -23,13 +24,25 @@ app = FastAPI(
     openapi_url="/api/openapi.json",
 )
 
-# Configure CORS
+# Configure CORS with restricted methods and headers (security hardening)
+ALLOWED_METHODS = ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"]
+ALLOWED_HEADERS = [
+    "Authorization",
+    "Content-Type",
+    "X-Request-ID",
+    "X-Idempotency-Key",
+    "Accept",
+    "Accept-Language",
+    "Origin",
+]
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins_list,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=ALLOWED_METHODS,
+    allow_headers=ALLOWED_HEADERS,
+    expose_headers=["X-Request-ID", "X-RateLimit-Limit", "X-RateLimit-Remaining"],
 )
 
 # Configure structured logging
@@ -50,6 +63,9 @@ if settings.SENTRY_ENABLED and settings.SENTRY_DSN:
 
 # Register exception handlers (must be before routers)
 register_exception_handlers(app)
+
+# Register security middleware (rate limiting, security headers)
+register_security_middleware(app)
 
 # Add request logging middleware
 app.middleware("http")(RequestLogger(app))
@@ -82,6 +98,10 @@ async def startup_event():
     """Application startup tasks"""
     import logging
     logger = logging.getLogger("app.startup")
+
+    # Run security validation (fails on critical issues in production)
+    check_security_on_startup(app, fail_on_critical=True)
+
     logger.info(
         "Application starting",
         extra={
@@ -90,6 +110,7 @@ async def startup_event():
             "environment": settings.ENVIRONMENT,
             "cors_origins": settings.cors_origins_list,
             "sentry_enabled": bool(settings.SENTRY_DSN),
+            "rate_limit": settings.RATE_LIMIT_PER_MINUTE,
         }
     )
 

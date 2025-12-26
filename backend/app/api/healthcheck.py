@@ -23,16 +23,20 @@ async def health_check() -> dict[str, str]:
         dict: Health status information including:
             - status: Overall health status
             - timestamp: Current server timestamp
-            - environment: Current environment (development/production)
-            - version: API version
+            - In development: environment, version, service name
     """
-    return {
+    response = {
         "status": "healthy",
         "timestamp": datetime.now(UTC).isoformat(),
-        "environment": settings.ENVIRONMENT,
-        "version": settings.APP_VERSION,
-        "service": settings.APP_NAME,
     }
+
+    # Only expose detailed info in non-production environments
+    if settings.ENVIRONMENT != "production":
+        response["environment"] = settings.ENVIRONMENT
+        response["version"] = settings.APP_VERSION
+        response["service"] = settings.APP_NAME
+
+    return response
 
 
 @router.get(
