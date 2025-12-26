@@ -12,35 +12,9 @@ import type {
   TravelTimelineResponse,
   TripRatingRequest,
 } from '@/types/profile';
+import { getAuthToken } from './auth-utils';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
-
-/**
- * Get authentication token from Supabase session
- */
-async function getAuthToken(): Promise<string | null> {
-  if (typeof window === 'undefined') return null;
-
-  try {
-    const { createClient } = await import('@/lib/supabase/client');
-    const supabase = createClient();
-
-    const {
-      data: { session },
-      error,
-    } = await supabase.auth.getSession();
-
-    if (error || !session) {
-      console.warn('Failed to get Supabase session:', error);
-      return null;
-    }
-
-    return session.access_token;
-  } catch (error) {
-    console.error('Error getting auth token:', error);
-    return null;
-  }
-}
 
 /**
  * Generic API request helper
