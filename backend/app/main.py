@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.api import healthcheck, profile, recommendations, templates, trips
+from app.api import healthcheck, itinerary, places, profile, recommendations, templates, trips
 from app.core.config import settings
 from app.core.exception_handlers import register_exception_handlers
 from app.core.logging_config import RequestLogger, configure_logging
@@ -76,6 +76,8 @@ app.include_router(trips.router, prefix="/api")
 app.include_router(profile.router, prefix="/api")
 app.include_router(recommendations.router, prefix="/api")
 app.include_router(templates.router, prefix="/api")
+app.include_router(itinerary.router, prefix="/api")
+app.include_router(places.router, prefix="/api")
 
 
 # Root endpoint

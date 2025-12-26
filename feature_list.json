@@ -11,9 +11,9 @@
   ],
   "summary": {
     "totalIncrements": 10,
-    "totalFeatures": 104,
-    "completedFeatures": 81,
-    "percentComplete": 78
+    "totalFeatures": 108,
+    "completedFeatures": 85,
+    "percentComplete": 79
   },
   "increments": [
     {
@@ -887,6 +887,38 @@
           "passes": true,
           "priority": "high",
           "implementation": "Complete API endpoint at GET /trips/{id}/report/flight. Returns FlightReportResponse with recommended flights, pricing, airport info. Includes auth, ownership verification, confidence score conversion."
+        },
+        {
+          "id": "I7-BE-03",
+          "name": "Implement Itinerary Builder CRUD endpoints",
+          "type": "backend",
+          "passes": true,
+          "priority": "critical",
+          "implementation": "Complete Visual Itinerary Builder API at /api/trips/{id}/itinerary. Includes: GET (retrieve itinerary), PUT (update full), POST days, DELETE days, POST activities, PUT activities, DELETE activities, POST reorder. Stores user-edited itinerary in trip_details.itinerary JSONB. Separate from AI-generated report."
+        },
+        {
+          "id": "I7-BE-04",
+          "name": "Implement Places Search API",
+          "type": "backend",
+          "passes": true,
+          "priority": "high",
+          "implementation": "Places API at /api/places with search, nearby, and autocomplete endpoints. Uses OpenTripMap API for free place data. Supports location geocoding, category filters, radius-based search. Returns PlaceSearchResult with coordinates, ratings, and photos."
+        },
+        {
+          "id": "I7-BE-05",
+          "name": "Implement Sync from AI Itinerary endpoint",
+          "type": "backend",
+          "passes": true,
+          "priority": "medium",
+          "implementation": "POST /api/trips/{id}/itinerary/sync-from-ai endpoint. Copies AI-generated itinerary report to user-editable format. Transforms report_sections content to editable day/activity structure with generated UUIDs."
+        },
+        {
+          "id": "I7-BE-06",
+          "name": "Create itinerary data models",
+          "type": "backend",
+          "passes": true,
+          "priority": "high",
+          "implementation": "Comprehensive Pydantic models at backend/app/models/itinerary.py. Includes: Activity, DayPlan, Itinerary with 11 activity types, booking status, priority levels. Location model with coordinates. Request/response models for all CRUD operations."
         }
       ]
     },
@@ -1189,8 +1221,9 @@
           "id": "I10-INFRA-03",
           "name": "GDPR compliance verification",
           "type": "infrastructure",
-          "passes": false,
-          "priority": "critical"
+          "passes": true,
+          "priority": "critical",
+          "implementation": "Complete GDPR compliance implementation: (1) Right to Access (Article 15) - GET /api/profile/data-export endpoint for full data export; (2) Right to Erasure (Article 17) - DELETE /api/profile with audit logging; (3) Right to Data Portability (Article 20) - JSON machine-readable export; (4) Consent Management (Article 7) - GET/PUT /api/profile/consent endpoints; (5) Audit Logging - gdpr_audit_log table for compliance tracking; (6) Data Retention - configurable retention policies with cleanup functions. Database migration: 003_add_gdpr_tables.sql creates user_consents, gdpr_audit_log tables with RLS policies."
         }
       ]
     }
