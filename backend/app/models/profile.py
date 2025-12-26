@@ -189,6 +189,45 @@ class AccountDeletionRequest(BaseModel):
         json_schema_extra = {"example": {"confirmation": "DELETE MY ACCOUNT"}}
 
 
+class ConsentUpdate(BaseModel):
+    """Model for updating user consent preferences (GDPR compliance)"""
+
+    consent_type: str = Field(
+        ...,
+        description=(
+            "Type of consent: terms_of_service, privacy_policy, "
+            "marketing_emails, data_processing, third_party_sharing, analytics"
+        ),
+    )
+    granted: bool = Field(..., description="Whether consent is granted or revoked")
+    version: str = Field(default="1.0", description="Version of terms/policy")
+
+    @field_validator("consent_type")
+    @classmethod
+    def validate_consent_type(cls, v: str) -> str:
+        """Validate consent type is valid"""
+        valid_types = [
+            "terms_of_service",
+            "privacy_policy",
+            "marketing_emails",
+            "data_processing",
+            "third_party_sharing",
+            "analytics",
+        ]
+        if v not in valid_types:
+            raise ValueError(f"Invalid consent type. Must be one of: {valid_types}")
+        return v
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "consent_type": "marketing_emails",
+                "granted": True,
+                "version": "1.0",
+            }
+        }
+
+
 # Response models
 class UserProfileResponse(BaseModel):
     """Response model for user profile"""

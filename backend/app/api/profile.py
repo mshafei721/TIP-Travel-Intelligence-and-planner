@@ -1,11 +1,21 @@
 """Profile and statistics API endpoints"""
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from app.core.auth import verify_jwt_token
+from app.core.gdpr import (
+    AuditEventType,
+    ConsentType,
+    audit_logger,
+    consent_manager,
+    data_exporter,
+    get_gdpr_rights_summary,
+    retention_manager,
+)
 from app.core.supabase import supabase
 from app.models.profile import (
     AccountDeletionRequest,
+    ConsentUpdate,
     TravelerProfileUpdate,
     UserPreferences,
     UserProfileUpdate,
@@ -280,7 +290,8 @@ async def update_traveler_profile(
             ):
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Creating traveler profile requires nationality, residency_country, and residency_status",
+                    detail="Creating traveler profile requires nationality, "
+                    "residency_country, and residency_status",
                 )
 
             update_data["user_id"] = user_id
@@ -355,10 +366,11 @@ async def update_preferences(
 @router.delete("")
 async def delete_account(
     deletion_request: AccountDeletionRequest,
+    request: Request,
     token_payload: dict = Depends(verify_jwt_token),
 ):
     """
-    Delete user account
+    Delete user account (GDPR Article 17 - Right to Erasure)
 
     Permanently deletes the user's account and all associated data.
     Requires confirmation text "DELETE MY ACCOUNT" to proceed.
@@ -371,6 +383,9 @@ async def delete_account(
     - report_sections
     - notifications
     - deletion_schedule entries
+    - consent records
+
+    This action is irreversible and complies with GDPR Article 17.
 
     Args:
     - deletion_request: AccountDeletionRequest with confirmation text
@@ -381,6 +396,19 @@ async def delete_account(
     user_id = token_payload["user_id"]
 
     try:
+        # Get client IP for audit logging
+        client_ip = request.client.host if request.client else None
+
+        # Log the deletion request for audit trail (before deletion)
+        await audit_logger.log_event(
+            event_type=AuditEventType.DELETION_REQUESTED,
+            user_id=user_id,
+            resource_type="account",
+            action="full_account_deletion",
+            ip_address=client_ip,
+            details={"gdpr_article": "Article 17 - Right to Erasure"},
+        )
+
         # Delete from user_profiles table
         # This will CASCADE delete all related data due to foreign key constraints
         response = supabase.table("user_profiles").delete().eq("id", user_id).execute()
@@ -390,6 +418,14 @@ async def delete_account(
                 status_code=status.HTTP_404_NOT_FOUND, detail="User profile not found"
             )
 
+        # Log successful deletion
+        await audit_logger.log_event(
+            event_type=AuditEventType.ACCOUNT_DELETED,
+            user_id=user_id,
+            action="account_deleted",
+            ip_address=client_ip,
+        )
+
         return {"message": "Account deleted successfully", "user_id": user_id}
 
     except HTTPException:
@@ -398,4 +434,201 @@ async def delete_account(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to delete account: {str(e)}",
+        )
+
+
+# =============================================================================
+# GDPR Compliance Endpoints
+# =============================================================================
+
+
+@router.get("/data-export")
+async def export_user_data(
+    request: Request,
+    token_payload: dict = Depends(verify_jwt_token),
+):
+    """
+    Export all user data (GDPR Articles 15 & 20)
+
+    Implements Right to Access (Article 15) and Right to Data Portability (Article 20).
+    Returns all personal data in a structured, machine-readable JSON format.
+
+    Exported data includes:
+    - User profile information
+    - Traveler preferences
+    - All trips and their details
+    - Generated reports
+    - Consent history
+    - User preferences
+
+    Returns:
+    - Complete data export with GDPR compliance notice
+    """
+    user_id = token_payload["user_id"]
+
+    try:
+        # Get client IP for audit logging
+        client_ip = request.client.host if request.client else None
+
+        # Export all user data
+        export_result = await data_exporter.export_user_data(user_id)
+
+        # Log the data access for audit trail
+        await audit_logger.log_event(
+            event_type=AuditEventType.DATA_EXPORTED,
+            user_id=user_id,
+            action="full_export",
+            ip_address=client_ip,
+            details={"categories": export_result.data_categories},
+        )
+
+        return export_result.model_dump(mode="json")
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to export data: {str(e)}",
+        )
+
+
+@router.get("/consent")
+async def get_user_consent(token_payload: dict = Depends(verify_jwt_token)):
+    """
+    Get user consent records (GDPR Article 7)
+
+    Returns all consent records for the authenticated user, including:
+    - Type of consent (terms, privacy, marketing, etc.)
+    - Whether consent is currently granted
+    - Timestamps for when consent was granted/revoked
+    - Version of terms/policy consented to
+
+    Returns:
+    - List of consent records
+    """
+    user_id = token_payload["user_id"]
+
+    try:
+        consents = await consent_manager.get_user_consents(user_id)
+
+        return {
+            "user_id": user_id,
+            "consents": consents,
+            "available_consent_types": [ct.value for ct in ConsentType],
+        }
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get consent records: {str(e)}",
+        )
+
+
+@router.put("/consent")
+async def update_user_consent(
+    consent_update: ConsentUpdate,
+    request: Request,
+    token_payload: dict = Depends(verify_jwt_token),
+):
+    """
+    Update user consent (GDPR Article 7)
+
+    Record a consent grant or revocation. Users can:
+    - Grant consent for data processing, marketing, etc.
+    - Revoke previously granted consent
+
+    Args:
+    - consent_update: ConsentUpdate with consent_type, granted, and version
+
+    Returns:
+    - Updated consent record
+    """
+    user_id = token_payload["user_id"]
+
+    try:
+        # Get client info for audit trail
+        client_ip = request.client.host if request.client else None
+        user_agent = request.headers.get("user-agent")
+
+        # Convert string to ConsentType enum
+        consent_type = ConsentType(consent_update.consent_type)
+
+        # Record the consent
+        result = await consent_manager.record_consent(
+            user_id=user_id,
+            consent_type=consent_type,
+            granted=consent_update.granted,
+            ip_address=client_ip,
+            user_agent=user_agent,
+            version=consent_update.version,
+        )
+
+        return {
+            "message": f"Consent {'granted' if consent_update.granted else 'revoked'} successfully",
+            "consent": result,
+        }
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update consent: {str(e)}",
+        )
+
+
+@router.get("/gdpr-rights")
+async def get_gdpr_rights():
+    """
+    Get GDPR rights information
+
+    Returns information about implemented GDPR rights and how to exercise them.
+    This endpoint is public and does not require authentication.
+
+    Returns:
+    - Summary of GDPR rights with corresponding API endpoints
+    """
+    return {
+        "gdpr_rights": get_gdpr_rights_summary(),
+        "data_retention": {
+            "trips": f"{retention_manager.get_retention_policy('trips')} days",
+            "reports": f"{retention_manager.get_retention_policy('reports')} days",
+            "audit_logs": f"{retention_manager.get_retention_policy('audit_logs')} days",
+            "deletion_grace_period": f"{retention_manager.get_deletion_grace_period()} days",
+        },
+        "contact": {
+            "data_protection_officer": "dpo@tip-travel.com",
+            "support_email": "privacy@tip-travel.com",
+        },
+    }
+
+
+@router.get("/scheduled-deletions")
+async def get_scheduled_deletions(token_payload: dict = Depends(verify_jwt_token)):
+    """
+    Get data scheduled for deletion
+
+    Returns all trips and data scheduled for automatic deletion,
+    allowing users to cancel deletion if needed.
+
+    Returns:
+    - List of items scheduled for deletion with their deletion dates
+    """
+    user_id = token_payload["user_id"]
+
+    try:
+        scheduled = await retention_manager.get_data_scheduled_for_deletion(user_id)
+
+        return {
+            "user_id": user_id,
+            "scheduled_deletions": scheduled,
+            "grace_period_days": retention_manager.get_deletion_grace_period(),
+        }
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get scheduled deletions: {str(e)}",
         )

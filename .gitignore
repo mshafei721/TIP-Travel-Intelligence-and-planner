@@ -135,6 +135,7 @@ desktop.ini
 *.sqlite
 *.sqlite3
 *.sql
+!db/migrations/*.sql
 dump.rdb
 
 # ============================================
