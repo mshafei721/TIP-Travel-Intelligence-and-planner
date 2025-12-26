@@ -8,8 +8,11 @@ const navigationItems = [
   { label: 'Dashboard', href: '/dashboard' },
   { label: 'My Trips', href: '/trips' },
   { label: 'Templates', href: '/templates' },
+  { label: 'History', href: '/history' },
   { label: 'Create Trip', href: '/trips/create' },
+  { label: 'Analytics', href: '/analytics' },
   { label: 'Profile', href: '/profile' },
+  { label: 'Settings', href: '/settings' },
 ];
 
 // Mock user - will be replaced with real auth in Milestone 2
