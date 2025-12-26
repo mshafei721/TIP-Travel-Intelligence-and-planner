@@ -341,7 +341,61 @@ class OrchestratorAgent:
                 longitude=None,  # Will be populated by geocoding in future
             )
 
-        # Add more agent input creators as agents are implemented
+        # For currency agent
+        if agent_name == "currency":
+            from app.agents.currency.models import CurrencyAgentInput
+
+            return CurrencyAgentInput(
+                trip_id=trip_data.trip_id,
+                destination_country=trip_data.destination_country,
+                destination_city=trip_data.destination_city,
+                departure_date=trip_data.departure_date,
+                return_date=trip_data.return_date,
+                traveler_nationality=trip_data.user_nationality,
+                base_currency="USD",  # Default to USD, can be extended later
+            )
+
+        # For culture agent
+        if agent_name == "culture":
+            from app.agents.culture.models import CultureAgentInput
+
+            return CultureAgentInput(
+                trip_id=trip_data.trip_id,
+                destination_country=trip_data.destination_country,
+                destination_city=trip_data.destination_city,
+                departure_date=trip_data.departure_date,
+                return_date=trip_data.return_date,
+                traveler_nationality=trip_data.user_nationality,
+            )
+
+        # For food agent
+        if agent_name == "food":
+            from app.agents.food.models import FoodAgentInput
+
+            return FoodAgentInput(
+                trip_id=trip_data.trip_id,
+                destination_country=trip_data.destination_country,
+                destination_city=trip_data.destination_city,
+                departure_date=trip_data.departure_date,
+                return_date=trip_data.return_date,
+                traveler_nationality=trip_data.user_nationality,
+                dietary_restrictions=None,  # Can be extended to include user preferences
+            )
+
+        # For attractions agent
+        if agent_name == "attractions":
+            from app.agents.attractions.models import AttractionsAgentInput
+
+            return AttractionsAgentInput(
+                trip_id=trip_data.trip_id,
+                destination_country=trip_data.destination_country,
+                destination_city=trip_data.destination_city,
+                departure_date=trip_data.departure_date,
+                return_date=trip_data.return_date,
+                traveler_nationality=trip_data.user_nationality,
+                interests=None,  # Can be extended to include user preferences
+            )
+
         raise ValueError(f"Unknown agent: {agent_name}")
 
     async def _save_results(self, trip_id: str, sections: dict[str, Any]) -> None:

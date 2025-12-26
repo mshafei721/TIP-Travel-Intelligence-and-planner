@@ -1,12 +1,16 @@
 """Trips API endpoints"""
 
+import logging
 from datetime import date, datetime
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 
 from app.core.auth import verify_jwt_token
+from app.core.errors import log_and_raise_http_error
 from app.core.supabase import supabase
+
+logger = logging.getLogger(__name__)
 from app.models.report import (
     ApplicationProcessResponse,
     CountryReportResponse,
@@ -156,10 +160,7 @@ async def list_trips(
         return {"items": items, "nextCursor": next_cursor}
 
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to fetch trips: {str(e)}",
-        )
+        log_and_raise_http_error("fetch trips", e, "Failed to fetch trips. Please try again.")
 
 
 @router.get("/{trip_id}")
@@ -193,10 +194,7 @@ async def get_trip(trip_id: str, token_payload: dict = Depends(verify_jwt_token)
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to fetch trip: {str(e)}",
-        )
+        log_and_raise_http_error("fetch trip", e, "Failed to fetch trip. Please try again.")
 
 
 @router.post("", status_code=status.HTTP_201_CREATED, response_model=TripResponse)

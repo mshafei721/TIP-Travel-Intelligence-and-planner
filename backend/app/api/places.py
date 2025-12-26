@@ -6,6 +6,7 @@ Uses OpenTripMap API (free tier) for place data.
 """
 
 import asyncio
+import logging
 import os
 from typing import Optional
 
@@ -13,7 +14,10 @@ import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.core.auth import verify_jwt_token
+from app.core.errors import log_and_raise_http_error
 from app.models.itinerary import PlaceSearchResponse, PlaceSearchResult
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/places", tags=["places"])
 
@@ -323,10 +327,7 @@ async def search_places(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to search places: {str(e)}",
-        )
+        log_and_raise_http_error("search places", e, "Failed to search places. Please try again.")
 
 
 @router.get(
@@ -379,10 +380,7 @@ async def nearby_places(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to find nearby places: {str(e)}",
-        )
+        log_and_raise_http_error("find nearby places", e, "Failed to find nearby places. Please try again.")
 
 
 @router.get(

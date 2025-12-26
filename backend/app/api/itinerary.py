@@ -6,6 +6,7 @@ These endpoints manage the user's custom itinerary, which is stored
 separately from the AI-generated itinerary report.
 """
 
+import logging
 from datetime import datetime
 from typing import Optional
 from uuid import uuid4
@@ -13,7 +14,10 @@ from uuid import uuid4
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.core.auth import verify_jwt_token
+from app.core.errors import log_and_raise_http_error
 from app.core.supabase import supabase
+
+logger = logging.getLogger(__name__)
 from app.models.itinerary import (
     Activity,
     ActivityCreate,
@@ -184,10 +188,7 @@ async def get_itinerary(trip_id: str, token_payload: dict = Depends(verify_jwt_t
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to retrieve itinerary: {str(e)}",
-        )
+        log_and_raise_http_error("retrieve itinerary", e, "Failed to retrieve itinerary. Please try again.")
 
 
 # ============================================================================
@@ -264,10 +265,7 @@ async def update_itinerary(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to update itinerary: {str(e)}",
-        )
+        log_and_raise_http_error("update itinerary", e, "Failed to update itinerary. Please try again.")
 
 
 # ============================================================================
@@ -344,10 +342,7 @@ async def add_day(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to add day: {str(e)}",
-        )
+        log_and_raise_http_error("add day", e, "Failed to add day. Please try again.")
 
 
 @router.put(
@@ -423,10 +418,7 @@ async def update_day(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to update day: {str(e)}",
-        )
+        log_and_raise_http_error("update day", e, "Failed to update day. Please try again.")
 
 
 @router.delete(
@@ -484,10 +476,7 @@ async def remove_day(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to remove day: {str(e)}",
-        )
+        log_and_raise_http_error("remove day", e, "Failed to remove day. Please try again.")
 
 
 # ============================================================================
@@ -567,10 +556,7 @@ async def add_activity(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to add activity: {str(e)}",
-        )
+        log_and_raise_http_error("add activity", e, "Failed to add activity. Please try again.")
 
 
 @router.put(
@@ -649,10 +635,7 @@ async def update_activity(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to update activity: {str(e)}",
-        )
+        log_and_raise_http_error("update activity", e, "Failed to update activity. Please try again.")
 
 
 @router.delete(
@@ -721,10 +704,7 @@ async def remove_activity(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to remove activity: {str(e)}",
-        )
+        log_and_raise_http_error("remove activity", e, "Failed to remove activity. Please try again.")
 
 
 # ============================================================================
@@ -836,10 +816,7 @@ async def reorder_activities(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to reorder activities: {str(e)}",
-        )
+        log_and_raise_http_error("reorder activities", e, "Failed to reorder activities. Please try again.")
 
 
 # ============================================================================
@@ -969,7 +946,4 @@ async def sync_from_ai_itinerary(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to sync from AI itinerary: {str(e)}",
-        )
+        log_and_raise_http_error("sync from AI itinerary", e, "Failed to sync from AI itinerary. Please try again.")

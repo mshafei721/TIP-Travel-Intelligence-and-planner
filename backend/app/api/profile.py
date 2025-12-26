@@ -1,8 +1,13 @@
 """Profile and statistics API endpoints"""
 
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from app.core.auth import verify_jwt_token
+from app.core.errors import log_and_raise_http_error
+
+logger = logging.getLogger(__name__)
 from app.core.gdpr import (
     AuditEventType,
     ConsentType,
@@ -80,10 +85,7 @@ async def get_statistics(token_payload: dict = Depends(verify_jwt_token)):
         return {"statistics": statistics}
 
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to calculate statistics: {str(e)}",
-        )
+        log_and_raise_http_error("calculate statistics", e, "Failed to calculate statistics. Please try again.")
 
 
 @router.get("")
@@ -138,10 +140,7 @@ async def get_profile(token_payload: dict = Depends(verify_jwt_token)):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to fetch profile: {str(e)}",
-        )
+        log_and_raise_http_error("fetch profile", e, "Failed to fetch profile. Please try again.")
 
 
 @router.put("")
@@ -187,10 +186,7 @@ async def update_profile(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to update profile: {str(e)}",
-        )
+        log_and_raise_http_error("update profile", e, "Failed to update profile. Please try again.")
 
 
 @router.get("/traveler")
@@ -217,10 +213,7 @@ async def get_traveler_profile(token_payload: dict = Depends(verify_jwt_token)):
         return response.data if response.data else None
 
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to fetch traveler profile: {str(e)}",
-        )
+        log_and_raise_http_error("fetch traveler profile", e, "Failed to fetch traveler profile. Please try again.")
 
 
 @router.put("/traveler")
@@ -313,10 +306,7 @@ async def update_traveler_profile(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to update traveler profile: {str(e)}",
-        )
+        log_and_raise_http_error("update traveler profile", e, "Failed to update traveler profile. Please try again.")
 
 
 @router.put("/preferences")
@@ -357,10 +347,7 @@ async def update_preferences(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to update preferences: {str(e)}",
-        )
+        log_and_raise_http_error("update preferences", e, "Failed to update preferences. Please try again.")
 
 
 @router.delete("")
@@ -431,10 +418,7 @@ async def delete_account(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to delete account: {str(e)}",
-        )
+        log_and_raise_http_error("delete account", e, "Failed to delete account. Please try again.")
 
 
 # =============================================================================
@@ -485,10 +469,7 @@ async def export_user_data(
         return export_result.model_dump(mode="json")
 
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to export data: {str(e)}",
-        )
+        log_and_raise_http_error("export data", e, "Failed to export data. Please try again.")
 
 
 @router.get("/consent")
@@ -517,10 +498,7 @@ async def get_user_consent(token_payload: dict = Depends(verify_jwt_token)):
         }
 
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get consent records: {str(e)}",
-        )
+        log_and_raise_http_error("get consent records", e, "Failed to get consent records. Please try again.")
 
 
 @router.put("/consent")
@@ -573,10 +551,7 @@ async def update_user_consent(
             detail=str(e),
         )
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to update consent: {str(e)}",
-        )
+        log_and_raise_http_error("update consent", e, "Failed to update consent. Please try again.")
 
 
 @router.get("/gdpr-rights")
@@ -628,7 +603,4 @@ async def get_scheduled_deletions(token_payload: dict = Depends(verify_jwt_token
         }
 
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get scheduled deletions: {str(e)}",
-        )
+        log_and_raise_http_error("get scheduled deletions", e, "Failed to get scheduled deletions. Please try again.")

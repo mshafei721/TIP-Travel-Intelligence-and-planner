@@ -516,29 +516,135 @@ def execute_orchestrator(self, trip_id: str) -> dict[str, Any]:
         5. Aggregate results into report sections
         6. Mark trip report as ready
     """
+    import asyncio
+    import time
+    from datetime import datetime
+
+    from app.agents.orchestrator.agent import OrchestratorAgent
+    from app.core.supabase import supabase
+
     # Validate trip_id
     if not trip_id or trip_id.strip() == "":
         raise ValueError("trip_id is required and cannot be empty")
 
     print(f"[Task {self.request.id}] Executing Orchestrator for trip {trip_id}")
+    start_time = time.time()
 
-    # TODO: Implement Orchestrator logic in Phase 2
-    # - Create agent job records
-    # - Dispatch parallel agent tasks
-    # - Monitor agent progress
-    # - Aggregate results
-    # - Generate final report structure
+    try:
+        # Step 1: Load trip data from database
+        trip_response = (
+            supabase.table("trips")
+            .select("*")
+            .eq("id", trip_id)
+            .execute()
+        )
 
-    result = {
-        "trip_id": trip_id,
-        "status": "placeholder",
-        "agents_executed": [],
-        "total_duration": 0.0,
-        "error": None,
-    }
+        if not trip_response.data or len(trip_response.data) == 0:
+            raise ValueError(f"Trip {trip_id} not found")
 
-    print(f"[Task {self.request.id}] Completed Orchestrator for trip {trip_id}")
-    return result
+        trip = trip_response.data[0]
+        print(f"[Task {self.request.id}] Loaded trip data for {trip_id}")
+
+        # Step 2: Extract trip data for orchestrator
+        traveler = trip.get("traveler_details", {})
+        destinations = trip.get("destinations", [])
+        details = trip.get("trip_details", {})
+
+        # Get primary destination
+        primary_dest = destinations[0] if destinations else {}
+
+        # Build orchestrator input
+        orchestrator_input = {
+            "trip_id": trip_id,
+            "user_nationality": traveler.get("nationality", "US"),
+            "destination_country": primary_dest.get("country", "Unknown"),
+            "destination_city": primary_dest.get("city", "Unknown"),
+            "departure_date": details.get("departure_date"),
+            "return_date": details.get("return_date"),
+            "trip_purpose": details.get("trip_purpose", "tourism"),
+        }
+
+        print(f"[Task {self.request.id}] Prepared orchestrator input: {orchestrator_input}")
+
+        # Step 3: Update trip status to generating
+        supabase.table("trips").update({
+            "status": "generating",
+            "updated_at": datetime.utcnow().isoformat(),
+        }).eq("id", trip_id).execute()
+
+        # Step 4: Create orchestrator job record
+        job_response = supabase.table("agent_jobs").insert({
+            "trip_id": trip_id,
+            "agent_type": "orchestrator",
+            "status": "running",
+            "input_data": orchestrator_input,
+            "celery_task_id": str(self.request.id),
+            "started_at": datetime.utcnow().isoformat(),
+        }).execute()
+
+        job_id = job_response.data[0]["id"] if job_response.data else None
+        print(f"[Task {self.request.id}] Created agent job: {job_id}")
+
+        # Step 5: Initialize and run Orchestrator Agent
+        orchestrator = OrchestratorAgent()
+        print(f"[Task {self.request.id}] Available agents: {orchestrator.list_available_agents()}")
+
+        # Run the async generate_report method
+        # Use asyncio.run() for synchronous context
+        result = asyncio.run(orchestrator.generate_report(orchestrator_input))
+
+        # Step 6: Update trip status to completed
+        execution_time = time.time() - start_time
+        supabase.table("trips").update({
+            "status": "completed",
+            "updated_at": datetime.utcnow().isoformat(),
+        }).eq("id", trip_id).execute()
+
+        # Update agent job to completed
+        if job_id:
+            supabase.table("agent_jobs").update({
+                "status": "completed",
+                "result_data": result,
+                "completed_at": datetime.utcnow().isoformat(),
+            }).eq("id", job_id).execute()
+
+        print(f"[Task {self.request.id}] Completed Orchestrator for trip {trip_id}")
+        print(f"[Task {self.request.id}] Execution time: {execution_time:.2f}s")
+        print(f"[Task {self.request.id}] Sections generated: {list(result.get('sections', {}).keys())}")
+
+        return {
+            "trip_id": trip_id,
+            "status": "completed",
+            "agents_executed": list(result.get("sections", {}).keys()),
+            "total_duration": execution_time,
+            "sections": result.get("sections", {}),
+            "errors": result.get("errors", []),
+            "error": None,
+        }
+
+    except Exception as e:
+        execution_time = time.time() - start_time
+        error_msg = str(e)
+        print(f"[Task {self.request.id}] Error in Orchestrator: {error_msg}")
+
+        # Update trip status to failed
+        try:
+            supabase.table("trips").update({
+                "status": "failed",
+                "updated_at": datetime.utcnow().isoformat(),
+            }).eq("id", trip_id).execute()
+        except Exception:
+            pass
+
+        return {
+            "trip_id": trip_id,
+            "status": "failed",
+            "agents_executed": [],
+            "total_duration": execution_time,
+            "sections": {},
+            "errors": [{"error": error_msg}],
+            "error": error_msg,
+        }
 
 
 @shared_task(

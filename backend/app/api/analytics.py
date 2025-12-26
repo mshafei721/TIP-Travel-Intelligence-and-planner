@@ -1,12 +1,16 @@
 """Analytics API endpoints for user usage and trip statistics"""
 
+import logging
 from datetime import datetime, timedelta
 from collections import Counter
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.core.auth import verify_jwt_token
+from app.core.errors import log_and_raise_http_error
 from app.core.supabase import supabase
+
+logger = logging.getLogger(__name__)
 from app.models.analytics import (
     AgentUsageResponse,
     AgentUsageStats,
@@ -211,10 +215,7 @@ async def get_usage_stats(
         return UsageStatsResponse(success=True, data=stats)
 
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to fetch usage statistics: {str(e)}",
-        )
+        log_and_raise_http_error("fetch usage statistics", e, "Failed to fetch usage statistics. Please try again.")
 
 
 @router.get("/usage/trends", response_model=UsageTrendsResponse)
@@ -294,10 +295,7 @@ async def get_usage_trends(
         )
 
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to fetch usage trends: {str(e)}",
-        )
+        log_and_raise_http_error("fetch usage trends", e, "Failed to fetch usage trends. Please try again.")
 
 
 @router.get("/usage/agents", response_model=AgentUsageResponse)
@@ -402,10 +400,7 @@ async def get_agent_usage_stats(
         )
 
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to fetch agent usage statistics: {str(e)}",
-        )
+        log_and_raise_http_error("fetch agent usage statistics", e, "Failed to fetch agent usage statistics. Please try again.")
 
 
 # =============================================================================
@@ -570,10 +565,7 @@ async def get_trip_analytics(
         return TripAnalyticsResponse(success=True, data=analytics)
 
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to fetch trip analytics: {str(e)}",
-        )
+        log_and_raise_http_error("fetch trip analytics", e, "Failed to fetch trip analytics. Please try again.")
 
 
 @router.get("/trips/destinations")
@@ -643,10 +635,7 @@ async def get_destination_analytics(
         }
 
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to fetch destination analytics: {str(e)}",
-        )
+        log_and_raise_http_error("fetch destination analytics", e, "Failed to fetch destination analytics. Please try again.")
 
 
 @router.get("/trips/budgets")
@@ -700,7 +689,4 @@ async def get_budget_analytics(
         }
 
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to fetch budget analytics: {str(e)}",
-        )
+        log_and_raise_http_error("fetch budget analytics", e, "Failed to fetch budget analytics. Please try again.")

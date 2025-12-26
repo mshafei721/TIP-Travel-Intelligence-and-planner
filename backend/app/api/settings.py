@@ -1,13 +1,17 @@
 """User Settings API endpoints"""
 
 import json
+import logging
 from datetime import datetime
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from app.core.auth import verify_jwt_token
+from app.core.errors import log_and_raise_http_error
 from app.core.supabase import supabase
+
+logger = logging.getLogger(__name__)
 from app.models.settings import (
     AIPreferences,
     AIPreferencesResponse,
@@ -99,10 +103,7 @@ async def get_all_settings(token_payload: dict = Depends(verify_jwt_token)):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to fetch settings: {str(e)}",
-        )
+        log_and_raise_http_error("fetch settings", e, "Failed to fetch settings. Please try again.")
 
 
 @router.put("", response_model=UserSettingsResponse)
@@ -166,10 +167,7 @@ async def update_all_settings(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to update settings: {str(e)}",
-        )
+        log_and_raise_http_error("update settings", e, "Failed to update settings. Please try again.")
 
 
 # =============================================================================
@@ -218,10 +216,7 @@ async def get_appearance_settings(token_payload: dict = Depends(verify_jwt_token
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to fetch appearance settings: {str(e)}",
-        )
+        log_and_raise_http_error("fetch appearance settings", e, "Failed to fetch appearance settings. Please try again.")
 
 
 @router.put("/appearance", response_model=AppearanceSettingsResponse)
@@ -280,10 +275,7 @@ async def update_appearance_settings(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to update appearance settings: {str(e)}",
-        )
+        log_and_raise_http_error("update appearance settings", e, "Failed to update appearance settings. Please try again.")
 
 
 # =============================================================================
@@ -328,10 +320,7 @@ async def get_notification_settings(token_payload: dict = Depends(verify_jwt_tok
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to fetch notification settings: {str(e)}",
-        )
+        log_and_raise_http_error("fetch notification settings", e, "Failed to fetch notification settings. Please try again.")
 
 
 @router.put("/notifications", response_model=NotificationSettingsResponse)
@@ -390,10 +379,7 @@ async def update_notification_settings(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to update notification settings: {str(e)}",
-        )
+        log_and_raise_http_error("update notification settings", e, "Failed to update notification settings. Please try again.")
 
 
 # =============================================================================
@@ -440,10 +426,7 @@ async def get_privacy_settings(token_payload: dict = Depends(verify_jwt_token)):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to fetch privacy settings: {str(e)}",
-        )
+        log_and_raise_http_error("fetch privacy settings", e, "Failed to fetch privacy settings. Please try again.")
 
 
 @router.put("/privacy", response_model=PrivacySettingsResponse)
@@ -502,10 +485,7 @@ async def update_privacy_settings(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to update privacy settings: {str(e)}",
-        )
+        log_and_raise_http_error("update privacy settings", e, "Failed to update privacy settings. Please try again.")
 
 
 # =============================================================================
@@ -552,10 +532,7 @@ async def get_ai_preferences(token_payload: dict = Depends(verify_jwt_token)):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to fetch AI preferences: {str(e)}",
-        )
+        log_and_raise_http_error("fetch AI preferences", e, "Failed to fetch AI preferences. Please try again.")
 
 
 @router.put("/ai", response_model=AIPreferencesResponse)
@@ -614,10 +591,7 @@ async def update_ai_preferences(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to update AI preferences: {str(e)}",
-        )
+        log_and_raise_http_error("update AI preferences", e, "Failed to update AI preferences. Please try again.")
 
 
 # =============================================================================
@@ -722,10 +696,7 @@ async def request_data_export(
         )
 
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to create data export: {str(e)}",
-        )
+        log_and_raise_http_error("create data export", e, "Failed to create data export. Please try again.")
 
 
 @router.get("/data/export/{export_id}")

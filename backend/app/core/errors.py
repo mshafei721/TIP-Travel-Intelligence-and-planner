@@ -326,3 +326,159 @@ def get_error_message(code: ErrorCode, **kwargs: Any) -> str:
         return template.format(**kwargs)
     except KeyError:
         return template
+
+
+# Secure error handling utilities
+import logging
+
+_logger = logging.getLogger(__name__)
+
+
+def raise_internal_error(
+    operation: str,
+    exception: Exception,
+    user_message: str | None = None,
+    error_code: ErrorCode = ErrorCode.INTERNAL_ERROR,
+) -> None:
+    """
+    Securely handle an internal error.
+
+    Logs the full error details server-side for debugging,
+    but raises an exception with a generic user-facing message
+    that doesn't expose internal details.
+
+    Args:
+        operation: Description of what operation failed (for logging)
+        exception: The actual exception that occurred
+        user_message: Optional custom user-facing message
+        error_code: The error code to use
+
+    Raises:
+        InternalError: Always raises with secure message
+
+    Example:
+        try:
+            result = database.query(...)
+        except Exception as e:
+            raise_internal_error("database query", e, "Failed to fetch data")
+    """
+    # Log full details server-side
+    _logger.error(
+        f"Internal error during {operation}: {type(exception).__name__}: {str(exception)}",
+        exc_info=True,
+        extra={
+            "operation": operation,
+            "exception_type": type(exception).__name__,
+            "exception_message": str(exception),
+        }
+    )
+
+    # Raise with secure message
+    message = user_message or ERROR_MESSAGES.get(error_code, "An internal error occurred")
+    raise InternalError(message=message, code=error_code)
+
+
+def raise_database_error(operation: str, exception: Exception) -> None:
+    """
+    Securely handle a database error.
+
+    Args:
+        operation: What database operation failed
+        exception: The actual exception
+
+    Raises:
+        InternalError with DATABASE_ERROR code
+    """
+    raise_internal_error(
+        operation=f"database {operation}",
+        exception=exception,
+        error_code=ErrorCode.INTERNAL_DATABASE_ERROR,
+    )
+
+
+def raise_external_service_error(
+    service_name: str,
+    exception: Exception,
+    error_code: ErrorCode = ErrorCode.EXTERNAL_SERVICE_ERROR,
+) -> None:
+    """
+    Securely handle an external service error.
+
+    Args:
+        service_name: Name of the external service
+        exception: The actual exception
+        error_code: The error code to use
+
+    Raises:
+        ExternalServiceError with secure message
+    """
+    _logger.error(
+        f"External service error ({service_name}): {type(exception).__name__}: {str(exception)}",
+        exc_info=True,
+        extra={
+            "service_name": service_name,
+            "exception_type": type(exception).__name__,
+        }
+    )
+
+    message = get_error_message(error_code, service=service_name)
+    raise ExternalServiceError(message=message, code=error_code, service_name=service_name)
+
+
+def raise_not_found_error(
+    resource_type: str,
+    resource_id: str | None = None,
+    error_code: ErrorCode = ErrorCode.NOT_FOUND_RESOURCE,
+) -> None:
+    """
+    Raise a not found error with a safe message.
+
+    Args:
+        resource_type: Type of resource (trip, template, etc.)
+        resource_id: Optional ID of the resource
+        error_code: The error code to use
+
+    Raises:
+        NotFoundError with secure message
+    """
+    message = get_error_message(error_code)
+    _logger.warning(
+        f"Resource not found: {resource_type}",
+        extra={
+            "resource_type": resource_type,
+            "resource_id": resource_id,
+        }
+    )
+    raise NotFoundError(message=message, code=error_code)
+
+
+def log_and_raise_http_error(
+    operation: str,
+    exception: Exception,
+    user_message: str,
+) -> None:
+    """
+    Log error details and raise HTTPException with safe message.
+
+    This is a transitional helper for code still using HTTPException.
+    New code should use raise_internal_error instead.
+
+    Args:
+        operation: What operation failed
+        exception: The actual exception
+        user_message: Safe message to show users
+
+    Raises:
+        HTTPException with safe message
+    """
+    from fastapi import HTTPException, status
+
+    _logger.error(
+        f"Error during {operation}: {type(exception).__name__}: {str(exception)}",
+        exc_info=True,
+    )
+
+    raise HTTPException(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        detail=user_message,
+    )

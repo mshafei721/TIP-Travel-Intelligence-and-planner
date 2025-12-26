@@ -1,11 +1,15 @@
 """Travel history API endpoints"""
 
+import logging
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.core.auth import verify_jwt_token
+from app.core.errors import log_and_raise_http_error
 from app.core.supabase import supabase
+
+logger = logging.getLogger(__name__)
 from app.models.trips import (
     ArchiveResponse,
     CountryVisit,
@@ -134,10 +138,7 @@ async def get_travel_history(
         return TravelHistoryResponse(entries=entries, total_count=total_count)
 
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to fetch travel history: {str(e)}",
-        )
+        log_and_raise_http_error("fetch travel history", e, "Failed to fetch travel history. Please try again.")
 
 
 @router.get("/stats", response_model=TravelStatsResponse)
@@ -254,10 +255,7 @@ async def get_travel_stats(token_payload: dict = Depends(verify_jwt_token)):
         )
 
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to fetch travel stats: {str(e)}",
-        )
+        log_and_raise_http_error("fetch travel stats", e, "Failed to fetch travel stats. Please try again.")
 
 
 @router.get("/countries", response_model=list[CountryVisit])
@@ -322,10 +320,7 @@ async def get_countries_visited(token_payload: dict = Depends(verify_jwt_token))
         ]
 
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to fetch countries visited: {str(e)}",
-        )
+        log_and_raise_http_error("fetch countries visited", e, "Failed to fetch countries visited. Please try again.")
 
 
 @router.get("/timeline", response_model=TravelTimelineResponse)
@@ -411,10 +406,7 @@ async def get_travel_timeline(
         )
 
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to fetch travel timeline: {str(e)}",
-        )
+        log_and_raise_http_error("fetch travel timeline", e, "Failed to fetch travel timeline. Please try again.")
 
 
 # ============================================
@@ -485,10 +477,7 @@ async def archive_trip(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to archive trip: {str(e)}",
-        )
+        log_and_raise_http_error("archive trip", e, "Failed to archive trip. Please try again.")
 
 
 @router.post("/trips/{trip_id}/unarchive", response_model=ArchiveResponse)
@@ -544,10 +533,7 @@ async def unarchive_trip(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to unarchive trip: {str(e)}",
-        )
+        log_and_raise_http_error("unarchive trip", e, "Failed to unarchive trip. Please try again.")
 
 
 @router.post("/trips/{trip_id}/rate")
@@ -609,7 +595,4 @@ async def rate_trip(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to rate trip: {str(e)}",
-        )
+        log_and_raise_http_error("rate trip", e, "Failed to rate trip. Please try again.")

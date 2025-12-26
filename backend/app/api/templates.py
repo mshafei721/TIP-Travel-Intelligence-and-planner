@@ -1,9 +1,14 @@
 """Trip templates API endpoints"""
 
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.core.auth import verify_jwt_token
+from app.core.errors import log_and_raise_http_error
 from app.core.supabase import supabase
+
+logger = logging.getLogger(__name__)
 from app.models.template import (
     CreateTripFromTemplateRequest,
     PublicTemplateResponse,
@@ -74,10 +79,7 @@ async def list_public_templates(
         return results
 
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to fetch public templates: {str(e)}",
-        )
+        log_and_raise_http_error("fetch public templates", e, "Failed to fetch public templates. Please try again.")
 
 
 @router.get("/public/featured", response_model=list[PublicTemplateResponse])
@@ -103,10 +105,7 @@ async def get_featured_templates(
         return response.data if response.data else []
 
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to fetch featured templates: {str(e)}",
-        )
+        log_and_raise_http_error("fetch featured templates", e, "Failed to fetch featured templates. Please try again.")
 
 
 @router.post("/{template_id}/clone", response_model=TripTemplateResponse)
@@ -178,10 +177,7 @@ async def clone_template(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to clone template: {str(e)}",
-        )
+        log_and_raise_http_error("clone template", e, "Failed to clone template. Please try again.")
 
 
 @router.get("", response_model=list[TripTemplateResponse])
@@ -206,10 +202,7 @@ async def list_templates(token_payload: dict = Depends(verify_jwt_token)):
         return response.data if response.data else []
 
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to fetch templates: {str(e)}",
-        )
+        log_and_raise_http_error("fetch templates", e, "Failed to fetch templates. Please try again.")
 
 
 @router.get("/{template_id}", response_model=TripTemplateResponse)
@@ -243,10 +236,7 @@ async def get_template(template_id: str, token_payload: dict = Depends(verify_jw
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to fetch template: {str(e)}",
-        )
+        log_and_raise_http_error("fetch template", e, "Failed to fetch template. Please try again.")
 
 
 @router.post("", response_model=TripTemplateResponse, status_code=status.HTTP_201_CREATED)
@@ -294,10 +284,7 @@ async def create_template(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to create template: {str(e)}",
-        )
+        log_and_raise_http_error("create template", e, "Failed to create template. Please try again.")
 
 
 @router.put("/{template_id}", response_model=TripTemplateResponse)
@@ -382,10 +369,7 @@ async def update_template(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to update template: {str(e)}",
-        )
+        log_and_raise_http_error("update template", e, "Failed to update template. Please try again.")
 
 
 @router.delete("/{template_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -434,7 +418,4 @@ async def delete_template(template_id: str, token_payload: dict = Depends(verify
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to delete template: {str(e)}",
-        )
+        log_and_raise_http_error("delete template", e, "Failed to delete template. Please try again.")
