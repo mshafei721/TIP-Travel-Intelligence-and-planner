@@ -2,6 +2,7 @@
 
 import { AppShell } from '@/components/shell';
 import { ToastProvider, ToastContainer } from '@/components/ui/toast';
+import { OfflineDetector } from '@/components/ui/OfflineDetector';
 
 const navigationItems = [
   { label: 'Dashboard', href: '/dashboard' },
@@ -24,6 +25,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <ToastProvider>
+      <OfflineDetector />
       <AppShell navigationItems={navigationItems} user={mockUser} onLogout={handleLogout}>
         {children}
       </AppShell>
