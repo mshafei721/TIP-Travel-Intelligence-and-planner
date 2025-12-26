@@ -7,6 +7,7 @@ import { OfflineDetector } from '@/components/ui/OfflineDetector';
 const navigationItems = [
   { label: 'Dashboard', href: '/dashboard' },
   { label: 'My Trips', href: '/trips' },
+  { label: 'Templates', href: '/templates' },
   { label: 'Create Trip', href: '/trips/create' },
   { label: 'Profile', href: '/profile' },
 ];
