@@ -38,6 +38,12 @@ class Settings(BaseSettings):
     GDPR_ENABLED: bool = True
     LOG_LEVEL: str = "INFO"
 
+    # Sentry (error tracking)
+    SENTRY_DSN: str = ""
+    SENTRY_TRACES_SAMPLE_RATE: float = 0.1
+    SENTRY_PROFILES_SAMPLE_RATE: float = 0.1
+    SENTRY_ENABLED: bool = True
+
     # Feature Flags
     FEATURE_DASHBOARD_HOME: bool = True
     FEATURE_RECOMMENDATIONS: bool = True

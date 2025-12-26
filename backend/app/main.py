@@ -9,6 +9,9 @@ from fastapi.responses import JSONResponse
 
 from app.api import healthcheck, profile, recommendations, templates, trips
 from app.core.config import settings
+from app.core.exception_handlers import register_exception_handlers
+from app.core.logging_config import RequestLogger, configure_logging
+from app.core.sentry import configure_sentry
 
 # Create FastAPI application
 app = FastAPI(
@@ -28,6 +31,28 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Configure structured logging
+configure_logging(
+    environment=settings.ENVIRONMENT,
+    log_level=settings.LOG_LEVEL,
+)
+
+# Configure Sentry (if DSN is provided)
+if settings.SENTRY_ENABLED and settings.SENTRY_DSN:
+    configure_sentry(
+        dsn=settings.SENTRY_DSN,
+        environment=settings.ENVIRONMENT,
+        release=f"tip@{settings.APP_VERSION}",
+        traces_sample_rate=settings.SENTRY_TRACES_SAMPLE_RATE,
+        profiles_sample_rate=settings.SENTRY_PROFILES_SAMPLE_RATE,
+    )
+
+# Register exception handlers (must be before routers)
+register_exception_handlers(app)
+
+# Add request logging middleware
+app.middleware("http")(RequestLogger(app))
 
 # Include routers
 app.include_router(healthcheck.router, prefix="/api")
@@ -55,14 +80,24 @@ async def root():
 @app.on_event("startup")
 async def startup_event():
     """Application startup tasks"""
-    print(f"[STARTUP] {settings.APP_NAME} v{settings.APP_VERSION} starting...")
-    print(f"[STARTUP] Environment: {settings.ENVIRONMENT}")
-    print(f"[STARTUP] CORS enabled for: {settings.cors_origins_list}")
-    print("[STARTUP] API docs available at: /api/docs")
+    import logging
+    logger = logging.getLogger("app.startup")
+    logger.info(
+        "Application starting",
+        extra={
+            "app_name": settings.APP_NAME,
+            "version": settings.APP_VERSION,
+            "environment": settings.ENVIRONMENT,
+            "cors_origins": settings.cors_origins_list,
+            "sentry_enabled": bool(settings.SENTRY_DSN),
+        }
+    )
 
 
 # Shutdown event
 @app.on_event("shutdown")
 async def shutdown_event():
     """Application shutdown tasks"""
-    print(f"[SHUTDOWN] {settings.APP_NAME} shutting down...")
+    import logging
+    logger = logging.getLogger("app.startup")
+    logger.info("Application shutting down")
