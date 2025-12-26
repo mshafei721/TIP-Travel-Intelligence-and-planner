@@ -8,6 +8,10 @@ import os
 import uuid
 
 import pytest
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 from celery import Celery
 from fastapi.testclient import TestClient
 
