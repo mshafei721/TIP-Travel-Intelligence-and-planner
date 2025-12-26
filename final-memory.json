@@ -668,7 +668,10 @@
         "title": "Information Leakage in Error Messages",
         "description": "80+ locations expose internal error details via str(e) in HTTPException details",
         "impact": "Security vulnerability - database errors, stack traces, and paths could be exposed to attackers",
-        "action": "Replace str(e) with generic error messages, use custom TIPException classes"
+        "action": "Replace str(e) with generic error messages, use custom TIPException classes",
+        "status": "PARTIALLY_RESOLVED",
+        "resolved_at": "2025-12-27",
+        "notes": "59/84 instances fixed. Added log_and_raise_http_error() utility. Fixed: analytics, history, profile, settings, itinerary, places, templates APIs."
       },
       {
         "id": "BUG-001",
@@ -684,7 +687,10 @@
         "title": "Non-Idempotent Celery Tasks",
         "description": "Tasks with acks_late=True insert without checking for existing entries",
         "impact": "Duplicate database entries on task retries",
-        "action": "Implement upsert pattern or check for existing entries before insert"
+        "action": "Implement upsert pattern or check for existing entries before insert",
+        "status": "RESOLVED",
+        "resolved_at": "2025-12-27",
+        "notes": "Limited autoretry_for to transient errors only. Added IdempotentTipTask base class and upsert_report_section() helper."
       },
       {
         "id": "CFG-001",
@@ -720,7 +726,9 @@
         "impact": "CRITICAL - Report generation does not work. Users can create trips but cannot generate AI reports.",
         "action": "Wire execute_orchestrator to call OrchestratorAgent.generate_report() - the agent class is fully implemented at backend/app/agents/orchestrator/agent.py",
         "discovered": "Session 5",
-        "status": "OPEN"
+        "status": "RESOLVED",
+        "resolved_at": "2025-12-27",
+        "notes": "Wired execute_orchestrator to call OrchestratorAgent.generate_report(). Added input creation for all agent types (visa, country, weather, currency, culture, food, attractions)."
       }
     ],
     "major": [
@@ -756,7 +764,10 @@
         "description": "Frontend API client has no timeout handling or retry logic - requests can hang indefinitely",
         "impact": "Poor UX during network issues",
         "action": "Add AbortController timeout and exponential backoff retry",
-        "discovered": "Session 4"
+        "discovered": "Session 4",
+        "status": "RESOLVED",
+        "resolved_at": "2025-12-27",
+        "notes": "Added AbortController timeout (30s), exponential backoff retry for transient errors, typed error classes (ApiTimeoutError, ApiNetworkError, ApiResponseError)."
       },
       {
         "id": "FE-002",
@@ -764,7 +775,10 @@
         "description": "getAuthToken() duplicated in profile.ts, history.ts, templates.ts instead of using auth-utils.ts",
         "impact": "Code duplication, maintenance burden",
         "action": "Remove duplicates, import from auth-utils.ts",
-        "discovered": "Session 4"
+        "discovered": "Session 4",
+        "status": "RESOLVED",
+        "resolved_at": "2025-12-27",
+        "notes": "Removed duplicates from profile.ts, history.ts, templates.ts. All now import from auth-utils.ts."
       },
       {
         "id": "FE-003",
@@ -780,7 +794,10 @@
         "description": "templates/, history/, analytics/, settings/ pages lack dedicated error.tsx files",
         "impact": "Errors fall through to root boundary",
         "action": "Add error.tsx to each app page directory",
-        "discovered": "Session 4"
+        "discovered": "Session 4",
+        "status": "RESOLVED",
+        "resolved_at": "2025-12-27",
+        "notes": "Added error.tsx to templates/, history/, analytics/, settings/ pages."
       },
       {
         "id": "FE-005",
