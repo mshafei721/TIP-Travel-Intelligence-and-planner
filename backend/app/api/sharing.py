@@ -245,7 +245,7 @@ async def update_share_settings(
         .execute()
     )
 
-    return await get_share_settings(trip_id, user)
+    return await get_share_settings(trip_id, token_payload)
 
 
 @router.delete("/trips/{trip_id}/share")
