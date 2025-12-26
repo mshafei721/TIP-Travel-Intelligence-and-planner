@@ -1,6 +1,17 @@
 """Pydantic models for trip template management"""
 
+from datetime import datetime
+
 from pydantic import BaseModel, Field, field_validator
+
+
+class TemplateDestination(BaseModel):
+    """Destination within a template"""
+
+    country: str = Field(..., description="Country name")
+    city: str | None = Field(None, description="City name")
+    suggested_days: int | None = Field(None, ge=1, description="Suggested days to spend")
+    highlights: list[str] = Field(default_factory=list, description="Key highlights")
 
 
 class TripTemplateCreate(BaseModel):
@@ -8,6 +19,9 @@ class TripTemplateCreate(BaseModel):
 
     name: str = Field(..., min_length=1, max_length=100, description="Template name")
     description: str | None = Field(None, max_length=500, description="Template description")
+    cover_image: str | None = Field(None, description="Cover image URL")
+    is_public: bool = Field(False, description="Make template publicly visible")
+    tags: list[str] = Field(default_factory=list, description="Template tags for filtering")
     traveler_details: dict | None = Field(
         None, description="Default traveler details (nationality, residency, etc.)"
     )
@@ -18,6 +32,9 @@ class TripTemplateCreate(BaseModel):
     preferences: dict | None = Field(
         None, description="Travel preferences (style, dietary restrictions, etc.)"
     )
+    typical_duration: int | None = Field(None, ge=1, description="Typical trip duration in days")
+    estimated_budget: float | None = Field(None, ge=0, description="Estimated budget")
+    currency: str = Field("USD", max_length=3, description="Currency code")
 
     @field_validator("name")
     @classmethod
@@ -65,9 +82,15 @@ class TripTemplateUpdate(BaseModel):
 
     name: str | None = Field(None, min_length=1, max_length=100)
     description: str | None = Field(None, max_length=500)
+    cover_image: str | None = None
+    is_public: bool | None = None
+    tags: list[str] | None = None
     traveler_details: dict | None = None
     destinations: list[dict] | None = None
     preferences: dict | None = None
+    typical_duration: int | None = None
+    estimated_budget: float | None = None
+    currency: str | None = None
 
     @field_validator("name")
     @classmethod
@@ -110,9 +133,16 @@ class TripTemplateResponse(BaseModel):
     user_id: str
     name: str
     description: str | None
+    cover_image: str | None = None
+    is_public: bool = False
+    tags: list[str] = []
     traveler_details: dict | None
     destinations: list[dict]
     preferences: dict | None
+    typical_duration: int | None = None
+    estimated_budget: float | None = None
+    currency: str = "USD"
+    use_count: int = 0
     created_at: str
     updated_at: str
 
@@ -124,13 +154,55 @@ class TripTemplateResponse(BaseModel):
                 "user_id": "987e4567-e89b-12d3-a456-426614174000",
                 "name": "Weekend Getaway",
                 "description": "Quick 3-day city break template",
-                "destinations": [{"country": "France", "city": "Paris"}],
+                "cover_image": "https://example.com/paris.jpg",
+                "is_public": False,
+                "tags": ["weekend", "city-break", "europe"],
+                "destinations": [
+                    {"country": "France", "city": "Paris", "suggested_days": 3}
+                ],
                 "traveler_details": {"nationality": "US", "residency_country": "US"},
                 "preferences": {
                     "travel_style": "balanced",
                     "dietary_restrictions": ["vegetarian"],
                 },
+                "typical_duration": 3,
+                "estimated_budget": 1500.00,
+                "currency": "USD",
+                "use_count": 0,
                 "created_at": "2025-12-25T10:00:00Z",
                 "updated_at": "2025-12-25T10:00:00Z",
             }
         }
+
+
+class PublicTemplateResponse(BaseModel):
+    """Response model for public template (excludes user_id for privacy)"""
+
+    id: str
+    name: str
+    description: str | None
+    cover_image: str | None = None
+    tags: list[str] = []
+    destinations: list[dict]
+    typical_duration: int | None = None
+    estimated_budget: float | None = None
+    currency: str = "USD"
+    use_count: int = 0
+    created_at: str
+
+    class Config:
+        from_attributes = True
+
+
+class CreateTripFromTemplateRequest(BaseModel):
+    """Request to create a trip from a template"""
+
+    title: str | None = Field(None, description="Custom trip title (optional)")
+    start_date: str | None = Field(None, description="Trip start date (ISO format)")
+    end_date: str | None = Field(None, description="Trip end date (ISO format)")
+    override_traveler_details: dict | None = Field(
+        None, description="Override template traveler details"
+    )
+    override_preferences: dict | None = Field(
+        None, description="Override template preferences"
+    )

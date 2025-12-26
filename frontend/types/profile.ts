@@ -216,32 +216,154 @@ export interface TripTemplatePreferences {
   accessibility_needs?: string | null;
 }
 
+export interface TemplateDestination {
+  country: string;
+  city?: string;
+  suggested_days?: number;
+  highlights?: string[];
+}
+
 export interface TripTemplate {
   id: string;
   user_id: string;
   name: string;
   description: string | null;
+  cover_image?: string | null;
+  is_public: boolean;
+  tags: string[];
   traveler_details: Record<string, unknown> | null;
-  destinations: Array<{ country: string; city?: string }>;
+  destinations: TemplateDestination[];
   preferences: TripTemplatePreferences | null;
+  typical_duration?: number | null;
+  estimated_budget?: number | null;
+  currency: string;
+  use_count: number;
   created_at: string;
   updated_at: string;
+}
+
+export interface PublicTemplate {
+  id: string;
+  name: string;
+  description: string | null;
+  cover_image?: string | null;
+  tags: string[];
+  destinations: TemplateDestination[];
+  typical_duration?: number | null;
+  estimated_budget?: number | null;
+  currency: string;
+  use_count: number;
+  created_at: string;
 }
 
 export interface TripTemplateCreate {
   name: string;
   description?: string | null;
+  cover_image?: string | null;
+  is_public?: boolean;
+  tags?: string[];
   traveler_details?: Record<string, unknown> | null;
-  destinations: Array<{ country: string; city?: string }>;
+  destinations: TemplateDestination[];
   preferences?: TripTemplatePreferences | null;
+  typical_duration?: number;
+  estimated_budget?: number;
+  currency?: string;
 }
 
 export interface TripTemplateUpdate {
   name?: string;
   description?: string | null;
+  cover_image?: string | null;
+  is_public?: boolean;
+  tags?: string[];
   traveler_details?: Record<string, unknown> | null;
-  destinations?: Array<{ country: string; city?: string }>;
+  destinations?: TemplateDestination[];
   preferences?: TripTemplatePreferences | null;
+  typical_duration?: number;
+  estimated_budget?: number;
+  currency?: string;
+}
+
+export interface CreateTripFromTemplateRequest {
+  title?: string;
+  start_date?: string;
+  end_date?: string;
+  override_traveler_details?: Record<string, unknown>;
+  override_preferences?: Record<string, unknown>;
+}
+
+// ============================================
+// Travel History Types
+// ============================================
+
+export interface TravelHistoryEntry {
+  trip_id: string;
+  destination: string;
+  country: string;
+  start_date: string;
+  end_date: string;
+  status: 'completed' | 'cancelled';
+  user_rating?: number | null;
+  user_notes?: string | null;
+  is_archived: boolean;
+  archived_at?: string | null;
+  cover_image?: string | null;
+}
+
+export interface TravelStats {
+  total_trips: number;
+  countries_visited: number;
+  cities_visited: number;
+  total_days_traveled: number;
+  favorite_destination?: string | null;
+  most_visited_country?: string | null;
+  travel_streak: number;
+}
+
+export interface CountryVisit {
+  country_code: string;
+  country_name: string;
+  visit_count: number;
+  last_visited?: string | null;
+  cities: string[];
+}
+
+export interface TravelHistoryResponse {
+  entries: TravelHistoryEntry[];
+  total_count: number;
+}
+
+export interface TravelStatsResponse {
+  stats: TravelStats;
+  countries: CountryVisit[];
+}
+
+export interface TravelTimelineEntry {
+  trip_id: string;
+  title: string;
+  destination: string;
+  start_date: string;
+  end_date: string;
+  duration_days: number;
+  status: string;
+  thumbnail?: string | null;
+}
+
+export interface TravelTimelineResponse {
+  entries: TravelTimelineEntry[];
+  years: number[];
+}
+
+export interface TripRatingRequest {
+  rating: number; // 1-5
+  notes?: string;
+}
+
+export interface ArchiveResponse {
+  trip_id: string;
+  is_archived: boolean;
+  archived_at?: string | null;
+  message: string;
 }
 
 // ============================================

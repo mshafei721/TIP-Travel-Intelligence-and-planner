@@ -1,7 +1,7 @@
 {
   "project": "TIP - Travel Intelligence & Planner",
   "version": "2.2.5",
-  "lastUpdated": "2025-12-26T20:00:00Z",
+  "lastUpdated": "2025-12-26T22:00:00Z",
   "structure": "I1-I10 Increments (unified FE+BE)",
   "notes": [
     "This file now uses the INTEGRATED_PLAN.md I1-I10 increment structure",
@@ -11,9 +11,9 @@
   ],
   "summary": {
     "totalIncrements": 10,
-    "totalFeatures": 122,
-    "completedFeatures": 97,
-    "percentComplete": 80
+    "totalFeatures": 177,
+    "completedFeatures": 162,
+    "percentComplete": 92
   },
   "increments": [
     {
@@ -926,6 +926,54 @@
           "passes": true,
           "priority": "high",
           "implementation": "Comprehensive Pydantic models at backend/app/models/itinerary.py. Includes: Activity, DayPlan, Itinerary with 11 activity types, booking status, priority levels. Location model with coordinates. Request/response models for all CRUD operations."
+        },
+        {
+          "id": "I7-COLLAB-01",
+          "name": "Create collaboration database tables",
+          "type": "database",
+          "passes": true,
+          "priority": "high",
+          "implementation": "Migration 004_add_collaboration_tables.sql with share_links, trip_collaborators, trip_comments tables. RLS policies for secure multi-user access. Enums: collaborator_role (viewer/editor/owner), share_link_status (active/revoked/expired)."
+        },
+        {
+          "id": "I7-COLLAB-02",
+          "name": "Implement Share Links API",
+          "type": "backend",
+          "passes": true,
+          "priority": "high",
+          "implementation": "Complete Share Links API: POST /trips/{id}/share (generate), GET /trips/{id}/share (settings), PUT /trips/{id}/share (update), DELETE /trips/{id}/share (revoke), GET /shared/{token} (public view). Includes token generation, expiry handling, view counting."
+        },
+        {
+          "id": "I7-COLLAB-03",
+          "name": "Implement Collaborators API",
+          "type": "backend",
+          "passes": true,
+          "priority": "high",
+          "implementation": "Complete Collaborators API: POST /trips/{id}/collaborators (invite), GET /trips/{id}/collaborators (list), PUT /trips/{id}/collaborators/{user_id} (update role), DELETE /trips/{id}/collaborators/{user_id} (remove), POST /invitations/accept (accept invite). Includes role validation, duplicate check, ownership verification."
+        },
+        {
+          "id": "I7-COLLAB-04",
+          "name": "Implement Comments API",
+          "type": "backend",
+          "passes": true,
+          "priority": "high",
+          "implementation": "Complete Comments API: POST /trips/{id}/comments (create), GET /trips/{id}/comments (list with section filter), PUT /trips/{id}/comments/{id} (update), DELETE /trips/{id}/comments/{id} (delete). Supports threaded replies, section filtering, author verification, trip owner moderation."
+        },
+        {
+          "id": "I7-COLLAB-05",
+          "name": "Create sharing Pydantic models",
+          "type": "backend",
+          "passes": true,
+          "priority": "high",
+          "implementation": "Comprehensive models at backend/app/models/sharing.py: ShareSettings, ShareLinkResponse, Collaborator, CollaboratorInvite, Comment, CommentCreate, PublicTripView, CollaboratorRole enum, ShareLinkStatus enum, ShareLinkExpiry enum."
+        },
+        {
+          "id": "I7-COLLAB-06",
+          "name": "Create sharing API tests",
+          "type": "testing",
+          "passes": true,
+          "priority": "high",
+          "implementation": "Comprehensive test suite at backend/tests/api/test_sharing.py with 30 tests covering share link CRUD, public shared view, collaborator invitation, role updates, comment CRUD, authorization checks."
         }
       ]
     },
@@ -1143,13 +1191,13 @@
     },
     {
       "id": "I9",
-      "name": "User Profile and Settings",
-      "description": "Profile management, templates, and notification preferences",
+      "name": "User Profile, Templates Library, and Travel History",
+      "description": "Profile management, public templates library, travel history tracking, and notification preferences",
       "status": {
-        "frontend": 100,
-        "backend": 70,
+        "frontend": 80,
+        "backend": 100,
         "config": 100,
-        "overall": 90
+        "overall": 85
       },
       "features": [
         {
@@ -1247,17 +1295,141 @@
           "passes": true,
           "priority": "high",
           "notes": "Bucket created and all 4 storage policies configured via Supabase MCP: INSERT, SELECT, UPDATE, DELETE"
+        },
+        {
+          "id": "I9-DB-02",
+          "name": "Templates & Travel History schema migration",
+          "type": "database",
+          "passes": true,
+          "priority": "high",
+          "notes": "Added is_public, cover_image, tags, typical_duration, estimated_budget, currency, use_count to trip_templates; is_archived, archived_at, user_rating, user_notes to trips"
+        },
+        {
+          "id": "I9-BE-05",
+          "name": "Public templates endpoints",
+          "type": "backend",
+          "passes": true,
+          "priority": "high",
+          "notes": "GET /api/templates/public and /api/templates/public/featured endpoints"
+        },
+        {
+          "id": "I9-BE-06",
+          "name": "Clone template endpoint",
+          "type": "backend",
+          "passes": true,
+          "priority": "medium",
+          "notes": "POST /api/templates/{id}/clone endpoint"
+        },
+        {
+          "id": "I9-BE-07",
+          "name": "Create trip from template endpoint",
+          "type": "backend",
+          "passes": true,
+          "priority": "medium",
+          "notes": "POST /api/trips/from-template/{template_id} endpoint"
+        },
+        {
+          "id": "I9-BE-08",
+          "name": "Travel history endpoints",
+          "type": "backend",
+          "passes": true,
+          "priority": "high",
+          "notes": "GET /api/history, /api/history/stats, /api/history/countries, /api/history/timeline"
+        },
+        {
+          "id": "I9-BE-09",
+          "name": "Archive/Unarchive trip endpoints",
+          "type": "backend",
+          "passes": true,
+          "priority": "medium",
+          "notes": "POST /api/history/trips/{id}/archive and /unarchive"
+        },
+        {
+          "id": "I9-BE-10",
+          "name": "Rate trip endpoint",
+          "type": "backend",
+          "passes": true,
+          "priority": "low",
+          "notes": "POST /api/history/trips/{id}/rate for rating completed trips"
+        },
+        {
+          "id": "I9-FE-08",
+          "name": "Update templates types and API client",
+          "type": "frontend",
+          "passes": true,
+          "priority": "high",
+          "notes": "Added PublicTemplate, travel history types; updated API client with public templates functions"
+        },
+        {
+          "id": "I9-FE-09",
+          "name": "Create travel history API client",
+          "type": "frontend",
+          "passes": true,
+          "priority": "high",
+          "notes": "Created lib/api/history.ts with all history endpoints"
+        },
+        {
+          "id": "I9-FE-10",
+          "name": "Create PublicTemplateCard component",
+          "type": "frontend",
+          "passes": true,
+          "priority": "high",
+          "notes": "Card component for template library with cover image, tags, budget, duration"
+        },
+        {
+          "id": "I9-FE-11",
+          "name": "Create TravelStats component",
+          "type": "frontend",
+          "passes": true,
+          "priority": "high",
+          "notes": "Stats cards showing countries, cities, trips, days traveled"
+        },
+        {
+          "id": "I9-FE-12",
+          "name": "Create CountryBadges component",
+          "type": "frontend",
+          "passes": true,
+          "priority": "medium",
+          "notes": "Badge display of visited countries with flags"
+        },
+        {
+          "id": "I9-FE-13",
+          "name": "Public templates library page",
+          "type": "frontend",
+          "passes": false,
+          "priority": "medium",
+          "notes": "Full templates library page with featured section and filtering"
+        },
+        {
+          "id": "I9-FE-14",
+          "name": "Travel history page",
+          "type": "frontend",
+          "passes": false,
+          "priority": "medium",
+          "notes": "Full travel history page with stats, map, and timeline"
+        },
+        {
+          "id": "I9-FE-15",
+          "name": "World map visualization",
+          "type": "frontend",
+          "passes": false,
+          "priority": "low",
+          "notes": "react-simple-maps integration for visited countries"
         }
       ]
     },
     {
       "id": "I10",
-      "name": "Error States and Hardening",
-      "description": "Error handling, loading UX, and quality gates",
+      "name": "Error States, Analytics & Settings",
+      "description": "Error handling, loading UX, quality gates, user analytics dashboard, and application settings",
       "status": {
         "frontend": 100,
         "backend": 100,
-        "overall": 83
+        "analytics_frontend": 0,
+        "analytics_backend": 0,
+        "settings_frontend": 0,
+        "settings_backend": 0,
+        "overall": 55
       },
       "features": [
         {
@@ -1351,6 +1523,190 @@
           "passes": true,
           "priority": "critical",
           "implementation": "Complete GDPR compliance implementation: (1) Right to Access (Article 15) - GET /api/profile/data-export endpoint for full data export; (2) Right to Erasure (Article 17) - DELETE /api/profile with audit logging; (3) Right to Data Portability (Article 20) - JSON machine-readable export; (4) Consent Management (Article 7) - GET/PUT /api/profile/consent endpoints; (5) Audit Logging - gdpr_audit_log table for compliance tracking; (6) Data Retention - configurable retention policies with cleanup functions. Database migration: 003_add_gdpr_tables.sql creates user_consents, gdpr_audit_log tables with RLS policies."
+        },
+        {
+          "id": "I10-ANALYTICS-BE-01",
+          "name": "Usage analytics endpoints",
+          "type": "backend",
+          "passes": false,
+          "priority": "high",
+          "description": "GET /api/analytics/usage endpoints for trips, agents, time-based stats"
+        },
+        {
+          "id": "I10-ANALYTICS-BE-02",
+          "name": "Trip analytics endpoints",
+          "type": "backend",
+          "passes": false,
+          "priority": "high",
+          "description": "GET /api/analytics/trips endpoints for destinations, budgets, duration, seasons"
+        },
+        {
+          "id": "I10-ANALYTICS-BE-03",
+          "name": "Analytics models and schemas",
+          "type": "backend",
+          "passes": false,
+          "priority": "high",
+          "description": "UsageStats, TripAnalytics, DestinationCount, BudgetRange Pydantic models"
+        },
+        {
+          "id": "I10-SETTINGS-BE-01",
+          "name": "Settings CRUD endpoints",
+          "type": "backend",
+          "passes": false,
+          "priority": "high",
+          "description": "GET/PUT /api/settings for all user settings"
+        },
+        {
+          "id": "I10-SETTINGS-BE-02",
+          "name": "Notification settings endpoints",
+          "type": "backend",
+          "passes": false,
+          "priority": "medium",
+          "description": "GET/PUT /api/settings/notifications for email/push preferences"
+        },
+        {
+          "id": "I10-SETTINGS-BE-03",
+          "name": "Privacy settings endpoints",
+          "type": "backend",
+          "passes": false,
+          "priority": "medium",
+          "description": "GET/PUT /api/settings/privacy for visibility and data sharing"
+        },
+        {
+          "id": "I10-SETTINGS-BE-04",
+          "name": "Appearance settings endpoints",
+          "type": "backend",
+          "passes": false,
+          "priority": "medium",
+          "description": "GET/PUT /api/settings/appearance for theme, language, timezone"
+        },
+        {
+          "id": "I10-SETTINGS-BE-05",
+          "name": "Data export endpoint",
+          "type": "backend",
+          "passes": false,
+          "priority": "high",
+          "description": "POST /api/settings/data/export for GDPR data export request"
+        },
+        {
+          "id": "I10-SETTINGS-BE-06",
+          "name": "UserSettings model",
+          "type": "backend",
+          "passes": false,
+          "priority": "high",
+          "description": "UserSettings Pydantic model with theme, language, notifications, privacy, AI prefs"
+        },
+        {
+          "id": "I10-ANALYTICS-FE-01",
+          "name": "AnalyticsDashboard page",
+          "type": "frontend",
+          "passes": false,
+          "priority": "high",
+          "description": "Main analytics page at /analytics with charts and stats"
+        },
+        {
+          "id": "I10-ANALYTICS-FE-02",
+          "name": "StatCard component",
+          "type": "frontend",
+          "passes": false,
+          "priority": "high",
+          "description": "Metric card with label, value, change indicator, icon"
+        },
+        {
+          "id": "I10-ANALYTICS-FE-03",
+          "name": "UsageChart component",
+          "type": "frontend",
+          "passes": false,
+          "priority": "high",
+          "description": "Line chart for usage over time using recharts"
+        },
+        {
+          "id": "I10-ANALYTICS-FE-04",
+          "name": "DestinationChart component",
+          "type": "frontend",
+          "passes": false,
+          "priority": "medium",
+          "description": "Bar/pie chart for popular destinations"
+        },
+        {
+          "id": "I10-ANALYTICS-FE-05",
+          "name": "BudgetChart component",
+          "type": "frontend",
+          "passes": false,
+          "priority": "medium",
+          "description": "Chart for budget distribution"
+        },
+        {
+          "id": "I10-ANALYTICS-FE-06",
+          "name": "DateRangePicker component",
+          "type": "frontend",
+          "passes": false,
+          "priority": "medium",
+          "description": "Date range selector for filtering analytics"
+        },
+        {
+          "id": "I10-SETTINGS-FE-01",
+          "name": "SettingsLayout component",
+          "type": "frontend",
+          "passes": false,
+          "priority": "high",
+          "description": "Settings page layout with sidebar navigation"
+        },
+        {
+          "id": "I10-SETTINGS-FE-02",
+          "name": "AppearanceSettings page",
+          "type": "frontend",
+          "passes": false,
+          "priority": "high",
+          "description": "Theme, language, timezone settings page"
+        },
+        {
+          "id": "I10-SETTINGS-FE-03",
+          "name": "NotificationSettings page",
+          "type": "frontend",
+          "passes": false,
+          "priority": "medium",
+          "description": "Email and push notification preferences"
+        },
+        {
+          "id": "I10-SETTINGS-FE-04",
+          "name": "PrivacySettings page",
+          "type": "frontend",
+          "passes": false,
+          "priority": "medium",
+          "description": "Privacy controls and data sharing settings"
+        },
+        {
+          "id": "I10-SETTINGS-FE-05",
+          "name": "AISettings page",
+          "type": "frontend",
+          "passes": false,
+          "priority": "low",
+          "description": "AI behavior preferences (temperature, detail level)"
+        },
+        {
+          "id": "I10-SETTINGS-FE-06",
+          "name": "DataManagement page",
+          "type": "frontend",
+          "passes": false,
+          "priority": "high",
+          "description": "Data export and deletion controls"
+        },
+        {
+          "id": "I10-SETTINGS-FE-07",
+          "name": "SettingsToggle component",
+          "type": "frontend",
+          "passes": false,
+          "priority": "medium",
+          "description": "Toggle switch row for settings"
+        },
+        {
+          "id": "I10-SETTINGS-FE-08",
+          "name": "SettingsSelect component",
+          "type": "frontend",
+          "passes": false,
+          "priority": "medium",
+          "description": "Dropdown select row for settings"
         }
       ]
     }

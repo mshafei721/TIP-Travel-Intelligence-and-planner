@@ -2592,3 +2592,208 @@ Status: API Integration & Agent Enhancement
 ==============================================
 End of Session 27 - API Integration Complete
 ==============================================
+
+
+==============================================
+Session 28 - 2025-12-26 - I8 Trip Updates Backend
+==============================================
+
+## Task: I8 Trip Updates & Recalculation Backend Implementation
+
+### What Was Completed:
+
+1. **ChangeDetector Service (I8-UPDATE-BE-01)**
+   - Location: backend/app/services/change_detector.py
+   - Detects changes between old/new trip data (destinations, dates, budget, etc.)
+   - Maps field changes to affected agents using dependency graph
+   - Returns ChangeResult with affected_agents list and estimated_time_seconds
+   - Agent dependencies: visa, weather, currency, culture, food, attractions, itinerary, country, flight
+   - 25 unit tests (all passing)
+
+2. **Selective Recalculation Celery Task (I8-UPDATE-BE-02)**
+   - Location: backend/app/tasks/agent_jobs.py (execute_selective_recalc)
+   - ~400 lines of code
+   - Routes to individual agents based on agents_to_recalc list
+   - Updates recalculation_jobs table with progress
+   - Handles errors gracefully
+
+3. **API Endpoints (I8-UPDATE-BE-03, BE-04, BE-06)**
+   - POST /api/trips/{trip_id}/changes/preview - Preview affected agents
+   - POST /api/trips/{trip_id}/recalculate - Trigger selective recalculation
+   - PUT /api/trips/{trip_id}/with-recalc - Update trip with auto-recalculation
+   - GET /api/trips/{trip_id}/versions - List version history
+   - POST /api/trips/{trip_id}/versions/{version}/restore - Restore version
+   - New Pydantic models: ChangePreviewRequest/Response, RecalculationRequest/Response, etc.
+   - 9 API tests with proper FastAPI dependency override for auth
+
+4. **Database Migration (I8-UPDATE-BE-05)**
+   - Location: db/migrations/005_add_trip_versions_table.sql
+   - trip_versions table: id, trip_id, version_number, trip_data JSONB, change_summary, fields_changed
+   - recalculation_jobs table: id, trip_id, celery_task_id, agents_to_recalculate, status, timestamps
+   - RLS policies for security
+   - cleanup_old_trip_versions() function for maintenance
+
+### Test Results:
+- ChangeDetector tests: 25/25 passed
+- API tests: 9/9 passed
+- Total I8-related tests: 34/34 passed
+
+### Feature List Update:
+- completedFeatures: 91 -> 97
+- percentComplete: 75% -> 80%
+- I8 updates_backend: 0% -> 100%
+- I8 overall: 60% -> 75%
+
+### Commit:
+- ed4f3e0: feat(I8-UPDATE): implement Trip Updates backend with selective recalculation
+
+### Files Changed:
+- backend/app/services/change_detector.py (NEW)
+- backend/app/api/trips.py (MODIFIED - added 5 new endpoints)
+- backend/app/models/trips.py (MODIFIED - added new Pydantic models)
+- backend/app/tasks/agent_jobs.py (MODIFIED - added execute_selective_recalc)
+- backend/tests/services/test_change_detector.py (NEW - 25 tests)
+- backend/tests/api/test_trip_updates.py (NEW - 9 tests)
+- db/migrations/005_add_trip_versions_table.sql (NEW)
+- feature_list.json (MODIFIED - updated I8 features)
+
+### Next Steps:
+- Frontend components for I8-UPDATE-FE-01 to FE-08 (TripEditForm, ChangePreview, etc.)
+
+==============================================
+End of Session 28 - I8 Backend Complete
+==============================================
+
+Session 29 - 2025-12-26
+------------------------
+Status: I9 Templates Library & Travel History - Backend Complete + Frontend Core Components
+Current Phase: I9 - User Profile, Templates Library, and Travel History
+
+## Completed Tasks:
+
+### Database Migration:
+- Added columns to trip_templates: is_public, cover_image, tags, typical_duration, estimated_budget, currency, use_count
+- Added columns to trips: is_archived, archived_at, user_rating, user_notes
+- Created indexes for public templates and archived trips queries
+- Updated RLS policies for public template access
+
+### Backend Endpoints:
+1. Templates API (expanded):
+   - GET /api/templates/public - Browse public templates with tag/destination filtering
+   - GET /api/templates/public/featured - Get featured templates by use_count
+   - POST /api/templates/{id}/clone - Clone template to user's library
+   - Updated create/update endpoints with new fields
+
+2. Trips API:
+   - POST /api/trips/from-template/{template_id} - Create trip from template
+
+3. History API (NEW - backend/app/api/history.py):
+   - GET /api/history - Get travel history entries
+   - GET /api/history/stats - Get aggregated travel statistics
+   - GET /api/history/countries - Get visited countries for world map
+   - GET /api/history/timeline - Get timeline view of trips
+   - POST /api/history/trips/{id}/archive - Archive a trip
+   - POST /api/history/trips/{id}/unarchive - Restore from archive
+   - POST /api/history/trips/{id}/rate - Rate a completed trip
+
+### Backend Models:
+- Updated template.py with new fields and PublicTemplateResponse, CreateTripFromTemplateRequest
+- Updated trips.py with travel history models: ArchiveResponse, TravelHistoryEntry, TravelStats, CountryVisit, TravelTimelineEntry, TripRatingRequest
+
+### Frontend:
+1. Types (frontend/types/profile.ts):
+   - Added TemplateDestination, PublicTemplate, CreateTripFromTemplateRequest
+   - Added TravelHistoryEntry, TravelStats, CountryVisit, TravelHistoryResponse, TravelStatsResponse, TravelTimelineEntry, TravelTimelineResponse, TripRatingRequest, ArchiveResponse
+
+2. API Clients:
+   - Updated lib/api/templates.ts with listPublicTemplates, getFeaturedTemplates, cloneTemplate, createTripFromTemplate
+   - Created lib/api/history.ts with all history endpoints
+
+3. Components:
+   - Created components/templates/PublicTemplateCard.tsx
+   - Created components/history/TravelStats.tsx
+   - Created components/history/CountryBadges.tsx
+
+### Feature List Update:
+- Added 15 new features to I9
+- totalFeatures: 122 -> 137
+- completedFeatures: 97 -> 109
+- I9 backend: 70% -> 100%
+- I9 overall: 90% -> 85% (accounting for new pending frontend features)
+
+### Files Changed:
+- backend/app/api/templates.py (MODIFIED)
+- backend/app/api/trips.py (MODIFIED)
+- backend/app/api/history.py (NEW)
+- backend/app/models/template.py (MODIFIED)
+- backend/app/models/trips.py (MODIFIED)
+- backend/app/main.py (MODIFIED - added history router)
+- frontend/types/profile.ts (MODIFIED)
+- frontend/lib/api/templates.ts (MODIFIED)
+- frontend/lib/api/history.ts (NEW)
+- frontend/components/templates/PublicTemplateCard.tsx (NEW)
+- frontend/components/templates/index.ts (NEW)
+- frontend/components/history/TravelStats.tsx (NEW)
+- frontend/components/history/CountryBadges.tsx (NEW)
+- frontend/components/history/index.ts (NEW)
+- feature_list.json (MODIFIED)
+
+### Remaining Work for I9:
+- I9-FE-13: Public templates library page
+- I9-FE-14: Travel history page
+- I9-FE-15: World map visualization with react-simple-maps
+
+==============================================
+End of Session 29 - I9 Backend Complete + Frontend Components
+==============================================
+
+
+Session - 2025-12-26
+------------------------
+Status: I7 COLLABORATION FEATURES COMPLETE
+
+## Completed Tasks:
+
+1. Created database migration for collaboration tables
+   - db/migrations/004_add_collaboration_tables.sql
+   - share_links, trip_collaborators, trip_comments tables
+   - RLS policies for secure multi-user access
+   - Enums: collaborator_role, share_link_status
+
+2. Implemented Share Links API
+   - POST /trips/{id}/share (generate)
+   - GET /trips/{id}/share (settings)
+   - PUT /trips/{id}/share (update)
+   - DELETE /trips/{id}/share (revoke)
+   - GET /shared/{token} (public view)
+
+3. Implemented Collaborators API
+   - POST /trips/{id}/collaborators (invite)
+   - GET /trips/{id}/collaborators (list)
+   - PUT /trips/{id}/collaborators/{user_id} (update role)
+   - DELETE /trips/{id}/collaborators/{user_id} (remove)
+   - POST /invitations/accept (accept invite)
+
+4. Implemented Comments API
+   - POST /trips/{id}/comments (create)
+   - GET /trips/{id}/comments (list with section filter)
+   - PUT /trips/{id}/comments/{id} (update)
+   - DELETE /trips/{id}/comments/{id} (delete)
+
+5. Created Pydantic models
+   - backend/app/models/sharing.py
+   - ShareSettings, Collaborator, Comment models
+   - CollaboratorRole, ShareLinkStatus, ShareLinkExpiry enums
+
+6. Created comprehensive test suite
+   - backend/tests/api/test_sharing.py
+   - 29 passing tests, 1 skipped
+   - Covers all CRUD operations and authorization checks
+
+## Files Created/Modified:
+   - db/migrations/004_add_collaboration_tables.sql (NEW)
+   - backend/app/models/sharing.py (NEW)
+   - backend/app/api/sharing.py (NEW)
+   - backend/tests/api/test_sharing.py (NEW)
+   - backend/app/main.py (MODIFIED - added sharing router)
+   - feature_list.json (UPDATED - added I7-COLLAB-01 to 06)

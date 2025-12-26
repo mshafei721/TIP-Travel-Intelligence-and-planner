@@ -4,7 +4,13 @@
  * API functions for trip template management
  */
 
-import type { TripTemplate, TripTemplateCreate, TripTemplateUpdate } from '@/types/profile';
+import type {
+  CreateTripFromTemplateRequest,
+  PublicTemplate,
+  TripTemplate,
+  TripTemplateCreate,
+  TripTemplateUpdate,
+} from '@/types/profile';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
 
@@ -115,6 +121,60 @@ export async function updateTemplate(
 export async function deleteTemplate(templateId: string): Promise<void> {
   return apiRequest<void>(`/api/templates/${templateId}`, {
     method: 'DELETE',
+  });
+}
+
+// ============================================
+// Public Templates API Functions
+// ============================================
+
+/**
+ * List public templates (no authentication required)
+ */
+export async function listPublicTemplates(options?: {
+  tag?: string;
+  destination?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<PublicTemplate[]> {
+  const params = new URLSearchParams();
+  if (options?.tag) params.append('tag', options.tag);
+  if (options?.destination) params.append('destination', options.destination);
+  if (options?.limit) params.append('limit', options.limit.toString());
+  if (options?.offset) params.append('offset', options.offset.toString());
+
+  const queryString = params.toString();
+  const endpoint = queryString ? `/api/templates/public?${queryString}` : '/api/templates/public';
+
+  return apiRequest<PublicTemplate[]>(endpoint);
+}
+
+/**
+ * Get featured public templates
+ */
+export async function getFeaturedTemplates(limit = 6): Promise<PublicTemplate[]> {
+  return apiRequest<PublicTemplate[]>(`/api/templates/public/featured?limit=${limit}`);
+}
+
+/**
+ * Clone a template to user's library
+ */
+export async function cloneTemplate(templateId: string): Promise<TripTemplate> {
+  return apiRequest<TripTemplate>(`/api/templates/${templateId}/clone`, {
+    method: 'POST',
+  });
+}
+
+/**
+ * Create a trip from a template
+ */
+export async function createTripFromTemplate(
+  templateId: string,
+  data?: CreateTripFromTemplateRequest,
+): Promise<Record<string, unknown>> {
+  return apiRequest<Record<string, unknown>>(`/api/trips/from-template/${templateId}`, {
+    method: 'POST',
+    body: data ? JSON.stringify(data) : undefined,
   });
 }
 
