@@ -3,7 +3,7 @@
 import json
 import logging
 import re
-from datetime import datetime
+from datetime import UTC, datetime
 
 from crewai import Agent, Crew
 from langchain_anthropic import ChatAnthropic
@@ -15,7 +15,6 @@ from .models import (
     Attraction,
     AttractionsAgentInput,
     AttractionsAgentOutput,
-    DayTrip,
     HiddenGem,
 )
 from .prompts import (
@@ -27,9 +26,13 @@ from .tasks import create_attractions_task
 from .tools import (
     get_attraction_details_tool,
     get_city_coordinates_tool,
-    get_fallback_attractions_knowledge,
     search_attractions_tool,
 )
+
+# Confidence score thresholds
+MIN_TOP_ATTRACTIONS = 8
+MIN_HIDDEN_GEMS = 3
+MIN_DAY_TRIPS = 2
 
 logger = logging.getLogger(__name__)
 
@@ -97,7 +100,7 @@ class AttractionsAgent(BaseAgent):
         # Create CrewAI agent
         self.agent = self._create_agent()
 
-        logger.info(f"AttractionsAgent initialized with model: {llm_model}")
+        logger.info("AttractionsAgent initialized with model: %s", llm_model)
 
     def _create_agent(self) -> Agent:
         """
@@ -175,15 +178,18 @@ class AttractionsAgent(BaseAgent):
                 score += 0.17  # ~0.5 total for required fields
 
         # Check for top attractions count (0.2)
-        if result.get("top_attractions") and len(result.get("top_attractions", [])) >= 8:
+        top_attractions = result.get("top_attractions", [])
+        if top_attractions and len(top_attractions) >= MIN_TOP_ATTRACTIONS:
             score += 0.2
 
         # Check for hidden gems (0.1)
-        if result.get("hidden_gems") and len(result.get("hidden_gems", [])) >= 3:
+        hidden_gems = result.get("hidden_gems", [])
+        if hidden_gems and len(hidden_gems) >= MIN_HIDDEN_GEMS:
             score += 0.1
 
         # Check for day trips (0.1)
-        if result.get("day_trips") and len(result.get("day_trips", [])) >= 2:
+        day_trips = result.get("day_trips", [])
+        if day_trips and len(day_trips) >= MIN_DAY_TRIPS:
             score += 0.1
 
         # Check for categorized attractions (0.1)
@@ -210,9 +216,8 @@ class AttractionsAgent(BaseAgent):
         Raises:
             ValueError: If execution fails or output cannot be parsed
         """
-        logger.info(
-            f"Running Attractions Agent for {input_data.destination_city or input_data.destination_country}"
-        )
+        destination = input_data.destination_city or input_data.destination_country
+        logger.info("Running Attractions Agent for %s", destination)
 
         try:
             # Create attractions task
@@ -239,24 +244,25 @@ class AttractionsAgent(BaseAgent):
 
             # Calculate confidence
             confidence = self._calculate_confidence(parsed_result)
-            logger.info(f"Attractions Agent confidence: {confidence:.2f}")
+            logger.info("Attractions Agent confidence: %.2f", confidence)
 
             # Build output model
+            now = datetime.now(tz=UTC)
             output = AttractionsAgentOutput(
                 trip_id=input_data.trip_id,
                 agent_type=self.agent_type,
-                generated_at=datetime.utcnow(),
+                generated_at=now,
                 confidence_score=confidence,
                 sources=[
                     SourceReference(
                         source="OpenTripMap API",
                         url="https://opentripmap.io",
-                        retrieved_at=datetime.utcnow(),
+                        retrieved_at=now,
                     ),
                     SourceReference(
                         source="Tourism Knowledge Base",
                         url="internal",
-                        retrieved_at=datetime.utcnow(),
+                        retrieved_at=now,
                     ),
                 ],
                 warnings=[],
@@ -291,14 +297,14 @@ class AttractionsAgent(BaseAgent):
                 accessibility_notes=parsed_result.get("accessibility_notes", []),
             )
 
-            logger.info(
-                f"Attractions Agent completed for {input_data.destination_city or input_data.destination_country}"
-            )
-            return output
+            logger.info("Attractions Agent completed for %s", destination)
 
         except Exception as e:
-            logger.error(f"Attractions Agent execution failed: {e}", exc_info=True)
-            raise ValueError(f"Failed to execute Attractions Agent: {str(e)}")
+            logger.exception("Attractions Agent execution failed")
+            msg = f"Failed to execute Attractions Agent: {e!s}"
+            raise ValueError(msg) from e
+        else:
+            return output
 
     def _create_fallback_result(self, input_data: AttractionsAgentInput) -> dict:
         """
