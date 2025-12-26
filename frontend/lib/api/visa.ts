@@ -5,6 +5,7 @@
  */
 
 import type { ConfidenceLevel, TripPurpose, VisaCategory, VisaIntelligence } from '@/types/visa';
+import { getAuthToken } from './auth-utils';
 
 type VisaSourceApi = {
   name?: string;
@@ -77,13 +78,13 @@ type VisaReportApi = {
 export async function fetchVisaReport(tripId: string): Promise<VisaIntelligence> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
   const url = `${apiUrl}/api/trips/${tripId}/report/visa`;
+  const token = await getAuthToken();
 
   const response = await fetch(url, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      // TODO: Add authentication token from Supabase session
-      // 'Authorization': `Bearer ${token}`,
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     cache: 'no-store', // Don't cache visa reports (they should be up-to-date)
   });
@@ -196,13 +197,13 @@ export async function generateVisaReport(
 ): Promise<{ taskId: string; status: string }> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
   const url = `${apiUrl}/api/trips/${tripId}/generate`;
+  const token = await getAuthToken();
 
   const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      // TODO: Add authentication token from Supabase session
-      // 'Authorization': `Bearer ${token}`,
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
   });
 
@@ -235,13 +236,13 @@ export async function checkGenerationStatus(tripId: string): Promise<{
 }> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
   const url = `${apiUrl}/api/trips/${tripId}/status`;
+  const token = await getAuthToken();
 
   const response = await fetch(url, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      // TODO: Add authentication token from Supabase session
-      // 'Authorization': `Bearer ${token}`,
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     cache: 'no-store',
   });
