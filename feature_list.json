@@ -1396,25 +1396,28 @@
           "id": "I9-FE-13",
           "name": "Public templates library page",
           "type": "frontend",
-          "passes": false,
+          "passes": true,
           "priority": "medium",
-          "notes": "Full templates library page with featured section and filtering"
+          "notes": "COMPLETE (338 lines) - Full templates library with search, filters, featured carousel, my templates, explore templates, use template dialog",
+          "verified": "Session 5 - 2025-12-27"
         },
         {
           "id": "I9-FE-14",
           "name": "Travel history page",
           "type": "frontend",
-          "passes": false,
+          "passes": true,
           "priority": "medium",
-          "notes": "Full travel history page with stats, map, and timeline"
+          "notes": "COMPLETE (302 lines) - Full travel history with stats, world map toggle, country badges, filtering, archive/unarchive, rating dialog",
+          "verified": "Session 5 - 2025-12-27"
         },
         {
           "id": "I9-FE-15",
           "name": "World map visualization",
           "type": "frontend",
-          "passes": false,
+          "passes": true,
           "priority": "low",
-          "notes": "react-simple-maps integration for visited countries"
+          "notes": "COMPLETE (181 lines) - SVG-based world map (not react-simple-maps), 50+ country paths, color-coded by visit count, dark mode support",
+          "verified": "Session 5 - 2025-12-27"
         }
       ]
     },

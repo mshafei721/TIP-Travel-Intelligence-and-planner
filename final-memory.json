@@ -1,0 +1,970 @@
+{
+  "project_name": "TIP - Travel Intelligence and Planner",
+  "review_started": "2025-12-26",
+  "review_status": "session_5_completed",
+  "project_overview": {
+    "description": "AI-powered travel intelligence platform providing decision-grade travel reports",
+    "tech_stack": {
+      "frontend": "Next.js 14+ (TypeScript) + Tailwind CSS + shadcn/ui + Mapbox",
+      "backend": "FastAPI (Python) + CrewAI + Celery + Redis",
+      "database": "Supabase (PostgreSQL + Auth)",
+      "ai": "OpenAI GPT-4 + Anthropic Claude 3.5",
+      "deployment": {
+        "frontend": "Vercel",
+        "backend": "Railway",
+        "redis": "Railway (managed)",
+        "celery_worker": "Railway"
+      }
+    },
+    "ai_agents": [
+      "Orchestrator Agent",
+      "Visa & Entry Agent",
+      "Country Intelligence Agent",
+      "Weather Agent",
+      "Currency & Budget Agent",
+      "Culture & Law Agent",
+      "Food Agent",
+      "Attractions Agent",
+      "Itinerary Agent",
+      "Flight Agent"
+    ],
+    "increments_planned": [
+      "I1 - Foundation and Infra",
+      "I2 - Authentication and Account Management",
+      "I3 - Dashboard and Home",
+      "I4 - Trip Creation and Input",
+      "I5 - Visa and Entry Intelligence",
+      "I6 - Destination Intelligence",
+      "I7 - Travel Planning and Itinerary",
+      "I8 - Report Management",
+      "I9 - User Profile and Settings",
+      "I10 - Error States, Loading, and Hardening"
+    ]
+  },
+  "review_sessions": [
+    {
+      "session": 1,
+      "focus": "Planning & Documentation Review",
+      "status": "completed",
+      "tasks": [
+        "Create comprehensive review plan",
+        "Review project documentation completeness",
+        "Identify all external services required",
+        "Map feature list to implementation status"
+      ],
+      "findings": {
+        "feature_completion": {
+          "total_features": 229,
+          "complete": 215,
+          "incomplete": 14,
+          "percentage": "94%"
+        },
+        "incomplete_features": [
+          "I2-CONFIG-01: Google OAuth configuration",
+          "I3-BE-03: AI Recommendations endpoint",
+          "I5-AGENT-02: Sherpa API integration",
+          "I8-UPDATE-FE-01 to I8-UPDATE-FE-08: 8 trip update UI components",
+          "I9-FE-13: Templates library page",
+          "I9-FE-14: Travel history page",
+          "I9-FE-15: World map visualization page"
+        ],
+        "backend_summary": {
+          "total_api_files": 12,
+          "total_endpoints": 125,
+          "all_agents_implemented": true,
+          "agents_count": 10,
+          "celery_tasks": 3,
+          "models": 8
+        },
+        "frontend_summary": {
+          "total_pages": 20,
+          "auth_pages": 5,
+          "app_pages": 15,
+          "total_components": "120+",
+          "component_directories": 14,
+          "api_integration_files": 10
+        }
+      }
+    },
+    {
+      "session": 2,
+      "focus": "Infrastructure & Production Configuration",
+      "status": "completed",
+      "tasks": [
+        "Verify Railway backend deployment",
+        "Verify Vercel frontend deployment",
+        "Check all environment variables in production",
+        "Verify Supabase configuration and tables",
+        "Check Redis connectivity",
+        "Verify Celery worker status"
+      ],
+      "findings": {
+        "railway_backend": {
+          "status": "HEALTHY",
+          "url": "https://tip-travel-intelligence-and-planner-production.up.railway.app",
+          "health_check": "OK - returns {status: healthy}",
+          "services": ["TIP-Travel-Intelligence-and-planner", "celery-worker", "Redis"]
+        },
+        "celery_worker": {
+          "status": "RUNNING",
+          "connected_to": "redis://default:***@redis.railway.internal:6379",
+          "tasks_registered": 9,
+          "concurrency": 2
+        },
+        "vercel_frontend": {
+          "status": "DEPLOYED",
+          "url": "https://tip-travel-intelligence-and-planner.vercel.app",
+          "env_vars_count": 11,
+          "responds": "307 redirect (auth working)"
+        },
+        "supabase": {
+          "status": "CONFIGURED",
+          "tables_count": 17,
+          "rls_enabled": true,
+          "users": 1,
+          "security_warnings": ["Leaked password protection disabled"],
+          "performance_warnings": ["33 unused indexes", "Multiple permissive policies on share_links, trip_collaborators, trip_comments, trip_templates"]
+        },
+        "env_vars_issues": {
+          "critical": [
+            {"var": "CELERY_BROKER_URL", "issue": "Typo: redisredis:// instead of redis://"},
+            {"var": "CORS_ORIGINS", "issue": "Points to wrong Vercel URL (travel-intelligence-v100)"},
+            {"var": "SECRET_KEY", "issue": "Placeholder value <generate-a-random-secret>"}
+          ],
+          "not_configured": [
+            "OPENAI_API_KEY",
+            "CURRENCY_API_KEY",
+            "FLIGHT_API_KEY",
+            "VISA_API_KEY",
+            "APIFY_API_KEY",
+            "FIRECRAWL_API_KEY",
+            "WEATHER_API_KEY"
+          ],
+          "configured_correctly": [
+            "ANTHROPIC_API_KEY",
+            "DATABASE_URL",
+            "SUPABASE_URL",
+            "SUPABASE_ANON_KEY",
+            "SUPABASE_SERVICE_ROLE_KEY",
+            "SUPABASE_JWT_SECRET",
+            "REDIS_URL",
+            "CELERY_RESULT_BACKEND",
+            "MAPBOX_ACCESS_TOKEN",
+            "OPENTRIPMAP_API_KEY",
+            "RAPIDAPI_KEY",
+            "WEATHERAPI_KEY"
+          ]
+        }
+      }
+    },
+    {
+      "session": 3,
+      "focus": "Backend Implementation Review",
+      "status": "completed",
+      "tasks": [
+        "Review all API endpoints implementation",
+        "Verify all 10 agent implementations",
+        "Check Celery task configurations",
+        "Review database migrations",
+        "Verify external API integrations",
+        "Security audit of auth and middleware",
+        "Error handling patterns review",
+        "Input validation audit",
+        "Database operations review"
+      ],
+      "findings": {
+        "security_audit": {
+          "overall_rating": "B+",
+          "jwt_validation": "GOOD - proper HS256, expiration, required claims",
+          "rate_limiting": "MEDIUM - in-memory only, needs Redis for distributed",
+          "security_headers": {
+            "implemented": ["X-Content-Type-Options", "X-Frame-Options", "X-XSS-Protection", "Referrer-Policy", "Permissions-Policy", "Cache-Control", "HSTS (production)"],
+            "missing": ["Content-Security-Policy", "Cross-Origin-Embedder-Policy", "Cross-Origin-Opener-Policy"]
+          },
+          "issues": [
+            {"severity": "MEDIUM", "issue": "verify_aud disabled in JWT validation"},
+            {"severity": "MEDIUM", "issue": "X-Forwarded-For header trusted without verification"},
+            {"severity": "LOW", "issue": "Missing brute-force protection on auth endpoints"}
+          ]
+        },
+        "error_handling": {
+          "infrastructure": "GOOD - centralized exception handlers, standardized error response format",
+          "critical_issues": [
+            {"severity": "HIGH", "issue": "Information leakage in 80+ locations - str(e) exposes internal details", "files": "All API routes"},
+            {"severity": "HIGH", "issue": "BUG: sharing.py line 248 references undefined 'user' variable (should be token_payload)", "file": "app/api/sharing.py:248"},
+            {"severity": "MEDIUM", "issue": "Custom exceptions (TIPException, NotFoundError, etc.) not utilized in API routes", "impact": "Inconsistent error format"}
+          ],
+          "silent_exceptions": ["places.py lines 116-118", "places.py lines 305-306", "trips.py lines 636-637"],
+          "missing_logging": "10+ endpoints lack error logging before raising HTTPException"
+        },
+        "ai_agents": {
+          "overall_score": "6.5/10",
+          "agent_scores": {
+            "orchestrator": {"score": "7.5/10", "issue": "Missing input mappings for currency/culture/food/attractions"},
+            "country": {"score": "7.0/10", "issue": "JSON parsing vulnerability, inconsistent SourceReference"},
+            "attractions": {"score": "7.5/10", "issue": "API key exposure risk, blocking async in sync context"},
+            "food": {"score": "6.5/10", "issue": "No external API, purely LLM knowledge"},
+            "culture": {"score": "6.5/10", "issue": "All tools knowledge-based, duplicate JSON extraction"},
+            "flight": {"score": "8.0/10", "issue": "Global mutable state, test_mode hardcoded"},
+            "itinerary": {"score": "7.0/10", "issue": "No integration with other agent outputs, date bug"},
+            "currency": {"score": "8.0/10", "issue": "Good API usage, minor key exposure"},
+            "visa": {"score": "7.5/10", "issue": "Strict validation may reject valid codes"},
+            "weather": {"score": "7.5/10", "issue": "No API quota management"}
+          },
+          "recommendations": "Production hardening needed before deployment"
+        },
+        "celery_tasks": {
+          "configuration": "GOOD - proper Redis broker, result backend, beat schedule",
+          "critical_issues": [
+            {"severity": "HIGH", "issue": "autoretry_for = (Exception,) too broad - retries non-transient errors"},
+            {"severity": "HIGH", "issue": "Non-idempotent tasks with acks_late=True - can cause duplicate entries"},
+            {"severity": "HIGH", "issue": "Exception swallowing bypasses retry logic - tasks return success with error data"},
+            {"severity": "HIGH", "issue": "Missing actual task tests - only import verification"},
+            {"severity": "MEDIUM", "issue": "No database transactions for multi-step operations"},
+            {"severity": "MEDIUM", "issue": "print() used instead of proper logging"},
+            {"severity": "MEDIUM", "issue": "No soft_time_limit on individual tasks"}
+          ],
+          "task_list": ["execute_agent_job", "execute_orchestrator", "execute_visa_agent", "execute_country_agent", "execute_weather_agent", "execute_currency_agent", "execute_attractions_agent", "execute_food_agent", "execute_culture_agent", "execute_itinerary_agent", "execute_flight_agent"]
+        },
+        "database_operations": {
+          "sql_injection": "PROTECTED - all queries use Supabase SDK parameterized queries",
+          "rls_status": "ENABLED on all tables, backend bypasses with service role key (design decision)",
+          "issues": [
+            {"severity": "HIGH", "issue": "No transaction wrapping for multi-step operations in agent_jobs.py"},
+            {"severity": "MEDIUM", "issue": "N+1 query pattern in report_aggregator.py lines 188-235"},
+            {"severity": "MEDIUM", "issue": "Multiple permissive RLS policies causing performance overhead", "tables": ["share_links", "trip_collaborators", "trip_comments", "trip_templates"]},
+            {"severity": "MEDIUM", "issue": "Generic exception handling masks database-specific errors"},
+            {"severity": "LOW", "issue": "35+ unused indexes adding write overhead"},
+            {"severity": "LOW", "issue": "datetime.utcnow() deprecated in Python 3.12+"}
+          ]
+        },
+        "input_validation": {
+          "pydantic_usage": "GOOD - consistent use of Pydantic models with Field() constraints",
+          "email_validation": "GOOD - uses EmailStr",
+          "enum_types": "GOOD - proper string enums for status fields",
+          "issues": [
+            {"severity": "HIGH", "issue": "Missing URL validation on URL fields (SSRF risk)", "fields": ["booking_url", "cover_image", "avatar_url"]},
+            {"severity": "HIGH", "issue": "Missing time format validation (HH:MM)", "fields": ["start_time", "end_time"]},
+            {"severity": "HIGH", "issue": "Missing date format validation (YYYY-MM-DD)", "fields": ["date", "start_date"]},
+            {"severity": "MEDIUM", "issue": "Timezone field accepts any string (not validated against IANA)", "field": "timezone"},
+            {"severity": "MEDIUM", "issue": "Weak currency code validation (only checks case)", "field": "currency"},
+            {"severity": "MEDIUM", "issue": "Unbounded list fields without max_length", "fields": ["interests", "dietary_restrictions", "tags", "destinations"]},
+            {"severity": "MEDIUM", "issue": "Generic dict fields allow arbitrary data", "fields": ["traveler_details", "preferences", "draft_data"]}
+          ]
+        }
+      }
+    },
+    {
+      "session": 4,
+      "focus": "Frontend Implementation Review",
+      "status": "completed",
+      "tasks": [
+        "Review all page implementations",
+        "Check component completeness",
+        "Verify API integration",
+        "Review error handling",
+        "Check loading states"
+      ],
+      "findings": {
+        "pages_review": {
+          "total_pages": 22,
+          "auth_pages": 5,
+          "app_pages": 17,
+          "routes": {
+            "root": ["/", "error.tsx", "not-found.tsx"],
+            "auth": ["/login", "/signup", "/forgot-password", "/reset-password", "/verify-email"],
+            "app": ["/dashboard", "/trips", "/trips/create", "/trips/[id]", "/trips/[id]/destination", "/trips/[id]/itinerary", "/trips/[id]/generation", "/profile", "/profile/edit", "/history", "/templates", "/analytics", "/settings", "/demo/errors"]
+          },
+          "error_boundaries": {
+            "root": "app/error.tsx",
+            "dashboard": "app/(app)/dashboard/error.tsx",
+            "profile": "app/(app)/profile/error.tsx",
+            "trip_detail": "app/(app)/trips/[id]/error.tsx"
+          },
+          "loading_states": {
+            "dashboard": "app/(app)/dashboard/loading.tsx",
+            "profile": "app/(app)/profile/loading.tsx",
+            "trip_detail": "app/(app)/trips/[id]/loading.tsx"
+          },
+          "not_found": {
+            "root": "app/not-found.tsx",
+            "trip_detail": "app/(app)/trips/[id]/not-found.tsx"
+          },
+          "gaps": [
+            "templates/, history/, analytics/, settings/ pages lack dedicated error boundaries",
+            "Most app pages lack SEO metadata exports",
+            "TODO comments found in profile/page.tsx (backend integration)",
+            "Mock user implementation in (app)/layout.tsx"
+          ]
+        },
+        "component_review": {
+          "total_components": 109,
+          "directories": 16,
+          "breakdown": {
+            "analytics": 6,
+            "auth": 9,
+            "dashboard": 9,
+            "destination": 11,
+            "history": 6,
+            "itinerary": 7,
+            "profile": 13,
+            "report": 10,
+            "reports": 2,
+            "settings": 4,
+            "shell": 4,
+            "templates": 5,
+            "trip-wizard": 10,
+            "ui": 13
+          },
+          "skeleton_components": ["CardSkeleton", "StatsSkeleton", "TripCardSkeleton"],
+          "loading_components": ["LoadingState.tsx", "VisaLoadingState.tsx"],
+          "quality": "EXCELLENT - Well-organized, consistent patterns"
+        },
+        "api_integration": {
+          "overall_score": "7.2/10",
+          "files_count": 10,
+          "files": ["client.ts", "auth-utils.ts", "profile.ts", "history.ts", "destination.ts", "visa.ts", "reports.ts", "templates.ts", "analytics.ts", "settings.ts"],
+          "total_methods": 47,
+          "strengths": [
+            "Type-safe generics across all files",
+            "Consistent Bearer token authentication",
+            "Environment variable usage (100%)",
+            "JSDoc comments present",
+            "Good separation of concerns"
+          ],
+          "critical_issues": [
+            {"severity": "HIGH", "issue": "No timeout handling - requests can hang indefinitely"},
+            {"severity": "HIGH", "issue": "No retry logic for transient failures"},
+            {"severity": "HIGH", "issue": "Duplicate getAuthToken() in 3 files (profile.ts, history.ts, templates.ts)"},
+            {"severity": "MEDIUM", "issue": "Two env vars for same URL (NEXT_PUBLIC_BACKEND_URL vs NEXT_PUBLIC_API_URL)"},
+            {"severity": "MEDIUM", "issue": "No 401 token refresh handling"},
+            {"severity": "MEDIUM", "issue": "Inconsistent error patterns (throw vs return {success, error})"},
+            {"severity": "LOW", "issue": "PDF URL memory leak - URL.revokeObjectURL() never called"}
+          ]
+        },
+        "error_handling": {
+          "overall_quality": "GOOD",
+          "error_boundaries": {
+            "count": 4,
+            "quality": "GOOD - Multiple layers with varying detail",
+            "features": ["Console error logging", "Reset functionality", "Retry buttons", "Navigation fallbacks", "Dev-only error details"]
+          },
+          "error_components": {
+            "ErrorBanner": "EXCELLENT - 4 variants, dismissible, dark mode, accessible",
+            "WarningBanner": "EXCELLENT - Action buttons, animations, variants",
+            "OfflineDetector": "GOOD - Auto-detect, ARIA attributes, animations"
+          },
+          "toast_system": {
+            "status": "UNUSED",
+            "issue": "Toast system implemented but NOT used in any component",
+            "files": ["ToastContext.tsx", "Toast.tsx", "ToastContainer.tsx"]
+          },
+          "try_catch_usage": "MINIMAL - Components rely on error boundaries, not local catch",
+          "gaps": [
+            "No external error logging (only console.error)",
+            "Generic error messages to users",
+            "No error categorization (user vs system vs network)",
+            "No error codes for support reference"
+          ]
+        },
+        "loading_states": {
+          "overall_quality": "GOOD",
+          "patterns_found": [
+            "Skeleton screens (dashboard)",
+            "Spinner animations (Loader2)",
+            "Loading overlays",
+            "Progress indicators"
+          ],
+          "components_with_loading": 16,
+          "state_management": {
+            "AutoSaveIndicator": "EXCELLENT - 4 states (idle, saving, saved, error)",
+            "TripReportLayout": "GOOD - isExporting, isSharing states",
+            "ProfilePhotoUpload": "GOOD - saveState management"
+          }
+        },
+        "previously_incomplete_now_complete": [
+          {
+            "feature": "I9-FE-13: Templates library page",
+            "status": "COMPLETE",
+            "file": "app/(app)/templates/page.tsx",
+            "lines": 339,
+            "features": ["Featured templates", "User templates", "Public templates", "Search/filter", "Clone functionality"]
+          },
+          {
+            "feature": "I9-FE-14: Travel history page",
+            "status": "COMPLETE",
+            "file": "app/(app)/history/page.tsx",
+            "lines": 303,
+            "features": ["Travel stats", "World map", "Country badges", "Archive/unarchive", "Rating dialog"]
+          }
+        ]
+      }
+    },
+    {
+      "session": 5,
+      "focus": "Integration & Gap Analysis",
+      "status": "completed",
+      "tasks": [
+        "Test end-to-end user flows",
+        "Verify feature completeness against PRD",
+        "Compile final gap analysis",
+        "Generate action items"
+      ],
+      "findings": {
+        "e2e_flow_scores": {
+          "authentication": {
+            "score": "9/10",
+            "status": "FULLY_FUNCTIONAL",
+            "components": ["signup", "login", "logout", "password_reset", "email_verification", "google_oauth"],
+            "gap": "App layout uses mock user instead of real authenticated user session"
+          },
+          "trip_creation": {
+            "score": "8/10",
+            "status": "FULLY_FUNCTIONAL",
+            "components": ["4-step wizard", "validation", "draft_autosave", "backend_crud"],
+            "gap": "No real-time backend validation"
+          },
+          "report_generation": {
+            "score": "6/10",
+            "status": "PARTIALLY_FUNCTIONAL",
+            "critical_gap": "execute_orchestrator Celery task is PLACEHOLDER - does not call OrchestratorAgent class",
+            "individual_agents": "IMPLEMENTED - visa, country, weather, currency, culture, food, attractions agents work independently",
+            "orchestrator_agent": "IMPLEMENTED - OrchestratorAgent class exists with phased execution",
+            "missing_connection": "Celery task at line 525 of agent_jobs.py returns placeholder instead of calling OrchestratorAgent.generate_report()"
+          },
+          "report_viewing": {
+            "score": "7/10",
+            "status": "FRAMEWORK_READY",
+            "implemented": ["visa section", "report layout", "PDF export", "share functionality"],
+            "gap": "Only visa section fully wired, other sections may show mock data"
+          }
+        },
+        "feature_list_discrepancies": {
+          "marked_incomplete_but_complete": [
+            {
+              "id": "I9-FE-13",
+              "name": "Public templates library page",
+              "actual_status": "COMPLETE",
+              "file": "frontend/app/(app)/templates/page.tsx",
+              "lines": 338,
+              "features": ["search", "filters", "featured carousel", "my templates", "explore templates", "use template dialog"]
+            },
+            {
+              "id": "I9-FE-14",
+              "name": "Travel history page",
+              "actual_status": "COMPLETE",
+              "file": "frontend/app/(app)/history/page.tsx",
+              "lines": 302,
+              "features": ["travel stats", "world map toggle", "country badges", "trip filtering", "archive/unarchive", "rating dialog"]
+            },
+            {
+              "id": "I9-FE-15",
+              "name": "World map visualization",
+              "actual_status": "COMPLETE",
+              "file": "frontend/components/history/WorldMapViz.tsx",
+              "lines": 181,
+              "implementation": "SVG-based (not react-simple-maps), 50+ country paths, color-coded by visit count, dark mode support"
+            }
+          ],
+          "correctly_marked_incomplete": [
+            {"id": "I8-UPDATE-FE-01", "name": "TripEditForm", "status": "NOT_IMPLEMENTED"},
+            {"id": "I8-UPDATE-FE-02", "name": "ChangePreview", "status": "NOT_IMPLEMENTED"},
+            {"id": "I8-UPDATE-FE-03", "name": "AffectedSections", "status": "NOT_IMPLEMENTED"},
+            {"id": "I8-UPDATE-FE-04", "name": "RecalculationStatus", "status": "NOT_IMPLEMENTED"},
+            {"id": "I8-UPDATE-FE-05", "name": "VersionHistory", "status": "NOT_IMPLEMENTED"},
+            {"id": "I8-UPDATE-FE-06", "name": "DiffView", "status": "NOT_IMPLEMENTED"},
+            {"id": "I8-UPDATE-FE-07", "name": "ChangeConfirmDialog", "status": "NOT_IMPLEMENTED"},
+            {"id": "I8-UPDATE-FE-08", "name": "RestoreDialog", "status": "NOT_IMPLEMENTED"}
+          ],
+          "note": "Backend for I8-UPDATE is complete, only frontend components missing"
+        },
+        "supabase_advisors": {
+          "security": {
+            "warnings": 1,
+            "issues": ["Leaked Password Protection disabled - enable via Supabase dashboard"]
+          },
+          "performance": {
+            "unused_indexes": 33,
+            "multiple_permissive_policies": 32,
+            "affected_tables": ["share_links", "trip_collaborators", "trip_comments", "trip_templates"]
+          }
+        },
+        "overall_assessment": {
+          "production_readiness": "80%",
+          "critical_blockers": [
+            "Orchestrator Celery task doesn't invoke OrchestratorAgent (report generation won't work)",
+            "API keys potentially exposed in git history"
+          ],
+          "major_gaps": [
+            "8 Trip Update UI components not implemented",
+            "Mock user in app layout instead of real session"
+          ],
+          "minor_gaps": [
+            "33 unused database indexes",
+            "32 overlapping RLS policies",
+            "Leaked password protection disabled"
+          ]
+        }
+      }
+    }
+  ],
+  "external_services": {
+    "required": [
+      {"name": "Supabase", "purpose": "Database + Auth", "env_vars": ["SUPABASE_URL", "SUPABASE_ANON_KEY", "SUPABASE_SERVICE_KEY"], "status": "implemented"},
+      {"name": "OpenAI", "purpose": "LLM for agents", "env_vars": ["OPENAI_API_KEY"], "status": "implemented"},
+      {"name": "Anthropic", "purpose": "LLM for agents (Claude)", "env_vars": ["ANTHROPIC_API_KEY"], "status": "implemented"},
+      {"name": "Visual Crossing / WeatherAPI", "purpose": "Weather data", "env_vars": ["VISUAL_CROSSING_API_KEY", "WEATHERAPI_KEY"], "status": "implemented"},
+      {"name": "Exchange Rate API (fawazahmed0)", "purpose": "Currency conversion", "env_vars": ["CURRENCY_API_KEY"], "status": "implemented"},
+      {"name": "Amadeus", "purpose": "Flight data", "env_vars": ["AMADEUS_API_KEY", "AMADEUS_API_SECRET"], "status": "implemented"},
+      {"name": "Mapbox", "purpose": "Maps integration", "env_vars": ["MAPBOX_ACCESS_TOKEN", "NEXT_PUBLIC_MAPBOX_TOKEN"], "status": "implemented"},
+      {"name": "Travel Buddy (RapidAPI)", "purpose": "Visa data", "env_vars": ["TRAVEL_BUDDY_API_KEY"], "status": "implemented"},
+      {"name": "OpenTripMap", "purpose": "Attractions data", "env_vars": ["OPENTRIPMAP_API_KEY"], "status": "implemented"},
+      {"name": "REST Countries", "purpose": "Country data", "env_vars": [], "status": "implemented_free"},
+      {"name": "Redis", "purpose": "Celery broker", "env_vars": ["REDIS_URL", "CELERY_BROKER_URL"], "status": "local_only"},
+      {"name": "Sentry", "purpose": "Error tracking", "env_vars": ["SENTRY_DSN"], "status": "configured_not_active"}
+    ],
+    "configured_in_prod": [],
+    "missing_in_prod": [],
+    "security_issues": [
+      "CRITICAL: Real API keys found committed to git (.env and .env.local files)",
+      "Need to rotate all exposed keys immediately",
+      "Redis configured for localhost only - needs Upstash for production"
+    ]
+  },
+  "infrastructure": {
+    "backend_host": "Railway",
+    "frontend_host": "Vercel",
+    "database": "Supabase",
+    "task_queue": "Celery + Redis",
+    "status": "verified_with_issues",
+    "deployment_configs": {
+      "railway": {
+        "file": "railway.toml",
+        "build": "Dockerfile",
+        "start_command": "uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 2",
+        "health_check": "/api/health"
+      },
+      "vercel": {
+        "file": "frontend/vercel.json",
+        "framework": "nextjs",
+        "build_command": "npm run build",
+        "install_command": "npm install"
+      }
+    }
+  },
+  "frontend_components": {
+    "total_identified": 109,
+    "pages_identified": [
+      "/app/(auth)/login",
+      "/app/(auth)/signup",
+      "/app/(auth)/forgot-password",
+      "/app/(auth)/reset-password",
+      "/app/(auth)/verify-email",
+      "/app/(app)/dashboard",
+      "/app/(app)/trips",
+      "/app/(app)/trips/create",
+      "/app/(app)/trips/[id]",
+      "/app/(app)/trips/[id]/destination",
+      "/app/(app)/trips/[id]/itinerary",
+      "/app/(app)/trips/[id]/generation",
+      "/app/(app)/profile",
+      "/app/(app)/profile/edit",
+      "/app/(app)/settings",
+      "/app/(app)/history",
+      "/app/(app)/templates",
+      "/app/(app)/analytics",
+      "/app/(app)/demo/errors"
+    ],
+    "component_directories": {
+      "analytics": 6,
+      "auth": 9,
+      "dashboard": 9,
+      "destination": 11,
+      "history": 6,
+      "itinerary": 7,
+      "profile": 13,
+      "report": 10,
+      "reports": 2,
+      "settings": 4,
+      "shell": 4,
+      "templates": 5,
+      "trip-wizard": 10,
+      "ui": 13
+    },
+    "api_integration_files": {
+      "client.ts": "Core API wrapper (68 lines)",
+      "auth-utils.ts": "Token management with caching (96 lines)",
+      "profile.ts": "User profile management (193 lines)",
+      "history.ts": "Travel history & stats (192 lines)",
+      "destination.ts": "Country intelligence (208 lines)",
+      "visa.ts": "Visa reports (268 lines)",
+      "reports.ts": "Trip reports & PDF (298 lines)",
+      "templates.ts": "Template CRUD (220 lines)",
+      "analytics.ts": "Usage analytics (78 lines)",
+      "settings.ts": "User settings (153 lines)"
+    },
+    "api_layer_score": "7.2/10",
+    "session_4_verified": true,
+    "used": [],
+    "unused": [],
+    "broken": []
+  },
+  "backend_endpoints": {
+    "total_identified": 125,
+    "modules": {
+      "healthcheck": {"endpoints": 3, "status": "complete"},
+      "trips": {"endpoints": 21, "status": "complete"},
+      "itinerary": {"endpoints": 10, "status": "complete"},
+      "profile": {"endpoints": 13, "status": "complete"},
+      "history": {"endpoints": 7, "status": "complete", "todos": 2},
+      "places": {"endpoints": 3, "status": "complete"},
+      "templates": {"endpoints": 8, "status": "complete"},
+      "sharing": {"endpoints": 13, "status": "complete", "todos": 1},
+      "analytics": {"endpoints": 6, "status": "complete"},
+      "settings": {"endpoints": 13, "status": "complete"},
+      "recommendations": {"endpoints": 1, "status": "complete"}
+    },
+    "ai_agents": {
+      "orchestrator": {"files": 3, "status": "complete"},
+      "visa": {"files": 6, "status": "complete", "api": "Travel Buddy"},
+      "country": {"files": 6, "status": "complete", "api": "REST Countries"},
+      "weather": {"files": 6, "status": "complete", "api": "Visual Crossing + WeatherAPI"},
+      "currency": {"files": 6, "status": "complete", "api": "Exchange Rate API"},
+      "culture": {"files": 6, "status": "complete"},
+      "food": {"files": 6, "status": "complete"},
+      "attractions": {"files": 6, "status": "complete", "api": "OpenTripMap"},
+      "itinerary": {"files": 6, "status": "complete"},
+      "flight": {"files": 6, "status": "complete", "api": "Amadeus"}
+    },
+    "tested": [],
+    "untested": [],
+    "broken": []
+  },
+  "integration_flows": {
+    "user_journeys": [
+      "Sign up / Login",
+      "Create trip (wizard)",
+      "Generate report",
+      "View destination intelligence",
+      "View/edit itinerary",
+      "Export PDF",
+      "Manage profile/settings",
+      "View travel history"
+    ],
+    "working": [],
+    "broken": []
+  },
+  "gaps": {
+    "critical": [
+      {
+        "id": "SEC-001",
+        "title": "API Keys Exposed in Git",
+        "description": "Real API keys found committed to git in .env and .env.local files",
+        "impact": "Security vulnerability - keys need immediate rotation",
+        "action": "1. Rotate all exposed keys, 2. Add .env* to .gitignore, 3. Remove from git history"
+      },
+      {
+        "id": "SEC-002",
+        "title": "Information Leakage in Error Messages",
+        "description": "80+ locations expose internal error details via str(e) in HTTPException details",
+        "impact": "Security vulnerability - database errors, stack traces, and paths could be exposed to attackers",
+        "action": "Replace str(e) with generic error messages, use custom TIPException classes"
+      },
+      {
+        "id": "BUG-001",
+        "title": "Undefined Variable Bug in sharing.py",
+        "description": "Line 248 references undefined 'user' variable instead of 'token_payload'",
+        "impact": "NameError will crash update_share_settings endpoint",
+        "action": "Fix: change 'user' to 'token_payload' on line 248 of app/api/sharing.py",
+        "status": "RESOLVED",
+        "resolved_at": "2025-12-26T18:15:00Z"
+      },
+      {
+        "id": "REL-001",
+        "title": "Non-Idempotent Celery Tasks",
+        "description": "Tasks with acks_late=True insert without checking for existing entries",
+        "impact": "Duplicate database entries on task retries",
+        "action": "Implement upsert pattern or check for existing entries before insert"
+      },
+      {
+        "id": "CFG-001",
+        "title": "CELERY_BROKER_URL Typo",
+        "description": "Railway env var has redisredis:// instead of redis://",
+        "impact": "Celery workers may fail to connect properly",
+        "action": "Fix typo in Railway environment variables",
+        "status": "RESOLVED",
+        "resolved_at": "2025-12-26T17:44:00Z"
+      },
+      {
+        "id": "CFG-002",
+        "title": "CORS_ORIGINS Wrong URL",
+        "description": "Points to travel-intelligence-v100.vercel.app instead of tip-travel-intelligence-and-planner.vercel.app",
+        "impact": "Frontend cannot make API calls to backend",
+        "action": "Update CORS_ORIGINS in Railway to correct Vercel URL",
+        "status": "RESOLVED",
+        "resolved_at": "2025-12-26T17:44:00Z"
+      },
+      {
+        "id": "CFG-003",
+        "title": "SECRET_KEY Not Set",
+        "description": "SECRET_KEY has placeholder value <generate-a-random-secret>",
+        "impact": "Security risk - JWT signing compromised",
+        "action": "Generate and set proper SECRET_KEY in Railway",
+        "status": "RESOLVED",
+        "resolved_at": "2025-12-26T17:44:00Z"
+      },
+      {
+        "id": "INT-001",
+        "title": "Orchestrator Celery Task is Placeholder",
+        "description": "execute_orchestrator task at backend/app/tasks/agent_jobs.py:525 returns placeholder instead of calling OrchestratorAgent.generate_report()",
+        "impact": "CRITICAL - Report generation does not work. Users can create trips but cannot generate AI reports.",
+        "action": "Wire execute_orchestrator to call OrchestratorAgent.generate_report() - the agent class is fully implemented at backend/app/agents/orchestrator/agent.py",
+        "discovered": "Session 5",
+        "status": "OPEN"
+      }
+    ],
+    "major": [
+      {
+        "id": "GAP-001",
+        "title": "Redis Production Configuration",
+        "description": "Redis is configured for localhost only - needs Upstash or Railway Redis for production",
+        "impact": "Celery tasks won't work in production",
+        "action": "Configure production Redis URL (Upstash recommended)"
+      },
+      {
+        "id": "GAP-002",
+        "title": "Incomplete Frontend Pages",
+        "description": "3 pages marked incomplete: Templates library, Travel history, World map",
+        "impact": "User experience incomplete for these features",
+        "action": "Complete I9-FE-13, I9-FE-14, I9-FE-15",
+        "status": "RESOLVED",
+        "resolved_at": "2025-12-27",
+        "notes": "Session 5 verified ALL THREE pages are COMPLETE: Templates (338 lines), History (302 lines), WorldMapViz (181 lines SVG-based). feature_list.json needs updating."
+      },
+      {
+        "id": "GAP-003",
+        "title": "8 Trip Update UI Components Missing",
+        "description": "I8-UPDATE-FE-01 to I8-UPDATE-FE-08 marked incomplete",
+        "impact": "Trip modification flow may be incomplete",
+        "action": "Review and complete trip update components"
+      }
+    ],
+    "minor": [
+      {
+        "id": "FE-001",
+        "title": "API Layer No Timeout/Retry",
+        "description": "Frontend API client has no timeout handling or retry logic - requests can hang indefinitely",
+        "impact": "Poor UX during network issues",
+        "action": "Add AbortController timeout and exponential backoff retry",
+        "discovered": "Session 4"
+      },
+      {
+        "id": "FE-002",
+        "title": "Duplicate getAuthToken Functions",
+        "description": "getAuthToken() duplicated in profile.ts, history.ts, templates.ts instead of using auth-utils.ts",
+        "impact": "Code duplication, maintenance burden",
+        "action": "Remove duplicates, import from auth-utils.ts",
+        "discovered": "Session 4"
+      },
+      {
+        "id": "FE-003",
+        "title": "Toast System Unused",
+        "description": "ToastContext/Toast/ToastContainer implemented but NOT used in any component",
+        "impact": "Missing user feedback mechanism",
+        "action": "Implement toast usage for API success/error feedback",
+        "discovered": "Session 4"
+      },
+      {
+        "id": "FE-004",
+        "title": "Missing Error Boundaries",
+        "description": "templates/, history/, analytics/, settings/ pages lack dedicated error.tsx files",
+        "impact": "Errors fall through to root boundary",
+        "action": "Add error.tsx to each app page directory",
+        "discovered": "Session 4"
+      },
+      {
+        "id": "FE-005",
+        "title": "Inconsistent API Environment Variables",
+        "description": "Some files use NEXT_PUBLIC_BACKEND_URL, others use NEXT_PUBLIC_API_URL for same purpose",
+        "impact": "Configuration confusion",
+        "action": "Standardize on single NEXT_PUBLIC_BACKEND_URL",
+        "discovered": "Session 4"
+      },
+      {
+        "id": "MIN-001",
+        "title": "Image Support TODOs",
+        "description": "history.py has TODOs for cover image and thumbnail support (lines 117, 404)",
+        "impact": "Low - frontend handles null gracefully",
+        "action": "Implement image support when image storage is ready"
+      },
+      {
+        "id": "MIN-002",
+        "title": "Hardcoded Share URL",
+        "description": "sharing.py line 145 has hardcoded 'https://tip.travel' instead of config",
+        "impact": "Medium - needs config for different environments",
+        "action": "Move base_url to configuration"
+      },
+      {
+        "id": "MIN-003",
+        "title": "Google OAuth Not Configured",
+        "description": "I2-CONFIG-01 marked incomplete - OAuth setup pending",
+        "impact": "Social login not available",
+        "action": "Complete OAuth configuration when needed"
+      },
+      {
+        "id": "MIN-004",
+        "title": "Sentry Not Active",
+        "description": "Sentry DSN configured but empty - error tracking not active",
+        "impact": "Production errors not monitored",
+        "action": "Add Sentry DSN to production environment"
+      }
+    ]
+  },
+  "agent_findings": {
+    "backend_exploration": {
+      "agent_id": "a7b57d4",
+      "status": "completed",
+      "summary": "Backend is PRODUCTION-READY with all 10 AI agents implemented, 125 API endpoints, comprehensive error handling, JWT auth, and GDPR compliance"
+    },
+    "frontend_exploration": {
+      "agent_id": "a4f0e7b",
+      "status": "completed",
+      "summary": "20 pages, 120+ components across 14 directories, all planned features have UI implementations, complete API integration layer"
+    },
+    "feature_list_analysis": {
+      "agent_id": "a29384d",
+      "status": "completed",
+      "summary": "229 features total, 215 complete (94%), 14 incomplete - mostly trip update UI and 3 frontend pages"
+    },
+    "external_services": {
+      "agent_id": "a85b635",
+      "status": "completed",
+      "summary": "Critical security issue with exposed keys, 10+ external services integrated, Redis needs production config"
+    }
+  },
+  "action_items": [
+    {
+      "priority": "P0",
+      "category": "Security",
+      "action": "Rotate all exposed API keys immediately and remove from git history",
+      "owner": "DevOps/Security",
+      "status": "pending"
+    },
+    {
+      "priority": "P0",
+      "category": "Configuration",
+      "action": "Fix CELERY_BROKER_URL typo (redisredis:// -> redis://) in Railway",
+      "owner": "DevOps",
+      "status": "resolved",
+      "resolved_at": "2025-12-26T17:44:00Z"
+    },
+    {
+      "priority": "P0",
+      "category": "Configuration",
+      "action": "Update CORS_ORIGINS to https://tip-travel-intelligence-and-planner.vercel.app",
+      "owner": "DevOps",
+      "status": "resolved",
+      "resolved_at": "2025-12-26T17:44:00Z"
+    },
+    {
+      "priority": "P0",
+      "category": "Security",
+      "action": "Generate and set proper SECRET_KEY in Railway",
+      "owner": "DevOps",
+      "status": "resolved",
+      "resolved_at": "2025-12-26T17:44:00Z"
+    },
+    {
+      "priority": "P0",
+      "category": "Integration",
+      "action": "Wire execute_orchestrator Celery task to call OrchestratorAgent.generate_report() - task at line 525 of agent_jobs.py is placeholder",
+      "owner": "Backend",
+      "status": "pending",
+      "discovered": "Session 5",
+      "notes": "OrchestratorAgent class is fully implemented at backend/app/agents/orchestrator/agent.py with phased execution. Just needs wiring."
+    },
+    {
+      "priority": "P1",
+      "category": "Configuration",
+      "action": "Configure missing API keys: OPENAI_API_KEY, CURRENCY_API_KEY, FLIGHT_API_KEY, VISA_API_KEY",
+      "owner": "DevOps",
+      "status": "pending"
+    },
+    {
+      "priority": "P1",
+      "category": "Infrastructure",
+      "action": "Redis is working via Railway internal network - RESOLVED",
+      "owner": "DevOps",
+      "status": "resolved"
+    },
+    {
+      "priority": "P2",
+      "category": "Security",
+      "action": "Enable leaked password protection in Supabase Auth settings",
+      "owner": "DevOps",
+      "status": "pending"
+    },
+    {
+      "priority": "P2",
+      "category": "Frontend",
+      "action": "Complete 3 pending pages: Templates, History, World Map",
+      "owner": "Frontend",
+      "status": "resolved",
+      "resolved_at": "2025-12-27",
+      "notes": "Session 5: ALL THREE pages verified COMPLETE. Templates (338 lines), History (302 lines), WorldMapViz (181 lines SVG-based)."
+    },
+    {
+      "priority": "P2",
+      "category": "Frontend",
+      "action": "Add timeout/retry logic to API layer (AbortController + exponential backoff)",
+      "owner": "Frontend",
+      "status": "pending",
+      "discovered": "Session 4"
+    },
+    {
+      "priority": "P3",
+      "category": "Frontend",
+      "action": "Consolidate getAuthToken() - remove duplicates from profile.ts, history.ts, templates.ts",
+      "owner": "Frontend",
+      "status": "pending",
+      "discovered": "Session 4"
+    },
+    {
+      "priority": "P3",
+      "category": "Frontend",
+      "action": "Implement toast system usage for user feedback",
+      "owner": "Frontend",
+      "status": "pending",
+      "discovered": "Session 4"
+    },
+    {
+      "priority": "P3",
+      "category": "Frontend",
+      "action": "Add error.tsx to templates/, history/, analytics/, settings/ pages",
+      "owner": "Frontend",
+      "status": "pending",
+      "discovered": "Session 4"
+    },
+    {
+      "priority": "P2",
+      "category": "Frontend",
+      "action": "Review and complete 8 trip update UI components",
+      "owner": "Frontend",
+      "status": "pending"
+    },
+    {
+      "priority": "P3",
+      "category": "Configuration",
+      "action": "Set up Sentry DSN for production error monitoring",
+      "owner": "DevOps",
+      "status": "pending"
+    },
+    {
+      "priority": "P3",
+      "category": "Configuration",
+      "action": "Complete Google OAuth setup when social login is needed",
+      "owner": "Backend",
+      "status": "deferred"
+    }
+  ]
+}
