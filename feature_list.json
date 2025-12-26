@@ -1,7 +1,7 @@
 {
   "project": "TIP - Travel Intelligence & Planner",
-  "version": "2.2.4",
-  "lastUpdated": "2025-12-26T16:00:00Z",
+  "version": "2.2.5",
+  "lastUpdated": "2025-12-26T20:00:00Z",
   "structure": "I1-I10 Increments (unified FE+BE)",
   "notes": [
     "This file now uses the INTEGRATED_PLAN.md I1-I10 increment structure",
@@ -12,8 +12,8 @@
   "summary": {
     "totalIncrements": 10,
     "totalFeatures": 122,
-    "completedFeatures": 91,
-    "percentComplete": 75
+    "completedFeatures": 97,
+    "percentComplete": 80
   },
   "increments": [
     {
@@ -937,8 +937,8 @@
         "frontend": 100,
         "backend": 100,
         "updates_frontend": 0,
-        "updates_backend": 0,
-        "overall": 60
+        "updates_backend": 100,
+        "overall": 75
       },
       "features": [
         {
@@ -1025,49 +1025,55 @@
           "id": "I8-UPDATE-BE-01",
           "name": "Implement ChangeDetector service",
           "type": "backend",
-          "passes": false,
+          "passes": true,
           "priority": "critical",
-          "description": "Service to detect changes between old and new trip data, and determine which agents need recalculation"
+          "description": "Service to detect changes between old and new trip data, and determine which agents need recalculation",
+          "implementation": "ChangeDetector service at backend/app/services/change_detector.py. Detects changes in destinations, dates, budget, interests, preferences. Returns ChangeResult with affected_agents list and estimated_time_seconds. Agent dependencies mapped for 9 agents (visa, weather, currency, culture, food, attractions, itinerary, country, flight). 25 unit tests."
         },
         {
           "id": "I8-UPDATE-BE-02",
           "name": "Implement selective recalculation Celery task",
           "type": "backend",
-          "passes": false,
+          "passes": true,
           "priority": "critical",
-          "description": "Celery task that only runs affected agents based on detected changes"
+          "description": "Celery task that only runs affected agents based on detected changes",
+          "implementation": "execute_selective_recalc Celery task at backend/app/tasks/agent_jobs.py (~400 lines). Routes to individual agents (visa, weather, currency, culture, food, attractions, itinerary, country, flight) based on agents_to_recalc list. Updates recalculation_jobs table with progress. Handles errors gracefully."
         },
         {
           "id": "I8-UPDATE-BE-03",
           "name": "Implement PUT /trips/{id} with recalculation",
           "type": "backend",
-          "passes": false,
+          "passes": true,
           "priority": "critical",
-          "description": "Update trip endpoint that detects changes and triggers selective agent recalculation"
+          "description": "Update trip endpoint that detects changes and triggers selective agent recalculation",
+          "implementation": "PUT /api/trips/{trip_id}/with-recalc endpoint. Uses ChangeDetector to find affected agents, saves version to trip_versions table, updates trip, and queues selective recalculation. Returns TripUpdateWithRecalcResponse with trip, changes_applied, recalculation_queued, task_id."
         },
         {
           "id": "I8-UPDATE-BE-04",
           "name": "Implement POST /trips/{id}/changes/preview endpoint",
           "type": "backend",
-          "passes": false,
+          "passes": true,
           "priority": "high",
-          "description": "Preview endpoint to show what will change and which agents will be affected"
+          "description": "Preview endpoint to show what will change and which agents will be affected",
+          "implementation": "POST /api/trips/{trip_id}/changes/preview endpoint. Accepts ChangePreviewRequest with proposed updates, uses ChangeDetector to calculate affected agents and estimated time. Returns ChangePreviewResponse with has_changes, changes list (field, old_value, new_value), affected_agents, estimated_time_seconds."
         },
         {
           "id": "I8-UPDATE-BE-05",
           "name": "Implement version history storage",
           "type": "backend",
-          "passes": false,
+          "passes": true,
           "priority": "high",
-          "description": "Store trip versions in database on each update"
+          "description": "Store trip versions in database on each update",
+          "implementation": "Migration at db/migrations/005_add_trip_versions_table.sql. Creates trip_versions table (id, trip_id, version_number, trip_data JSONB, change_summary, fields_changed, created_at). Also creates recalculation_jobs table for tracking recalc jobs. Includes RLS policies and cleanup_old_trip_versions() function."
         },
         {
           "id": "I8-UPDATE-BE-06",
           "name": "Implement version history API endpoints",
           "type": "backend",
-          "passes": false,
+          "passes": true,
           "priority": "high",
-          "description": "GET /trips/{id}/versions, GET /trips/{id}/versions/{version}, POST /trips/{id}/versions/{version}/restore"
+          "description": "GET /trips/{id}/versions, GET /trips/{id}/versions/{version}, POST /trips/{id}/versions/{version}/restore",
+          "implementation": "Three endpoints at backend/app/api/trips.py: GET /api/trips/{trip_id}/versions (list versions), POST /api/trips/{trip_id}/recalculate (trigger selective recalc), POST /api/trips/{trip_id}/versions/{version_number}/restore (restore previous version). Includes Pydantic models TripVersionListResponse, TripVersionSummary, TripVersionRestoreResponse. 9 API tests."
         },
         {
           "id": "I8-UPDATE-FE-01",

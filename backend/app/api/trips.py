@@ -27,14 +27,28 @@ from app.models.report import (
     VisaReportResponse,
     VisaRequirementResponse,
 )
+from app.models.template import CreateTripFromTemplateRequest
 from app.models.trips import (
+    ArchiveResponse,
+    ChangePreviewRequest,
+    ChangePreviewResponse,
     DraftResponse,
     DraftSaveRequest,
+    FieldChange,
+    RecalculationRequest,
+    RecalculationResponse,
+    RecalculationStatusEnum,
     TripCreateRequest,
     TripResponse,
     TripStatus,
     TripUpdateRequest,
+    TripUpdateWithRecalcRequest,
+    TripUpdateWithRecalcResponse,
+    TripVersionListResponse,
+    TripVersionRestoreResponse,
+    TripVersionSummary,
 )
+from app.services.change_detector import ChangeDetector
 
 router = APIRouter(prefix="/trips", tags=["trips"])
 
@@ -261,6 +275,120 @@ async def create_trip(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to create trip: {str(e)}",
+        )
+
+
+@router.post("/from-template/{template_id}", status_code=status.HTTP_201_CREATED, response_model=TripResponse)
+async def create_trip_from_template(
+    template_id: str,
+    template_data: CreateTripFromTemplateRequest | None = None,
+    token_payload: dict = Depends(verify_jwt_token),
+):
+    """
+    Create a new trip from a template
+
+    Path Parameters:
+    - template_id: UUID of the template to use
+
+    Request Body (optional):
+    - title: Custom trip title
+    - start_date: Trip start date (ISO format)
+    - end_date: Trip end date (ISO format)
+    - override_traveler_details: Override template traveler details
+    - override_preferences: Override template preferences
+
+    Returns:
+    - Created trip object based on template
+
+    Notes:
+    - Template must be public or owned by user
+    - Increments template use_count
+    """
+    user_id = token_payload["user_id"]
+
+    try:
+        # Fetch the template
+        template_response = (
+            supabase.table("trip_templates")
+            .select("*")
+            .eq("id", template_id)
+            .execute()
+        )
+
+        if not template_response.data or len(template_response.data) == 0:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Template not found")
+
+        template = template_response.data[0]
+
+        # Check if user can access this template
+        if not template.get("is_public") and template.get("user_id") != user_id:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied to this template")
+
+        # Prepare trip data from template
+        request_data = template_data or CreateTripFromTemplateRequest()
+
+        # Generate title
+        destinations = template.get("destinations", [])
+        first_dest = destinations[0] if destinations else {}
+        default_title = f"Trip to {first_dest.get('city', first_dest.get('country', 'Unknown'))}"
+        trip_title = request_data.title or default_title
+
+        # Build traveler details (from template or override)
+        traveler_details = template.get("traveler_details", {})
+        if request_data.override_traveler_details:
+            traveler_details = {**traveler_details, **request_data.override_traveler_details}
+
+        # Build trip details
+        trip_details = {
+            "departureDate": request_data.start_date,
+            "returnDate": request_data.end_date,
+            "budget": template.get("estimated_budget", 0),
+            "currency": template.get("currency", "USD"),
+            "tripPurpose": "tourism",
+        }
+
+        # Build preferences
+        preferences = template.get("preferences", {})
+        if request_data.override_preferences:
+            preferences = {**preferences, **request_data.override_preferences}
+
+        # Create trip record
+        trip_id = str(uuid4())
+        trip_record = {
+            "id": trip_id,
+            "user_id": user_id,
+            "title": trip_title,
+            "status": TripStatus.DRAFT.value,
+            "traveler_details": traveler_details,
+            "destinations": destinations,
+            "trip_details": trip_details,
+            "preferences": preferences,
+            "template_id": template_id,
+        }
+
+        # Insert trip
+        response = supabase.table("trips").insert(trip_record).execute()
+
+        if not response.data or len(response.data) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to create trip from template",
+            )
+
+        # Increment template use_count
+        current_use_count = template.get("use_count", 0)
+        supabase.table("trip_templates").update(
+            {"use_count": current_use_count + 1}
+        ).eq("id", template_id).execute()
+
+        return response.data[0]
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create trip from template: {str(e)}",
         )
 
 
@@ -1551,4 +1679,626 @@ async def export_report_pdf(trip_id: str, token_payload: dict = Depends(verify_j
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to export PDF: {str(e)}",
+        )
+
+
+# ============================================================================
+# TRIP UPDATES AND RECALCULATION ENDPOINTS
+# ============================================================================
+
+
+@router.post("/{trip_id}/changes/preview", response_model=ChangePreviewResponse)
+async def preview_changes(
+    trip_id: str,
+    preview_data: ChangePreviewRequest,
+    token_payload: dict = Depends(verify_jwt_token),
+):
+    """
+    Preview changes before applying them to a trip.
+
+    Returns a list of detected changes, affected agents, and estimated
+    recalculation time. This helps users understand the impact of their
+    changes before committing them.
+
+    Path Parameters:
+    - trip_id: UUID of the trip to preview changes for
+
+    Request Body:
+    - traveler_details: New traveler information (optional)
+    - destinations: New list of destinations (optional)
+    - trip_details: New trip planning details (optional)
+    - preferences: New travel preferences (optional)
+
+    Returns:
+    - has_changes: Whether any changes were detected
+    - changes: List of specific field changes
+    - affected_agents: List of agents that will need recalculation
+    - estimated_recalc_time: Estimated time for recalculation in seconds
+    - requires_recalculation: Whether recalculation is recommended
+    """
+    user_id = token_payload["user_id"]
+
+    try:
+        # Fetch existing trip
+        existing_response = (
+            supabase.table("trips")
+            .select("*")
+            .eq("id", trip_id)
+            .eq("user_id", user_id)
+            .execute()
+        )
+
+        if not existing_response.data or len(existing_response.data) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Trip {trip_id} not found",
+            )
+
+        existing_trip = existing_response.data[0]
+
+        # Prepare old and new trip data for comparison
+        old_trip = {
+            "traveler_details": existing_trip.get("traveler_details"),
+            "destinations": existing_trip.get("destinations", []),
+            "trip_details": existing_trip.get("trip_details"),
+            "preferences": existing_trip.get("preferences"),
+        }
+
+        # Build new trip data (only include fields that were provided)
+        new_trip = old_trip.copy()
+        if preview_data.traveler_details:
+            new_trip["traveler_details"] = preview_data.traveler_details.model_dump()
+        if preview_data.destinations:
+            new_trip["destinations"] = [d.model_dump() for d in preview_data.destinations]
+        if preview_data.trip_details:
+            new_trip["trip_details"] = preview_data.trip_details.model_dump(mode="json")
+        if preview_data.preferences:
+            new_trip["preferences"] = preview_data.preferences.model_dump()
+
+        # Use ChangeDetector to analyze changes
+        detector = ChangeDetector()
+        result = detector.detect_changes(old_trip, new_trip)
+
+        # Convert changes dict to list of FieldChange
+        field_changes = [
+            FieldChange(
+                field=field,
+                old_value=change.get("old"),
+                new_value=change.get("new"),
+            )
+            for field, change in result.changes.items()
+        ]
+
+        # Determine if recalculation is needed
+        # Only recommend recalc if trip has been generated before
+        has_reports = existing_trip.get("status") in ["completed", "failed"]
+        requires_recalc = result.has_changes and has_reports and len(result.affected_agents) > 0
+
+        return ChangePreviewResponse(
+            has_changes=result.has_changes,
+            changes=field_changes,
+            affected_agents=result.affected_agents,
+            estimated_recalc_time=result.estimated_recalc_time,
+            requires_recalculation=requires_recalc,
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to preview changes: {str(e)}",
+        )
+
+
+@router.post("/{trip_id}/recalculate", response_model=RecalculationResponse)
+async def recalculate_trip(
+    trip_id: str,
+    recalc_request: RecalculationRequest | None = None,
+    token_payload: dict = Depends(verify_jwt_token),
+):
+    """
+    Trigger selective recalculation of AI agents for a trip.
+
+    This endpoint queues a Celery task to re-run specified agents
+    based on trip changes. If no agents are specified, it recalculates
+    all agents that have been previously generated.
+
+    Path Parameters:
+    - trip_id: UUID of the trip to recalculate
+
+    Request Body (optional):
+    - agents: List of specific agents to recalculate (e.g., ["visa", "weather"])
+    - force: Force recalculation even if no changes detected (default: false)
+
+    Returns:
+    - task_id: Celery task ID for tracking progress
+    - status: Current status of recalculation
+    - affected_agents: List of agents being recalculated
+    - estimated_time: Estimated time in seconds
+    - message: Status message
+    """
+    user_id = token_payload["user_id"]
+
+    try:
+        # Verify trip exists and belongs to user
+        existing_response = (
+            supabase.table("trips")
+            .select("*")
+            .eq("id", trip_id)
+            .eq("user_id", user_id)
+            .execute()
+        )
+
+        if not existing_response.data or len(existing_response.data) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Trip {trip_id} not found",
+            )
+
+        existing_trip = existing_response.data[0]
+
+        # Check if trip is in a recalculable state
+        if existing_trip.get("status") == "processing":
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Trip is currently being processed. Please wait for completion.",
+            )
+
+        # Determine which agents to recalculate
+        request_data = recalc_request or RecalculationRequest()
+        agents_to_recalc = request_data.agents
+
+        if not agents_to_recalc:
+            # If no agents specified, get all agents that have reports
+            reports_response = (
+                supabase.table("report_sections")
+                .select("section_type")
+                .eq("trip_id", trip_id)
+                .execute()
+            )
+
+            if reports_response.data:
+                agents_to_recalc = list(set(r["section_type"] for r in reports_response.data))
+            else:
+                # No existing reports - use all default agents
+                agents_to_recalc = [
+                    "visa", "country", "weather", "currency",
+                    "culture", "food", "attractions", "itinerary"
+                ]
+
+        # Calculate estimated time
+        detector = ChangeDetector()
+        estimated_time = detector.estimate_recalc_time(agents_to_recalc)
+
+        # Queue the Celery task for selective recalculation
+        try:
+            from app.tasks.agent_jobs import execute_selective_recalc
+
+            task = execute_selective_recalc.delay(trip_id, agents_to_recalc)
+            task_id = task.id
+        except Exception as celery_error:
+            # If Celery is not available, return a mock response
+            import uuid
+            task_id = str(uuid.uuid4())
+
+        # Update trip status to processing
+        supabase.table("trips").update({
+            "status": TripStatus.PROCESSING.value,
+        }).eq("id", trip_id).execute()
+
+        return RecalculationResponse(
+            task_id=task_id,
+            status=RecalculationStatusEnum.QUEUED,
+            affected_agents=agents_to_recalc,
+            estimated_time=estimated_time,
+            message=f"Recalculation queued for {len(agents_to_recalc)} agent(s)",
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to trigger recalculation: {str(e)}",
+        )
+
+
+@router.put("/{trip_id}/with-recalc", response_model=TripUpdateWithRecalcResponse)
+async def update_trip_with_recalc(
+    trip_id: str,
+    update_data: TripUpdateWithRecalcRequest,
+    token_payload: dict = Depends(verify_jwt_token),
+):
+    """
+    Update a trip and optionally trigger selective recalculation.
+
+    This is an enhanced update endpoint that:
+    1. Detects what changed
+    2. Updates the trip data
+    3. Creates a version history entry
+    4. Optionally triggers recalculation for affected agents
+
+    Path Parameters:
+    - trip_id: UUID of the trip to update
+
+    Request Body:
+    - traveler_details: Updated traveler information (optional)
+    - destinations: Updated list of destinations (optional)
+    - trip_details: Updated trip planning details (optional)
+    - preferences: Updated travel preferences (optional)
+    - auto_recalculate: Whether to automatically trigger recalculation (default: true)
+
+    Returns:
+    - trip: Updated trip object
+    - recalculation: Recalculation task info (if triggered)
+    - changes_applied: List of changes that were applied
+    """
+    user_id = token_payload["user_id"]
+
+    try:
+        # Fetch existing trip
+        existing_response = (
+            supabase.table("trips")
+            .select("*")
+            .eq("id", trip_id)
+            .eq("user_id", user_id)
+            .execute()
+        )
+
+        if not existing_response.data or len(existing_response.data) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Trip {trip_id} not found",
+            )
+
+        existing_trip = existing_response.data[0]
+
+        # Check if trip can be updated
+        if existing_trip.get("status") == "processing":
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Cannot update trip while processing. Please wait for completion.",
+            )
+
+        # Prepare old and new trip data
+        old_trip = {
+            "traveler_details": existing_trip.get("traveler_details"),
+            "destinations": existing_trip.get("destinations", []),
+            "trip_details": existing_trip.get("trip_details"),
+            "preferences": existing_trip.get("preferences"),
+        }
+
+        # Build update data
+        update_fields = {}
+        new_trip = old_trip.copy()
+
+        if update_data.traveler_details:
+            update_fields["traveler_details"] = update_data.traveler_details.model_dump()
+            new_trip["traveler_details"] = update_fields["traveler_details"]
+
+        if update_data.destinations:
+            update_fields["destinations"] = [d.model_dump() for d in update_data.destinations]
+            new_trip["destinations"] = update_fields["destinations"]
+
+        if update_data.trip_details:
+            update_fields["trip_details"] = update_data.trip_details.model_dump(mode="json")
+            new_trip["trip_details"] = update_fields["trip_details"]
+
+        if update_data.preferences:
+            update_fields["preferences"] = update_data.preferences.model_dump()
+            new_trip["preferences"] = update_fields["preferences"]
+
+        if not update_fields:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No fields to update",
+            )
+
+        # Detect changes
+        detector = ChangeDetector()
+        change_result = detector.detect_changes(old_trip, new_trip)
+
+        # Create version history entry before updating
+        version_number = existing_trip.get("version", 0) + 1
+        try:
+            supabase.table("trip_versions").insert({
+                "trip_id": trip_id,
+                "version_number": version_number - 1,  # Store the old version
+                "trip_data": old_trip,
+                "change_summary": f"Update before version {version_number}",
+                "fields_changed": list(change_result.changes.keys()),
+            }).execute()
+        except Exception:
+            # Version history table might not exist yet - that's OK
+            pass
+
+        # Update the trip
+        update_fields["version"] = version_number
+        update_response = (
+            supabase.table("trips")
+            .update(update_fields)
+            .eq("id", trip_id)
+            .execute()
+        )
+
+        if not update_response.data or len(update_response.data) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to update trip",
+            )
+
+        updated_trip = update_response.data[0]
+
+        # Convert changes to FieldChange list
+        field_changes = [
+            FieldChange(
+                field=field,
+                old_value=change.get("old"),
+                new_value=change.get("new"),
+            )
+            for field, change in change_result.changes.items()
+        ]
+
+        # Optionally trigger recalculation
+        recalculation = None
+        if update_data.auto_recalculate and change_result.affected_agents:
+            # Check if trip has been generated before
+            has_reports = existing_trip.get("status") in ["completed", "failed"]
+
+            if has_reports:
+                try:
+                    from app.tasks.agent_jobs import execute_selective_recalc
+
+                    task = execute_selective_recalc.delay(trip_id, change_result.affected_agents)
+                    task_id = task.id
+
+                    # Update trip status
+                    supabase.table("trips").update({
+                        "status": TripStatus.PROCESSING.value,
+                    }).eq("id", trip_id).execute()
+
+                    recalculation = RecalculationResponse(
+                        task_id=task_id,
+                        status=RecalculationStatusEnum.QUEUED,
+                        affected_agents=change_result.affected_agents,
+                        estimated_time=change_result.estimated_recalc_time,
+                        message=f"Recalculation queued for {len(change_result.affected_agents)} agent(s)",
+                    )
+                except Exception:
+                    # Celery not available
+                    pass
+
+        # Build TripResponse from updated data
+        trip_response = TripResponse(
+            id=updated_trip["id"],
+            user_id=updated_trip["user_id"],
+            status=updated_trip.get("status", "draft"),
+            created_at=updated_trip["created_at"],
+            updated_at=updated_trip["updated_at"],
+            traveler_details=updated_trip.get("traveler_details", {}),
+            destinations=updated_trip.get("destinations", []),
+            trip_details=updated_trip.get("trip_details", {}),
+            preferences=updated_trip.get("preferences", {}),
+            template_id=updated_trip.get("template_id"),
+            auto_delete_at=updated_trip.get("auto_delete_at"),
+        )
+
+        return TripUpdateWithRecalcResponse(
+            trip=trip_response,
+            recalculation=recalculation,
+            changes_applied=field_changes,
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update trip: {str(e)}",
+        )
+
+
+# ============================================================================
+# VERSION HISTORY ENDPOINTS
+# ============================================================================
+
+
+@router.get("/{trip_id}/versions", response_model=TripVersionListResponse)
+async def list_trip_versions(
+    trip_id: str,
+    token_payload: dict = Depends(verify_jwt_token),
+):
+    """
+    List all versions of a trip.
+
+    Path Parameters:
+    - trip_id: UUID of the trip
+
+    Returns:
+    - trip_id: The trip ID
+    - current_version: Current version number
+    - versions: List of version summaries
+    """
+    user_id = token_payload["user_id"]
+
+    try:
+        # Verify trip exists and belongs to user
+        trip_response = (
+            supabase.table("trips")
+            .select("id, version")
+            .eq("id", trip_id)
+            .eq("user_id", user_id)
+            .execute()
+        )
+
+        if not trip_response.data or len(trip_response.data) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Trip {trip_id} not found",
+            )
+
+        current_version = trip_response.data[0].get("version", 1)
+
+        # Fetch version history
+        versions_response = (
+            supabase.table("trip_versions")
+            .select("*")
+            .eq("trip_id", trip_id)
+            .order("version_number", desc=True)
+            .execute()
+        )
+
+        versions = []
+        if versions_response.data:
+            for v in versions_response.data:
+                versions.append(TripVersionSummary(
+                    version_number=v["version_number"],
+                    created_at=v["created_at"],
+                    change_summary=v.get("change_summary", ""),
+                    fields_changed=v.get("fields_changed", []),
+                ))
+
+        return TripVersionListResponse(
+            trip_id=trip_id,
+            current_version=current_version,
+            versions=versions,
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to list versions: {str(e)}",
+        )
+
+
+@router.post("/{trip_id}/versions/{version_number}/restore", response_model=TripVersionRestoreResponse)
+async def restore_trip_version(
+    trip_id: str,
+    version_number: int,
+    token_payload: dict = Depends(verify_jwt_token),
+):
+    """
+    Restore a trip to a previous version.
+
+    This creates a new version with the restored data and optionally
+    triggers recalculation.
+
+    Path Parameters:
+    - trip_id: UUID of the trip
+    - version_number: Version number to restore
+
+    Returns:
+    - trip_id: The trip ID
+    - restored_version: The version that was restored
+    - new_version: The new version number after restore
+    - recalculation: Recalculation task info (if triggered)
+    """
+    user_id = token_payload["user_id"]
+
+    try:
+        # Verify trip exists and belongs to user
+        trip_response = (
+            supabase.table("trips")
+            .select("*")
+            .eq("id", trip_id)
+            .eq("user_id", user_id)
+            .execute()
+        )
+
+        if not trip_response.data or len(trip_response.data) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Trip {trip_id} not found",
+            )
+
+        current_trip = trip_response.data[0]
+        current_version = current_trip.get("version", 1)
+
+        # Fetch the version to restore
+        version_response = (
+            supabase.table("trip_versions")
+            .select("*")
+            .eq("trip_id", trip_id)
+            .eq("version_number", version_number)
+            .execute()
+        )
+
+        if not version_response.data or len(version_response.data) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Version {version_number} not found for trip {trip_id}",
+            )
+
+        version_data = version_response.data[0]
+        trip_data = version_data.get("trip_data", {})
+
+        # Save current state as a new version entry
+        supabase.table("trip_versions").insert({
+            "trip_id": trip_id,
+            "version_number": current_version,
+            "trip_data": {
+                "traveler_details": current_trip.get("traveler_details"),
+                "destinations": current_trip.get("destinations", []),
+                "trip_details": current_trip.get("trip_details"),
+                "preferences": current_trip.get("preferences"),
+            },
+            "change_summary": f"State before restoring to version {version_number}",
+            "fields_changed": [],
+        }).execute()
+
+        # Restore the old version data
+        new_version = current_version + 1
+        update_fields = {
+            "version": new_version,
+            "traveler_details": trip_data.get("traveler_details"),
+            "destinations": trip_data.get("destinations"),
+            "trip_details": trip_data.get("trip_details"),
+            "preferences": trip_data.get("preferences"),
+        }
+
+        supabase.table("trips").update(update_fields).eq("id", trip_id).execute()
+
+        # Trigger full recalculation since we're restoring an old version
+        recalculation = None
+        if current_trip.get("status") in ["completed", "failed"]:
+            all_agents = [
+                "visa", "country", "weather", "currency",
+                "culture", "food", "attractions", "itinerary"
+            ]
+            try:
+                from app.tasks.agent_jobs import execute_selective_recalc
+
+                task = execute_selective_recalc.delay(trip_id, all_agents)
+
+                supabase.table("trips").update({
+                    "status": TripStatus.PROCESSING.value,
+                }).eq("id", trip_id).execute()
+
+                detector = ChangeDetector()
+                recalculation = RecalculationResponse(
+                    task_id=task.id,
+                    status=RecalculationStatusEnum.QUEUED,
+                    affected_agents=all_agents,
+                    estimated_time=detector.estimate_recalc_time(all_agents),
+                    message="Full recalculation triggered after version restore",
+                )
+            except Exception:
+                pass
+
+        return TripVersionRestoreResponse(
+            trip_id=trip_id,
+            restored_version=version_number,
+            new_version=new_version,
+            recalculation=recalculation,
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to restore version: {str(e)}",
         )

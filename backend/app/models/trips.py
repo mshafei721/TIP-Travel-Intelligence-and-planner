@@ -327,3 +327,238 @@ class DraftResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# ============================================================================
+# TRIP UPDATES AND RECALCULATION MODELS
+# ============================================================================
+
+
+class ChangePreviewRequest(BaseModel):
+    """Request model for previewing changes before applying."""
+
+    traveler_details: TravelerDetails | None = None
+    destinations: list[Destination] | None = None
+    trip_details: TripDetails | None = None
+    preferences: TripPreferences | None = None
+
+
+class FieldChange(BaseModel):
+    """Represents a single field change."""
+
+    field: str
+    old_value: str | int | float | list | dict | None
+    new_value: str | int | float | list | dict | None
+
+
+class ChangePreviewResponse(BaseModel):
+    """Response model for change preview."""
+
+    has_changes: bool
+    changes: list[FieldChange]
+    affected_agents: list[str]
+    estimated_recalc_time: int  # seconds
+    requires_recalculation: bool
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "has_changes": True,
+                "changes": [
+                    {"field": "destination", "old_value": "France", "new_value": "Japan"},
+                    {"field": "budget", "old_value": 5000, "new_value": 10000},
+                ],
+                "affected_agents": ["visa", "weather", "currency", "attractions", "itinerary"],
+                "estimated_recalc_time": 75,
+                "requires_recalculation": True,
+            }
+        }
+
+
+class RecalculationRequest(BaseModel):
+    """Request model for manual recalculation."""
+
+    agents: list[str] | None = None  # If None, recalculate all affected agents
+    force: bool = False  # Force recalculation even if no changes detected
+
+
+class RecalculationStatusEnum(str, Enum):
+    """Recalculation status enumeration."""
+
+    QUEUED = "queued"
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
+    FAILED = "failed"
+
+
+class RecalculationResponse(BaseModel):
+    """Response model for recalculation request."""
+
+    task_id: str
+    status: RecalculationStatusEnum
+    affected_agents: list[str]
+    estimated_time: int  # seconds
+    message: str
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "task_id": "abc123",
+                "status": "queued",
+                "affected_agents": ["visa", "weather", "currency"],
+                "estimated_time": 45,
+                "message": "Recalculation queued for 3 agents",
+            }
+        }
+
+
+class TripUpdateWithRecalcRequest(BaseModel):
+    """Request model for updating trip with recalculation."""
+
+    traveler_details: TravelerDetails | None = None
+    destinations: list[Destination] | None = None
+    trip_details: TripDetails | None = None
+    preferences: TripPreferences | None = None
+    auto_recalculate: bool = True  # Whether to automatically trigger recalculation
+
+
+class TripUpdateWithRecalcResponse(BaseModel):
+    """Response model for trip update with recalculation."""
+
+    trip: TripResponse
+    recalculation: RecalculationResponse | None = None
+    changes_applied: list[FieldChange]
+
+
+# ============================================================================
+# VERSION HISTORY MODELS
+# ============================================================================
+
+
+class TripVersionSummary(BaseModel):
+    """Summary of a trip version."""
+
+    version_number: int
+    created_at: datetime
+    change_summary: str
+    fields_changed: list[str]
+
+
+class TripVersionDetail(BaseModel):
+    """Detailed trip version data."""
+
+    version_number: int
+    created_at: datetime
+    trip_data: dict
+    change_summary: str
+    fields_changed: list[str]
+
+
+class TripVersionListResponse(BaseModel):
+    """Response model for listing trip versions."""
+
+    trip_id: str
+    current_version: int
+    versions: list[TripVersionSummary]
+
+
+class TripVersionRestoreResponse(BaseModel):
+    """Response model for version restore."""
+
+    trip_id: str
+    restored_version: int
+    new_version: int
+    recalculation: RecalculationResponse | None = None
+
+
+# ============================================================================
+# TRAVEL HISTORY MODELS
+# ============================================================================
+
+
+class ArchiveResponse(BaseModel):
+    """Response model for archive/unarchive operations."""
+
+    trip_id: str
+    is_archived: bool
+    archived_at: datetime | None = None
+    message: str
+
+
+class TravelHistoryEntry(BaseModel):
+    """Single entry in travel history."""
+
+    trip_id: str
+    destination: str
+    country: str
+    start_date: str
+    end_date: str
+    status: str  # completed, cancelled
+    user_rating: int | None = None  # 1-5
+    user_notes: str | None = None
+    is_archived: bool = False
+    archived_at: datetime | None = None
+    cover_image: str | None = None
+
+
+class TravelStats(BaseModel):
+    """Aggregated travel statistics."""
+
+    total_trips: int
+    countries_visited: int
+    cities_visited: int
+    total_days_traveled: int
+    favorite_destination: str | None = None
+    most_visited_country: str | None = None
+    travel_streak: int = 0  # Consecutive months with travel
+
+
+class CountryVisit(BaseModel):
+    """Country visit information for the world map."""
+
+    country_code: str
+    country_name: str
+    visit_count: int
+    last_visited: str | None = None
+    cities: list[str] = []
+
+
+class TravelHistoryResponse(BaseModel):
+    """Response model for travel history endpoint."""
+
+    entries: list[TravelHistoryEntry]
+    total_count: int
+
+
+class TravelStatsResponse(BaseModel):
+    """Response model for travel statistics endpoint."""
+
+    stats: TravelStats
+    countries: list[CountryVisit]
+
+
+class TravelTimelineEntry(BaseModel):
+    """Entry for timeline visualization."""
+
+    trip_id: str
+    title: str
+    destination: str
+    start_date: str
+    end_date: str
+    duration_days: int
+    status: str
+    thumbnail: str | None = None
+
+
+class TravelTimelineResponse(BaseModel):
+    """Response model for travel timeline."""
+
+    entries: list[TravelTimelineEntry]
+    years: list[int]  # Years with travel for filtering
+
+
+class TripRatingRequest(BaseModel):
+    """Request to rate a completed trip."""
+
+    rating: int = Field(..., ge=1, le=5, description="Rating from 1 to 5 stars")
+    notes: str | None = Field(None, max_length=1000, description="Optional notes about the trip")
