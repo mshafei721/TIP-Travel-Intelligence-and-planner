@@ -11,43 +11,12 @@ import type {
   RestoreVersionResponse,
   ChangePreviewData,
   RecalculationProgress,
+  RecalculationCancelResponse,
   FieldChange,
+  VersionCompareResponse,
   FIELD_IMPACT_MAP,
 } from '@/types/trip-update';
-import { getAuthToken } from './auth-utils';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
-
-/**
- * Generic API request helper
- */
-async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const token = await getAuthToken();
-
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    ...options.headers,
-  };
-
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...options,
-    headers,
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({
-      detail: 'An unexpected error occurred',
-    }));
-    throw new Error(error.detail || `HTTP ${response.status}`);
-  }
-
-  if (response.status === 204) {
-    return null as T;
-  }
-
-  return response.json();
-}
+import { apiRequest } from './auth-utils';
 
 // ============================================
 // Trip CRUD Operations
@@ -68,7 +37,7 @@ export async function updateTrip(
   updates: TripUpdateData,
 ): Promise<TripUpdateResponse> {
   return apiRequest<TripUpdateResponse>(`/api/trips/${tripId}`, {
-    method: 'PATCH',
+    method: 'PUT',
     body: JSON.stringify(updates),
   });
 }
@@ -93,7 +62,7 @@ export async function previewChanges(
   tripId: string,
   updates: TripUpdateData,
 ): Promise<ChangePreviewData> {
-  return apiRequest<ChangePreviewData>(`/api/trips/${tripId}/preview`, {
+  return apiRequest<ChangePreviewData>(`/api/trips/${tripId}/changes/preview`, {
     method: 'POST',
     body: JSON.stringify(updates),
   });
@@ -183,8 +152,8 @@ export async function compareVersions(
   tripId: string,
   versionA: number,
   versionB: number,
-): Promise<FieldChange[]> {
-  return apiRequest<FieldChange[]>(
+): Promise<VersionCompareResponse> {
+  return apiRequest<VersionCompareResponse>(
     `/api/trips/${tripId}/versions/compare?version_a=${versionA}&version_b=${versionB}`,
   );
 }
@@ -216,10 +185,8 @@ export async function startRecalculation(
 /**
  * Cancel ongoing recalculation
  */
-export async function cancelRecalculation(
-  tripId: string,
-): Promise<{ success: boolean; message: string }> {
-  return apiRequest(`/api/trips/${tripId}/recalculation/cancel`, {
+export async function cancelRecalculation(tripId: string): Promise<RecalculationCancelResponse> {
+  return apiRequest<RecalculationCancelResponse>(`/api/trips/${tripId}/recalculation/cancel`, {
     method: 'POST',
   });
 }

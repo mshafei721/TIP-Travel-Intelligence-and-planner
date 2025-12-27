@@ -76,8 +76,8 @@ export const UsageChart = memo(function UsageChart({ data, className }: UsageCha
             />
             <Line
               type="monotone"
-              dataKey="agents_used"
-              name="Agents Used"
+              dataKey="countries_visited"
+              name="Countries Visited"
               stroke="#8b5cf6"
               strokeWidth={2}
               dot={{ r: 4 }}

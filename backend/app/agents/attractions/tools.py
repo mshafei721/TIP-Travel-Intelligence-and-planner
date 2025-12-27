@@ -7,11 +7,14 @@ Official API Documentation: https://dev.opentripmap.org/docs
 OpenAPI Spec: https://dev.opentripmap.org/openapi.en.json
 """
 
+import logging
 import os
 from typing import Any
 
 import httpx
 from crewai.tools import tool
+
+logger = logging.getLogger(__name__)
 
 
 class OpenTripMapClient:
@@ -84,10 +87,10 @@ class OpenTripMapClient:
                 return None
 
         except httpx.HTTPStatusError as e:
-            print(f"HTTP error fetching coordinates for {name}: {e.response.status_code}")
+            logger.warning("HTTP error fetching coordinates for %s: %s", name, e.response.status_code)
             return None
         except Exception as e:
-            print(f"Error fetching coordinates for {name}: {e}")
+            logger.error("Error fetching coordinates for %s: %s", name, e)
             return None
 
     async def get_attractions_by_radius(
@@ -148,10 +151,10 @@ class OpenTripMapClient:
                 return []
 
         except httpx.HTTPStatusError as e:
-            print(f"HTTP error in radius search: {e.response.status_code}")
+            logger.warning("HTTP error in radius search: %s", e.response.status_code)
             return []
         except Exception as e:
-            print(f"Error in radius search: {e}")
+            logger.error("Error in radius search: %s", e)
             return []
 
     async def get_place_details(self, xid: str) -> dict[str, Any] | None:
@@ -183,10 +186,10 @@ class OpenTripMapClient:
                 return response.json()
 
         except httpx.HTTPStatusError as e:
-            print(f"HTTP error fetching place details for {xid}: {e.response.status_code}")
+            logger.warning("HTTP error fetching place details for %s: %s", xid, e.response.status_code)
             return None
         except Exception as e:
-            print(f"Error fetching place details for {xid}: {e}")
+            logger.error("Error fetching place details for %s: %s", xid, e)
             return None
 
     async def autosuggest(
@@ -241,10 +244,10 @@ class OpenTripMapClient:
                 return []
 
         except httpx.HTTPStatusError as e:
-            print(f"HTTP error in autosuggest: {e.response.status_code}")
+            logger.warning("HTTP error in autosuggest: %s", e.response.status_code)
             return []
         except Exception as e:
-            print(f"Error in autosuggest: {e}")
+            logger.error("Error in autosuggest: %s", e)
             return []
 
 

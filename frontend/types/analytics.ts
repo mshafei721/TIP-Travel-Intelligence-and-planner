@@ -35,16 +35,13 @@ export interface UsageTrend {
   date: string;
   trips_created: number;
   reports_generated: number;
-  agents_used: number;
+  countries_visited: number;
 }
 
 export interface AgentUsageStats {
   agent_type: string;
-  display_name: string;
-  total_invocations: number;
-  successful_invocations: number;
-  failed_invocations: number;
-  avg_response_time_seconds: number | null;
+  invocations: number;
+  avg_duration_seconds: number | null;
   success_rate: number;
 }
 

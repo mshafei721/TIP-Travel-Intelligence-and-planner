@@ -9,6 +9,7 @@ import {
   BudgetChart,
   AgentUsageChart,
 } from '@/components/analytics';
+import { PageHeader } from '@/components/ui/PageHeader';
 import {
   getUsageStats,
   getUsageTrends,
@@ -70,32 +71,30 @@ export default function AnalyticsPage() {
     fetchData();
   }, [fetchData]);
 
-  const totalAgentInvocations = agentStats.reduce((sum, a) => sum + a.total_invocations, 0);
+  const totalAgentInvocations = agentStats.reduce((sum, a) => sum + a.invocations, 0);
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">Analytics</h1>
-          <p className="mt-1 text-slate-600 dark:text-slate-400">
-            Track your travel planning activity and insights
-          </p>
-        </div>
-
-        {/* Period Selector */}
-        <select
-          value={period}
-          onChange={(e) => setPeriod(e.target.value as DateRange)}
-          className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
-        >
-          {DATE_RANGE_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      </div>
+      <PageHeader
+        title="Analytics"
+        description="Track your travel planning activity and insights"
+        backHref="/dashboard"
+        backLabel="Back to Dashboard"
+        actions={
+          <select
+            value={period}
+            onChange={(e) => setPeriod(e.target.value as DateRange)}
+            className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+          >
+            {DATE_RANGE_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        }
+      />
 
       {/* Error State */}
       {error && (

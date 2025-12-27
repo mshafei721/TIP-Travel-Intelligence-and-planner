@@ -18,20 +18,33 @@ interface AgentUsageChartProps {
   className?: string;
 }
 
+// Format agent type to display name (e.g., "visa" -> "Visa")
+function formatAgentName(agentType: string): string {
+  return agentType
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
 export const AgentUsageChart = memo(function AgentUsageChart({
   data,
   className,
 }: AgentUsageChartProps) {
   const chartData = useMemo(
     () =>
-      data.map((item) => ({
-        name: item.display_name,
-        successful: item.successful_invocations,
-        failed: item.failed_invocations,
-        total: item.total_invocations,
-        success_rate: item.success_rate,
-        avg_time: item.avg_response_time_seconds,
-      })),
+      data.map((item) => {
+        // Calculate successful/failed from total and success_rate
+        const successful = Math.round((item.invocations * item.success_rate) / 100);
+        const failed = item.invocations - successful;
+        return {
+          name: formatAgentName(item.agent_type),
+          successful,
+          failed,
+          total: item.invocations,
+          success_rate: item.success_rate,
+          avg_time: item.avg_duration_seconds,
+        };
+      }),
     [data],
   );
 

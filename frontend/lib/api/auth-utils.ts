@@ -91,5 +91,10 @@ export async function apiRequest<T>(endpoint: string, options: RequestInit = {})
     throw new Error(error.detail || `HTTP ${response.status}`);
   }
 
+  // Handle 204 No Content responses
+  if (response.status === 204) {
+    return null as T;
+  }
+
   return response.json();
 }

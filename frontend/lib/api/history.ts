@@ -12,40 +12,7 @@ import type {
   TravelTimelineResponse,
   TripRatingRequest,
 } from '@/types/profile';
-import { getAuthToken } from './auth-utils';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
-
-/**
- * Generic API request helper
- */
-async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const token = await getAuthToken();
-
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    ...options.headers,
-  };
-
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...options,
-    headers,
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({
-      detail: 'An unexpected error occurred',
-    }));
-    throw new Error(error.detail || `HTTP ${response.status}`);
-  }
-
-  if (response.status === 204) {
-    return null as T;
-  }
-
-  return response.json();
-}
+import { apiRequest } from './auth-utils';
 
 // ============================================
 // Travel History API Functions

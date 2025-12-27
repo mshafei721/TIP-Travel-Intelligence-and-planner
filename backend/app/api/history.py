@@ -230,6 +230,34 @@ async def get_travel_stats(token_payload: dict = Depends(verify_jwt_token)):
         most_visited_country = max(countries.keys(), key=lambda c: countries[c]["visit_count"]) if countries else None
         favorite_destination = most_visited_country  # Could be enhanced with user ratings
 
+        # Calculate travel streak (consecutive months with travel)
+        travel_streak = 0
+        if trips:
+            # Collect all trip months
+            trip_months: set[tuple[int, int]] = set()
+            for trip in trips:
+                trip_details = trip.get("trip_details", {})
+                start_date_str = trip_details.get("departureDate")
+                if start_date_str:
+                    try:
+                        start_date = datetime.fromisoformat(start_date_str.replace("Z", "+00:00"))
+                        trip_months.add((start_date.year, start_date.month))
+                    except (ValueError, TypeError):
+                        pass
+
+            # Count consecutive months from current month going back
+            if trip_months:
+                now = datetime.utcnow()
+                current_year, current_month = now.year, now.month
+
+                while (current_year, current_month) in trip_months:
+                    travel_streak += 1
+                    # Go to previous month
+                    current_month -= 1
+                    if current_month == 0:
+                        current_month = 12
+                        current_year -= 1
+
         # Build country visit list for world map
         country_visits = [
             CountryVisit(
@@ -250,6 +278,7 @@ async def get_travel_stats(token_payload: dict = Depends(verify_jwt_token)):
                 total_days_traveled=total_days,
                 favorite_destination=favorite_destination,
                 most_visited_country=most_visited_country,
+                travel_streak=travel_streak,
             ),
             countries=country_visits,
         )
