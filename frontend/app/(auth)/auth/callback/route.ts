@@ -1,12 +1,13 @@
 /**
  * OAuth Callback Handler
  * Handles the OAuth redirect from Google and establishes the session
+ *
+ * IMPORTANT: Uses the shared server client to ensure PKCE code verifier
+ * is properly retrieved from cookies set by the browser client.
  */
 
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
-import type { Database } from '@/types/database';
 
 /**
  * Sanitize the redirect URL to remove any OAuth codes that might have leaked into it
@@ -58,26 +59,11 @@ export async function GET(request: Request) {
     return NextResponse.redirect(loginUrl);
   }
 
-  const cookieStore = await cookies();
-
-  const supabase = createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            cookieStore.set(name, value, options);
-          });
-        },
-      },
-    },
-  );
-
   try {
+    // Use shared server client - this ensures proper cookie handling
+    // for PKCE code verifier retrieval
+    const supabase = await createClient();
+
     const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
 
     if (exchangeError) {
