@@ -2,7 +2,16 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { FileText, Globe, MapPin, Download, Share2, Trash2, ChevronRight } from 'lucide-react';
+import {
+  FileText,
+  Globe,
+  MapPin,
+  Download,
+  Share2,
+  Trash2,
+  ChevronRight,
+  Settings,
+} from 'lucide-react';
 
 interface ReportSection {
   id: string;
@@ -14,7 +23,7 @@ interface ReportSection {
 
 interface ReportSectionNavProps {
   tripId: string;
-  currentSection?: 'visa' | 'destination' | 'itinerary';
+  currentSection?: 'overview' | 'visa' | 'destination' | 'itinerary';
   onExportPDF?: () => void;
   onShare?: () => void;
   onDelete?: () => void;
@@ -32,6 +41,13 @@ export function ReportSectionNav({
   const pathname = usePathname();
 
   const sections: ReportSection[] = [
+    {
+      id: 'overview',
+      name: 'Trip Overview',
+      href: `/trips/${tripId}/overview`,
+      icon: Settings,
+      description: 'Edit trip details & view history',
+    },
     {
       id: 'visa',
       name: 'Visa Intelligence',
@@ -58,13 +74,15 @@ export function ReportSectionNav({
   // Determine active section from pathname if not explicitly provided
   const activeSection =
     currentSection ||
-    (pathname === `/trips/${tripId}`
-      ? 'visa'
-      : pathname.includes('/destination')
-        ? 'destination'
-        : pathname.includes('/itinerary')
-          ? 'itinerary'
-          : 'visa');
+    (pathname.includes('/overview')
+      ? 'overview'
+      : pathname === `/trips/${tripId}`
+        ? 'visa'
+        : pathname.includes('/destination')
+          ? 'destination'
+          : pathname.includes('/itinerary')
+            ? 'itinerary'
+            : 'visa');
 
   return (
     <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
@@ -156,11 +174,12 @@ export function ReportSectionNav({
 interface ReportBreadcrumbProps {
   tripId: string;
   tripName?: string;
-  currentSection: 'visa' | 'destination' | 'itinerary';
+  currentSection: 'overview' | 'visa' | 'destination' | 'itinerary';
 }
 
 export function ReportBreadcrumb({ tripId, tripName, currentSection }: ReportBreadcrumbProps) {
   const sectionNames = {
+    overview: 'Trip Overview',
     visa: 'Visa Intelligence',
     destination: 'Destination Intelligence',
     itinerary: 'Travel Itinerary',

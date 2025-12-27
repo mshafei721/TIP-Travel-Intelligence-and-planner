@@ -10,7 +10,7 @@ import { Loader2, CheckCircle2, XCircle, Share2, Copy } from 'lucide-react';
 interface TripReportLayoutProps {
   tripId: string;
   tripName: string;
-  currentSection: 'visa' | 'destination' | 'itinerary';
+  currentSection: 'overview' | 'visa' | 'destination' | 'itinerary';
   children: React.ReactNode;
 }
 
