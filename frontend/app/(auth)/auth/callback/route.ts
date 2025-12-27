@@ -8,12 +8,38 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import type { Database } from '@/types/database';
 
+/**
+ * Sanitize the redirect URL to remove any OAuth codes that might have leaked into it
+ */
+function sanitizeRedirectUrl(redirectTo: string): string {
+  try {
+    // Remove any code= parameters from the redirect URL
+    const url = new URL(redirectTo, 'http://localhost');
+    url.searchParams.delete('code');
+    url.searchParams.delete('error');
+    url.searchParams.delete('error_description');
+
+    // Return just the pathname + remaining search params
+    const cleanPath = url.pathname + (url.search || '');
+
+    // If it's just "/" or empty, go to dashboard
+    if (cleanPath === '/' || cleanPath === '' || cleanPath === '/?') {
+      return '/dashboard';
+    }
+
+    return cleanPath;
+  } catch {
+    return '/dashboard';
+  }
+}
+
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get('code');
   const error = requestUrl.searchParams.get('error');
   const errorDescription = requestUrl.searchParams.get('error_description');
-  const redirectTo = requestUrl.searchParams.get('redirectTo') || '/dashboard';
+  const rawRedirectTo = requestUrl.searchParams.get('redirectTo') || '/dashboard';
+  const redirectTo = sanitizeRedirectUrl(rawRedirectTo);
   const origin = requestUrl.origin;
 
   // Handle OAuth errors from provider
