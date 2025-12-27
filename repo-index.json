@@ -1,0 +1,2806 @@
+{
+  "generated_at": "2025-12-26T20:23:10.441712",
+  "root": "D:\\009_Projects_AI\\Personal_Projects\\TIP-Travel Intelligence-and-planner",
+  "statistics": {
+    "total_files": 527,
+    "total_directories": 130,
+    "files_by_extension": {
+      ".py": 153,
+      ".tsx": 139,
+      ".md": 91,
+      ".ts": 51,
+      "(no extension)": 27,
+      ".json": 11,
+      ".sql": 8,
+      ".txt": 5,
+      ".svg": 5,
+      ".css": 4,
+      ".example": 4,
+      ".yml": 4,
+      ".ps1": 3,
+      ".png": 3,
+      ".html": 2,
+      ".local": 2,
+      ".sh": 2,
+      ".yaml": 2,
+      ".toml": 2,
+      ".mjs": 2,
+      ".23": 1,
+      ".0": 1,
+      ".ini": 1,
+      ".ico": 1,
+      ".cjs": 1,
+      ".js": 1,
+      ".tsbuildinfo": 1
+    }
+  },
+  "directories": [
+    ".Frontend_enhancement",
+    ".api_replacement",
+    ".claude",
+    ".claude/commands",
+    ".claude/commands/design-os",
+    ".claude/skills",
+    ".claude/skills/frontend-design",
+    ".github",
+    ".github/workflows",
+    ".husky",
+    ".husky/_",
+    ".prompts",
+    "backend",
+    "backend/app",
+    "backend/app/agents",
+    "backend/app/agents/attractions",
+    "backend/app/agents/country",
+    "backend/app/agents/culture",
+    "backend/app/agents/currency",
+    "backend/app/agents/flight",
+    "backend/app/agents/food",
+    "backend/app/agents/itinerary",
+    "backend/app/agents/orchestrator",
+    "backend/app/agents/visa",
+    "backend/app/agents/weather",
+    "backend/app/api",
+    "backend/app/core",
+    "backend/app/models",
+    "backend/app/services",
+    "backend/app/services/country",
+    "backend/app/services/currency",
+    "backend/app/services/flight",
+    "backend/app/services/visa",
+    "backend/app/services/weather",
+    "backend/app/tasks",
+    "backend/tests",
+    "backend/tests/agents",
+    "backend/tests/api",
+    "backend/tests/services",
+    "backend/tests/tasks",
+    "contracts",
+    "db",
+    "db/migrations",
+    "docs",
+    "docs/decisions",
+    "docs/user_flows",
+    "frontend",
+    "frontend/.swc",
+    "frontend/.swc/plugins",
+    "frontend/.swc/plugins/windows_x86_64_23.0.0",
+    "frontend/__tests__",
+    "frontend/__tests__/components",
+    "frontend/__tests__/components/profile",
+    "frontend/app",
+    "frontend/app/(app)",
+    "frontend/app/(app)/analytics",
+    "frontend/app/(app)/dashboard",
+    "frontend/app/(app)/demo",
+    "frontend/app/(app)/demo/errors",
+    "frontend/app/(app)/history",
+    "frontend/app/(app)/profile",
+    "frontend/app/(app)/profile/edit",
+    "frontend/app/(app)/settings",
+    "frontend/app/(app)/templates",
+    "frontend/app/(app)/trips",
+    "frontend/app/(app)/trips/[id]",
+    "frontend/app/(app)/trips/[id]/destination",
+    "frontend/app/(app)/trips/[id]/generation",
+    "frontend/app/(app)/trips/[id]/itinerary",
+    "frontend/app/(app)/trips/create",
+    "frontend/app/(app)/trips/destination",
+    "frontend/app/(auth)",
+    "frontend/app/(auth)/auth",
+    "frontend/app/(auth)/auth/callback",
+    "frontend/app/(auth)/forgot-password",
+    "frontend/app/(auth)/login",
+    "frontend/app/(auth)/reset-password",
+    "frontend/app/(auth)/signup",
+    "frontend/app/(auth)/verify-email",
+    "frontend/components",
+    "frontend/components/analytics",
+    "frontend/components/auth",
+    "frontend/components/dashboard",
+    "frontend/components/dashboard/skeletons",
+    "frontend/components/destination",
+    "frontend/components/history",
+    "frontend/components/itinerary",
+    "frontend/components/profile",
+    "frontend/components/report",
+    "frontend/components/reports",
+    "frontend/components/settings",
+    "frontend/components/shell",
+    "frontend/components/templates",
+    "frontend/components/trip-wizard",
+    "frontend/components/ui",
+    "frontend/components/ui/toast",
+    "frontend/hooks",
+    "frontend/lib",
+    "frontend/lib/analytics",
+    "frontend/lib/api",
+    "frontend/lib/auth",
+    "frontend/lib/config",
+    "frontend/lib/data",
+    "frontend/lib/mock-data",
+    "frontend/lib/supabase",
+    "frontend/lib/validation",
+    "frontend/public",
+    "frontend/types",
+    "infrastructure",
+    "infrastructure/deployment",
+    "infrastructure/docker",
+    "product-plan",
+    "product-plan/data-model",
+    "product-plan/design-system",
+    "product-plan/instructions",
+    "product-plan/instructions/incremental",
+    "product-plan/prompts",
+    "product-plan/sections",
+    "product-plan/sections/authentication-account-management",
+    "product-plan/sections/authentication-account-management/components",
+    "product-plan/sections/dashboard-home",
+    "product-plan/sections/dashboard-home/components",
+    "product-plan/sections/destination-intelligence",
+    "product-plan/sections/error-states-loading-screens",
+    "product-plan/sections/report-management",
+    "product-plan/sections/travel-planning-itinerary",
+    "product-plan/sections/trip-creation-input",
+    "product-plan/sections/user-profile-settings",
+    "product-plan/sections/visa-entry-intelligence",
+    "product-plan/shell"
+  ],
+  "files": [
+    {
+      "path": ".Frontend_enhancement/landing-page-b2b-support.css",
+      "extension": ".css",
+      "size": 6444
+    },
+    {
+      "path": ".Frontend_enhancement/landing-page-b2b-support.html",
+      "extension": ".html",
+      "size": 10804
+    },
+    {
+      "path": ".Frontend_enhancement/landing-page-content-b2b-support.md",
+      "extension": ".md",
+      "size": 4915
+    },
+    {
+      "path": ".Frontend_enhancement/landing-page-content.md",
+      "extension": ".md",
+      "size": 5103
+    },
+    {
+      "path": ".Frontend_enhancement/landing-page-guide.md",
+      "extension": ".md",
+      "size": 4460
+    },
+    {
+      "path": ".Frontend_enhancement/landing-page-mockup.md",
+      "extension": ".md",
+      "size": 9507
+    },
+    {
+      "path": ".Frontend_enhancement/landing-page-tip.css",
+      "extension": ".css",
+      "size": 6246
+    },
+    {
+      "path": ".Frontend_enhancement/landing-page-tip.html",
+      "extension": ".html",
+      "size": 10302
+    },
+    {
+      "path": ".Frontend_enhancement/landing-page-variations.md",
+      "extension": ".md",
+      "size": 9290
+    },
+    {
+      "path": ".Frontend_enhancement/visual-style-guide.md",
+      "extension": ".md",
+      "size": 6211
+    },
+    {
+      "path": ".api_replacement/research.md",
+      "extension": ".md",
+      "size": 9436
+    },
+    {
+      "path": ".claude/commands/design-os/data-model.md",
+      "extension": ".md",
+      "size": 4174
+    },
+    {
+      "path": ".claude/commands/design-os/design-screen.md",
+      "extension": ".md",
+      "size": 10988
+    },
+    {
+      "path": ".claude/commands/design-os/design-shell.md",
+      "extension": ".md",
+      "size": 7384
+    },
+    {
+      "path": ".claude/commands/design-os/design-tokens.md",
+      "extension": ".md",
+      "size": 5264
+    },
+    {
+      "path": ".claude/commands/design-os/export-product.md",
+      "extension": ".md",
+      "size": 37661
+    },
+    {
+      "path": ".claude/commands/design-os/product-roadmap.md",
+      "extension": ".md",
+      "size": 3884
+    },
+    {
+      "path": ".claude/commands/design-os/product-vision.md",
+      "extension": ".md",
+      "size": 3494
+    },
+    {
+      "path": ".claude/commands/design-os/sample-data.md",
+      "extension": ".md",
+      "size": 9332
+    },
+    {
+      "path": ".claude/commands/design-os/screenshot-design.md",
+      "extension": ".md",
+      "size": 4785
+    },
+    {
+      "path": ".claude/commands/design-os/shape-section.md",
+      "extension": ".md",
+      "size": 5252
+    },
+    {
+      "path": ".claude/skills/frontend-design/SKILL.md",
+      "extension": ".md",
+      "size": 4322
+    },
+    {
+      "path": ".env",
+      "extension": null,
+      "size": 964
+    },
+    {
+      "path": ".env.example",
+      "extension": ".example",
+      "size": 8848
+    },
+    {
+      "path": ".env.local",
+      "extension": ".local",
+      "size": 2203
+    },
+    {
+      "path": ".env.production.example",
+      "extension": ".example",
+      "size": 3202
+    },
+    {
+      "path": ".github/README.md",
+      "extension": ".md",
+      "size": 4759
+    },
+    {
+      "path": ".github/pull_request_template.md",
+      "extension": ".md",
+      "size": 3174
+    },
+    {
+      "path": ".github/workflows/backend-ci.yml",
+      "extension": ".yml",
+      "size": 5692
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "extension": ".yml",
+      "size": 4054
+    },
+    {
+      "path": ".github/workflows/frontend-ci.yml",
+      "extension": ".yml",
+      "size": 3120
+    },
+    {
+      "path": ".gitignore",
+      "extension": null,
+      "size": 3100
+    },
+    {
+      "path": ".husky/_/.gitignore",
+      "extension": null,
+      "size": 1
+    },
+    {
+      "path": ".husky/_/applypatch-msg",
+      "extension": null,
+      "size": 39
+    },
+    {
+      "path": ".husky/_/commit-msg",
+      "extension": null,
+      "size": 39
+    },
+    {
+      "path": ".husky/_/h",
+      "extension": null,
+      "size": 551
+    },
+    {
+      "path": ".husky/_/husky.sh",
+      "extension": ".sh",
+      "size": 160
+    },
+    {
+      "path": ".husky/_/post-applypatch",
+      "extension": null,
+      "size": 39
+    },
+    {
+      "path": ".husky/_/post-checkout",
+      "extension": null,
+      "size": 39
+    },
+    {
+      "path": ".husky/_/post-commit",
+      "extension": null,
+      "size": 39
+    },
+    {
+      "path": ".husky/_/post-merge",
+      "extension": null,
+      "size": 39
+    },
+    {
+      "path": ".husky/_/post-rewrite",
+      "extension": null,
+      "size": 39
+    },
+    {
+      "path": ".husky/_/pre-applypatch",
+      "extension": null,
+      "size": 39
+    },
+    {
+      "path": ".husky/_/pre-auto-gc",
+      "extension": null,
+      "size": 39
+    },
+    {
+      "path": ".husky/_/pre-commit",
+      "extension": null,
+      "size": 39
+    },
+    {
+      "path": ".husky/_/pre-merge-commit",
+      "extension": null,
+      "size": 39
+    },
+    {
+      "path": ".husky/_/pre-push",
+      "extension": null,
+      "size": 39
+    },
+    {
+      "path": ".husky/_/pre-rebase",
+      "extension": null,
+      "size": 39
+    },
+    {
+      "path": ".husky/_/prepare-commit-msg",
+      "extension": null,
+      "size": 39
+    },
+    {
+      "path": ".husky/pre-commit",
+      "extension": null,
+      "size": 62
+    },
+    {
+      "path": ".prompts/00-session-context.md",
+      "extension": ".md",
+      "size": 3341
+    },
+    {
+      "path": ".prompts/01-I2-user-profile-settings.md",
+      "extension": ".md",
+      "size": 7366
+    },
+    {
+      "path": ".prompts/02-I4-trip-creation-wizard.md",
+      "extension": ".md",
+      "size": 11474
+    },
+    {
+      "path": ".prompts/03-I5-ai-agents-backend.md",
+      "extension": ".md",
+      "size": 14367
+    },
+    {
+      "path": ".prompts/04-I5-report-display-frontend.md",
+      "extension": ".md",
+      "size": 12732
+    },
+    {
+      "path": ".prompts/05-I6-visual-itinerary-builder.md",
+      "extension": ".md",
+      "size": 9992
+    },
+    {
+      "path": ".prompts/06-I7-collaboration-pdf-export.md",
+      "extension": ".md",
+      "size": 11210
+    },
+    {
+      "path": ".prompts/07-I8-trip-updates-recalculation.md",
+      "extension": ".md",
+      "size": 11085
+    },
+    {
+      "path": ".prompts/08-I9-templates-travel-history.md",
+      "extension": ".md",
+      "size": 11894
+    },
+    {
+      "path": ".prompts/09-I10-analytics-settings.md",
+      "extension": ".md",
+      "size": 12867
+    },
+    {
+      "path": ".prompts/10-integration-testing-deployment.md",
+      "extension": ".md",
+      "size": 8021
+    },
+    {
+      "path": ".prompts/README.md",
+      "extension": ".md",
+      "size": 3761
+    },
+    {
+      "path": ".prompts/prompt_frontend.md",
+      "extension": ".md",
+      "size": 6335
+    },
+    {
+      "path": ".vercelignore",
+      "extension": null,
+      "size": 143
+    },
+    {
+      "path": "CLAUDE.md",
+      "extension": ".md",
+      "size": 2155
+    },
+    {
+      "path": "DEPLOYMENT.md",
+      "extension": ".md",
+      "size": 10307
+    },
+    {
+      "path": "RAILWAY_SETUP.md",
+      "extension": ".md",
+      "size": 7866
+    },
+    {
+      "path": "README.md",
+      "extension": ".md",
+      "size": 6427
+    },
+    {
+      "path": "backend/.coverage",
+      "extension": null,
+      "size": 77824
+    },
+    {
+      "path": "backend/.dockerignore",
+      "extension": null,
+      "size": 275
+    },
+    {
+      "path": "backend/.env",
+      "extension": null,
+      "size": 919
+    },
+    {
+      "path": "backend/.env.example",
+      "extension": ".example",
+      "size": 2657
+    },
+    {
+      "path": "backend/.pre-commit-config.yaml",
+      "extension": ".yaml",
+      "size": 3174
+    },
+    {
+      "path": "backend/=0.1.23",
+      "extension": ".23",
+      "size": 18130
+    },
+    {
+      "path": "backend/=0.51.0",
+      "extension": ".0",
+      "size": 0
+    },
+    {
+      "path": "backend/Dockerfile",
+      "extension": null,
+      "size": 1084
+    },
+    {
+      "path": "backend/PRE-COMMIT-GUIDE.md",
+      "extension": ".md",
+      "size": 7250
+    },
+    {
+      "path": "backend/SETUP-SUMMARY.md",
+      "extension": ".md",
+      "size": 6383
+    },
+    {
+      "path": "backend/app/__init__.py",
+      "extension": ".py",
+      "size": 345
+    },
+    {
+      "path": "backend/app/agents/__init__.py",
+      "extension": ".py",
+      "size": 997
+    },
+    {
+      "path": "backend/app/agents/attractions/__init__.py",
+      "extension": ".py",
+      "size": 359
+    },
+    {
+      "path": "backend/app/agents/attractions/agent.py",
+      "extension": ".py",
+      "size": 13534
+    },
+    {
+      "path": "backend/app/agents/attractions/models.py",
+      "extension": ".py",
+      "size": 6591
+    },
+    {
+      "path": "backend/app/agents/attractions/prompts.py",
+      "extension": ".py",
+      "size": 7072
+    },
+    {
+      "path": "backend/app/agents/attractions/tasks.py",
+      "extension": ".py",
+      "size": 1367
+    },
+    {
+      "path": "backend/app/agents/attractions/tools.py",
+      "extension": ".py",
+      "size": 14998
+    },
+    {
+      "path": "backend/app/agents/base.py",
+      "extension": ".py",
+      "size": 7042
+    },
+    {
+      "path": "backend/app/agents/config.py",
+      "extension": ".py",
+      "size": 2192
+    },
+    {
+      "path": "backend/app/agents/country/__init__.py",
+      "extension": ".py",
+      "size": 451
+    },
+    {
+      "path": "backend/app/agents/country/agent.py",
+      "extension": ".py",
+      "size": 11956
+    },
+    {
+      "path": "backend/app/agents/country/models.py",
+      "extension": ".py",
+      "size": 6622
+    },
+    {
+      "path": "backend/app/agents/country/prompts.py",
+      "extension": ".py",
+      "size": 5255
+    },
+    {
+      "path": "backend/app/agents/country/tasks.py",
+      "extension": ".py",
+      "size": 3433
+    },
+    {
+      "path": "backend/app/agents/country/tools.py",
+      "extension": ".py",
+      "size": 14651
+    },
+    {
+      "path": "backend/app/agents/culture/__init__.py",
+      "extension": ".py",
+      "size": 566
+    },
+    {
+      "path": "backend/app/agents/culture/agent.py",
+      "extension": ".py",
+      "size": 15725
+    },
+    {
+      "path": "backend/app/agents/culture/models.py",
+      "extension": ".py",
+      "size": 5980
+    },
+    {
+      "path": "backend/app/agents/culture/prompts.py",
+      "extension": ".py",
+      "size": 6299
+    },
+    {
+      "path": "backend/app/agents/culture/tasks.py",
+      "extension": ".py",
+      "size": 4318
+    },
+    {
+      "path": "backend/app/agents/culture/tools.py",
+      "extension": ".py",
+      "size": 23561
+    },
+    {
+      "path": "backend/app/agents/currency/__init__.py",
+      "extension": ".py",
+      "size": 213
+    },
+    {
+      "path": "backend/app/agents/currency/agent.py",
+      "extension": ".py",
+      "size": 12305
+    },
+    {
+      "path": "backend/app/agents/currency/models.py",
+      "extension": ".py",
+      "size": 4659
+    },
+    {
+      "path": "backend/app/agents/currency/prompts.py",
+      "extension": ".py",
+      "size": 3737
+    },
+    {
+      "path": "backend/app/agents/currency/tasks.py",
+      "extension": ".py",
+      "size": 3119
+    },
+    {
+      "path": "backend/app/agents/currency/tools.py",
+      "extension": ".py",
+      "size": 14471
+    },
+    {
+      "path": "backend/app/agents/exceptions.py",
+      "extension": ".py",
+      "size": 807
+    },
+    {
+      "path": "backend/app/agents/flight/__init__.py",
+      "extension": ".py",
+      "size": 223
+    },
+    {
+      "path": "backend/app/agents/flight/agent.py",
+      "extension": ".py",
+      "size": 8274
+    },
+    {
+      "path": "backend/app/agents/flight/models.py",
+      "extension": ".py",
+      "size": 7752
+    },
+    {
+      "path": "backend/app/agents/flight/prompts.py",
+      "extension": ".py",
+      "size": 4363
+    },
+    {
+      "path": "backend/app/agents/flight/tasks.py",
+      "extension": ".py",
+      "size": 2025
+    },
+    {
+      "path": "backend/app/agents/flight/tools.py",
+      "extension": ".py",
+      "size": 19810
+    },
+    {
+      "path": "backend/app/agents/food/__init__.py",
+      "extension": ".py",
+      "size": 492
+    },
+    {
+      "path": "backend/app/agents/food/agent.py",
+      "extension": ".py",
+      "size": 12602
+    },
+    {
+      "path": "backend/app/agents/food/models.py",
+      "extension": ".py",
+      "size": 5848
+    },
+    {
+      "path": "backend/app/agents/food/prompts.py",
+      "extension": ".py",
+      "size": 5887
+    },
+    {
+      "path": "backend/app/agents/food/tasks.py",
+      "extension": ".py",
+      "size": 3683
+    },
+    {
+      "path": "backend/app/agents/food/tools.py",
+      "extension": ".py",
+      "size": 14120
+    },
+    {
+      "path": "backend/app/agents/interfaces.py",
+      "extension": ".py",
+      "size": 4252
+    },
+    {
+      "path": "backend/app/agents/itinerary/__init__.py",
+      "extension": ".py",
+      "size": 458
+    },
+    {
+      "path": "backend/app/agents/itinerary/agent.py",
+      "extension": ".py",
+      "size": 13567
+    },
+    {
+      "path": "backend/app/agents/itinerary/models.py",
+      "extension": ".py",
+      "size": 9594
+    },
+    {
+      "path": "backend/app/agents/itinerary/prompts.py",
+      "extension": ".py",
+      "size": 5051
+    },
+    {
+      "path": "backend/app/agents/itinerary/tasks.py",
+      "extension": ".py",
+      "size": 4365
+    },
+    {
+      "path": "backend/app/agents/itinerary/tools.py",
+      "extension": ".py",
+      "size": 9895
+    },
+    {
+      "path": "backend/app/agents/orchestrator/README.md",
+      "extension": ".md",
+      "size": 8476
+    },
+    {
+      "path": "backend/app/agents/orchestrator/__init__.py",
+      "extension": ".py",
+      "size": 170
+    },
+    {
+      "path": "backend/app/agents/orchestrator/agent.py",
+      "extension": ".py",
+      "size": 14820
+    },
+    {
+      "path": "backend/app/agents/visa/__init__.py",
+      "extension": ".py",
+      "size": 447
+    },
+    {
+      "path": "backend/app/agents/visa/agent.py",
+      "extension": ".py",
+      "size": 11445
+    },
+    {
+      "path": "backend/app/agents/visa/models.py",
+      "extension": ".py",
+      "size": 15366
+    },
+    {
+      "path": "backend/app/agents/visa/prompts.py",
+      "extension": ".py",
+      "size": 4775
+    },
+    {
+      "path": "backend/app/agents/visa/tasks.py",
+      "extension": ".py",
+      "size": 4169
+    },
+    {
+      "path": "backend/app/agents/visa/tools.py",
+      "extension": ".py",
+      "size": 6730
+    },
+    {
+      "path": "backend/app/agents/weather/__init__.py",
+      "extension": ".py",
+      "size": 222
+    },
+    {
+      "path": "backend/app/agents/weather/agent.py",
+      "extension": ".py",
+      "size": 14166
+    },
+    {
+      "path": "backend/app/agents/weather/models.py",
+      "extension": ".py",
+      "size": 5590
+    },
+    {
+      "path": "backend/app/agents/weather/prompts.py",
+      "extension": ".py",
+      "size": 5742
+    },
+    {
+      "path": "backend/app/agents/weather/tasks.py",
+      "extension": ".py",
+      "size": 8161
+    },
+    {
+      "path": "backend/app/agents/weather/tools.py",
+      "extension": ".py",
+      "size": 15649
+    },
+    {
+      "path": "backend/app/api/__init__.py",
+      "extension": ".py",
+      "size": 25
+    },
+    {
+      "path": "backend/app/api/analytics.py",
+      "extension": ".py",
+      "size": 24553
+    },
+    {
+      "path": "backend/app/api/healthcheck.py",
+      "extension": ".py",
+      "size": 1807
+    },
+    {
+      "path": "backend/app/api/history.py",
+      "extension": ".py",
+      "size": 19540
+    },
+    {
+      "path": "backend/app/api/itinerary.py",
+      "extension": ".py",
+      "size": 31717
+    },
+    {
+      "path": "backend/app/api/places.py",
+      "extension": ".py",
+      "size": 14817
+    },
+    {
+      "path": "backend/app/api/profile.py",
+      "extension": ".py",
+      "size": 19648
+    },
+    {
+      "path": "backend/app/api/recommendations.py",
+      "extension": ".py",
+      "size": 1337
+    },
+    {
+      "path": "backend/app/api/settings.py",
+      "extension": ".py",
+      "size": 24686
+    },
+    {
+      "path": "backend/app/api/sharing.py",
+      "extension": ".py",
+      "size": 25774
+    },
+    {
+      "path": "backend/app/api/templates.py",
+      "extension": ".py",
+      "size": 13527
+    },
+    {
+      "path": "backend/app/api/trips.py",
+      "extension": ".py",
+      "size": 82014
+    },
+    {
+      "path": "backend/app/core/__init__.py",
+      "extension": ".py",
+      "size": 51
+    },
+    {
+      "path": "backend/app/core/auth.py",
+      "extension": ".py",
+      "size": 3967
+    },
+    {
+      "path": "backend/app/core/celery_app.py",
+      "extension": ".py",
+      "size": 3436
+    },
+    {
+      "path": "backend/app/core/config.py",
+      "extension": ".py",
+      "size": 2883
+    },
+    {
+      "path": "backend/app/core/errors.py",
+      "extension": ".py",
+      "size": 10537
+    },
+    {
+      "path": "backend/app/core/exception_handlers.py",
+      "extension": ".py",
+      "size": 7791
+    },
+    {
+      "path": "backend/app/core/gdpr.py",
+      "extension": ".py",
+      "size": 21887
+    },
+    {
+      "path": "backend/app/core/logging_config.py",
+      "extension": ".py",
+      "size": 13240
+    },
+    {
+      "path": "backend/app/core/security.py",
+      "extension": ".py",
+      "size": 13643
+    },
+    {
+      "path": "backend/app/core/sentry.py",
+      "extension": ".py",
+      "size": 9196
+    },
+    {
+      "path": "backend/app/core/supabase.py",
+      "extension": ".py",
+      "size": 1542
+    },
+    {
+      "path": "backend/app/main.py",
+      "extension": ".py",
+      "size": 4219
+    },
+    {
+      "path": "backend/app/models/analytics.py",
+      "extension": ".py",
+      "size": 10005
+    },
+    {
+      "path": "backend/app/models/itinerary.py",
+      "extension": ".py",
+      "size": 11507
+    },
+    {
+      "path": "backend/app/models/profile.py",
+      "extension": ".py",
+      "size": 8230
+    },
+    {
+      "path": "backend/app/models/report.py",
+      "extension": ".py",
+      "size": 7808
+    },
+    {
+      "path": "backend/app/models/settings.py",
+      "extension": ".py",
+      "size": 14623
+    },
+    {
+      "path": "backend/app/models/sharing.py",
+      "extension": ".py",
+      "size": 5888
+    },
+    {
+      "path": "backend/app/models/template.py",
+      "extension": ".py",
+      "size": 7466
+    },
+    {
+      "path": "backend/app/models/trips.py",
+      "extension": ".py",
+      "size": 16917
+    },
+    {
+      "path": "backend/app/services/change_detector.py",
+      "extension": ".py",
+      "size": 13032
+    },
+    {
+      "path": "backend/app/services/country/__init__.py",
+      "extension": ".py",
+      "size": 221
+    },
+    {
+      "path": "backend/app/services/country/rest_countries_client.py",
+      "extension": ".py",
+      "size": 8279
+    },
+    {
+      "path": "backend/app/services/currency/__init__.py",
+      "extension": ".py",
+      "size": 166
+    },
+    {
+      "path": "backend/app/services/currency/exchange_api_client.py",
+      "extension": ".py",
+      "size": 9228
+    },
+    {
+      "path": "backend/app/services/flight/__init__.py",
+      "extension": ".py",
+      "size": 293
+    },
+    {
+      "path": "backend/app/services/flight/amadeus_client.py",
+      "extension": ".py",
+      "size": 23850
+    },
+    {
+      "path": "backend/app/services/pdf_generator.py",
+      "extension": ".py",
+      "size": 21963
+    },
+    {
+      "path": "backend/app/services/recommendations.py",
+      "extension": ".py",
+      "size": 6033
+    },
+    {
+      "path": "backend/app/services/report_aggregator.py",
+      "extension": ".py",
+      "size": 9153
+    },
+    {
+      "path": "backend/app/services/visa/__init__.py",
+      "extension": ".py",
+      "size": 260
+    },
+    {
+      "path": "backend/app/services/visa/travel_buddy_client.py",
+      "extension": ".py",
+      "size": 7701
+    },
+    {
+      "path": "backend/app/services/weather/__init__.py",
+      "extension": ".py",
+      "size": 380
+    },
+    {
+      "path": "backend/app/services/weather/visual_crossing_client.py",
+      "extension": ".py",
+      "size": 10409
+    },
+    {
+      "path": "backend/app/services/weather/weather_api_client.py",
+      "extension": ".py",
+      "size": 11891
+    },
+    {
+      "path": "backend/app/tasks/__init__.py",
+      "extension": ".py",
+      "size": 975
+    },
+    {
+      "path": "backend/app/tasks/agent_jobs.py",
+      "extension": ".py",
+      "size": 62920
+    },
+    {
+      "path": "backend/app/tasks/cleanup.py",
+      "extension": ".py",
+      "size": 14486
+    },
+    {
+      "path": "backend/app/tasks/example.py",
+      "extension": ".py",
+      "size": 902
+    },
+    {
+      "path": "backend/mypy_report.txt",
+      "extension": ".txt",
+      "size": 0
+    },
+    {
+      "path": "backend/pyproject.toml",
+      "extension": ".toml",
+      "size": 4479
+    },
+    {
+      "path": "backend/pytest.ini",
+      "extension": ".ini",
+      "size": 908
+    },
+    {
+      "path": "backend/requirements.txt",
+      "extension": ".txt",
+      "size": 1166
+    },
+    {
+      "path": "backend/setup-precommit.ps1",
+      "extension": ".ps1",
+      "size": 4735
+    },
+    {
+      "path": "backend/setup-precommit.sh",
+      "extension": ".sh",
+      "size": 2581
+    },
+    {
+      "path": "backend/tests/__init__.py",
+      "extension": ".py",
+      "size": 230
+    },
+    {
+      "path": "backend/tests/agents/__init__.py",
+      "extension": ".py",
+      "size": 28
+    },
+    {
+      "path": "backend/tests/agents/test_attractions_agent.py",
+      "extension": ".py",
+      "size": 14918
+    },
+    {
+      "path": "backend/tests/agents/test_base_agent.py",
+      "extension": ".py",
+      "size": 7530
+    },
+    {
+      "path": "backend/tests/agents/test_country_agent.py",
+      "extension": ".py",
+      "size": 10032
+    },
+    {
+      "path": "backend/tests/agents/test_culture_agent.py",
+      "extension": ".py",
+      "size": 13792
+    },
+    {
+      "path": "backend/tests/agents/test_currency_agent.py",
+      "extension": ".py",
+      "size": 12178
+    },
+    {
+      "path": "backend/tests/agents/test_flight_agent.py",
+      "extension": ".py",
+      "size": 9677
+    },
+    {
+      "path": "backend/tests/agents/test_food_agent.py",
+      "extension": ".py",
+      "size": 12318
+    },
+    {
+      "path": "backend/tests/agents/test_itinerary_agent.py",
+      "extension": ".py",
+      "size": 11774
+    },
+    {
+      "path": "backend/tests/agents/test_orchestrator.py",
+      "extension": ".py",
+      "size": 9452
+    },
+    {
+      "path": "backend/tests/agents/test_visa_agent.py",
+      "extension": ".py",
+      "size": 11351
+    },
+    {
+      "path": "backend/tests/agents/test_visa_models.py",
+      "extension": ".py",
+      "size": 13945
+    },
+    {
+      "path": "backend/tests/agents/test_weather_agent.py",
+      "extension": ".py",
+      "size": 14382
+    },
+    {
+      "path": "backend/tests/api/__init__.py",
+      "extension": ".py",
+      "size": 24
+    },
+    {
+      "path": "backend/tests/api/test_analytics.py",
+      "extension": ".py",
+      "size": 15447
+    },
+    {
+      "path": "backend/tests/api/test_itinerary.py",
+      "extension": ".py",
+      "size": 23277
+    },
+    {
+      "path": "backend/tests/api/test_places.py",
+      "extension": ".py",
+      "size": 11198
+    },
+    {
+      "path": "backend/tests/api/test_profile.py",
+      "extension": ".py",
+      "size": 11713
+    },
+    {
+      "path": "backend/tests/api/test_settings.py",
+      "extension": ".py",
+      "size": 21587
+    },
+    {
+      "path": "backend/tests/api/test_sharing.py",
+      "extension": ".py",
+      "size": 30912
+    },
+    {
+      "path": "backend/tests/api/test_trip_updates.py",
+      "extension": ".py",
+      "size": 11757
+    },
+    {
+      "path": "backend/tests/api/test_trips_create.py",
+      "extension": ".py",
+      "size": 16449
+    },
+    {
+      "path": "backend/tests/conftest.py",
+      "extension": ".py",
+      "size": 8571
+    },
+    {
+      "path": "backend/tests/integration_test_manual.py",
+      "extension": ".py",
+      "size": 9916
+    },
+    {
+      "path": "backend/tests/services/__init__.py",
+      "extension": ".py",
+      "size": 29
+    },
+    {
+      "path": "backend/tests/services/test_amadeus_client.py",
+      "extension": ".py",
+      "size": 21758
+    },
+    {
+      "path": "backend/tests/services/test_change_detector.py",
+      "extension": ".py",
+      "size": 16688
+    },
+    {
+      "path": "backend/tests/services/test_exchange_api_client.py",
+      "extension": ".py",
+      "size": 5846
+    },
+    {
+      "path": "backend/tests/services/test_pdf_generator.py",
+      "extension": ".py",
+      "size": 14023
+    },
+    {
+      "path": "backend/tests/services/test_report_aggregator.py",
+      "extension": ".py",
+      "size": 15844
+    },
+    {
+      "path": "backend/tests/services/test_rest_countries_client.py",
+      "extension": ".py",
+      "size": 6628
+    },
+    {
+      "path": "backend/tests/services/test_travel_buddy_client.py",
+      "extension": ".py",
+      "size": 4412
+    },
+    {
+      "path": "backend/tests/services/test_visual_crossing_client.py",
+      "extension": ".py",
+      "size": 10692
+    },
+    {
+      "path": "backend/tests/services/test_weather_api_client.py",
+      "extension": ".py",
+      "size": 11878
+    },
+    {
+      "path": "backend/tests/tasks/__init__.py",
+      "extension": ".py",
+      "size": 14
+    },
+    {
+      "path": "backend/tests/tasks/test_cleanup_tasks.py",
+      "extension": ".py",
+      "size": 8531
+    },
+    {
+      "path": "backend/tests/test_celery_tasks.py",
+      "extension": ".py",
+      "size": 7727
+    },
+    {
+      "path": "claude-progress.txt",
+      "extension": ".txt",
+      "size": 97305
+    },
+    {
+      "path": "contracts/openapi.yaml",
+      "extension": ".yaml",
+      "size": 27087
+    },
+    {
+      "path": "contracts/types.ts",
+      "extension": ".ts",
+      "size": 5846
+    },
+    {
+      "path": "db/migrations/002_add_profile_rls_policies.sql",
+      "extension": ".sql",
+      "size": 2805
+    },
+    {
+      "path": "db/migrations/003_add_gdpr_tables.sql",
+      "extension": ".sql",
+      "size": 7481
+    },
+    {
+      "path": "db/migrations/004_add_collaboration_tables.sql",
+      "extension": ".sql",
+      "size": 7025
+    },
+    {
+      "path": "db/migrations/005_add_trip_versions_table.sql",
+      "extension": ".sql",
+      "size": 7516
+    },
+    {
+      "path": "db/migrations/006_fix_advisor_warnings.sql",
+      "extension": ".sql",
+      "size": 13394
+    },
+    {
+      "path": "db/migrations/007_performance_optimization.sql",
+      "extension": ".sql",
+      "size": 6171
+    },
+    {
+      "path": "db/migrations/fix_security_and_performance.sql",
+      "extension": ".sql",
+      "size": 7522
+    },
+    {
+      "path": "db/schema.sql",
+      "extension": ".sql",
+      "size": 8005
+    },
+    {
+      "path": "docker-compose.yml",
+      "extension": ".yml",
+      "size": 4047
+    },
+    {
+      "path": "docker.ps1",
+      "extension": ".ps1",
+      "size": 4126
+    },
+    {
+      "path": "docs/FIX_PLAN_CI_CD_TESTS.md",
+      "extension": ".md",
+      "size": 8268
+    },
+    {
+      "path": "docs/I2-backend-testing-guide.md",
+      "extension": ".md",
+      "size": 10162
+    },
+    {
+      "path": "docs/I2-final-session-summary.md",
+      "extension": ".md",
+      "size": 15854
+    },
+    {
+      "path": "docs/I2-implementation-status.md",
+      "extension": ".md",
+      "size": 8607
+    },
+    {
+      "path": "docs/I2-integration-test-script.md",
+      "extension": ".md",
+      "size": 3230
+    },
+    {
+      "path": "docs/I2-integration-testing-checklist.md",
+      "extension": ".md",
+      "size": 12649
+    },
+    {
+      "path": "docs/I2-session-completion-summary.md",
+      "extension": ".md",
+      "size": 10302
+    },
+    {
+      "path": "docs/I2-testing-report.md",
+      "extension": ".md",
+      "size": 9495
+    },
+    {
+      "path": "docs/I9-profile-implementation-summary.md",
+      "extension": ".md",
+      "size": 8609
+    },
+    {
+      "path": "docs/I9-supabase-storage-completion.md",
+      "extension": ".md",
+      "size": 4895
+    },
+    {
+      "path": "docs/I9-vercel-build-fix.md",
+      "extension": ".md",
+      "size": 9272
+    },
+    {
+      "path": "docs/INTEGRATED_PLAN.md",
+      "extension": ".md",
+      "size": 37713
+    },
+    {
+      "path": "docs/PRD.md",
+      "extension": ".md",
+      "size": 42084
+    },
+    {
+      "path": "docs/comprehensive_plan.md",
+      "extension": ".md",
+      "size": 14013
+    },
+    {
+      "path": "docs/data_models.md",
+      "extension": ".md",
+      "size": 12881
+    },
+    {
+      "path": "docs/decisions/DR-001-backend-hosting.md",
+      "extension": ".md",
+      "size": 6586
+    },
+    {
+      "path": "docs/decisions/DR-002-map-provider.md",
+      "extension": ".md",
+      "size": 7991
+    },
+    {
+      "path": "docs/delivery_dependencies.json",
+      "extension": ".json",
+      "size": 5370
+    },
+    {
+      "path": "docs/delivery_dependencies.md",
+      "extension": ".md",
+      "size": 9756
+    },
+    {
+      "path": "docs/phase1_implementation_guide.md",
+      "extension": ".md",
+      "size": 36369
+    },
+    {
+      "path": "docs/remediation_validation_report.md",
+      "extension": ".md",
+      "size": 10480
+    },
+    {
+      "path": "docs/services_config.md",
+      "extension": ".md",
+      "size": 15068
+    },
+    {
+      "path": "docs/session-13-i9-profile-notes.txt",
+      "extension": ".txt",
+      "size": 2527
+    },
+    {
+      "path": "docs/supabase-storage-setup.md",
+      "extension": ".md",
+      "size": 3380
+    },
+    {
+      "path": "docs/visa-agent-implementation.md",
+      "extension": ".md",
+      "size": 11120
+    },
+    {
+      "path": "docs/visa-agent-roadmap.md",
+      "extension": ".md",
+      "size": 18602
+    },
+    {
+      "path": "feature_list.json",
+      "extension": ".json",
+      "size": 76284
+    },
+    {
+      "path": "frontend/.env.example",
+      "extension": ".example",
+      "size": 1622
+    },
+    {
+      "path": "frontend/.env.local",
+      "extension": ".local",
+      "size": 1850
+    },
+    {
+      "path": "frontend/.gitignore",
+      "extension": null,
+      "size": 532
+    },
+    {
+      "path": "frontend/.prettierignore",
+      "extension": null,
+      "size": 67
+    },
+    {
+      "path": "frontend/.prettierrc",
+      "extension": null,
+      "size": 127
+    },
+    {
+      "path": "frontend/README.md",
+      "extension": ".md",
+      "size": 1450
+    },
+    {
+      "path": "frontend/__tests__/components/profile/AutoSaveIndicator.test.tsx",
+      "extension": ".tsx",
+      "size": 2862
+    },
+    {
+      "path": "frontend/__tests__/components/profile/TravelPreferencesSection.test.tsx",
+      "extension": ".tsx",
+      "size": 11812
+    },
+    {
+      "path": "frontend/__tests__/components/profile/TravelerDetailsSection.test.tsx",
+      "extension": ".tsx",
+      "size": 9277
+    },
+    {
+      "path": "frontend/app/(app)/analytics/page.tsx",
+      "extension": ".tsx",
+      "size": 11829
+    },
+    {
+      "path": "frontend/app/(app)/dashboard/error.tsx",
+      "extension": ".tsx",
+      "size": 3330
+    },
+    {
+      "path": "frontend/app/(app)/dashboard/loading.tsx",
+      "extension": ".tsx",
+      "size": 2973
+    },
+    {
+      "path": "frontend/app/(app)/dashboard/page.tsx",
+      "extension": ".tsx",
+      "size": 4101
+    },
+    {
+      "path": "frontend/app/(app)/demo/errors/page.tsx",
+      "extension": ".tsx",
+      "size": 9062
+    },
+    {
+      "path": "frontend/app/(app)/history/page.tsx",
+      "extension": ".tsx",
+      "size": 9938
+    },
+    {
+      "path": "frontend/app/(app)/layout.tsx",
+      "extension": ".tsx",
+      "size": 1186
+    },
+    {
+      "path": "frontend/app/(app)/profile/edit/page.tsx",
+      "extension": ".tsx",
+      "size": 1767
+    },
+    {
+      "path": "frontend/app/(app)/profile/error.tsx",
+      "extension": ".tsx",
+      "size": 1720
+    },
+    {
+      "path": "frontend/app/(app)/profile/loading.tsx",
+      "extension": ".tsx",
+      "size": 2083
+    },
+    {
+      "path": "frontend/app/(app)/profile/page.tsx",
+      "extension": ".tsx",
+      "size": 3305
+    },
+    {
+      "path": "frontend/app/(app)/settings/page.tsx",
+      "extension": ".tsx",
+      "size": 12757
+    },
+    {
+      "path": "frontend/app/(app)/templates/page.tsx",
+      "extension": ".tsx",
+      "size": 11041
+    },
+    {
+      "path": "frontend/app/(app)/trips/[id]/destination/page.tsx",
+      "extension": ".tsx",
+      "size": 4424
+    },
+    {
+      "path": "frontend/app/(app)/trips/[id]/error.tsx",
+      "extension": ".tsx",
+      "size": 617
+    },
+    {
+      "path": "frontend/app/(app)/trips/[id]/generation/page.tsx",
+      "extension": ".tsx",
+      "size": 3628
+    },
+    {
+      "path": "frontend/app/(app)/trips/[id]/itinerary/page.tsx",
+      "extension": ".tsx",
+      "size": 21420
+    },
+    {
+      "path": "frontend/app/(app)/trips/[id]/loading.tsx",
+      "extension": ".tsx",
+      "size": 282
+    },
+    {
+      "path": "frontend/app/(app)/trips/[id]/not-found.tsx",
+      "extension": ".tsx",
+      "size": 1612
+    },
+    {
+      "path": "frontend/app/(app)/trips/[id]/page.tsx",
+      "extension": ".tsx",
+      "size": 9355
+    },
+    {
+      "path": "frontend/app/(app)/trips/create/page.tsx",
+      "extension": ".tsx",
+      "size": 943
+    },
+    {
+      "path": "frontend/app/(app)/trips/destination/page.tsx",
+      "extension": ".tsx",
+      "size": 637
+    },
+    {
+      "path": "frontend/app/(app)/trips/page.tsx",
+      "extension": ".tsx",
+      "size": 8556
+    },
+    {
+      "path": "frontend/app/(auth)/auth/callback/route.ts",
+      "extension": ".ts",
+      "size": 657
+    },
+    {
+      "path": "frontend/app/(auth)/forgot-password/page.tsx",
+      "extension": ".tsx",
+      "size": 1174
+    },
+    {
+      "path": "frontend/app/(auth)/login/page.tsx",
+      "extension": ".tsx",
+      "size": 3400
+    },
+    {
+      "path": "frontend/app/(auth)/reset-password/page.tsx",
+      "extension": ".tsx",
+      "size": 1998
+    },
+    {
+      "path": "frontend/app/(auth)/signup/page.tsx",
+      "extension": ".tsx",
+      "size": 2220
+    },
+    {
+      "path": "frontend/app/(auth)/verify-email/page.tsx",
+      "extension": ".tsx",
+      "size": 2201
+    },
+    {
+      "path": "frontend/app/error.tsx",
+      "extension": ".tsx",
+      "size": 1015
+    },
+    {
+      "path": "frontend/app/favicon.ico",
+      "extension": ".ico",
+      "size": 25931
+    },
+    {
+      "path": "frontend/app/globals.css",
+      "extension": ".css",
+      "size": 4063
+    },
+    {
+      "path": "frontend/app/layout.tsx",
+      "extension": ".tsx",
+      "size": 884
+    },
+    {
+      "path": "frontend/app/not-found.tsx",
+      "extension": ".tsx",
+      "size": 854
+    },
+    {
+      "path": "frontend/app/page.tsx",
+      "extension": ".tsx",
+      "size": 182
+    },
+    {
+      "path": "frontend/components/analytics/AgentUsageChart.tsx",
+      "extension": ".tsx",
+      "size": 2926
+    },
+    {
+      "path": "frontend/components/analytics/BudgetChart.tsx",
+      "extension": ".tsx",
+      "size": 3345
+    },
+    {
+      "path": "frontend/components/analytics/DestinationChart.tsx",
+      "extension": ".tsx",
+      "size": 2628
+    },
+    {
+      "path": "frontend/components/analytics/StatCard.tsx",
+      "extension": ".tsx",
+      "size": 1585
+    },
+    {
+      "path": "frontend/components/analytics/UsageChart.tsx",
+      "extension": ".tsx",
+      "size": 2516
+    },
+    {
+      "path": "frontend/components/analytics/index.ts",
+      "extension": ".ts",
+      "size": 235
+    },
+    {
+      "path": "frontend/components/auth/ChangePasswordForm.tsx",
+      "extension": ".tsx",
+      "size": 8587
+    },
+    {
+      "path": "frontend/components/auth/DeleteAccountDialog.tsx",
+      "extension": ".tsx",
+      "size": 2279
+    },
+    {
+      "path": "frontend/components/auth/EmailVerificationPage.tsx",
+      "extension": ".tsx",
+      "size": 2342
+    },
+    {
+      "path": "frontend/components/auth/LoginForm.tsx",
+      "extension": ".tsx",
+      "size": 7168
+    },
+    {
+      "path": "frontend/components/auth/PasswordResetForm.tsx",
+      "extension": ".tsx",
+      "size": 7743
+    },
+    {
+      "path": "frontend/components/auth/PasswordResetRequestForm.tsx",
+      "extension": ".tsx",
+      "size": 3634
+    },
+    {
+      "path": "frontend/components/auth/SessionExpiryBanner.tsx",
+      "extension": ".tsx",
+      "size": 2531
+    },
+    {
+      "path": "frontend/components/auth/SignupForm.tsx",
+      "extension": ".tsx",
+      "size": 9382
+    },
+    {
+      "path": "frontend/components/auth/index.ts",
+      "extension": ".ts",
+      "size": 458
+    },
+    {
+      "path": "frontend/components/dashboard/DashboardLayout.tsx",
+      "extension": ".tsx",
+      "size": 1076
+    },
+    {
+      "path": "frontend/components/dashboard/EmptyState.tsx",
+      "extension": ".tsx",
+      "size": 3259
+    },
+    {
+      "path": "frontend/components/dashboard/QuickActionsCard.tsx",
+      "extension": ".tsx",
+      "size": 3886
+    },
+    {
+      "path": "frontend/components/dashboard/RecentTripsCard.tsx",
+      "extension": ".tsx",
+      "size": 3911
+    },
+    {
+      "path": "frontend/components/dashboard/RecommendationsCard.tsx",
+      "extension": ".tsx",
+      "size": 5743
+    },
+    {
+      "path": "frontend/components/dashboard/StatisticsSummaryCard.tsx",
+      "extension": ".tsx",
+      "size": 5166
+    },
+    {
+      "path": "frontend/components/dashboard/TripCard.tsx",
+      "extension": ".tsx",
+      "size": 3008
+    },
+    {
+      "path": "frontend/components/dashboard/UpcomingTripsCard.tsx",
+      "extension": ".tsx",
+      "size": 4396
+    },
+    {
+      "path": "frontend/components/dashboard/skeletons/CardSkeleton.tsx",
+      "extension": ".tsx",
+      "size": 796
+    },
+    {
+      "path": "frontend/components/dashboard/skeletons/StatsSkeleton.tsx",
+      "extension": ".tsx",
+      "size": 1000
+    },
+    {
+      "path": "frontend/components/dashboard/skeletons/TripCardSkeleton.tsx",
+      "extension": ".tsx",
+      "size": 838
+    },
+    {
+      "path": "frontend/components/destination/CountryOverviewCard.tsx",
+      "extension": ".tsx",
+      "size": 10461
+    },
+    {
+      "path": "frontend/components/destination/CultureCard.tsx",
+      "extension": ".tsx",
+      "size": 7112
+    },
+    {
+      "path": "frontend/components/destination/CurrencyCard.tsx",
+      "extension": ".tsx",
+      "size": 7587
+    },
+    {
+      "path": "frontend/components/destination/DestinationIntelligencePage.tsx",
+      "extension": ".tsx",
+      "size": 5620
+    },
+    {
+      "path": "frontend/components/destination/FoodCard.tsx",
+      "extension": ".tsx",
+      "size": 17705
+    },
+    {
+      "path": "frontend/components/destination/IntelligenceCard.tsx",
+      "extension": ".tsx",
+      "size": 5151
+    },
+    {
+      "path": "frontend/components/destination/LoadingState.tsx",
+      "extension": ".tsx",
+      "size": 2255
+    },
+    {
+      "path": "frontend/components/destination/NewsCard.tsx",
+      "extension": ".tsx",
+      "size": 6509
+    },
+    {
+      "path": "frontend/components/destination/SafetyCard.tsx",
+      "extension": ".tsx",
+      "size": 10976
+    },
+    {
+      "path": "frontend/components/destination/UnusualLawsCard.tsx",
+      "extension": ".tsx",
+      "size": 6894
+    },
+    {
+      "path": "frontend/components/destination/WeatherCard.tsx",
+      "extension": ".tsx",
+      "size": 9857
+    },
+    {
+      "path": "frontend/components/history/CountryBadges.tsx",
+      "extension": ".tsx",
+      "size": 2242
+    },
+    {
+      "path": "frontend/components/history/TravelStats.tsx",
+      "extension": ".tsx",
+      "size": 4505
+    },
+    {
+      "path": "frontend/components/history/TripHistoryCard.tsx",
+      "extension": ".tsx",
+      "size": 6033
+    },
+    {
+      "path": "frontend/components/history/TripRatingDialog.tsx",
+      "extension": ".tsx",
+      "size": 5179
+    },
+    {
+      "path": "frontend/components/history/WorldMapViz.tsx",
+      "extension": ".tsx",
+      "size": 6679
+    },
+    {
+      "path": "frontend/components/history/index.ts",
+      "extension": ".ts",
+      "size": 247
+    },
+    {
+      "path": "frontend/components/itinerary/ActivityCard.tsx",
+      "extension": ".tsx",
+      "size": 11981
+    },
+    {
+      "path": "frontend/components/itinerary/ActivityModal.tsx",
+      "extension": ".tsx",
+      "size": 27345
+    },
+    {
+      "path": "frontend/components/itinerary/ConfirmDialog.tsx",
+      "extension": ".tsx",
+      "size": 4416
+    },
+    {
+      "path": "frontend/components/itinerary/DayTimeline.tsx",
+      "extension": ".tsx",
+      "size": 9978
+    },
+    {
+      "path": "frontend/components/itinerary/FlightOptions.tsx",
+      "extension": ".tsx",
+      "size": 13412
+    },
+    {
+      "path": "frontend/components/itinerary/MapView.tsx",
+      "extension": ".tsx",
+      "size": 13993
+    },
+    {
+      "path": "frontend/components/itinerary/index.ts",
+      "extension": ".ts",
+      "size": 276
+    },
+    {
+      "path": "frontend/components/profile/AccountSection.tsx",
+      "extension": ".tsx",
+      "size": 3662
+    },
+    {
+      "path": "frontend/components/profile/AutoSaveIndicator.tsx",
+      "extension": ".tsx",
+      "size": 4070
+    },
+    {
+      "path": "frontend/components/profile/NotificationsSection.tsx",
+      "extension": ".tsx",
+      "size": 3294
+    },
+    {
+      "path": "frontend/components/profile/PrivacySection.tsx",
+      "extension": ".tsx",
+      "size": 1909
+    },
+    {
+      "path": "frontend/components/profile/ProfilePhotoUpload.tsx",
+      "extension": ".tsx",
+      "size": 5997
+    },
+    {
+      "path": "frontend/components/profile/ProfileSection.tsx",
+      "extension": ".tsx",
+      "size": 3898
+    },
+    {
+      "path": "frontend/components/profile/ProfileSettingsPage.tsx",
+      "extension": ".tsx",
+      "size": 7164
+    },
+    {
+      "path": "frontend/components/profile/SavedTemplatesSection.tsx",
+      "extension": ".tsx",
+      "size": 3546
+    },
+    {
+      "path": "frontend/components/profile/SectionCard.tsx",
+      "extension": ".tsx",
+      "size": 2437
+    },
+    {
+      "path": "frontend/components/profile/TemplateCard.tsx",
+      "extension": ".tsx",
+      "size": 3239
+    },
+    {
+      "path": "frontend/components/profile/TemplateModal.tsx",
+      "extension": ".tsx",
+      "size": 8180
+    },
+    {
+      "path": "frontend/components/profile/TravelPreferencesSection.tsx",
+      "extension": ".tsx",
+      "size": 8082
+    },
+    {
+      "path": "frontend/components/profile/TravelerDetailsSection.tsx",
+      "extension": ".tsx",
+      "size": 7491
+    },
+    {
+      "path": "frontend/components/report/ConfidenceBadge.tsx",
+      "extension": ".tsx",
+      "size": 4874
+    },
+    {
+      "path": "frontend/components/report/DeleteTripDialog.tsx",
+      "extension": ".tsx",
+      "size": 6534
+    },
+    {
+      "path": "frontend/components/report/EntryConditionsSection.tsx",
+      "extension": ".tsx",
+      "size": 6414
+    },
+    {
+      "path": "frontend/components/report/ReportSectionNav.tsx",
+      "extension": ".tsx",
+      "size": 6591
+    },
+    {
+      "path": "frontend/components/report/SourceAttribution.tsx",
+      "extension": ".tsx",
+      "size": 6263
+    },
+    {
+      "path": "frontend/components/report/TipsAndWarningsSection.tsx",
+      "extension": ".tsx",
+      "size": 3056
+    },
+    {
+      "path": "frontend/components/report/TripReportLayout.tsx",
+      "extension": ".tsx",
+      "size": 7986
+    },
+    {
+      "path": "frontend/components/report/VisaLoadingState.tsx",
+      "extension": ".tsx",
+      "size": 5291
+    },
+    {
+      "path": "frontend/components/report/VisaRequirementsSection.tsx",
+      "extension": ".tsx",
+      "size": 9028
+    },
+    {
+      "path": "frontend/components/report/WarningBanner.tsx",
+      "extension": ".tsx",
+      "size": 4319
+    },
+    {
+      "path": "frontend/components/reports/TripGenerationProgress.tsx",
+      "extension": ".tsx",
+      "size": 9668
+    },
+    {
+      "path": "frontend/components/reports/index.ts",
+      "extension": ".ts",
+      "size": 67
+    },
+    {
+      "path": "frontend/components/settings/SettingsSection.tsx",
+      "extension": ".tsx",
+      "size": 1190
+    },
+    {
+      "path": "frontend/components/settings/SettingsSelect.tsx",
+      "extension": ".tsx",
+      "size": 1736
+    },
+    {
+      "path": "frontend/components/settings/SettingsToggle.tsx",
+      "extension": ".tsx",
+      "size": 1908
+    },
+    {
+      "path": "frontend/components/settings/index.ts",
+      "extension": ".ts",
+      "size": 155
+    },
+    {
+      "path": "frontend/components/shell/AppShell.tsx",
+      "extension": ".tsx",
+      "size": 4019
+    },
+    {
+      "path": "frontend/components/shell/MainNav.tsx",
+      "extension": ".tsx",
+      "size": 1768
+    },
+    {
+      "path": "frontend/components/shell/UserMenu.tsx",
+      "extension": ".tsx",
+      "size": 4114
+    },
+    {
+      "path": "frontend/components/shell/index.ts",
+      "extension": ".ts",
+      "size": 282
+    },
+    {
+      "path": "frontend/components/templates/FeaturedTemplates.tsx",
+      "extension": ".tsx",
+      "size": 2862
+    },
+    {
+      "path": "frontend/components/templates/PublicTemplateCard.tsx",
+      "extension": ".tsx",
+      "size": 5429
+    },
+    {
+      "path": "frontend/components/templates/TemplateGrid.tsx",
+      "extension": ".tsx",
+      "size": 6153
+    },
+    {
+      "path": "frontend/components/templates/UseTemplateDialog.tsx",
+      "extension": ".tsx",
+      "size": 6592
+    },
+    {
+      "path": "frontend/components/templates/index.ts",
+      "extension": ".ts",
+      "size": 220
+    },
+    {
+      "path": "frontend/components/trip-wizard/AutoSaveIndicator.tsx",
+      "extension": ".tsx",
+      "size": 1621
+    },
+    {
+      "path": "frontend/components/trip-wizard/NavigationButtons.tsx",
+      "extension": ".tsx",
+      "size": 3257
+    },
+    {
+      "path": "frontend/components/trip-wizard/ProgressBar.tsx",
+      "extension": ".tsx",
+      "size": 1350
+    },
+    {
+      "path": "frontend/components/trip-wizard/Step1TravelerDetails.tsx",
+      "extension": ".tsx",
+      "size": 13148
+    },
+    {
+      "path": "frontend/components/trip-wizard/Step2Destination.tsx",
+      "extension": ".tsx",
+      "size": 9804
+    },
+    {
+      "path": "frontend/components/trip-wizard/Step3TripDetails.tsx",
+      "extension": ".tsx",
+      "size": 10377
+    },
+    {
+      "path": "frontend/components/trip-wizard/Step4Preferences.tsx",
+      "extension": ".tsx",
+      "size": 10458
+    },
+    {
+      "path": "frontend/components/trip-wizard/StepIndicator.tsx",
+      "extension": ".tsx",
+      "size": 4238
+    },
+    {
+      "path": "frontend/components/trip-wizard/TripCreationWizard.tsx",
+      "extension": ".tsx",
+      "size": 12624
+    },
+    {
+      "path": "frontend/components/trip-wizard/TripSummary.tsx",
+      "extension": ".tsx",
+      "size": 7711
+    },
+    {
+      "path": "frontend/components/ui/ErrorBanner.tsx",
+      "extension": ".tsx",
+      "size": 3247
+    },
+    {
+      "path": "frontend/components/ui/OfflineDetector.tsx",
+      "extension": ".tsx",
+      "size": 3204
+    },
+    {
+      "path": "frontend/components/ui/alert.tsx",
+      "extension": ".tsx",
+      "size": 1728
+    },
+    {
+      "path": "frontend/components/ui/badge.tsx",
+      "extension": ".tsx",
+      "size": 1598
+    },
+    {
+      "path": "frontend/components/ui/button.tsx",
+      "extension": ".tsx",
+      "size": 1661
+    },
+    {
+      "path": "frontend/components/ui/checkbox.tsx",
+      "extension": ".tsx",
+      "size": 973
+    },
+    {
+      "path": "frontend/components/ui/dialog.tsx",
+      "extension": ".tsx",
+      "size": 3815
+    },
+    {
+      "path": "frontend/components/ui/dropdown-menu.tsx",
+      "extension": ".tsx",
+      "size": 7673
+    },
+    {
+      "path": "frontend/components/ui/index.ts",
+      "extension": ".ts",
+      "size": 219
+    },
+    {
+      "path": "frontend/components/ui/input.tsx",
+      "extension": ".tsx",
+      "size": 785
+    },
+    {
+      "path": "frontend/components/ui/label.tsx",
+      "extension": ".tsx",
+      "size": 520
+    },
+    {
+      "path": "frontend/components/ui/textarea.tsx",
+      "extension": ".tsx",
+      "size": 889
+    },
+    {
+      "path": "frontend/components/ui/toast/Toast.tsx",
+      "extension": ".tsx",
+      "size": 2596
+    },
+    {
+      "path": "frontend/components/ui/toast/ToastContainer.tsx",
+      "extension": ".tsx",
+      "size": 504
+    },
+    {
+      "path": "frontend/components/ui/toast/ToastContext.tsx",
+      "extension": ".tsx",
+      "size": 2681
+    },
+    {
+      "path": "frontend/components/ui/toast/index.ts",
+      "extension": ".ts",
+      "size": 191
+    },
+    {
+      "path": "frontend/eslint.config.mjs",
+      "extension": ".mjs",
+      "size": 656
+    },
+    {
+      "path": "frontend/hooks/useDebounce.ts",
+      "extension": ".ts",
+      "size": 942
+    },
+    {
+      "path": "frontend/hooks/useOnlineStatus.ts",
+      "extension": ".ts",
+      "size": 894
+    },
+    {
+      "path": "frontend/jest.config.cjs",
+      "extension": ".cjs",
+      "size": 316
+    },
+    {
+      "path": "frontend/jest.setup.js",
+      "extension": ".js",
+      "size": 38
+    },
+    {
+      "path": "frontend/lib/analytics/index.ts",
+      "extension": ".ts",
+      "size": 1805
+    },
+    {
+      "path": "frontend/lib/api/analytics.ts",
+      "extension": ".ts",
+      "size": 2161
+    },
+    {
+      "path": "frontend/lib/api/auth-utils.ts",
+      "extension": ".ts",
+      "size": 2486
+    },
+    {
+      "path": "frontend/lib/api/client.ts",
+      "extension": ".ts",
+      "size": 1693
+    },
+    {
+      "path": "frontend/lib/api/destination.ts",
+      "extension": ".ts",
+      "size": 5390
+    },
+    {
+      "path": "frontend/lib/api/history.ts",
+      "extension": ".ts",
+      "size": 5197
+    },
+    {
+      "path": "frontend/lib/api/profile.ts",
+      "extension": ".ts",
+      "size": 4883
+    },
+    {
+      "path": "frontend/lib/api/reports.ts",
+      "extension": ".ts",
+      "size": 7621
+    },
+    {
+      "path": "frontend/lib/api/settings.ts",
+      "extension": ".ts",
+      "size": 3919
+    },
+    {
+      "path": "frontend/lib/api/templates.ts",
+      "extension": ".ts",
+      "size": 5753
+    },
+    {
+      "path": "frontend/lib/api/visa.ts",
+      "extension": ".ts",
+      "size": 8545
+    },
+    {
+      "path": "frontend/lib/auth/actions.ts",
+      "extension": ".ts",
+      "size": 5405
+    },
+    {
+      "path": "frontend/lib/auth/rate-limit.ts",
+      "extension": ".ts",
+      "size": 3141
+    },
+    {
+      "path": "frontend/lib/auth/validation.ts",
+      "extension": ".ts",
+      "size": 2418
+    },
+    {
+      "path": "frontend/lib/config/features.ts",
+      "extension": ".ts",
+      "size": 736
+    },
+    {
+      "path": "frontend/lib/data/countries.ts",
+      "extension": ".ts",
+      "size": 8074
+    },
+    {
+      "path": "frontend/lib/mock-data/destination-sample.ts",
+      "extension": ".ts",
+      "size": 11347
+    },
+    {
+      "path": "frontend/lib/mock-data/itinerary-sample.ts",
+      "extension": ".ts",
+      "size": 17399
+    },
+    {
+      "path": "frontend/lib/supabase/client.ts",
+      "extension": ".ts",
+      "size": 345
+    },
+    {
+      "path": "frontend/lib/supabase/middleware.ts",
+      "extension": ".ts",
+      "size": 2305
+    },
+    {
+      "path": "frontend/lib/supabase/server.ts",
+      "extension": ".ts",
+      "size": 1067
+    },
+    {
+      "path": "frontend/lib/utils.ts",
+      "extension": ".ts",
+      "size": 169
+    },
+    {
+      "path": "frontend/lib/validation/trip-wizard-schemas.ts",
+      "extension": ".ts",
+      "size": 9959
+    },
+    {
+      "path": "frontend/middleware.ts",
+      "extension": ".ts",
+      "size": 600
+    },
+    {
+      "path": "frontend/next-env.d.ts",
+      "extension": ".ts",
+      "size": 247
+    },
+    {
+      "path": "frontend/next.config.ts",
+      "extension": ".ts",
+      "size": 636
+    },
+    {
+      "path": "frontend/package-lock.json",
+      "extension": ".json",
+      "size": 483116
+    },
+    {
+      "path": "frontend/package.json",
+      "extension": ".json",
+      "size": 2043
+    },
+    {
+      "path": "frontend/postcss.config.mjs",
+      "extension": ".mjs",
+      "size": 94
+    },
+    {
+      "path": "frontend/public/file.svg",
+      "extension": ".svg",
+      "size": 392
+    },
+    {
+      "path": "frontend/public/globe.svg",
+      "extension": ".svg",
+      "size": 1036
+    },
+    {
+      "path": "frontend/public/next.svg",
+      "extension": ".svg",
+      "size": 1376
+    },
+    {
+      "path": "frontend/public/vercel.svg",
+      "extension": ".svg",
+      "size": 129
+    },
+    {
+      "path": "frontend/public/window.svg",
+      "extension": ".svg",
+      "size": 386
+    },
+    {
+      "path": "frontend/tsconfig.json",
+      "extension": ".json",
+      "size": 718
+    },
+    {
+      "path": "frontend/tsconfig.tsbuildinfo",
+      "extension": ".tsbuildinfo",
+      "size": 220849
+    },
+    {
+      "path": "frontend/types/analytics.ts",
+      "extension": ".ts",
+      "size": 3166
+    },
+    {
+      "path": "frontend/types/auth.ts",
+      "extension": ".ts",
+      "size": 1102
+    },
+    {
+      "path": "frontend/types/database.ts",
+      "extension": ".ts",
+      "size": 2509
+    },
+    {
+      "path": "frontend/types/destination.ts",
+      "extension": ".ts",
+      "size": 5989
+    },
+    {
+      "path": "frontend/types/itinerary.ts",
+      "extension": ".ts",
+      "size": 4016
+    },
+    {
+      "path": "frontend/types/profile.ts",
+      "extension": ".ts",
+      "size": 10448
+    },
+    {
+      "path": "frontend/types/react-map-gl.d.ts",
+      "extension": ".ts",
+      "size": 131
+    },
+    {
+      "path": "frontend/types/settings.ts",
+      "extension": ".ts",
+      "size": 5412
+    },
+    {
+      "path": "frontend/types/visa.ts",
+      "extension": ".ts",
+      "size": 2709
+    },
+    {
+      "path": "frontend/vercel.json",
+      "extension": ".json",
+      "size": 98
+    },
+    {
+      "path": "generate_repo_index.py",
+      "extension": ".py",
+      "size": 2920
+    },
+    {
+      "path": "infrastructure/docker/README.md",
+      "extension": ".md",
+      "size": 5532
+    },
+    {
+      "path": "init.ps1",
+      "extension": ".ps1",
+      "size": 5756
+    },
+    {
+      "path": "package-lock.json",
+      "extension": ".json",
+      "size": 26345
+    },
+    {
+      "path": "package.json",
+      "extension": ".json",
+      "size": 312
+    },
+    {
+      "path": "product-plan/EXPORT_STATUS.md",
+      "extension": ".md",
+      "size": 12463
+    },
+    {
+      "path": "product-plan/README.md",
+      "extension": ".md",
+      "size": 10116
+    },
+    {
+      "path": "product-plan/data-model/README.md",
+      "extension": ".md",
+      "size": 4239
+    },
+    {
+      "path": "product-plan/data-model/sample-data.json",
+      "extension": ".json",
+      "size": 14983
+    },
+    {
+      "path": "product-plan/data-model/types.ts",
+      "extension": ".ts",
+      "size": 8093
+    },
+    {
+      "path": "product-plan/design-system/fonts.md",
+      "extension": ".md",
+      "size": 2611
+    },
+    {
+      "path": "product-plan/design-system/tailwind-colors.md",
+      "extension": ".md",
+      "size": 3168
+    },
+    {
+      "path": "product-plan/design-system/tokens.css",
+      "extension": ".css",
+      "size": 2819
+    },
+    {
+      "path": "product-plan/instructions/combined-milestones.txt",
+      "extension": ".txt",
+      "size": 0
+    },
+    {
+      "path": "product-plan/instructions/incremental/01-foundation.md",
+      "extension": ".md",
+      "size": 9900
+    },
+    {
+      "path": "product-plan/instructions/incremental/02-authentication-account-management.md",
+      "extension": ".md",
+      "size": 10509
+    },
+    {
+      "path": "product-plan/instructions/incremental/03-dashboard-home.md",
+      "extension": ".md",
+      "size": 8382
+    },
+    {
+      "path": "product-plan/instructions/incremental/04-trip-creation-input.md",
+      "extension": ".md",
+      "size": 10834
+    },
+    {
+      "path": "product-plan/instructions/incremental/05-visa-entry-intelligence.md",
+      "extension": ".md",
+      "size": 9532
+    },
+    {
+      "path": "product-plan/instructions/incremental/06-destination-intelligence.md",
+      "extension": ".md",
+      "size": 10694
+    },
+    {
+      "path": "product-plan/instructions/incremental/07-travel-planning-itinerary.md",
+      "extension": ".md",
+      "size": 11985
+    },
+    {
+      "path": "product-plan/instructions/incremental/08-report-management.md",
+      "extension": ".md",
+      "size": 13190
+    },
+    {
+      "path": "product-plan/instructions/incremental/09-user-profile-settings.md",
+      "extension": ".md",
+      "size": 14738
+    },
+    {
+      "path": "product-plan/instructions/incremental/10-error-states-loading-screens.md",
+      "extension": ".md",
+      "size": 14426
+    },
+    {
+      "path": "product-plan/instructions/one-shot-instructions.md",
+      "extension": ".md",
+      "size": 106668
+    },
+    {
+      "path": "product-plan/product-overview.md",
+      "extension": ".md",
+      "size": 5041
+    },
+    {
+      "path": "product-plan/prompts/one-shot-prompt.md",
+      "extension": ".md",
+      "size": 2418
+    },
+    {
+      "path": "product-plan/prompts/section-prompt.md",
+      "extension": ".md",
+      "size": 2364
+    },
+    {
+      "path": "product-plan/sections/authentication-account-management/README.md",
+      "extension": ".md",
+      "size": 12243
+    },
+    {
+      "path": "product-plan/sections/authentication-account-management/email-verification-preview.png",
+      "extension": ".png",
+      "size": 651979
+    },
+    {
+      "path": "product-plan/sections/authentication-account-management/login-preview.png",
+      "extension": ".png",
+      "size": 638523
+    },
+    {
+      "path": "product-plan/sections/authentication-account-management/password-reset-request-preview.png",
+      "extension": ".png",
+      "size": 663017
+    },
+    {
+      "path": "product-plan/sections/authentication-account-management/sample-data.json",
+      "extension": ".json",
+      "size": 4572
+    },
+    {
+      "path": "product-plan/sections/authentication-account-management/tests.md",
+      "extension": ".md",
+      "size": 20790
+    },
+    {
+      "path": "product-plan/sections/dashboard-home/README.md",
+      "extension": ".md",
+      "size": 10923
+    },
+    {
+      "path": "product-plan/sections/dashboard-home/sample-data.json",
+      "extension": ".json",
+      "size": 4742
+    },
+    {
+      "path": "product-plan/sections/dashboard-home/tests.md",
+      "extension": ".md",
+      "size": 23314
+    },
+    {
+      "path": "product-plan/sections/dashboard-home/types.ts",
+      "extension": ".ts",
+      "size": 6541
+    },
+    {
+      "path": "railway-deployment-status.md",
+      "extension": ".md",
+      "size": 6657
+    },
+    {
+      "path": "railway.toml",
+      "extension": ".toml",
+      "size": 463
+    },
+    {
+      "path": "validate_credentials.py",
+      "extension": ".py",
+      "size": 9781
+    },
+    {
+      "path": "verify-railway-deployment.md",
+      "extension": ".md",
+      "size": 7344
+    }
+  ]
+}
