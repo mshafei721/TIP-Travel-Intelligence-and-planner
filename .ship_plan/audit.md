@@ -38,12 +38,12 @@ TIP (Travel Intelligence & Planner) - Go-Live Readiness Report
   | A.Perf.CWV                     | Go-live    | LCP ≤ 2.5s, INP ≤ 200ms, CLS < 0.1 | UNKNOWN | No Vercel CWV dashboard                                    | C        | Need LHCI/CrUX data                  |
   | A.Sec.ASVS                     | Go-live    | OWASP ASVS L1 controls             | PARTIAL | security.py implements rate limiting, security headers     | B        | No formal ASVS mapping doc           |
   | A.Supabase.RLS                 | Go-live    | RLS on all user tables             | PASS    | mcp__supabase__list_tables - 16/16 tables rls_enabled:true | A        | All tables protected                 |
-  | A.Supabase.ServiceRoleExposure | Go-live    | service_role not in client         | FAIL    | frontend/.env.local line 12                                | A        | CRITICAL BLOCKER                     |
+  | A.Supabase.ServiceRoleExposure | Go-live    | service_role not in client         | PARTIAL | Key removed from frontend; rotation pending                | B        | User must rotate key in Supabase     |
   | A.Reliability.Healthcheck      | Go-live    | Railway healthchecks               | PASS    | railway.toml:13 healthcheckPath="/api/health"              | A        | /health, /health/ready, /health/live |
-  | A.Observability.Runbooks       | Go-live    | Incident runbooks                  | FAIL    | No runbook documentation found                             | C        | Missing runbooks                     |
+  | A.Observability.Runbooks       | Go-live    | Incident runbooks                  | PARTIAL | docs/runbooks/rollback-playbook.md                         | B        | Rollback runbook created             |
   | A.BackupRestore.Drill          | Go-live    | Backup/restore tested              | FAIL    | No drill documentation                                     | C        | Missing drill evidence               |
-  | A.Release.StagingParity        | Go-live    | Staging mirrors prod               | UNKNOWN | No staging environment evidence                            | C        | Unclear staging setup                |
-  | A.Release.RollbackTested       | Go-live    | Rollback plan tested               | FAIL    | No rollback playbook                                       | C        | Missing drill                        |
+  | A.Release.StagingParity        | Go-live    | Staging mirrors prod               | PARTIAL | Preview deployments on Vercel                              | B        | Vercel preview = staging             |
+  | A.Release.RollbackTested       | Go-live    | Rollback plan tested               | PARTIAL | docs/runbooks/rollback-playbook.md created                 | B        | Playbook ready, drill pending        |
   | B.Auth.Flows                   | Functional | Auth flows complete                | PASS    | I2 features 100% complete                                  | B        | Login/signup/reset implemented       |
   | B.Travel.CRUD                  | Functional | Trip CRUD                          | PASS    | I4 features 100% complete                                  | B        | Create/read/update/delete working    |
   | C1.Next.ProdChecklist          | NFR        | Next.js prod checklist             | PARTIAL | next.config.ts minimal                                     | B        | Needs review                         |
@@ -59,8 +59,8 @@ TIP (Travel Intelligence & Planner) - Go-Live Readiness Report
   | E.Tests.Integration            | Testing    | Integration tests                  | PASS    | test_trips_create.py, test_sharing.py                      | B        | Key paths covered                    |
   | E.Tests.Contract               | Testing    | Contract tests FE↔BE               | PASS    | contracts/openapi.yaml (27KB)                              | B        | OpenAPI spec                         |
   | E.Tests.E2E                    | Testing    | E2E tests                          | UNKNOWN | No Playwright/Cypress found                                | C        | Missing                              |
-  | E.Tests.Load                   | Testing    | Load tests                         | FAIL    | No k6/Gatling/Locust files                                 | C        | HIGH priority                        |
-  | E.CI.Blocking                  | Testing    | CI blocks on failures              | PARTIAL | continue-on-error:true on lint/types                       | B        | Not fully blocking                   |
+  | E.Tests.Load                   | Testing    | Load tests                         | PARTIAL | tests/load/k6-config.js created                            | B        | Ready to run, pending execution      |
+  | E.CI.Blocking                  | Testing    | CI blocks on failures              | PASS    | continue-on-error removed from lint/types                  | A        | CI now blocks on failures            |
   | F.Dashboards.SLIs              | Ops        | SLI dashboards                     | UNKNOWN | No dashboard links                                         | C        | Missing evidence                     |
   | F.Alerts.UserImpact            | Ops        | Alerts configured                  | PARTIAL | Sentry configured (if DSN provided)                        | B        | Conditional                          |
   | G.Envs.Separate                | Release    | Separate environments              | PARTIAL | dev/.env exists                                            | B        | Staging unclear                      |
