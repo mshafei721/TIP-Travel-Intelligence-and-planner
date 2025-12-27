@@ -22,6 +22,7 @@ declare module 'react-simple-maps' {
 
   export interface Geography {
     rsmKey: string;
+    id?: string;
     properties: {
       name: string;
       NAME?: string;

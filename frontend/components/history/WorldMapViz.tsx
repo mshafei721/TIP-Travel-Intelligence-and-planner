@@ -139,8 +139,8 @@ export function WorldMapViz({ countries, className = '' }: WorldMapVizProps) {
             <Geographies geography={GEO_URL}>
               {({ geographies }) =>
                 geographies.map((geo) => {
-                  const alpha3 = geo.properties.ISO_A3 || geo.id;
-                  const visit = visitedCountries.get(alpha3);
+                  const alpha3 = (geo.properties.ISO_A3 as string | undefined) || geo.id || '';
+                  const visit = alpha3 ? visitedCountries.get(alpha3) : undefined;
                   const countryName = geo.properties.NAME || geo.properties.name || 'Unknown';
 
                   return (
