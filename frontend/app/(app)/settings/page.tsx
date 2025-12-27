@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { SettingsSection, SettingsToggle, SettingsSelect } from '@/components/settings';
 import { getAllSettings, updateAllSettings, requestDataExport } from '@/lib/api/settings';
+import { useToast } from '@/components/ui/toast';
 import type {
   UserSettings,
   AppearanceSettingsUpdate,
@@ -32,6 +33,7 @@ export default function SettingsPage() {
   const [exportStatus, setExportStatus] = useState<'idle' | 'exporting' | 'success' | 'error'>(
     'idle',
   );
+  const toast = useToast();
 
   const fetchSettings = useCallback(async () => {
     setLoading(true);
@@ -61,10 +63,12 @@ export default function SettingsPage() {
       const response = await updateAllSettings(updates);
       setSettings(response.data);
       setSaveStatus('saved');
+      toast.success('Settings saved successfully');
       setTimeout(() => setSaveStatus('idle'), 2000);
     } catch (err) {
       setSaveStatus('error');
       console.error('Failed to save settings:', err);
+      toast.error('Failed to save settings. Please try again.');
       setTimeout(() => setSaveStatus('idle'), 3000);
     }
   };
@@ -74,10 +78,12 @@ export default function SettingsPage() {
     try {
       await requestDataExport('json');
       setExportStatus('success');
+      toast.success('Data export initiated! Check your email for the download link.');
       setTimeout(() => setExportStatus('idle'), 3000);
     } catch (err) {
       setExportStatus('error');
       console.error('Failed to export data:', err);
+      toast.error('Failed to export data. Please try again.');
       setTimeout(() => setExportStatus('idle'), 3000);
     }
   };

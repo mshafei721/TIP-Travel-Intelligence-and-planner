@@ -7,7 +7,7 @@
 import { createClient } from '@/lib/supabase/client';
 import type { CountryOverview } from '@/types/destination';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
 
 /**
  * Error types for destination report API
@@ -122,7 +122,7 @@ export async function fetchDestinationReport(
     }
 
     // Fetch report from backend
-    const response = await fetch(`${API_BASE_URL}/trips/${tripId}/report/destination`, {
+    const response = await fetch(`${API_BASE_URL}/api/trips/${tripId}/report/destination`, {
       headers: {
         Authorization: `Bearer ${session.access_token}`,
         'Content-Type': 'application/json',

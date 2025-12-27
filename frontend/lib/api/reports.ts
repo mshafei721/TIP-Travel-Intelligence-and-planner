@@ -35,7 +35,7 @@ export async function generateTripReport(tripId: string): Promise<{
 
     // Call backend to start report generation
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/trips/${tripId}/generate`,
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/trips/${tripId}/generate`,
       {
         method: 'POST',
         headers: {
@@ -86,12 +86,15 @@ export async function getTripGenerationStatus(
     }
 
     // Call backend status endpoint
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/trips/${tripId}/status`, {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${session.access_token}`,
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/trips/${tripId}/status`,
+      {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
       },
-    });
+    );
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ detail: 'Failed to get status' }));
@@ -136,7 +139,7 @@ export async function exportTripReportPDF(
 
     // Call backend PDF generation endpoint
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/trips/${tripId}/report/pdf`,
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/trips/${tripId}/report/pdf`,
       {
         method: 'POST',
         headers: {
@@ -215,7 +218,7 @@ export async function deleteTrip(tripId: string): Promise<{
 
     if (session) {
       try {
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/trips/${tripId}`, {
+        await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/trips/${tripId}`, {
           method: 'DELETE',
           headers: {
             Authorization: `Bearer ${session.access_token}`,
@@ -258,13 +261,16 @@ export async function shareTripReport(tripId: string): Promise<{
     }
 
     // Call backend to generate shareable link
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/trips/${tripId}/share`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${session.access_token}`,
-        'Content-Type': 'application/json',
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/trips/${tripId}/share`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
       },
-    });
+    );
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ detail: 'Share failed' }));

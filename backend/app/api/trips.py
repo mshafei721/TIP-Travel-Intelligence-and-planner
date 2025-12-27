@@ -270,10 +270,7 @@ async def create_trip(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to create trip: {str(e)}",
-        )
+        log_and_raise_http_error("create trip", e, "Failed to create trip. Please try again.")
 
 
 @router.post("/from-template/{template_id}", status_code=status.HTTP_201_CREATED, response_model=TripResponse)
@@ -384,10 +381,7 @@ async def create_trip_from_template(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to create trip from template: {str(e)}",
-        )
+        log_and_raise_http_error("create trip from template", e, "Failed to create trip from template. Please try again.")
 
 
 @router.put("/{trip_id}", response_model=TripResponse)
@@ -483,10 +477,7 @@ async def update_trip(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to update trip: {str(e)}",
-        )
+        log_and_raise_http_error("update trip", e, "Failed to update trip. Please try again.")
 
 
 @router.delete("/{trip_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -544,10 +535,7 @@ async def delete_trip(trip_id: str, token_payload: dict = Depends(verify_jwt_tok
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to delete trip: {str(e)}",
-        )
+        log_and_raise_http_error("delete trip", e, "Failed to delete trip. Please try again.")
 
 
 @router.post("/{trip_id}/generate", status_code=status.HTTP_202_ACCEPTED)
@@ -634,10 +622,7 @@ async def generate_trip_report(trip_id: str, token_payload: dict = Depends(verif
         except:
             pass
 
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to start report generation: {str(e)}",
-        )
+        log_and_raise_http_error("start report generation", e, "Failed to start report generation. Please try again.")
 
 
 @router.get("/{trip_id}/status")
@@ -729,10 +714,7 @@ async def get_generation_status(trip_id: str, token_payload: dict = Depends(veri
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get generation status: {str(e)}",
-        )
+        log_and_raise_http_error("get generation status", e, "Failed to get generation status. Please try again.")
 
 
 # Draft Management Endpoints
@@ -807,10 +789,7 @@ async def save_draft(draft_data: DraftSaveRequest, token_payload: dict = Depends
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to save draft: {str(e)}",
-        )
+        log_and_raise_http_error("save draft", e, "Failed to save draft. Please try again.")
 
 
 @router.get("/drafts")
@@ -858,10 +837,7 @@ async def get_drafts(token_payload: dict = Depends(verify_jwt_token)):
         return drafts
 
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get drafts: {str(e)}",
-        )
+        log_and_raise_http_error("get drafts", e, "Failed to get drafts. Please try again.")
 
 
 @router.put("/drafts/{draft_id}", response_model=DraftResponse)
@@ -950,10 +926,7 @@ async def update_draft(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to update draft: {str(e)}",
-        )
+        log_and_raise_http_error("update draft", e, "Failed to update draft. Please try again.")
 
 
 @router.delete("/drafts/{draft_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -989,10 +962,7 @@ async def delete_draft(draft_id: str, token_payload: dict = Depends(verify_jwt_t
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to delete draft: {str(e)}",
-        )
+        log_and_raise_http_error("delete draft", e, "Failed to delete draft. Please try again.")
 
 
 @router.get(
@@ -1102,13 +1072,10 @@ async def get_visa_report(trip_id: str, token_payload: dict = Depends(verify_jwt
         # Handle missing fields in content data
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Invalid report data format: missing field {str(e)}",
+            detail="Invalid report data format. Please regenerate the report.",
         )
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to retrieve visa report: {str(e)}",
-        )
+        log_and_raise_http_error("retrieve visa report", e, "Failed to retrieve visa report. Please try again.")
 
 
 @router.get(
@@ -1241,13 +1208,10 @@ async def get_destination_report(trip_id: str, token_payload: dict = Depends(ver
         # Handle missing fields in content data
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Invalid report data format: missing field {str(e)}",
+            detail="Invalid report data format. Please regenerate the report.",
         )
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to retrieve destination report: {str(e)}",
-        )
+        log_and_raise_http_error("retrieve destination report", e, "Failed to retrieve destination report. Please try again.")
 
 
 @router.get(
@@ -1355,10 +1319,7 @@ async def get_itinerary_report(trip_id: str, token_payload: dict = Depends(verif
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to retrieve itinerary report: {str(e)}",
-        )
+        log_and_raise_http_error("retrieve itinerary report", e, "Failed to retrieve itinerary report. Please try again.")
 
 
 @router.get(
@@ -1466,10 +1427,7 @@ async def get_flight_report(trip_id: str, token_payload: dict = Depends(verify_j
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to retrieve flight report: {str(e)}",
-        )
+        log_and_raise_http_error("retrieve flight report", e, "Failed to retrieve flight report. Please try again.")
 
 
 @router.get(
@@ -1584,10 +1542,7 @@ async def get_full_report(trip_id: str, token_payload: dict = Depends(verify_jwt
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to retrieve report: {str(e)}",
-        )
+        log_and_raise_http_error("retrieve report", e, "Failed to retrieve report. Please try again.")
 
 
 @router.post(
@@ -1683,15 +1638,9 @@ async def export_report_pdf(trip_id: str, token_payload: dict = Depends(verify_j
     except HTTPException:
         raise
     except PDFGenerationError as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"PDF generation failed: {str(e)}",
-        )
+        log_and_raise_http_error("generate PDF", e, "PDF generation failed. Please try again.")
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to export PDF: {str(e)}",
-        )
+        log_and_raise_http_error("export PDF", e, "Failed to export PDF. Please try again.")
 
 
 # ============================================================================
@@ -1797,10 +1746,7 @@ async def preview_changes(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to preview changes: {str(e)}",
-        )
+        log_and_raise_http_error("preview changes", e, "Failed to preview changes. Please try again.")
 
 
 @router.post("/{trip_id}/recalculate", response_model=RecalculationResponse)
@@ -1910,10 +1856,7 @@ async def recalculate_trip(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to trigger recalculation: {str(e)}",
-        )
+        log_and_raise_http_error("trigger recalculation", e, "Failed to trigger recalculation. Please try again.")
 
 
 @router.put("/{trip_id}/with-recalc", response_model=TripUpdateWithRecalcResponse)
@@ -2105,10 +2048,7 @@ async def update_trip_with_recalc(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to update trip: {str(e)}",
-        )
+        log_and_raise_http_error("update trip with recalc", e, "Failed to update trip. Please try again.")
 
 
 # ============================================================================
@@ -2180,10 +2120,7 @@ async def list_trip_versions(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to list versions: {str(e)}",
-        )
+        log_and_raise_http_error("list versions", e, "Failed to list versions. Please try again.")
 
 
 @router.post("/{trip_id}/versions/{version_number}/restore", response_model=TripVersionRestoreResponse)
@@ -2310,7 +2247,4 @@ async def restore_trip_version(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to restore version: {str(e)}",
-        )
+        log_and_raise_http_error("restore version", e, "Failed to restore version. Please try again.")

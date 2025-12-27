@@ -8,6 +8,7 @@ import { SavedTemplatesSection } from './SavedTemplatesSection';
 import { NotificationsSection } from './NotificationsSection';
 import { PrivacySection } from './PrivacySection';
 import { AccountSection } from './AccountSection';
+import { useToast } from '@/components/ui/toast';
 import type {
   ProfileSettings,
   LegacyUserProfile,
@@ -38,6 +39,7 @@ export interface ProfileSettingsPageProps {
  */
 export function ProfileSettingsPage({ initialSettings }: ProfileSettingsPageProps) {
   const router = useRouter();
+  const toast = useToast();
 
   // Profile update handlers
   const handleProfileUpdate = async (data: Partial<LegacyUserProfile>) => {
@@ -46,9 +48,11 @@ export function ProfileSettingsPage({ initialSettings }: ProfileSettingsPageProp
         display_name: data.name || undefined,
         avatar_url: data.photoUrl || undefined,
       });
+      toast.success('Profile updated successfully');
       router.refresh();
     } catch (error) {
       console.error('Failed to update profile:', error);
+      toast.error('Failed to update profile. Please try again.');
       throw error;
     }
   };
@@ -82,10 +86,12 @@ export function ProfileSettingsPage({ initialSettings }: ProfileSettingsPageProp
       // Update profile with new photo URL
       await profileApi.updateProfile({ avatar_url: publicUrl });
 
+      toast.success('Photo uploaded successfully');
       router.refresh();
       return publicUrl;
     } catch (error) {
       console.error('Photo upload failed:', error);
+      toast.error('Failed to upload photo. Please try again.');
       throw error;
     }
   };
@@ -98,9 +104,11 @@ export function ProfileSettingsPage({ initialSettings }: ProfileSettingsPageProp
         residency_status: data.residencyStatus,
         date_of_birth: data.dateOfBirth || null,
       });
+      toast.success('Traveler details updated');
       router.refresh();
     } catch (error) {
       console.error('Failed to update traveler details:', error);
+      toast.error('Failed to update traveler details. Please try again.');
       throw error;
     }
   };
@@ -113,9 +121,11 @@ export function ProfileSettingsPage({ initialSettings }: ProfileSettingsPageProp
         dietary_restrictions: data.dietaryRestrictions,
         accessibility_needs: data.accessibilityNeeds || null,
       });
+      toast.success('Travel preferences updated');
       router.refresh();
     } catch (error) {
       console.error('Failed to update preferences:', error);
+      toast.error('Failed to update preferences. Please try again.');
       throw error;
     }
   };
@@ -123,9 +133,11 @@ export function ProfileSettingsPage({ initialSettings }: ProfileSettingsPageProp
   const handleTemplateCreate = async (template: TripTemplateCreate) => {
     try {
       await templatesApi.createTemplate(template);
+      toast.success('Template created successfully');
       router.refresh();
     } catch (error) {
       console.error('Failed to create template:', error);
+      toast.error('Failed to create template. Please try again.');
       throw error;
     }
   };
@@ -133,9 +145,11 @@ export function ProfileSettingsPage({ initialSettings }: ProfileSettingsPageProp
   const handleTemplateEdit = async (id: string, template: TripTemplateUpdate) => {
     try {
       await templatesApi.updateTemplate(id, template);
+      toast.success('Template updated successfully');
       router.refresh();
     } catch (error) {
       console.error('Failed to edit template:', error);
+      toast.error('Failed to update template. Please try again.');
       throw error;
     }
   };
@@ -143,9 +157,11 @@ export function ProfileSettingsPage({ initialSettings }: ProfileSettingsPageProp
   const handleTemplateDelete = async (id: string) => {
     try {
       await templatesApi.deleteTemplate(id);
+      toast.success('Template deleted');
       router.refresh();
     } catch (error) {
       console.error('Failed to delete template:', error);
+      toast.error('Failed to delete template. Please try again.');
       throw error;
     }
   };
@@ -161,9 +177,11 @@ export function ProfileSettingsPage({ initialSettings }: ProfileSettingsPageProp
         currency: 'USD', // Keep existing
         units: 'metric', // Keep existing
       });
+      toast.success('Notification settings updated');
       router.refresh();
     } catch (error) {
       console.error('Failed to update notifications:', error);
+      toast.error('Failed to update notifications. Please try again.');
       throw error;
     }
   };
@@ -174,6 +192,8 @@ export function ProfileSettingsPage({ initialSettings }: ProfileSettingsPageProp
         confirmation: 'DELETE MY ACCOUNT',
       });
 
+      toast.info('Account deleted. Redirecting...');
+
       // Logout from Supabase
       const { createClient } = await import('@/lib/supabase/client');
       const supabase = createClient();
@@ -183,6 +203,7 @@ export function ProfileSettingsPage({ initialSettings }: ProfileSettingsPageProp
       router.push('/signup');
     } catch (error) {
       console.error('Failed to delete account:', error);
+      toast.error('Failed to delete account. Please try again.');
       throw error;
     }
   };

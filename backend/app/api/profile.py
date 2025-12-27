@@ -545,10 +545,10 @@ async def update_user_consent(
             "consent": result,
         }
 
-    except ValueError as e:
+    except ValueError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e),
+            detail="Invalid consent type or value provided.",
         )
     except Exception as e:
         log_and_raise_http_error("update consent", e, "Failed to update consent. Please try again.")

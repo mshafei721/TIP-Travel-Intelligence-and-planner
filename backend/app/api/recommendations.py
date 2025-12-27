@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.core.auth import verify_jwt_token
 from app.core.config import settings
+from app.core.errors import log_and_raise_http_error
 from app.services.recommendations import get_recommendations
 
 router = APIRouter(prefix="/recommendations", tags=["recommendations"])
@@ -38,7 +39,4 @@ async def list_recommendations(
         return {"recommendations": recommendations}
 
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to generate recommendations: {str(e)}",
-        )
+        log_and_raise_http_error("generate recommendations", e, "Failed to generate recommendations. Please try again.")

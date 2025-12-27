@@ -76,7 +76,7 @@ type VisaReportApi = {
  * @throws Error if report not found or API call fails
  */
 export async function fetchVisaReport(tripId: string): Promise<VisaIntelligence> {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  const apiUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
   const url = `${apiUrl}/api/trips/${tripId}/report/visa`;
   const token = await getAuthToken();
 
@@ -195,7 +195,7 @@ function transformVisaReport(apiData: VisaReportApi, tripId: string): VisaIntell
 export async function generateVisaReport(
   tripId: string,
 ): Promise<{ taskId: string; status: string }> {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  const apiUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
   const url = `${apiUrl}/api/trips/${tripId}/generate`;
   const token = await getAuthToken();
 
@@ -234,7 +234,7 @@ export async function checkGenerationStatus(tripId: string): Promise<{
   agentsFailed: string[];
   error: string | null;
 }> {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  const apiUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
   const url = `${apiUrl}/api/trips/${tripId}/status`;
   const token = await getAuthToken();
 

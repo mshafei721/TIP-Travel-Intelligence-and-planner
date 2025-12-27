@@ -13,6 +13,7 @@ import TripSummary from './TripSummary';
 import AutoSaveIndicator from './AutoSaveIndicator';
 import NavigationButtons from './NavigationButtons';
 import { validateStep, validateCompleteForm } from '@/lib/validation/trip-wizard-schemas';
+import { useToast } from '@/components/ui/toast';
 
 // TypeScript interfaces matching the spec
 export interface TravelerDetails {
@@ -66,6 +67,7 @@ const DRAFT_KEY = 'trip-wizard-draft';
 
 export default function TripCreationWizard() {
   const router = useRouter();
+  const toast = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [showSummary, setShowSummary] = useState(false);
   const [showSaveIndicator, setShowSaveIndicator] = useState(false);
@@ -214,7 +216,10 @@ export default function TripCreationWizard() {
       // Show validation errors
       setValidationErrors(validation.errors || null);
       setShowValidationErrors(true);
-      alert('Please check all fields and correct any errors before submitting.');
+      toast.warning(
+        'Please check all fields and correct any errors before submitting.',
+        'Validation Error',
+      );
       return;
     }
 
@@ -236,11 +241,12 @@ export default function TripCreationWizard() {
       setValidationErrors(null);
       setShowValidationErrors(false);
 
-      // Redirect to trip dashboard or report generation page
+      // Show success toast and redirect
+      toast.success('Trip created successfully! Redirecting...', 'Success');
       router.push(`/trips/${trip.id}`);
     } catch (error) {
       console.error('Submission error:', error);
-      alert('Failed to create trip. Please try again.');
+      toast.error('Failed to create trip. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
