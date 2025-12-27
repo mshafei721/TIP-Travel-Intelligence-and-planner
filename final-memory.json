@@ -1,7 +1,8 @@
 {
   "project_name": "TIP - Travel Intelligence and Planner",
   "review_started": "2025-12-26",
-  "review_status": "session_9_completed",
+  "review_status": "session_10_completed",
+  "oauth_status": "FIXED - PKCE error resolved, awaiting user test",
   "project_overview": {
     "description": "AI-powered travel intelligence platform providing decision-grade travel reports",
     "tech_stack": {
@@ -597,43 +598,36 @@
       "session": 9,
       "focus": "Go-Live Audit Remediation",
       "status": "completed",
+      "notes": "See session 10 for OAuth fix continuation"
+    },
+    {
+      "session": 10,
+      "focus": "Google OAuth PKCE Error Fix",
+      "status": "completed",
       "tasks": [
-        "Remove SUPABASE_SERVICE_ROLE_KEY from frontend (BLOCKER)",
-        "Make CI blocking on lint/type failures",
-        "Create rollback playbook documentation",
-        "Create k6 load test scripts",
-        "Create remediation plan for user"
+        "Investigate OAuth redirect loop issue",
+        "Fix PKCE code verifier mismatch error",
+        "Deploy fix to Vercel production"
       ],
       "findings": {
-        "blocker_resolved": {
-          "issue": "SUPABASE_SERVICE_ROLE_KEY exposed in frontend/.env.local",
-          "action": "Removed key, added security comment",
-          "user_action_required": "Rotate key in Supabase dashboard and update Railway"
+        "root_cause": {
+          "error": "400: code challenge does not match previously saved code verifier",
+          "cause": "OAuth authorization codes were leaking into the redirectTo URL parameter",
+          "url_example": "/login?code=xxx&redirectTo=/?code=xxx"
         },
-        "ci_hardened": {
+        "fix_applied": {
+          "file": "frontend/app/(auth)/auth/callback/route.ts",
           "changes": [
-            "Removed continue-on-error from ruff linter",
-            "Removed continue-on-error from black formatter",
-            "Removed continue-on-error from mypy type checker"
-          ],
-          "file": ".github/workflows/backend-ci.yml"
+            "Added sanitizeRedirectUrl() function to strip code/error params from redirectTo",
+            "Prevents nested OAuth codes from breaking PKCE flow",
+            "Defaults to /dashboard if sanitized path is empty"
+          ]
         },
-        "documentation_created": [
-          "docs/runbooks/rollback-playbook.md",
-          ".ship_plan/remediation-plan.md"
-        ],
-        "load_tests_created": [
-          "tests/load/k6-config.js",
-          "tests/load/smoke-test.js"
-        ],
-        "remaining_user_actions": [
-          "Rotate Supabase service role key",
-          "Update Railway with new key",
-          "Enable leaked password protection in Supabase",
-          "Rotate Mapbox token (also exposed)",
-          "Run k6 load tests to verify p95 < 300ms",
-          "Complete backup/restore drill"
-        ]
+        "deployment": {
+          "status": "deployed",
+          "vercel_url": "tip-travel-intelligence-and-planner.vercel.app",
+          "commit": "597757a"
+        }
       }
     }
   ],
