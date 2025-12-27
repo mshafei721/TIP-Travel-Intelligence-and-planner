@@ -1,66 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { TravelerDetails } from './TripCreationWizard';
+import { SearchableSelect } from '@/components/ui/SearchableSelect';
+import { getAllCountries } from '@/lib/geography';
+// SelectOption type imported internally by SearchableSelect
 
 interface Step1Props {
   data: TravelerDetails;
   onChange: (data: TravelerDetails) => void;
 }
-
-// Country list (top 50 most common)
-const COUNTRIES = [
-  'United States',
-  'United Kingdom',
-  'Canada',
-  'Australia',
-  'Germany',
-  'France',
-  'Italy',
-  'Spain',
-  'Japan',
-  'China',
-  'India',
-  'Brazil',
-  'Mexico',
-  'South Korea',
-  'Netherlands',
-  'Sweden',
-  'Switzerland',
-  'Norway',
-  'Denmark',
-  'Finland',
-  'Belgium',
-  'Austria',
-  'Poland',
-  'Greece',
-  'Portugal',
-  'Ireland',
-  'New Zealand',
-  'Singapore',
-  'UAE',
-  'Saudi Arabia',
-  'Turkey',
-  'Egypt',
-  'South Africa',
-  'Nigeria',
-  'Argentina',
-  'Chile',
-  'Colombia',
-  'Peru',
-  'Thailand',
-  'Vietnam',
-  'Philippines',
-  'Indonesia',
-  'Malaysia',
-  'Pakistan',
-  'Bangladesh',
-  'Israel',
-  'Russia',
-  'Ukraine',
-  'Czech Republic',
-  'Hungary',
-].sort();
 
 const RESIDENCY_STATUS = [
   'Citizen',
@@ -83,6 +32,9 @@ const AGE_CATEGORIES = [
 
 export default function Step1TravelerDetails({ data, onChange }: Step1Props) {
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Memoize country options for performance
+  const countryOptions = useMemo(() => getAllCountries(), []);
 
   // Validate email
   const validateEmail = (email: string) => {
@@ -217,36 +169,34 @@ export default function Step1TravelerDetails({ data, onChange }: Step1Props) {
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               Nationality <span className="text-red-600">*</span>
             </label>
-            <select
-              value={data.nationality}
-              onChange={(e) => updateField('nationality', e.target.value)}
-              className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-            >
-              <option value="">Select country...</option>
-              {COUNTRIES.map((country) => (
-                <option key={country} value={country}>
-                  {country}
-                </option>
-              ))}
-            </select>
+            <SearchableSelect
+              value={
+                data.nationality
+                  ? countryOptions.find((c) => c.label === data.nationality) || null
+                  : null
+              }
+              onChange={(option) => updateField('nationality', option?.label || '')}
+              options={countryOptions}
+              placeholder="Search for your nationality..."
+              noOptionsMessage="No countries found"
+            />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               Country of Residence <span className="text-red-600">*</span>
             </label>
-            <select
-              value={data.residenceCountry}
-              onChange={(e) => updateField('residenceCountry', e.target.value)}
-              className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-            >
-              <option value="">Select country...</option>
-              {COUNTRIES.map((country) => (
-                <option key={country} value={country}>
-                  {country}
-                </option>
-              ))}
-            </select>
+            <SearchableSelect
+              value={
+                data.residenceCountry
+                  ? countryOptions.find((c) => c.label === data.residenceCountry) || null
+                  : null
+              }
+              onChange={(option) => updateField('residenceCountry', option?.label || '')}
+              options={countryOptions}
+              placeholder="Search for your residence country..."
+              noOptionsMessage="No countries found"
+            />
           </div>
         </div>
 

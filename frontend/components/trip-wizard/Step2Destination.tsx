@@ -1,39 +1,44 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import type { Destination } from './TripCreationWizard';
+import { SearchableSelect, type SelectOption } from '@/components/ui/SearchableSelect';
+import { getAllCountries, getCitiesForCountry, getCountryCodeByName } from '@/lib/geography';
 
 interface Step2Props {
   data: Destination[];
   onChange: (data: Destination[]) => void;
 }
 
-// Popular cities by country (subset for autocomplete)
+// Popular destinations for quick selection
 const POPULAR_DESTINATIONS = [
-  { country: 'France', city: 'Paris' },
-  { country: 'France', city: 'Lyon' },
-  { country: 'France', city: 'Nice' },
-  { country: 'Italy', city: 'Rome' },
-  { country: 'Italy', city: 'Milan' },
-  { country: 'Italy', city: 'Venice' },
-  { country: 'Spain', city: 'Barcelona' },
-  { country: 'Spain', city: 'Madrid' },
-  { country: 'Japan', city: 'Tokyo' },
-  { country: 'Japan', city: 'Kyoto' },
-  { country: 'Japan', city: 'Osaka' },
-  { country: 'United Kingdom', city: 'London' },
-  { country: 'United States', city: 'New York' },
-  { country: 'United States', city: 'Los Angeles' },
-  { country: 'Thailand', city: 'Bangkok' },
-  { country: 'UAE', city: 'Dubai' },
-  { country: 'Singapore', city: 'Singapore' },
-  { country: 'Australia', city: 'Sydney' },
-  { country: 'Germany', city: 'Berlin' },
-  { country: 'Netherlands', city: 'Amsterdam' },
+  { country: 'France', city: 'Paris', countryCode: 'FR' },
+  { country: 'Italy', city: 'Rome', countryCode: 'IT' },
+  { country: 'Japan', city: 'Tokyo', countryCode: 'JP' },
+  { country: 'United Kingdom', city: 'London', countryCode: 'GB' },
+  { country: 'United States', city: 'New York', countryCode: 'US' },
+  { country: 'Thailand', city: 'Bangkok', countryCode: 'TH' },
 ];
 
 export default function Step2Destination({ data, onChange }: Step2Props) {
   const [isMultiCity, setIsMultiCity] = useState(data.length > 1);
+  // Track country codes for city dropdown filtering
+  const [countryCodes, setCountryCodes] = useState<(string | undefined)[]>(
+    data.map((d) => (d.country ? getCountryCodeByName(d.country) : undefined)),
+  );
+
+  // Memoize country options
+  const countryOptions = useMemo(() => getAllCountries(), []);
+
+  // Get city options for a specific destination index
+  const getCityOptions = useCallback(
+    (index: number): SelectOption[] => {
+      const code = countryCodes[index];
+      if (!code) return [];
+      return getCitiesForCountry(code);
+    },
+    [countryCodes],
+  );
 
   const updateDestination = (index: number, field: keyof Destination, value: string) => {
     const newDestinations = [...data];
@@ -41,14 +46,45 @@ export default function Step2Destination({ data, onChange }: Step2Props) {
     onChange(newDestinations);
   };
 
+  const handleCountryChange = (index: number, option: SelectOption | null) => {
+    const newDestinations = [...data];
+    const newCodes = [...countryCodes];
+
+    if (option) {
+      newDestinations[index] = {
+        ...newDestinations[index],
+        country: option.label,
+        city: '', // Clear city when country changes
+      };
+      newCodes[index] = option.value;
+    } else {
+      newDestinations[index] = {
+        ...newDestinations[index],
+        country: '',
+        city: '',
+      };
+      newCodes[index] = undefined;
+    }
+
+    setCountryCodes(newCodes);
+    onChange(newDestinations);
+  };
+
+  const handleCityChange = (index: number, option: SelectOption | null) => {
+    updateDestination(index, 'city', option?.value || '');
+  };
+
   const addDestination = () => {
     onChange([...data, { country: '', city: '' }]);
+    setCountryCodes([...countryCodes, undefined]);
   };
 
   const removeDestination = (index: number) => {
     if (data.length > 1) {
       const newDestinations = data.filter((_, i) => i !== index);
+      const newCodes = countryCodes.filter((_, i) => i !== index);
       onChange(newDestinations);
+      setCountryCodes(newCodes);
       if (newDestinations.length === 1) {
         setIsMultiCity(false);
       }
@@ -59,12 +95,23 @@ export default function Step2Destination({ data, onChange }: Step2Props) {
     if (!isMultiCity) {
       // Enabling multi-city: add second destination
       onChange([...data, { country: '', city: '' }]);
+      setCountryCodes([...countryCodes, undefined]);
       setIsMultiCity(true);
     } else {
       // Disabling multi-city: keep only first destination
       onChange([data[0]]);
+      setCountryCodes([countryCodes[0]]);
       setIsMultiCity(false);
     }
+  };
+
+  const handleQuickSelect = (index: number, dest: (typeof POPULAR_DESTINATIONS)[0]) => {
+    const newDestinations = [...data];
+    const newCodes = [...countryCodes];
+    newDestinations[index] = { country: dest.country, city: dest.city };
+    newCodes[index] = dest.countryCode;
+    onChange(newDestinations);
+    setCountryCodes(newCodes);
   };
 
   return (
@@ -135,19 +182,17 @@ export default function Step2Destination({ data, onChange }: Step2Props) {
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   Country <span className="text-red-600">*</span>
                 </label>
-                <input
-                  type="text"
-                  value={destination.country}
-                  onChange={(e) => updateDestination(index, 'country', e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  placeholder="e.g., Japan"
-                  list={`countries-${index}`}
+                <SearchableSelect
+                  value={
+                    destination.country
+                      ? countryOptions.find((c) => c.label === destination.country) || null
+                      : null
+                  }
+                  onChange={(option) => handleCountryChange(index, option)}
+                  options={countryOptions}
+                  placeholder="Search for a country..."
+                  noOptionsMessage="No countries found"
                 />
-                <datalist id={`countries-${index}`}>
-                  {[...new Set(POPULAR_DESTINATIONS.map((d) => d.country))].map((country) => (
-                    <option key={country} value={country} />
-                  ))}
-                </datalist>
               </div>
 
               {/* City */}
@@ -155,21 +200,20 @@ export default function Step2Destination({ data, onChange }: Step2Props) {
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   City <span className="text-red-600">*</span>
                 </label>
-                <input
-                  type="text"
-                  value={destination.city}
-                  onChange={(e) => updateDestination(index, 'city', e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  placeholder="e.g., Tokyo"
-                  list={`cities-${index}`}
+                <SearchableSelect
+                  value={
+                    destination.city ? { value: destination.city, label: destination.city } : null
+                  }
+                  onChange={(option) => handleCityChange(index, option)}
+                  options={getCityOptions(index)}
+                  placeholder={
+                    countryCodes[index] ? 'Search for a city...' : 'Select a country first'
+                  }
+                  isDisabled={!countryCodes[index]}
+                  noOptionsMessage={
+                    countryCodes[index] ? 'No cities found' : 'Please select a country first'
+                  }
                 />
-                <datalist id={`cities-${index}`}>
-                  {POPULAR_DESTINATIONS.filter(
-                    (d) => !destination.country || d.country === destination.country,
-                  ).map((d) => (
-                    <option key={`${d.country}-${d.city}`} value={d.city} />
-                  ))}
-                </datalist>
               </div>
             </div>
 
@@ -180,14 +224,11 @@ export default function Step2Destination({ data, onChange }: Step2Props) {
                   Popular destinations:
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {POPULAR_DESTINATIONS.slice(0, 6).map((dest, i) => (
+                  {POPULAR_DESTINATIONS.map((dest, i) => (
                     <button
                       key={i}
                       type="button"
-                      onClick={() => {
-                        updateDestination(index, 'country', dest.country);
-                        updateDestination(index, 'city', dest.city);
-                      }}
+                      onClick={() => handleQuickSelect(index, dest)}
                       className="px-3 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-full hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                     >
                       {dest.city}, {dest.country}
