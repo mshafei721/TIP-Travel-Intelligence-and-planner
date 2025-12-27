@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useTheme } from 'next-themes';
 import {
   Palette,
   Bell,
@@ -34,6 +35,7 @@ export default function SettingsPage() {
     'idle',
   );
   const toast = useToast();
+  const { setTheme } = useTheme();
 
   const fetchSettings = useCallback(async () => {
     setLoading(true);
@@ -58,6 +60,21 @@ export default function SettingsPage() {
     privacy?: PrivacySettingsUpdate;
     ai_preferences?: AIPreferencesUpdate;
   }) => {
+    if (!settings) return;
+
+    // Optimistic update - apply changes immediately
+    const previousSettings = settings;
+    setSettings((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        appearance: { ...prev.appearance, ...updates.appearance },
+        notifications: { ...prev.notifications, ...updates.notifications },
+        privacy: { ...prev.privacy, ...updates.privacy },
+        ai_preferences: { ...prev.ai_preferences, ...updates.ai_preferences },
+      };
+    });
+
     setSaveStatus('saving');
     try {
       const response = await updateAllSettings(updates);
@@ -66,6 +83,8 @@ export default function SettingsPage() {
       toast.success('Settings saved successfully');
       setTimeout(() => setSaveStatus('idle'), 2000);
     } catch (err) {
+      // Rollback on failure
+      setSettings(previousSettings);
       setSaveStatus('error');
       console.error('Failed to save settings:', err);
       toast.error('Failed to save settings. Please try again.');
@@ -158,9 +177,10 @@ export default function SettingsPage() {
             description="Choose your preferred color scheme"
             value={settings.appearance.theme}
             options={THEME_OPTIONS}
-            onChange={(theme) =>
-              saveSettings({ appearance: { theme: theme as 'light' | 'dark' | 'system' } })
-            }
+            onChange={(theme) => {
+              setTheme(theme); // Apply theme immediately
+              saveSettings({ appearance: { theme: theme as 'light' | 'dark' | 'system' } });
+            }}
           />
           <SettingsToggle
             label="Compact Mode"

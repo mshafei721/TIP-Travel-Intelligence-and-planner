@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { ProfileSettingsPage } from '@/components/profile/ProfileSettingsPage';
+import { ProfileError } from '@/components/profile/ProfileError';
 import { getProfile } from '@/lib/api/profile';
 import { listTemplates } from '@/lib/api/templates';
 import type { ProfileSettings, TravelerDetails } from '@/types/profile';
@@ -79,6 +80,6 @@ export default async function ProfilePage() {
     return <ProfileSettingsPage initialSettings={profileSettings} />;
   } catch (error) {
     console.error('Error fetching profile:', error);
-    throw new Error('Failed to load profile. Please try again later.');
+    return <ProfileError />;
   }
 }

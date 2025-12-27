@@ -1,8 +1,11 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { AppShell } from '@/components/shell';
 import { ToastProvider, ToastContainer } from '@/components/ui/toast';
 import { OfflineDetector } from '@/components/ui/OfflineDetector';
+import { createClient } from '@/lib/supabase/client';
 
 const navigationItems = [
   { label: 'Dashboard', href: '/dashboard' },
@@ -15,22 +18,73 @@ const navigationItems = [
   { label: 'Settings', href: '/settings' },
 ];
 
-// Mock user - will be replaced with real auth in Milestone 2
-const mockUser = {
-  name: 'Demo User',
-  // avatarUrl: undefined, // Will show initials
-};
+interface UserInfo {
+  name: string;
+  avatarUrl?: string;
+}
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const handleLogout = () => {
-    // TODO: Implement logout logic in Milestone 2
-    console.log('Logout clicked');
+  const router = useRouter();
+  const [user, setUser] = useState<UserInfo | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const supabase = createClient();
+
+    const getUser = async () => {
+      try {
+        const {
+          data: { user: authUser },
+        } = await supabase.auth.getUser();
+        if (authUser) {
+          setUser({
+            name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'User',
+            avatarUrl: authUser.user_metadata?.avatar_url,
+          });
+        }
+      } catch (error) {
+        console.error('Failed to get user:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    getUser();
+
+    // Listen for auth state changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setUser({
+          name:
+            session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
+          avatarUrl: session.user.user_metadata?.avatar_url,
+        });
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const handleLogout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push('/login');
   };
 
   return (
     <ToastProvider>
       <OfflineDetector />
-      <AppShell navigationItems={navigationItems} user={mockUser} onLogout={handleLogout}>
+      <AppShell
+        navigationItems={navigationItems}
+        user={isLoading ? { name: 'Loading...' } : user || undefined}
+        onLogout={handleLogout}
+      >
         {children}
       </AppShell>
       <ToastContainer />

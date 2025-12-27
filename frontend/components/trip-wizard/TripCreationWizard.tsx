@@ -40,12 +40,20 @@ export interface Destination {
   city: string;
 }
 
+export type TripPurposeType =
+  | 'Tourism'
+  | 'Business'
+  | 'Education'
+  | 'Family Visit'
+  | 'Medical'
+  | 'Other';
+
 export interface TripDetails {
   departureDate: string;
   returnDate: string;
   budget: number;
   currency: 'USD' | 'EUR' | 'GBP' | 'JPY' | 'AUD' | 'CAD';
-  tripPurpose: 'Tourism' | 'Business' | 'Education' | 'Family Visit' | 'Medical' | 'Other' | '';
+  tripPurposes: TripPurposeType[];
 }
 
 export interface TripPreferences {
@@ -95,7 +103,7 @@ export default function TripCreationWizard() {
       returnDate: '',
       budget: 0,
       currency: 'USD',
-      tripPurpose: '',
+      tripPurposes: [],
     },
     preferences: {
       travelStyle: '',

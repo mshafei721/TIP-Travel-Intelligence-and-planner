@@ -72,6 +72,15 @@ const RESIDENCY_STATUS = [
 
 const CONTACT_PREFERENCES = ['Email', 'SMS', 'WhatsApp'];
 
+// Age categories for traveler selection
+const AGE_CATEGORIES = [
+  { value: 0, label: 'Infant (< 2 years)' },
+  { value: 2, label: 'Child (2-12 years)' },
+  { value: 13, label: 'Teen (13-17 years)' },
+  { value: 18, label: 'Adult (18-64 years)' },
+  { value: 65, label: 'Senior (65+ years)' },
+];
+
 export default function Step1TravelerDetails({ data, onChange }: Step1Props) {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -305,15 +314,19 @@ export default function Step1TravelerDetails({ data, onChange }: Step1Props) {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {data.partyAges.map((age, index) => (
                 <div key={index}>
-                  <input
-                    type="number"
-                    min="0"
-                    max="120"
+                  <label className="sr-only">Age of Person {index + 2}</label>
+                  <select
                     value={age || ''}
                     onChange={(e) => updatePartyAge(index, parseInt(e.target.value) || 0)}
                     className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    placeholder={`Person ${index + 2}`}
-                  />
+                  >
+                    <option value="">Person {index + 2}</option>
+                    {AGE_CATEGORIES.map((cat) => (
+                      <option key={cat.value} value={cat.value}>
+                        {cat.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               ))}
             </div>

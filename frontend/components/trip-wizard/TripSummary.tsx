@@ -101,7 +101,7 @@ export default function TripSummary({ formData, onEdit }: TripSummaryProps) {
               label="Budget"
               value={`${tripDetails.currency} ${tripDetails.budget.toLocaleString()}`}
             />
-            <SummaryItem label="Purpose" value={tripDetails.tripPurpose} />
+            <SummaryItem label="Purpose" value={tripDetails.tripPurposes.join(', ')} />
           </div>
         </SummaryCard>
 

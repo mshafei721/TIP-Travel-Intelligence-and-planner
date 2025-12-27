@@ -1,5 +1,7 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
+export type TripStatus = 'draft' | 'pending' | 'processing' | 'completed' | 'failed';
+
 export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
@@ -75,6 +77,50 @@ export type Database = {
           user_id?: string;
         };
       };
+      trips: {
+        Row: {
+          id: string;
+          user_id: string;
+          title: string;
+          status: TripStatus;
+          traveler_details: Json;
+          destinations: Json;
+          trip_details: Json;
+          preferences: Json;
+          auto_delete_at: string | null;
+          deleted_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          title: string;
+          status?: TripStatus;
+          traveler_details: Json;
+          destinations: Json;
+          trip_details: Json;
+          preferences: Json;
+          auto_delete_at?: string | null;
+          deleted_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          title?: string;
+          status?: TripStatus;
+          traveler_details?: Json;
+          destinations?: Json;
+          trip_details?: Json;
+          preferences?: Json;
+          auto_delete_at?: string | null;
+          deleted_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
     };
     Views: {
       [_ in never]: never;
@@ -83,7 +129,7 @@ export type Database = {
       [_ in never]: never;
     };
     Enums: {
-      [_ in never]: never;
+      trip_status: TripStatus;
     };
     CompositeTypes: {
       [_ in never]: never;

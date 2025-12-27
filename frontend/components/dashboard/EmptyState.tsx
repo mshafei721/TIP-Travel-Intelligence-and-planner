@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { analytics } from '@/lib/analytics';
 
@@ -8,9 +9,15 @@ interface EmptyStateProps {
 }
 
 export function EmptyState({ onCreateTrip }: EmptyStateProps) {
+  const router = useRouter();
+
   const handleClick = () => {
     analytics.createTripStart('empty_state');
-    onCreateTrip?.();
+    if (onCreateTrip) {
+      onCreateTrip();
+    } else {
+      router.push('/trips/create');
+    }
   };
 
   return (
@@ -39,7 +46,7 @@ export function EmptyState({ onCreateTrip }: EmptyStateProps) {
         </h2>
 
         {/* Description */}
-        <p className="mb-6 max-w-md text-slate-600 dark:text-slate-400">
+        <p className="mx-auto mb-6 max-w-md text-slate-600 dark:text-slate-400">
           Start planning your next adventure with AI-powered travel intelligence. Get accurate visa
           requirements, destination insights, weather forecasts, and personalized itineraries—all in
           one comprehensive report.

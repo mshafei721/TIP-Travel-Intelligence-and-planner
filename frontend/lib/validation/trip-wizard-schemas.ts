@@ -179,9 +179,9 @@ export const tripDetailsSchema = z
       message: 'Currency is required',
     }),
 
-    tripPurpose: z.enum(['Tourism', 'Business', 'Education', 'Family Visit', 'Medical', 'Other'], {
-      message: 'Trip purpose is required',
-    }),
+    tripPurposes: z
+      .array(z.enum(['Tourism', 'Business', 'Education', 'Family Visit', 'Medical', 'Other']))
+      .min(1, 'Please select at least one trip purpose'),
   })
   .refine(
     (data) => {

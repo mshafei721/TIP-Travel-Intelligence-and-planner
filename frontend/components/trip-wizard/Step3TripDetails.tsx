@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { TripDetails } from './TripCreationWizard';
+import type { TripDetails, TripPurposeType } from './TripCreationWizard';
 
 interface Step3Props {
   data: TripDetails;
@@ -40,6 +40,13 @@ export default function Step3TripDetails({ data, onChange }: Step3Props) {
         return newErrors;
       });
     }
+  };
+
+  const togglePurpose = (purpose: TripPurposeType) => {
+    const current = data.tripPurposes || [];
+    const isSelected = current.includes(purpose);
+    const newPurposes = isSelected ? current.filter((p) => p !== purpose) : [...current, purpose];
+    updateField('tripPurposes', newPurposes);
   };
 
   // Validate dates
@@ -205,28 +212,49 @@ export default function Step3TripDetails({ data, onChange }: Step3Props) {
           </div>
         )}
 
-        {/* Trip Purpose */}
+        {/* Trip Purpose - Multi-select */}
         <div className="animate-slideInUp" style={{ animationDelay: '200ms' }}>
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
             Trip Purpose <span className="text-red-600">*</span>
           </label>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">Select all that apply</p>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {TRIP_PURPOSES.map((purpose) => (
-              <button
-                key={purpose.value}
-                type="button"
-                onClick={() =>
-                  updateField('tripPurpose', purpose.value as TripDetails['tripPurpose'])
-                }
-                className={`p-4 rounded-xl border-2 transition-all duration-200 text-left hover:shadow-md ${data.tripPurpose === purpose.value ? 'border-blue-600 bg-blue-50 dark:bg-blue-950/30 shadow-md' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300'}`}
-              >
-                <div className="text-2xl mb-2">{purpose.icon}</div>
-                <div className="font-semibold text-slate-900 dark:text-slate-100 mb-0.5">
-                  {purpose.value}
-                </div>
-                <div className="text-xs text-slate-600 dark:text-slate-400">{purpose.desc}</div>
-              </button>
-            ))}
+            {TRIP_PURPOSES.map((purpose) => {
+              const isSelected = data.tripPurposes?.includes(purpose.value as TripPurposeType);
+              return (
+                <button
+                  key={purpose.value}
+                  type="button"
+                  onClick={() => togglePurpose(purpose.value as TripPurposeType)}
+                  className={`p-4 rounded-xl border-2 transition-all duration-200 text-left hover:shadow-md ${isSelected ? 'border-blue-600 bg-blue-50 dark:bg-blue-950/30 shadow-md' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300'}`}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="text-2xl mb-2">{purpose.icon}</div>
+                    {isSelected && (
+                      <div className="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center">
+                        <svg
+                          className="w-3 h-3 text-white"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={3}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                  <div className="font-semibold text-slate-900 dark:text-slate-100 mb-0.5">
+                    {purpose.value}
+                  </div>
+                  <div className="text-xs text-slate-600 dark:text-slate-400">{purpose.desc}</div>
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
