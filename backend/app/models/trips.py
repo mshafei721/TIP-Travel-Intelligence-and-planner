@@ -412,6 +412,78 @@ class RecalculationResponse(BaseModel):
         }
 
 
+class RecalculationStatusResponse(BaseModel):
+    """Response model for recalculation status check."""
+
+    task_id: str
+    status: RecalculationStatusEnum
+    progress: float = 0.0  # 0-100 percentage
+    completed_agents: list[str] = []
+    pending_agents: list[str] = []
+    current_agent: str | None = None
+    started_at: datetime | None = None
+    estimated_completion: datetime | None = None
+    error: str | None = None
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "task_id": "abc123",
+                "status": "in_progress",
+                "progress": 45.0,
+                "completed_agents": ["visa", "weather"],
+                "pending_agents": ["currency", "attractions"],
+                "current_agent": "currency",
+                "started_at": "2024-01-15T10:30:00Z",
+                "estimated_completion": "2024-01-15T10:32:00Z",
+                "error": None,
+            }
+        }
+
+
+class RecalculationCancelResponse(BaseModel):
+    """Response model for recalculation cancellation."""
+
+    task_id: str
+    cancelled: bool
+    message: str
+    completed_agents: list[str] = []  # Agents that completed before cancellation
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "task_id": "abc123",
+                "cancelled": True,
+                "message": "Recalculation cancelled successfully",
+                "completed_agents": ["visa", "weather"],
+            }
+        }
+
+
+class VersionCompareResponse(BaseModel):
+    """Response model for version comparison."""
+
+    trip_id: str
+    version_a: int
+    version_b: int
+    changes: list[FieldChange]
+    summary: str
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "trip_id": "abc123",
+                "version_a": 1,
+                "version_b": 3,
+                "changes": [
+                    {"field": "destination", "old_value": "France", "new_value": "Japan"},
+                    {"field": "budget", "old_value": 5000, "new_value": 8000},
+                ],
+                "summary": "2 fields changed between version 1 and version 3",
+            }
+        }
+
+
 class TripUpdateWithRecalcRequest(BaseModel):
     """Request model for updating trip with recalculation."""
 

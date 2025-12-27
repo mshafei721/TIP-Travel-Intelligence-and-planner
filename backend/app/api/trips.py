@@ -39,9 +39,11 @@ from app.models.trips import (
     DraftResponse,
     DraftSaveRequest,
     FieldChange,
+    RecalculationCancelResponse,
     RecalculationRequest,
     RecalculationResponse,
     RecalculationStatusEnum,
+    RecalculationStatusResponse,
     TripCreateRequest,
     TripResponse,
     TripStatus,
@@ -51,6 +53,7 @@ from app.models.trips import (
     TripVersionListResponse,
     TripVersionRestoreResponse,
     TripVersionSummary,
+    VersionCompareResponse,
 )
 from app.services.change_detector import ChangeDetector
 
@@ -1859,6 +1862,229 @@ async def recalculate_trip(
         log_and_raise_http_error("trigger recalculation", e, "Failed to trigger recalculation. Please try again.")
 
 
+@router.get("/{trip_id}/recalculation/status", response_model=RecalculationStatusResponse)
+async def get_recalculation_status(
+    trip_id: str,
+    token_payload: dict = Depends(verify_jwt_token),
+):
+    """
+    Get the status of an ongoing recalculation for a trip.
+
+    Path Parameters:
+    - trip_id: UUID of the trip
+
+    Returns:
+    - task_id: Celery task ID
+    - status: Current status (queued, in_progress, completed, failed)
+    - progress: Percentage complete (0-100)
+    - completed_agents: List of agents that have completed
+    - pending_agents: List of agents still pending
+    - current_agent: Agent currently being processed
+    - started_at: When recalculation started
+    - estimated_completion: Estimated completion time
+    - error: Error message if failed
+    """
+    user_id = token_payload["user_id"]
+
+    try:
+        # Verify trip exists and belongs to user
+        trip_response = (
+            supabase.table("trips")
+            .select("id, status, recalc_task_id, recalc_started_at")
+            .eq("id", trip_id)
+            .eq("user_id", user_id)
+            .execute()
+        )
+
+        if not trip_response.data or len(trip_response.data) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Trip {trip_id} not found",
+            )
+
+        trip = trip_response.data[0]
+        task_id = trip.get("recalc_task_id")
+
+        # If no active recalculation
+        if not task_id or trip.get("status") != TripStatus.PROCESSING.value:
+            return RecalculationStatusResponse(
+                task_id=task_id or "",
+                status=RecalculationStatusEnum.COMPLETED,
+                progress=100.0,
+                completed_agents=[],
+                pending_agents=[],
+                current_agent=None,
+                started_at=None,
+                estimated_completion=None,
+                error=None,
+            )
+
+        # Try to get Celery task status
+        try:
+            from celery.result import AsyncResult
+            from app.core.celery_app import celery_app
+
+            result = AsyncResult(task_id, app=celery_app)
+
+            if result.state == "PENDING":
+                return RecalculationStatusResponse(
+                    task_id=task_id,
+                    status=RecalculationStatusEnum.QUEUED,
+                    progress=0.0,
+                    completed_agents=[],
+                    pending_agents=[],
+                    current_agent=None,
+                    started_at=trip.get("recalc_started_at"),
+                    estimated_completion=None,
+                    error=None,
+                )
+            elif result.state == "STARTED" or result.state == "PROGRESS":
+                info = result.info or {}
+                return RecalculationStatusResponse(
+                    task_id=task_id,
+                    status=RecalculationStatusEnum.IN_PROGRESS,
+                    progress=info.get("progress", 0.0),
+                    completed_agents=info.get("completed_agents", []),
+                    pending_agents=info.get("pending_agents", []),
+                    current_agent=info.get("current_agent"),
+                    started_at=trip.get("recalc_started_at"),
+                    estimated_completion=info.get("estimated_completion"),
+                    error=None,
+                )
+            elif result.state == "SUCCESS":
+                return RecalculationStatusResponse(
+                    task_id=task_id,
+                    status=RecalculationStatusEnum.COMPLETED,
+                    progress=100.0,
+                    completed_agents=result.result.get("completed_agents", []) if result.result else [],
+                    pending_agents=[],
+                    current_agent=None,
+                    started_at=trip.get("recalc_started_at"),
+                    estimated_completion=None,
+                    error=None,
+                )
+            elif result.state == "FAILURE":
+                return RecalculationStatusResponse(
+                    task_id=task_id,
+                    status=RecalculationStatusEnum.FAILED,
+                    progress=0.0,
+                    completed_agents=[],
+                    pending_agents=[],
+                    current_agent=None,
+                    started_at=trip.get("recalc_started_at"),
+                    estimated_completion=None,
+                    error=str(result.result) if result.result else "Unknown error",
+                )
+        except ImportError:
+            # Celery not available, return based on trip status
+            pass
+
+        # Default response based on trip status
+        return RecalculationStatusResponse(
+            task_id=task_id or "",
+            status=RecalculationStatusEnum.IN_PROGRESS if trip.get("status") == TripStatus.PROCESSING.value else RecalculationStatusEnum.COMPLETED,
+            progress=50.0 if trip.get("status") == TripStatus.PROCESSING.value else 100.0,
+            completed_agents=[],
+            pending_agents=[],
+            current_agent=None,
+            started_at=trip.get("recalc_started_at"),
+            estimated_completion=None,
+            error=None,
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        log_and_raise_http_error("get recalculation status", e, "Failed to get recalculation status.")
+
+
+@router.post("/{trip_id}/recalculation/cancel", response_model=RecalculationCancelResponse)
+async def cancel_recalculation(
+    trip_id: str,
+    token_payload: dict = Depends(verify_jwt_token),
+):
+    """
+    Cancel an ongoing recalculation for a trip.
+
+    Path Parameters:
+    - trip_id: UUID of the trip
+
+    Returns:
+    - task_id: The cancelled task ID
+    - cancelled: Whether cancellation was successful
+    - message: Status message
+    - completed_agents: Agents that completed before cancellation
+    """
+    user_id = token_payload["user_id"]
+
+    try:
+        # Verify trip exists and belongs to user
+        trip_response = (
+            supabase.table("trips")
+            .select("id, status, recalc_task_id")
+            .eq("id", trip_id)
+            .eq("user_id", user_id)
+            .execute()
+        )
+
+        if not trip_response.data or len(trip_response.data) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Trip {trip_id} not found",
+            )
+
+        trip = trip_response.data[0]
+        task_id = trip.get("recalc_task_id")
+
+        # Check if there's an active recalculation
+        if trip.get("status") != TripStatus.PROCESSING.value:
+            return RecalculationCancelResponse(
+                task_id=task_id or "",
+                cancelled=False,
+                message="No active recalculation to cancel",
+                completed_agents=[],
+            )
+
+        completed_agents = []
+
+        # Try to revoke Celery task
+        if task_id:
+            try:
+                from celery.result import AsyncResult
+                from app.core.celery_app import celery_app
+
+                result = AsyncResult(task_id, app=celery_app)
+
+                # Get completed agents before revoking
+                if result.info and isinstance(result.info, dict):
+                    completed_agents = result.info.get("completed_agents", [])
+
+                # Revoke the task
+                celery_app.control.revoke(task_id, terminate=True)
+
+            except ImportError:
+                # Celery not available
+                pass
+
+        # Update trip status back to completed (or previous state)
+        supabase.table("trips").update({
+            "status": TripStatus.COMPLETED.value,
+            "recalc_task_id": None,
+        }).eq("id", trip_id).execute()
+
+        return RecalculationCancelResponse(
+            task_id=task_id or "",
+            cancelled=True,
+            message="Recalculation cancelled successfully",
+            completed_agents=completed_agents,
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        log_and_raise_http_error("cancel recalculation", e, "Failed to cancel recalculation.")
+
+
 @router.put("/{trip_id}/with-recalc", response_model=TripUpdateWithRecalcResponse)
 async def update_trip_with_recalc(
     trip_id: str,
@@ -2121,6 +2347,135 @@ async def list_trip_versions(
         raise
     except Exception as e:
         log_and_raise_http_error("list versions", e, "Failed to list versions. Please try again.")
+
+
+@router.get("/{trip_id}/versions/compare", response_model=VersionCompareResponse)
+async def compare_trip_versions(
+    trip_id: str,
+    version_a: int = Query(..., ge=1, description="First version number to compare"),
+    version_b: int = Query(..., ge=1, description="Second version number to compare"),
+    token_payload: dict = Depends(verify_jwt_token),
+):
+    """
+    Compare two versions of a trip to see what changed.
+
+    Path Parameters:
+    - trip_id: UUID of the trip
+
+    Query Parameters:
+    - version_a: First version number to compare
+    - version_b: Second version number to compare
+
+    Returns:
+    - trip_id: The trip ID
+    - version_a: First version number
+    - version_b: Second version number
+    - changes: List of field changes between versions
+    - summary: Human-readable summary of changes
+    """
+    user_id = token_payload["user_id"]
+
+    try:
+        # Verify trip exists and belongs to user
+        trip_response = (
+            supabase.table("trips")
+            .select("id")
+            .eq("id", trip_id)
+            .eq("user_id", user_id)
+            .execute()
+        )
+
+        if not trip_response.data or len(trip_response.data) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Trip {trip_id} not found",
+            )
+
+        # Ensure version_a < version_b for consistent comparison
+        v_min, v_max = min(version_a, version_b), max(version_a, version_b)
+
+        # Fetch both versions
+        versions_response = (
+            supabase.table("trip_versions")
+            .select("*")
+            .eq("trip_id", trip_id)
+            .in_("version_number", [v_min, v_max])
+            .execute()
+        )
+
+        if not versions_response.data or len(versions_response.data) < 2:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"One or both versions not found. Available versions may not include {version_a} and {version_b}.",
+            )
+
+        # Map versions by number
+        version_map = {v["version_number"]: v for v in versions_response.data}
+
+        if v_min not in version_map or v_max not in version_map:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Version {v_min if v_min not in version_map else v_max} not found",
+            )
+
+        data_a = version_map[v_min].get("trip_data", {})
+        data_b = version_map[v_max].get("trip_data", {})
+
+        # Compare the two versions
+        changes = []
+        all_keys = set(data_a.keys()) | set(data_b.keys())
+
+        def compare_values(key: str, val_a, val_b, prefix: str = ""):
+            """Recursively compare values and generate FieldChange objects."""
+            field_name = f"{prefix}{key}" if prefix else key
+
+            if val_a == val_b:
+                return []
+
+            # If both are dicts, compare nested
+            if isinstance(val_a, dict) and isinstance(val_b, dict):
+                nested_changes = []
+                nested_keys = set(val_a.keys()) | set(val_b.keys())
+                for nested_key in nested_keys:
+                    nested_changes.extend(
+                        compare_values(
+                            nested_key,
+                            val_a.get(nested_key),
+                            val_b.get(nested_key),
+                            f"{field_name}.",
+                        )
+                    )
+                return nested_changes
+
+            # Different values
+            return [FieldChange(field=field_name, old_value=val_a, new_value=val_b)]
+
+        for key in all_keys:
+            val_a = data_a.get(key)
+            val_b = data_b.get(key)
+            changes.extend(compare_values(key, val_a, val_b))
+
+        # Generate summary
+        change_count = len(changes)
+        if change_count == 0:
+            summary = f"No changes between version {version_a} and version {version_b}"
+        elif change_count == 1:
+            summary = f"1 field changed between version {version_a} and version {version_b}"
+        else:
+            summary = f"{change_count} fields changed between version {version_a} and version {version_b}"
+
+        return VersionCompareResponse(
+            trip_id=trip_id,
+            version_a=version_a,
+            version_b=version_b,
+            changes=changes,
+            summary=summary,
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        log_and_raise_http_error("compare versions", e, "Failed to compare versions. Please try again.")
 
 
 @router.post("/{trip_id}/versions/{version_number}/restore", response_model=TripVersionRestoreResponse)

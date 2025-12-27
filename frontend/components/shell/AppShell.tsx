@@ -98,13 +98,14 @@ export function AppShell({ children, navigationItems, user, onLogout }: AppShell
               <UserMenu
                 user={user}
                 onLogout={onLogout}
+                onNavigate={() => setMobileMenuOpen(false)}
                 className="mb-6 border-b border-slate-200 pb-6 dark:border-slate-800"
                 isMobile
               />
             </>
           )}
 
-          <MainNav items={navigationItems} isMobile />
+          <MainNav items={navigationItems} isMobile onNavigate={() => setMobileMenuOpen(false)} />
         </div>
       </div>
 

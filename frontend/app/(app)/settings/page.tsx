@@ -13,6 +13,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { SettingsSection, SettingsToggle, SettingsSelect } from '@/components/settings';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { getAllSettings, updateAllSettings, requestDataExport } from '@/lib/api/settings';
 import { useToast } from '@/components/ui/toast';
 import type {
@@ -132,38 +133,36 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">Settings</h1>
-          <p className="mt-1 text-slate-600 dark:text-slate-400">
-            Manage your account preferences and customization
-          </p>
-        </div>
-
-        {/* Save Status Indicator */}
-        {saveStatus !== 'idle' && (
-          <div className="flex items-center gap-2">
-            {saveStatus === 'saving' && (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
-                <span className="text-sm text-slate-600">Saving...</span>
-              </>
-            )}
-            {saveStatus === 'saved' && (
-              <>
-                <CheckCircle className="h-4 w-4 text-green-600" />
-                <span className="text-sm text-green-600">Saved</span>
-              </>
-            )}
-            {saveStatus === 'error' && (
-              <>
-                <AlertCircle className="h-4 w-4 text-red-600" />
-                <span className="text-sm text-red-600">Failed to save</span>
-              </>
-            )}
-          </div>
-        )}
-      </div>
+      <PageHeader
+        title="Settings"
+        description="Manage your account preferences and customization"
+        backHref="/dashboard"
+        backLabel="Back to Dashboard"
+        actions={
+          saveStatus !== 'idle' ? (
+            <div className="flex items-center gap-2">
+              {saveStatus === 'saving' && (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+                  <span className="text-sm text-slate-600">Saving...</span>
+                </>
+              )}
+              {saveStatus === 'saved' && (
+                <>
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <span className="text-sm text-green-600">Saved</span>
+                </>
+              )}
+              {saveStatus === 'error' && (
+                <>
+                  <AlertCircle className="h-4 w-4 text-red-600" />
+                  <span className="text-sm text-red-600">Failed to save</span>
+                </>
+              )}
+            </div>
+          ) : undefined
+        }
+      />
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Appearance Settings */}

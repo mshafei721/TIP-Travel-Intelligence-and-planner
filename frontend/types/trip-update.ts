@@ -168,6 +168,31 @@ export interface RestoreVersionResponse {
   message: string;
 }
 
+export interface VersionCompareResponse {
+  trip_id: string;
+  version_a: number;
+  version_b: number;
+  changes: BackendFieldChange[];
+  summary: string;
+}
+
+/**
+ * Backend-compatible field change type (snake_case)
+ * Used for API responses that haven't been transformed
+ */
+export interface BackendFieldChange {
+  field: string;
+  old_value: unknown;
+  new_value: unknown;
+}
+
+export interface RecalculationCancelResponse {
+  task_id: string;
+  cancelled: boolean;
+  message: string;
+  completed_agents: string[];
+}
+
 // ============================================
 // UI State Types
 // ============================================

@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { X } from 'lucide-react';
 import { type z } from 'zod';
 import StepIndicator from './StepIndicator';
 import ProgressBar from './ProgressBar';
@@ -274,6 +276,16 @@ export default function TripCreationWizard() {
       />
 
       <div className="relative max-w-4xl mx-auto px-4">
+        {/* Close Button */}
+        <Link
+          href="/trips"
+          className="absolute top-0 right-4 md:right-0 flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 transition-colors"
+          title="Cancel and return to trips"
+        >
+          <span className="hidden sm:inline">Cancel</span>
+          <X className="h-5 w-5" />
+        </Link>
+
         {/* Header */}
         <div className="text-center mb-8 md:mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-slate-50 mb-3 tracking-tight">

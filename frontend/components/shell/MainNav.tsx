@@ -12,9 +12,10 @@ export interface MainNavProps {
   items: NavigationItem[];
   className?: string;
   isMobile?: boolean;
+  onNavigate?: () => void;
 }
 
-export function MainNav({ items, className = '', isMobile = false }: MainNavProps) {
+export function MainNav({ items, className = '', isMobile = false, onNavigate }: MainNavProps) {
   const pathname = usePathname();
 
   if (isMobile) {
@@ -26,6 +27,7 @@ export function MainNav({ items, className = '', isMobile = false }: MainNavProp
             <Link
               key={item.href}
               href={item.href}
+              onClick={onNavigate}
               className={`rounded-lg px-4 py-2.5 text-left text-base font-medium transition-colors ${
                 isActive
                   ? 'bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400'
