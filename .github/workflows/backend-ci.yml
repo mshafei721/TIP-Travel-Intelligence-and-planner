@@ -47,13 +47,11 @@ jobs:
         run: |
           cd backend
           ruff check app/ --output-format=github
-        continue-on-error: true  # Don't fail CI on lint errors (temporary)
 
       - name: Check code formatting with Black
         run: |
           cd backend
           black --check app/
-        continue-on-error: true  # Don't fail CI on format errors (temporary)
 
   # ==============================================
   # Job 2: Unit Tests
@@ -191,4 +189,3 @@ jobs:
         run: |
           cd backend
           mypy app/ --ignore-missing-imports
-        continue-on-error: true  # Don't fail CI on type errors (for now)

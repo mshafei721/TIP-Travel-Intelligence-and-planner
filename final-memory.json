@@ -1,7 +1,7 @@
 {
   "project_name": "TIP - Travel Intelligence and Planner",
   "review_started": "2025-12-26",
-  "review_status": "session_8_completed",
+  "review_status": "session_9_completed",
   "project_overview": {
     "description": "AI-powered travel intelligence platform providing decision-grade travel reports",
     "tech_stack": {
@@ -592,6 +592,49 @@
           ]
         }
       }
+    },
+    {
+      "session": 9,
+      "focus": "Go-Live Audit Remediation",
+      "status": "completed",
+      "tasks": [
+        "Remove SUPABASE_SERVICE_ROLE_KEY from frontend (BLOCKER)",
+        "Make CI blocking on lint/type failures",
+        "Create rollback playbook documentation",
+        "Create k6 load test scripts",
+        "Create remediation plan for user"
+      ],
+      "findings": {
+        "blocker_resolved": {
+          "issue": "SUPABASE_SERVICE_ROLE_KEY exposed in frontend/.env.local",
+          "action": "Removed key, added security comment",
+          "user_action_required": "Rotate key in Supabase dashboard and update Railway"
+        },
+        "ci_hardened": {
+          "changes": [
+            "Removed continue-on-error from ruff linter",
+            "Removed continue-on-error from black formatter",
+            "Removed continue-on-error from mypy type checker"
+          ],
+          "file": ".github/workflows/backend-ci.yml"
+        },
+        "documentation_created": [
+          "docs/runbooks/rollback-playbook.md",
+          ".ship_plan/remediation-plan.md"
+        ],
+        "load_tests_created": [
+          "tests/load/k6-config.js",
+          "tests/load/smoke-test.js"
+        ],
+        "remaining_user_actions": [
+          "Rotate Supabase service role key",
+          "Update Railway with new key",
+          "Enable leaked password protection in Supabase",
+          "Rotate Mapbox token (also exposed)",
+          "Run k6 load tests to verify p95 < 300ms",
+          "Complete backup/restore drill"
+        ]
+      }
     }
   ],
   "external_services": {
@@ -991,9 +1034,10 @@
       "category": "Integration",
       "action": "Wire execute_orchestrator Celery task to call OrchestratorAgent.generate_report() - task at line 525 of agent_jobs.py is placeholder",
       "owner": "Backend",
-      "status": "pending",
+      "status": "resolved",
       "discovered": "Session 5",
-      "notes": "OrchestratorAgent class is fully implemented at backend/app/agents/orchestrator/agent.py with phased execution. Just needs wiring."
+      "resolved_at": "2025-12-27",
+      "notes": "Session 7: Wired execute_orchestrator to call OrchestratorAgent.generate_report(). Verified in agent_jobs.py lines 523, 589, 594."
     },
     {
       "priority": "P1",
@@ -1030,16 +1074,20 @@
       "category": "Frontend",
       "action": "Add timeout/retry logic to API layer (AbortController + exponential backoff)",
       "owner": "Frontend",
-      "status": "pending",
-      "discovered": "Session 4"
+      "status": "resolved",
+      "discovered": "Session 4",
+      "resolved_at": "2025-12-27",
+      "notes": "Session 7: Implemented AbortController timeout, exponential backoff retry in client.ts. Includes ApiTimeoutError class."
     },
     {
       "priority": "P3",
       "category": "Frontend",
       "action": "Consolidate getAuthToken() - remove duplicates from profile.ts, history.ts, templates.ts",
       "owner": "Frontend",
-      "status": "pending",
-      "discovered": "Session 4"
+      "status": "resolved",
+      "discovered": "Session 4",
+      "resolved_at": "2025-12-27",
+      "notes": "Session 7: All files now import getAuthToken from auth-utils.ts. Verified in profile.ts, history.ts, templates.ts, visa.ts, trips.ts."
     },
     {
       "priority": "P3",
