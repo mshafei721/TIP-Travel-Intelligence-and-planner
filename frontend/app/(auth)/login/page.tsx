@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { LoginForm } from '@/components/auth';
 import { signIn } from '@/lib/auth/actions';
@@ -11,14 +11,25 @@ import type { LoginCredentials } from '@/types/auth';
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get('redirectTo') || '/';
+  const redirectTo = searchParams.get('redirectTo') || '/dashboard';
+  const urlError = searchParams.get('error');
 
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | undefined>();
+  const [error, setError] = useState<string | undefined>(urlError || undefined);
   const [rateLimitState, setRateLimitState] = useState({
     isLocked: false,
     lockedUntil: undefined as string | undefined,
   });
+
+  // Clear URL error param after displaying it
+  useEffect(() => {
+    if (urlError) {
+      // Remove error from URL without reload
+      const url = new URL(window.location.href);
+      url.searchParams.delete('error');
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, [urlError]);
 
   const handleLogin = async (credentials: LoginCredentials) => {
     setError(undefined);
@@ -69,7 +80,7 @@ function LoginContent() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?redirectTo=${redirectTo}`,
+          redirectTo: `${window.location.origin}/auth/callback?redirectTo=${encodeURIComponent(redirectTo)}`,
         },
       });
 
