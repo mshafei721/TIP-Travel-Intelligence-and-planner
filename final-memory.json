@@ -1,7 +1,7 @@
 {
   "project_name": "TIP - Travel Intelligence and Planner",
   "review_started": "2025-12-26",
-  "review_status": "session_5_completed",
+  "review_status": "session_7_completed",
   "project_overview": {
     "description": "AI-powered travel intelligence platform providing decision-grade travel reports",
     "tech_stack": {
@@ -669,9 +669,9 @@
         "description": "80+ locations expose internal error details via str(e) in HTTPException details",
         "impact": "Security vulnerability - database errors, stack traces, and paths could be exposed to attackers",
         "action": "Replace str(e) with generic error messages, use custom TIPException classes",
-        "status": "PARTIALLY_RESOLVED",
+        "status": "RESOLVED",
         "resolved_at": "2025-12-27",
-        "notes": "59/84 instances fixed. Added log_and_raise_http_error() utility. Fixed: analytics, history, profile, settings, itinerary, places, templates APIs."
+        "notes": "All 84 instances fixed. Added log_and_raise_http_error() utility. Fixed: trips.py (22 instances), recommendations.py (1), profile.py (1), plus previously fixed: analytics, history, itinerary, places, templates, settings APIs."
       },
       {
         "id": "BUG-001",
@@ -786,7 +786,10 @@
         "description": "ToastContext/Toast/ToastContainer implemented but NOT used in any component",
         "impact": "Missing user feedback mechanism",
         "action": "Implement toast usage for API success/error feedback",
-        "discovered": "Session 4"
+        "discovered": "Session 4",
+        "status": "RESOLVED",
+        "resolved_at": "2025-12-27",
+        "notes": "Added toast notifications to Settings page, Trip Creation Wizard, and Profile Settings page for success/error feedback."
       },
       {
         "id": "FE-004",
@@ -805,7 +808,10 @@
         "description": "Some files use NEXT_PUBLIC_BACKEND_URL, others use NEXT_PUBLIC_API_URL for same purpose",
         "impact": "Configuration confusion",
         "action": "Standardize on single NEXT_PUBLIC_BACKEND_URL",
-        "discovered": "Session 4"
+        "discovered": "Session 4",
+        "status": "RESOLVED",
+        "resolved_at": "2025-12-27",
+        "notes": "Replaced all NEXT_PUBLIC_API_URL with NEXT_PUBLIC_BACKEND_URL in destination.ts, visa.ts, reports.ts. Removed duplicate env var from .env.example."
       },
       {
         "id": "MIN-001",
@@ -951,7 +957,8 @@
       "category": "Frontend",
       "action": "Implement toast system usage for user feedback",
       "owner": "Frontend",
-      "status": "pending",
+      "status": "resolved",
+      "resolved_at": "2025-12-27",
       "discovered": "Session 4"
     },
     {
@@ -959,7 +966,8 @@
       "category": "Frontend",
       "action": "Add error.tsx to templates/, history/, analytics/, settings/ pages",
       "owner": "Frontend",
-      "status": "pending",
+      "status": "resolved",
+      "resolved_at": "2025-12-27",
       "discovered": "Session 4"
     },
     {
