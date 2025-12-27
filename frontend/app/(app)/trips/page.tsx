@@ -4,8 +4,17 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { TripCard } from '@/components/dashboard/TripCard';
-import { Loader2, Plus, Search } from 'lucide-react';
+import { Loader2, Plus, Search, FileEdit, Trash2 } from 'lucide-react';
 import Link from 'next/link';
+
+interface TripDraft {
+  formData: {
+    destinations?: Array<{ country?: string; city?: string }>;
+    tripDetails?: { departureDate?: string; returnDate?: string };
+  };
+  currentStep: number;
+  savedAt: string;
+}
 
 interface Trip {
   id: string;
@@ -27,9 +36,12 @@ interface TripFromDB {
   [key: string]: unknown;
 }
 
+const DRAFT_KEY = 'trip-wizard-draft';
+
 export default function TripsPage() {
   const router = useRouter();
   const [trips, setTrips] = useState<Trip[]>([]);
+  const [draft, setDraft] = useState<TripDraft | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -39,7 +51,25 @@ export default function TripsPage() {
 
   useEffect(() => {
     loadTrips();
+    loadDraft();
   }, []);
+
+  const loadDraft = () => {
+    try {
+      const savedDraft = localStorage.getItem(DRAFT_KEY);
+      if (savedDraft) {
+        const parsed = JSON.parse(savedDraft) as TripDraft;
+        setDraft(parsed);
+      }
+    } catch {
+      console.error('Failed to load draft');
+    }
+  };
+
+  const deleteDraft = () => {
+    localStorage.removeItem(DRAFT_KEY);
+    setDraft(null);
+  };
 
   const loadTrips = async () => {
     try {
@@ -194,6 +224,47 @@ export default function TripsPage() {
           ))}
         </div>
       </div>
+
+      {/* Draft Section */}
+      {draft && (
+        <div className="rounded-xl border-2 border-dashed border-amber-400 dark:border-amber-600 bg-amber-50/50 dark:bg-amber-950/20 p-4">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div className="rounded-lg bg-amber-100 dark:bg-amber-900/50 p-2">
+                <FileEdit className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-slate-900 dark:text-slate-100">
+                  Unsaved Trip Draft
+                </h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  {draft.formData.destinations?.[0]?.city
+                    ? `${draft.formData.destinations[0].city}, ${draft.formData.destinations[0].country || 'Unknown'}`
+                    : 'Destination not set yet'}
+                  {' • '}
+                  Step {draft.currentStep} of 5{' • '}
+                  Saved {new Date(draft.savedAt).toLocaleDateString()}
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={deleteDraft}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
+                <Trash2 size={16} />
+                Discard
+              </button>
+              <Link
+                href="/trips/create"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-600 transition-colors"
+              >
+                Continue Editing
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Trip Count */}
       {filteredTrips.length > 0 && (
