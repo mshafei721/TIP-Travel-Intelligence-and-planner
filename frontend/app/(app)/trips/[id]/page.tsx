@@ -7,6 +7,7 @@ import { EntryConditionsSection } from '@/components/report/EntryConditionsSecti
 import { TipsAndWarningsSection } from '@/components/report/TipsAndWarningsSection';
 import { SourceAttribution } from '@/components/report/SourceAttribution';
 import { WarningBanner } from '@/components/report/WarningBanner';
+import { GenerateReportAction } from '@/components/report/GenerateReportAction';
 import { VisaReportLoadingSkeleton } from '@/components/report/VisaLoadingState';
 import { ConfidenceStamp } from '@/components/report/ConfidenceBadge';
 import type { VisaIntelligence } from '@/types/visa';
@@ -182,36 +183,13 @@ export default async function TripReportPage({ params }: TripReportPageProps) {
           />
         </div>
 
-        {/* Report Not Found Warning */}
+        {/* Report Not Found - Show Generate Action */}
         {dataError === 'REPORT_NOT_FOUND' && (
-          <WarningBanner
-            variant="info"
-            title="Visa Report Not Generated Yet"
-            message="The visa intelligence report for this trip hasn't been generated. Click below to start the analysis."
-            action={{
-              label: 'Generate Report',
-              onClick: () => {
-                // Redirect to generate endpoint
-                window.location.href = `/api/trips/${trip.id}/generate`;
-              },
-            }}
-          />
+          <GenerateReportAction tripId={trip.id} variant="not-found" />
         )}
 
-        {/* Fetch Error Warning */}
-        {dataError === 'FETCH_ERROR' && (
-          <WarningBanner
-            variant="error"
-            title="Error Loading Visa Report"
-            message="We encountered an error loading the visa report. The data shown below may be outdated."
-            action={{
-              label: 'Retry',
-              onClick: () => {
-                window.location.reload();
-              },
-            }}
-          />
-        )}
+        {/* Fetch Error - Show Retry Action */}
+        {dataError === 'FETCH_ERROR' && <GenerateReportAction tripId={trip.id} variant="error" />}
 
         {/* Partial Data Warning */}
         {visaData.isPartialData && !dataError && (
