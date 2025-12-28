@@ -118,7 +118,7 @@ async def get_travel_history(
                     user_notes=trip.get("user_notes"),
                     is_archived=trip.get("is_archived", False),
                     archived_at=trip.get("archived_at"),
-                    cover_image=None,  # TODO: Add cover image support
+                    cover_image=trip.get("cover_image_url"),
                 )
             )
 

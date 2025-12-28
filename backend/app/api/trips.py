@@ -151,6 +151,7 @@ async def list_trips(
                     "status": display_status,
                     "createdAt": trip["created_at"],
                     "deletionDate": trip.get("auto_delete_at", ""),
+                    "coverImageUrl": trip.get("cover_image_url"),
                 }
             )
 

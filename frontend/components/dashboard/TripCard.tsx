@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { analytics } from '@/lib/analytics';
 
 interface TripCardProps {
@@ -9,6 +10,7 @@ interface TripCardProps {
     startDate: string;
     endDate: string;
     status: 'upcoming' | 'in-progress' | 'completed';
+    coverImageUrl?: string | null;
   };
   showCountdown?: boolean;
   onClick?: (tripId: string) => void;
@@ -67,22 +69,28 @@ export function TripCard({
       data-testid="trip-card"
       onClick={handleClick}
       className={`
-        rounded-lg border border-slate-200 bg-white p-4 transition-all
+        rounded-lg border border-slate-200 bg-white overflow-hidden transition-all
         dark:border-slate-800 dark:bg-slate-900
         ${onClick ? 'cursor-pointer hover:border-blue-300 hover:shadow-md dark:hover:border-blue-700' : ''}
       `}
     >
-      <div className="space-y-2">
-        {/* Destination */}
-        <h3 className="font-semibold text-slate-900 dark:text-slate-100">{trip.destination}</h3>
-
-        {/* Dates */}
-        <p className="text-sm text-slate-600 dark:text-slate-400">{formatDateRange()}</p>
-
-        {/* Status Badge & Countdown */}
-        <div className="flex items-center justify-between">
+      {/* Cover Image */}
+      <div className="relative h-32 w-full">
+        {trip.coverImageUrl ? (
+          <Image
+            src={trip.coverImageUrl}
+            alt={`${trip.destination} cover`}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 300px"
+          />
+        ) : (
+          <div className="h-full w-full bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500" />
+        )}
+        {/* Status Badge Overlay */}
+        <div className="absolute bottom-2 left-2">
           <span
-            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium backdrop-blur-sm ${
               statusStyles[trip.status]
             }`}
           >
@@ -92,13 +100,23 @@ export function TripCard({
                 ? 'In Progress'
                 : 'Completed'}
           </span>
-
-          {showCountdown && daysUntil !== null && daysUntil > 0 && (
-            <span className="text-xs text-slate-600 dark:text-slate-400">
-              {daysUntil} days until departure
-            </span>
-          )}
         </div>
+      </div>
+
+      {/* Content */}
+      <div className="p-4 space-y-2">
+        {/* Destination */}
+        <h3 className="font-semibold text-slate-900 dark:text-slate-100">{trip.destination}</h3>
+
+        {/* Dates */}
+        <p className="text-sm text-slate-600 dark:text-slate-400">{formatDateRange()}</p>
+
+        {/* Countdown */}
+        {showCountdown && daysUntil !== null && daysUntil > 0 && (
+          <p className="text-xs text-slate-500 dark:text-slate-500">
+            {daysUntil} days until departure
+          </p>
+        )}
       </div>
     </div>
   );

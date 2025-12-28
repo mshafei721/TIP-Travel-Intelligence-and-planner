@@ -28,6 +28,7 @@ export interface TripData {
   generation_status: string | null;
   created_at: string;
   updated_at: string;
+  cover_image_url: string | null;
 }
 
 export interface TripUpdateData {
@@ -45,6 +46,7 @@ export interface TripUpdateData {
   interests?: string[];
   dietary_restrictions?: string[];
   accessibility_needs?: string | null;
+  cover_image_url?: string | null;
 }
 
 // ============================================

@@ -192,6 +192,10 @@ class TripCreateRequest(BaseModel):
     trip_details: TripDetails
     preferences: TripPreferences
     template_id: str | None = None
+    cover_image_url: str | None = Field(
+        default=None,
+        description="URL to the trip cover image in Supabase Storage",
+    )
 
     @field_validator("destinations")
     @classmethod
@@ -241,6 +245,7 @@ class TripUpdateRequest(BaseModel):
     destinations: list[Destination] | None = None
     trip_details: TripDetails | None = None
     preferences: TripPreferences | None = None
+    cover_image_url: str | None = None
 
     @field_validator("destinations")
     @classmethod
@@ -265,6 +270,7 @@ class TripResponse(BaseModel):
     preferences: TripPreferences
     template_id: str | None = None
     auto_delete_at: datetime | None = None
+    cover_image_url: str | None = None
 
     class Config:
         from_attributes = True
