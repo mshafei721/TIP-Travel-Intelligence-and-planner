@@ -510,8 +510,8 @@ async def get_trip_analytics(
         durations = []
         for trip in trips:
             trip_details = trip.get("trip_details") or {}
-            start_dt = trip_details.get("start_date")
-            end_dt = trip_details.get("end_date")
+            start_dt = trip_details.get("departureDate")
+            end_dt = trip_details.get("returnDate")
             if start_dt and end_dt:
                 try:
                     start = datetime.fromisoformat(str(start_dt).replace("Z", "+00:00"))
@@ -526,11 +526,11 @@ async def get_trip_analytics(
         shortest_trip = min(durations) if durations else None
         longest_trip = max(durations) if durations else None
 
-        # Calculate seasonal distribution (start_date is in trip_details JSONB)
+        # Calculate seasonal distribution (departureDate is in trip_details JSONB)
         season_counts: Counter = Counter()
         for trip in trips:
             trip_details = trip.get("trip_details") or {}
-            start_dt = trip_details.get("start_date")
+            start_dt = trip_details.get("departureDate")
             if start_dt:
                 try:
                     start = datetime.fromisoformat(str(start_dt).replace("Z", "+00:00"))
@@ -549,12 +549,16 @@ async def get_trip_analytics(
             for season, count in season_counts.items()
         ]
 
-        # Calculate purpose distribution (purpose is in trip_details JSONB)
+        # Calculate purpose distribution (tripPurposes is in trip_details JSONB as array)
         purpose_counts: Counter = Counter()
         for trip in trips:
             trip_details = trip.get("trip_details") or {}
-            purpose = trip_details.get("purpose", "leisure")
-            purpose_counts[purpose] += 1
+            trip_purposes = trip_details.get("tripPurposes", [])
+            if isinstance(trip_purposes, list) and trip_purposes:
+                for purpose in trip_purposes:
+                    purpose_counts[purpose] += 1
+            else:
+                purpose_counts["leisure"] += 1
 
         total_purposes = sum(purpose_counts.values()) or 1
         purpose_distribution = [

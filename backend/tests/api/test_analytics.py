@@ -207,10 +207,12 @@ class TestTripAnalytics:
                         {"country": "Japan", "city": "Tokyo", "country_code": "JP"},
                         {"country": "Japan", "city": "Kyoto", "country_code": "JP"},
                     ],
-                    "budget": 3000,
-                    "start_date": "2025-06-15",
-                    "end_date": "2025-06-22",
-                    "purpose": "leisure",
+                    "trip_details": {
+                        "budget": 3000,
+                        "departureDate": "2025-06-15",
+                        "returnDate": "2025-06-22",
+                        "tripPurposes": ["Tourism"],
+                    },
                     "created_at": datetime.utcnow().isoformat(),
                 },
                 {
@@ -219,10 +221,12 @@ class TestTripAnalytics:
                     "destinations": [
                         {"country": "France", "city": "Paris", "country_code": "FR"}
                     ],
-                    "budget": 2500,
-                    "start_date": "2025-12-20",
-                    "end_date": "2025-12-27",
-                    "purpose": "leisure",
+                    "trip_details": {
+                        "budget": 2500,
+                        "departureDate": "2025-12-20",
+                        "returnDate": "2025-12-27",
+                        "tripPurposes": ["Tourism"],
+                    },
                     "created_at": datetime.utcnow().isoformat(),
                 },
             ]
