@@ -18,8 +18,7 @@ interface TripReportPageProps {
 
 interface TripData {
   id: string;
-  destination_city: string;
-  destination_country: string;
+  destinations?: Array<{ city?: string; country?: string }>;
   [key: string]: unknown; // Allow other properties from the database
 }
 
@@ -151,7 +150,11 @@ export default async function TripReportPage({ params }: TripReportPageProps) {
 
   const { trip, visaData, error: dataError } = data;
 
-  const tripName = `${trip.destination_city}, ${trip.destination_country}`;
+  // Extract destination from destinations JSONB array
+  const firstDest = trip.destinations?.[0];
+  const destinationCity = firstDest?.city || 'Unknown City';
+  const destinationCountry = firstDest?.country || 'Unknown Country';
+  const tripName = `${destinationCity}, ${destinationCountry}`;
 
   return (
     <TripReportLayout tripId={trip.id} tripName={tripName} currentSection="visa">
@@ -163,7 +166,7 @@ export default async function TripReportPage({ params }: TripReportPageProps) {
               Visa Intelligence
             </h1>
             <p className="text-slate-600 dark:text-slate-400">
-              {trip.destination_city}, {trip.destination_country}
+              {destinationCity}, {destinationCountry}
             </p>
             <p className="text-sm text-slate-500 dark:text-slate-500 mt-1">
               Generated {new Date(visaData.generatedAt).toLocaleDateString()} · Trip ID:{' '}
