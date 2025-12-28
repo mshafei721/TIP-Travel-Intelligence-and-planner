@@ -124,7 +124,7 @@ async def get_usage_stats(
         # Fetch trips within date range
         trips_response = (
             supabase.table("trips")
-            .select("id, status, destinations, budget, created_at, updated_at")
+            .select("id, status, destinations, trip_details, created_at, updated_at")
             .eq("user_id", user_id)
             .gte("created_at", start_date.isoformat())
             .lte("created_at", end_date.isoformat())
@@ -132,18 +132,20 @@ async def get_usage_stats(
         )
 
         trips = trips_response.data if trips_response.data else []
+        trip_ids = [t["id"] for t in trips]
 
-        # Fetch agent jobs within date range
-        agent_jobs_response = (
-            supabase.table("agent_jobs")
-            .select("id, agent_type, status, started_at, completed_at")
-            .eq("user_id", user_id)
-            .gte("created_at", start_date.isoformat())
-            .lte("created_at", end_date.isoformat())
-            .execute()
-        )
-
-        agent_jobs = agent_jobs_response.data if agent_jobs_response.data else []
+        # Fetch agent jobs for user's trips within date range
+        agent_jobs = []
+        if trip_ids:
+            agent_jobs_response = (
+                supabase.table("agent_jobs")
+                .select("id, agent_type, status, started_at, completed_at, created_at")
+                .in_("trip_id", trip_ids)
+                .gte("created_at", start_date.isoformat())
+                .lte("created_at", end_date.isoformat())
+                .execute()
+            )
+            agent_jobs = agent_jobs_response.data if agent_jobs_response.data else []
 
         # Calculate trip stats
         total_trips = len(trips)
@@ -247,20 +249,22 @@ async def get_usage_trends(
         )
 
         trips = trips_response.data if trips_response.data else []
+        trip_ids = [t["id"] for t in trips]
 
-        # Fetch agent jobs within date range
-        agent_jobs_response = (
-            supabase.table("agent_jobs")
-            .select("id, status, created_at")
-            .eq("user_id", user_id)
-            .eq("status", "completed")
-            .gte("created_at", start_date.isoformat())
-            .lte("created_at", end_date.isoformat())
-            .order("created_at")
-            .execute()
-        )
-
-        agent_jobs = agent_jobs_response.data if agent_jobs_response.data else []
+        # Fetch agent jobs for user's trips within date range
+        agent_jobs = []
+        if trip_ids:
+            agent_jobs_response = (
+                supabase.table("agent_jobs")
+                .select("id, status, created_at")
+                .in_("trip_id", trip_ids)
+                .eq("status", "completed")
+                .gte("created_at", start_date.isoformat())
+                .lte("created_at", end_date.isoformat())
+                .order("created_at")
+                .execute()
+            )
+            agent_jobs = agent_jobs_response.data if agent_jobs_response.data else []
 
         # Group by date
         trends: dict[str, UsageTrend] = {}
@@ -315,17 +319,27 @@ async def get_agent_usage_stats(
     start_date, end_date = get_date_range_bounds(period)
 
     try:
-        # Fetch agent jobs within date range
-        agent_jobs_response = (
-            supabase.table("agent_jobs")
-            .select("id, agent_type, status, started_at, completed_at")
+        # First fetch user's trips to get trip_ids
+        trips_response = (
+            supabase.table("trips")
+            .select("id")
             .eq("user_id", user_id)
-            .gte("created_at", start_date.isoformat())
-            .lte("created_at", end_date.isoformat())
             .execute()
         )
+        trip_ids = [t["id"] for t in (trips_response.data or [])]
 
-        agent_jobs = agent_jobs_response.data if agent_jobs_response.data else []
+        # Fetch agent jobs for user's trips within date range
+        agent_jobs = []
+        if trip_ids:
+            agent_jobs_response = (
+                supabase.table("agent_jobs")
+                .select("id, agent_type, status, started_at, completed_at, created_at")
+                .in_("trip_id", trip_ids)
+                .gte("created_at", start_date.isoformat())
+                .lte("created_at", end_date.isoformat())
+                .execute()
+            )
+            agent_jobs = agent_jobs_response.data if agent_jobs_response.data else []
 
         # Group by agent type
         agent_stats: dict[str, dict] = {}
@@ -431,10 +445,7 @@ async def get_trip_analytics(
         # Fetch trips within date range
         trips_response = (
             supabase.table("trips")
-            .select(
-                "id, status, destinations, budget, start_date, end_date, "
-                "purpose, created_at"
-            )
+            .select("id, status, destinations, trip_details, created_at")
             .eq("user_id", user_id)
             .gte("created_at", start_date.isoformat())
             .lte("created_at", end_date.isoformat())
@@ -481,23 +492,30 @@ async def get_trip_analytics(
                 )
             )
 
-        # Calculate budget statistics
-        budgets = [
-            float(trip["budget"])
-            for trip in trips
-            if trip.get("budget") is not None
-        ]
+        # Calculate budget statistics (budget is in trip_details JSONB)
+        budgets = []
+        for trip in trips:
+            trip_details = trip.get("trip_details") or {}
+            budget = trip_details.get("budget")
+            if budget is not None:
+                try:
+                    budgets.append(float(budget))
+                except (ValueError, TypeError):
+                    pass
         budget_ranges = calculate_budget_ranges(budgets)
         avg_budget = round(sum(budgets) / len(budgets), 2) if budgets else None
         total_planned_budget = sum(budgets)
 
-        # Calculate duration statistics
+        # Calculate duration statistics (dates are in trip_details JSONB)
         durations = []
         for trip in trips:
-            if trip.get("start_date") and trip.get("end_date"):
+            trip_details = trip.get("trip_details") or {}
+            start_dt = trip_details.get("start_date")
+            end_dt = trip_details.get("end_date")
+            if start_dt and end_dt:
                 try:
-                    start = datetime.fromisoformat(trip["start_date"])
-                    end = datetime.fromisoformat(trip["end_date"])
+                    start = datetime.fromisoformat(str(start_dt).replace("Z", "+00:00"))
+                    end = datetime.fromisoformat(str(end_dt).replace("Z", "+00:00"))
                     duration = (end - start).days + 1
                     if duration > 0:
                         durations.append(duration)
@@ -508,12 +526,14 @@ async def get_trip_analytics(
         shortest_trip = min(durations) if durations else None
         longest_trip = max(durations) if durations else None
 
-        # Calculate seasonal distribution
+        # Calculate seasonal distribution (start_date is in trip_details JSONB)
         season_counts: Counter = Counter()
         for trip in trips:
-            if trip.get("start_date"):
+            trip_details = trip.get("trip_details") or {}
+            start_dt = trip_details.get("start_date")
+            if start_dt:
                 try:
-                    start = datetime.fromisoformat(trip["start_date"])
+                    start = datetime.fromisoformat(str(start_dt).replace("Z", "+00:00"))
                     season = get_season(start.month)
                     season_counts[season] += 1
                 except (ValueError, TypeError):
@@ -529,10 +549,11 @@ async def get_trip_analytics(
             for season, count in season_counts.items()
         ]
 
-        # Calculate purpose distribution
+        # Calculate purpose distribution (purpose is in trip_details JSONB)
         purpose_counts: Counter = Counter()
         for trip in trips:
-            purpose = trip.get("purpose", "leisure")
+            trip_details = trip.get("trip_details") or {}
+            purpose = trip_details.get("purpose", "leisure")
             purpose_counts[purpose] += 1
 
         total_purposes = sum(purpose_counts.values()) or 1
@@ -657,17 +678,25 @@ async def get_budget_analytics(
     try:
         trips_response = (
             supabase.table("trips")
-            .select("budget, currency")
+            .select("trip_details")
             .eq("user_id", user_id)
             .gte("created_at", start_date.isoformat())
             .lte("created_at", end_date.isoformat())
-            .not_.is_("budget", "null")
             .execute()
         )
 
         trips = trips_response.data if trips_response.data else []
 
-        budgets = [float(t["budget"]) for t in trips if t.get("budget")]
+        # Extract budgets from trip_details JSONB
+        budgets = []
+        for t in trips:
+            trip_details = t.get("trip_details") or {}
+            budget = trip_details.get("budget")
+            if budget is not None:
+                try:
+                    budgets.append(float(budget))
+                except (ValueError, TypeError):
+                    pass
         budget_ranges = calculate_budget_ranges(budgets)
 
         avg_budget = round(sum(budgets) / len(budgets), 2) if budgets else None
