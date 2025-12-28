@@ -175,7 +175,7 @@ async def get_trip(trip_id: str, token_payload: dict = Depends(verify_jwt_token)
     - trip_id: UUID of the trip
 
     Returns:
-    - Complete trip object with all fields
+    - Complete trip object with flattened fields for frontend compatibility
     """
     user_id = token_payload["user_id"]
 
@@ -192,7 +192,61 @@ async def get_trip(trip_id: str, token_payload: dict = Depends(verify_jwt_token)
         if not response.data:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Trip not found")
 
-        return response.data
+        trip = response.data
+
+        # Extract data from JSONB columns
+        destinations = trip.get("destinations") or []
+        first_dest = destinations[0] if destinations else {}
+        traveler_details = trip.get("traveler_details") or {}
+        trip_details = trip.get("trip_details") or {}
+        preferences = trip.get("preferences") or {}
+
+        # Extract trip purposes (array) and get first one
+        trip_purposes = trip_details.get("tripPurposes") or []
+        trip_purpose = trip_purposes[0] if trip_purposes else "leisure"
+
+        # Build flattened response for frontend compatibility
+        flattened_trip = {
+            # Core fields
+            "id": trip["id"],
+            "user_id": trip["user_id"],
+            "title": trip.get("title") or f"Trip to {first_dest.get('city', 'Unknown')}",
+            "status": trip.get("status", "draft"),
+            "created_at": trip.get("created_at"),
+            "updated_at": trip.get("updated_at"),
+
+            # Destination fields (from destinations JSONB array)
+            "destination_city": first_dest.get("city", ""),
+            "destination_country": first_dest.get("country", ""),
+
+            # Traveler fields (from traveler_details JSONB)
+            "origin_city": traveler_details.get("originCity", ""),
+            "party_size": traveler_details.get("partySize", 1),
+
+            # Trip details (from trip_details JSONB)
+            "departure_date": trip_details.get("departureDate", ""),
+            "return_date": trip_details.get("returnDate", ""),
+            "budget": trip_details.get("budget", 0),
+            "currency": trip_details.get("currency", "USD"),
+            "trip_purpose": trip_purpose,
+
+            # Preferences (from preferences JSONB)
+            "travel_style": preferences.get("travelStyle", "Balanced"),
+            "interests": preferences.get("interests", []),
+            "dietary_restrictions": preferences.get("dietaryRestrictions", []),
+            "accessibility_needs": preferences.get("accessibilityNeeds"),
+
+            # Generation status
+            "generation_status": trip.get("status"),
+
+            # Also include raw JSONB data for components that need it
+            "traveler_details": traveler_details,
+            "destinations": destinations,
+            "trip_details": trip_details,
+            "preferences": preferences,
+        }
+
+        return flattened_trip
 
     except HTTPException:
         raise
