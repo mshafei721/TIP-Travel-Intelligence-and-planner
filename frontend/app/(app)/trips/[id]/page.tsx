@@ -10,7 +10,7 @@ import { WarningBanner } from '@/components/report/WarningBanner';
 import { VisaReportLoadingSkeleton } from '@/components/report/VisaLoadingState';
 import { ConfidenceStamp } from '@/components/report/ConfidenceBadge';
 import type { VisaIntelligence } from '@/types/visa';
-import { fetchVisaReport } from '@/lib/api/visa';
+import { fetchVisaReportServer } from '@/lib/api/visa.server';
 
 interface TripReportPageProps {
   params: Promise<{ id: string }>;
@@ -111,9 +111,9 @@ async function getTripData(
     return null;
   }
 
-  // Fetch visa report from backend API
+  // Fetch visa report from backend API (server-side)
   try {
-    const visaData = await fetchVisaReport(tripId);
+    const visaData = await fetchVisaReportServer(tripId);
     return {
       trip: trip as TripData,
       visaData,

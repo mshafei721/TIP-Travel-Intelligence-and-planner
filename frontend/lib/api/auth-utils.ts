@@ -1,21 +1,28 @@
 /**
  * Shared Authentication Utilities
  * Centralized auth token management with caching for performance
+ *
+ * NOTE: For server-side token retrieval, use getServerAuthToken from
+ * '@/lib/api/auth-utils.server' instead.
  */
 
-// Token cache with expiration
+// Token cache with expiration (client-side only)
 let cachedToken: string | null = null;
 let tokenExpiry: number = 0;
 const TOKEN_CACHE_BUFFER_MS = 60 * 1000; // Refresh 1 minute before expiry
 
 /**
- * Get authentication token from Supabase session with caching
- * Caches the token to avoid repeated Supabase calls
+ * Get authentication token from Supabase session (CLIENT-SIDE ONLY)
+ * For server components, use getServerAuthToken from auth-utils.server.ts
  */
 export async function getAuthToken(): Promise<string | null> {
-  if (typeof window === 'undefined') return null;
+  // Server-side: return null (caller should use server-specific function)
+  if (typeof window === 'undefined') {
+    console.warn('getAuthToken called on server - use getServerAuthToken from auth-utils.server');
+    return null;
+  }
 
-  // Check if cached token is still valid
+  // Client-side: use cached token if valid
   const now = Date.now();
   if (cachedToken && tokenExpiry > now + TOKEN_CACHE_BUFFER_MS) {
     return cachedToken;
