@@ -42,8 +42,15 @@ export function TripCard({
 
   // Format dates
   const formatDateRange = () => {
+    if (!trip.startDate || !trip.endDate) {
+      return 'Dates not set';
+    }
     const start = new Date(trip.startDate);
     const end = new Date(trip.endDate);
+    // Check for invalid dates
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      return 'Dates not set';
+    }
     const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', year: 'numeric' };
     return `${start.toLocaleDateString('en-US', options)} - ${end.toLocaleDateString('en-US', options)}`;
   };

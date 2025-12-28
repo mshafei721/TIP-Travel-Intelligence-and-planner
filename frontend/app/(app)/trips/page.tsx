@@ -28,10 +28,14 @@ interface Trip {
 
 interface TripFromDB {
   id: string;
-  destination_city: string;
-  destination_country: string;
-  departure_date: string;
-  return_date: string;
+  title?: string;
+  destinations?: Array<{ city?: string; country?: string }>;
+  trip_details?: {
+    start_date?: string;
+    end_date?: string;
+    departureDate?: string;
+    returnDate?: string;
+  };
   created_at: string;
   [key: string]: unknown;
 }
@@ -86,20 +90,37 @@ export default function TripsPage() {
 
       // Transform data to match TripCard interface
       const transformedTrips: Trip[] = ((data || []) as TripFromDB[]).map((trip) => {
+        // Extract destination from destinations JSONB array
+        const firstDest = trip.destinations?.[0];
+        const destination_city = firstDest?.city || 'Unknown City';
+        const destination_country = firstDest?.country || 'Unknown Country';
+
+        // Extract dates from trip_details JSONB (check both naming conventions)
+        const tripDetails = trip.trip_details || {};
+        const departure_date = tripDetails.start_date || tripDetails.departureDate || '';
+        const return_date = tripDetails.end_date || tripDetails.returnDate || '';
+
         const today = new Date();
-        const departure = new Date(trip.departure_date);
-        const returnDate = new Date(trip.return_date);
+        const departure = departure_date ? new Date(departure_date) : null;
+        const returnDt = return_date ? new Date(return_date) : null;
 
         let status: 'upcoming' | 'in-progress' | 'completed' = 'upcoming';
-        if (today >= departure && today <= returnDate) {
-          status = 'in-progress';
-        } else if (today > returnDate) {
-          status = 'completed';
+        if (departure && returnDt) {
+          if (today >= departure && today <= returnDt) {
+            status = 'in-progress';
+          } else if (today > returnDt) {
+            status = 'completed';
+          }
         }
 
         return {
-          ...trip,
+          id: trip.id,
+          destination_city,
+          destination_country,
+          departure_date,
+          return_date,
           status,
+          created_at: trip.created_at,
         };
       });
 
