@@ -16,7 +16,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 
 from app.core.auth import verify_jwt_token
-from app.core.config import settings
+from app.core.config import settings as app_settings
 from app.core.supabase import get_supabase_client
 from app.models.sharing import (
     Collaborator,
@@ -143,7 +143,7 @@ async def generate_share_link(
         raise HTTPException(status_code=500, detail="Failed to create share link")
 
     share_link = result.data
-    base_url = settings.FRONTEND_URL
+    base_url = app_settings.FRONTEND_URL
 
     return ShareLinkResponse(
         share_token=share_token,
@@ -197,7 +197,7 @@ async def get_share_settings(
         )
 
     link = result.data
-    base_url = settings.FRONTEND_URL
+    base_url = app_settings.FRONTEND_URL
 
     return ShareSettings(
         trip_id=trip_id,
@@ -375,7 +375,7 @@ async def invite_collaborator(
     if not result.data:
         raise HTTPException(status_code=500, detail="Failed to create invitation")
 
-    base_url = settings.FRONTEND_URL
+    base_url = app_settings.FRONTEND_URL
 
     return InvitationResponse(
         id=result.data["id"],
