@@ -9,6 +9,7 @@ from fastapi.responses import JSONResponse
 
 from app.api import analytics, healthcheck, history, itinerary, places, profile, recommendations, sharing, templates, trips
 from app.api import settings as settings_router
+from app.core.api_validation import startup_api_check
 from app.core.config import settings
 from app.core.exception_handlers import register_exception_handlers
 from app.core.logging_config import RequestLogger, configure_logging
@@ -105,6 +106,9 @@ async def startup_event():
     """Application startup tasks"""
     import logging
     logger = logging.getLogger("app.startup")
+
+    # Validate API key configuration
+    startup_api_check()
 
     # Run security validation (fails on critical issues in production)
     check_security_on_startup(app, fail_on_critical=True)
