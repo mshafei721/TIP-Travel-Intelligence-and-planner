@@ -257,14 +257,14 @@ class CultureAgent(BaseAgent):
                 confidence_score=confidence,
                 sources=[
                     SourceReference(
-                        source="Cultural Anthropology Database",
-                        url="internal",
-                        retrieved_at=datetime.utcnow(),
+                        title="Cultural Anthropology Database",
+                        url="internal://cultural-anthropology-database",
+                        verified_at=datetime.utcnow(),
                     ),
                     SourceReference(
-                        source="Country Etiquette Guide",
-                        url="internal",
-                        retrieved_at=datetime.utcnow(),
+                        title="Country Etiquette Guide",
+                        url="internal://country-etiquette-guide",
+                        verified_at=datetime.utcnow(),
                     ),
                 ],
                 warnings=[],

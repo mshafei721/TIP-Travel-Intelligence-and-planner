@@ -37,7 +37,7 @@ def get_exchange_rates(base_currency: str, target_currency: str) -> str:
             "base_currency": rate_data.base_currency,
             "target_currency": rate_data.target_currency,
             "exchange_rate": rate_data.rate,
-            "date": rate_data.date.isoformat(),
+            "date": rate_data.rate_date.isoformat(),
             "conversion_example": f"1 {rate_data.base_currency} = {rate_data.rate} {rate_data.target_currency}",
         }
 

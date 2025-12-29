@@ -225,10 +225,9 @@ class CountryAgent(BaseAgent):
         # Add REST Countries API as primary source
         sources.append(
             SourceReference(
-                name="REST Countries API",
+                title="REST Countries API",
                 url="https://restcountries.com/",
-                accessed_at=datetime.utcnow(),
-                reliability="official",
+                verified_at=datetime.utcnow(),
             )
         )
 
@@ -237,14 +236,13 @@ class CountryAgent(BaseAgent):
             for source in data["sources"]:
                 sources.append(
                     SourceReference(
-                        name=source.get("name", "Unknown"),
-                        url=source.get("url", ""),
-                        accessed_at=(
+                        title=source.get("name", source.get("title", "Unknown")),
+                        url=source.get("url", "internal://unknown-source"),
+                        verified_at=(
                             datetime.fromisoformat(source.get("accessed_at"))
                             if source.get("accessed_at")
                             else datetime.utcnow()
                         ),
-                        reliability=source.get("reliability", "third_party"),
                     )
                 )
 
@@ -305,10 +303,9 @@ class CountryAgent(BaseAgent):
             confidence_score=0.5,
             sources=[
                 SourceReference(
-                    name="Fallback Data",
-                    url="",
-                    accessed_at=datetime.utcnow(),
-                    reliability="uncertain",
+                    title="Fallback Data",
+                    url="internal://fallback-data",
+                    verified_at=datetime.utcnow(),
                 )
             ],
             warnings=["Failed to parse complete country information. Using fallback data."],

@@ -258,14 +258,14 @@ class ItineraryAgent(BaseAgent):
                 confidence_score=confidence,
                 sources=[
                     SourceReference(
-                        source="Itinerary Planning Algorithm",
-                        url="internal",
-                        retrieved_at=datetime.utcnow(),
+                        title="Itinerary Planning Algorithm",
+                        url="internal://itinerary-planning-algorithm",
+                        verified_at=datetime.utcnow(),
                     ),
                     SourceReference(
-                        source="Destination Knowledge Base",
-                        url="internal",
-                        retrieved_at=datetime.utcnow(),
+                        title="Destination Knowledge Base",
+                        url="internal://destination-knowledge-base",
+                        verified_at=datetime.utcnow(),
                     ),
                 ],
                 warnings=[],

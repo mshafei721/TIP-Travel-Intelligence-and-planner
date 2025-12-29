@@ -163,21 +163,20 @@ class WeatherAgent(BaseAgent):
             Structured WeatherAgentOutput
         """
         try:
-            # Try to parse as JSON
-            if isinstance(crew_result, str):
-                # Extract JSON from markdown code blocks if present
-                if "```json" in crew_result:
-                    json_start = crew_result.find("```json") + 7
-                    json_end = crew_result.find("```", json_start)
-                    crew_result = crew_result[json_start:json_end].strip()
-                elif "```" in crew_result:
-                    json_start = crew_result.find("```") + 3
-                    json_end = crew_result.find("```", json_start)
-                    crew_result = crew_result[json_start:json_end].strip()
+            # Convert CrewOutput to string if necessary
+            result_str = str(crew_result) if not isinstance(crew_result, str) else crew_result
 
-                data = json.loads(crew_result)
-            else:
-                data = crew_result  # type: ignore
+            # Extract JSON from markdown code blocks if present
+            if "```json" in result_str:
+                json_start = result_str.find("```json") + 7
+                json_end = result_str.find("```", json_start)
+                result_str = result_str[json_start:json_end].strip()
+            elif "```" in result_str:
+                json_start = result_str.find("```") + 3
+                json_end = result_str.find("```", json_start)
+                result_str = result_str[json_start:json_end].strip()
+
+            data = json.loads(result_str)
 
             # Parse daily forecasts
             forecasts = []

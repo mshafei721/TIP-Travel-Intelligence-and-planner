@@ -165,10 +165,9 @@ class FlightAgent(BaseAgent):
                 confidence_score=flight_output.confidence_score,
                 sources=[
                     SourceReference(
-                        name=source,
-                        url=None,
-                        accessed_at=datetime.utcnow(),
-                        confidence=flight_output.confidence_score,
+                        title=source,
+                        url=f"internal://flight-source-{source.lower().replace(' ', '-')}",
+                        verified_at=datetime.utcnow(),
                     )
                     for source in flight_output.sources
                 ],

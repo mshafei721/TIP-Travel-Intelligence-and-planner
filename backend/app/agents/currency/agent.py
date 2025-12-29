@@ -243,14 +243,14 @@ class CurrencyAgent(BaseAgent):
                 confidence_score=confidence,
                 sources=[
                     SourceReference(
-                        source="fawazahmed0/exchange-api",
+                        title="fawazahmed0/exchange-api",
                         url="https://github.com/fawazahmed0/exchange-api",
-                        retrieved_at=datetime.utcnow(),
+                        verified_at=datetime.utcnow(),
                     ),
                     SourceReference(
-                        source="Currency Knowledge Base",
-                        url="internal",
-                        retrieved_at=datetime.utcnow(),
+                        title="Currency Knowledge Base",
+                        url="internal://currency-knowledge-base",
+                        verified_at=datetime.utcnow(),
                     ),
                 ],
                 warnings=[],

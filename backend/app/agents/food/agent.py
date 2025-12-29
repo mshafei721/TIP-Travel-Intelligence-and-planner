@@ -253,14 +253,14 @@ class FoodAgent(BaseAgent):
                 confidence_score=confidence,
                 sources=[
                     SourceReference(
-                        source="Culinary Knowledge Base",
-                        url="internal",
-                        retrieved_at=datetime.utcnow(),
+                        title="Culinary Knowledge Base",
+                        url="internal://culinary-knowledge-base",
+                        verified_at=datetime.utcnow(),
                     ),
                     SourceReference(
-                        source="Food Safety Guidelines",
-                        url="internal",
-                        retrieved_at=datetime.utcnow(),
+                        title="Food Safety Guidelines",
+                        url="internal://food-safety-guidelines",
+                        verified_at=datetime.utcnow(),
                     ),
                 ],
                 warnings=[],
