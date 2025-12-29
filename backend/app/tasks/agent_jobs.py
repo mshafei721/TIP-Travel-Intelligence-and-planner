@@ -16,6 +16,101 @@ from celery import shared_task
 from app.core.celery_app import BaseTipTask
 
 
+def _get_field(data: dict, *field_names: str, default: Any = None) -> Any:
+    """
+    Get a field from a dict, trying multiple field name variants.
+    Handles camelCase (frontend) and snake_case (backend) naming conventions.
+
+    Args:
+        data: The dictionary to extract from
+        field_names: Field names to try in order (e.g., "departure_date", "departureDate")
+        default: Default value if no field is found
+
+    Returns:
+        The field value or default
+    """
+    for name in field_names:
+        if name in data and data[name] is not None:
+            return data[name]
+    return default
+
+
+def _normalize_trip_data(trip: dict) -> dict:
+    """
+    Normalize trip data field names from database format (camelCase in JSONB)
+    to backend format (snake_case).
+
+    This handles the mismatch between frontend (camelCase) and backend (snake_case).
+    """
+    traveler = trip.get("traveler_details", {})
+    destinations = trip.get("destinations", [])
+    details = trip.get("trip_details", {})
+    preferences = trip.get("preferences", {})
+
+    # Get primary destination
+    primary_dest = destinations[0] if destinations else {}
+
+    # Normalize traveler details
+    normalized_traveler = {
+        "name": traveler.get("name", ""),
+        "email": traveler.get("email", ""),
+        "age": traveler.get("age"),
+        "nationality": traveler.get("nationality", "US"),
+        "residence_country": _get_field(traveler, "residence_country", "residenceCountry", default="US"),
+        "origin_city": _get_field(traveler, "origin_city", "originCity", default=""),
+        "residency_status": _get_field(traveler, "residency_status", "residencyStatus", default=""),
+        "party_size": _get_field(traveler, "party_size", "partySize", default=1),
+        "party_ages": _get_field(traveler, "party_ages", "partyAges", default=[]),
+        "contact_preferences": _get_field(traveler, "contact_preferences", "contactPreferences", default=[]),
+    }
+
+    # Normalize trip details
+    departure_date = _get_field(details, "departure_date", "departureDate")
+    return_date = _get_field(details, "return_date", "returnDate")
+
+    # Handle tripPurposes (array) vs trip_purpose (string)
+    trip_purposes = _get_field(details, "tripPurposes", "trip_purposes", default=[])
+    trip_purpose = _get_field(details, "trip_purpose", "tripPurpose")
+    if not trip_purpose and trip_purposes:
+        trip_purpose = trip_purposes[0] if isinstance(trip_purposes, list) else trip_purposes
+    trip_purpose = (trip_purpose or "tourism").lower()
+
+    normalized_details = {
+        "departure_date": departure_date,
+        "return_date": return_date,
+        "budget": details.get("budget", 1000),
+        "currency": details.get("currency", "USD"),
+        "trip_purpose": trip_purpose,
+        "trip_purposes": trip_purposes,
+    }
+
+    # Normalize preferences
+    normalized_preferences = {
+        "travel_style": _get_field(preferences, "travel_style", "travelStyle", default="balanced"),
+        "interests": preferences.get("interests", []),
+        "dietary_restrictions": _get_field(preferences, "dietary_restrictions", "dietaryRestrictions", default=[]),
+        "accessibility_needs": _get_field(preferences, "accessibility_needs", "accessibilityNeeds", default=""),
+        "accommodation_type": _get_field(preferences, "accommodation_type", "accommodationType", default="hotel"),
+        "transportation_preference": _get_field(preferences, "transportation_preference", "transportationPreference", default="any"),
+    }
+
+    return {
+        "trip_id": trip.get("id"),
+        "user_id": trip.get("user_id"),
+        "title": trip.get("title"),
+        "status": trip.get("status"),
+        "traveler": normalized_traveler,
+        "destination": {
+            "country": primary_dest.get("country", "Unknown"),
+            "city": primary_dest.get("city", "Unknown"),
+        },
+        "destinations": destinations,
+        "details": normalized_details,
+        "preferences": normalized_preferences,
+        "raw": trip,  # Keep raw data for debugging
+    }
+
+
 @shared_task(
     bind=True,
     base=BaseTipTask,
@@ -545,18 +640,13 @@ def execute_orchestrator(self, trip_id: str) -> dict[str, Any]:
         trip = trip_response.data[0]
         print(f"[Task {self.request.id}] Loaded trip data for {trip_id}")
 
-        # Step 2: Extract trip data for orchestrator
-        traveler = trip.get("traveler_details", {})
-        destinations = trip.get("destinations", [])
-        details = trip.get("trip_details", {})
-
-        # Get primary destination
-        primary_dest = destinations[0] if destinations else {}
+        # Step 2: Normalize trip data (handles camelCase/snake_case mismatch)
+        normalized = _normalize_trip_data(trip)
+        print(f"[Task {self.request.id}] Normalized trip data")
 
         # Validate required dates before proceeding
-        # Handle both camelCase (frontend) and snake_case (backend) field names
-        departure_date = details.get("departure_date") or details.get("departureDate")
-        return_date = details.get("return_date") or details.get("returnDate")
+        departure_date = normalized["details"]["departure_date"]
+        return_date = normalized["details"]["return_date"]
 
         if not departure_date or not return_date:
             error_msg = "Cannot generate report: trip dates are required. Please set departure and return dates for your trip."
@@ -578,22 +668,15 @@ def execute_orchestrator(self, trip_id: str) -> dict[str, Any]:
                 "error": error_msg,
             }
 
-        # Extract trip purpose (handle both array and string formats)
-        trip_purposes = details.get("tripPurposes") or details.get("trip_purposes") or []
-        trip_purpose = details.get("trip_purpose") or details.get("tripPurpose")
-        if not trip_purpose and trip_purposes:
-            trip_purpose = trip_purposes[0] if isinstance(trip_purposes, list) else trip_purposes
-        trip_purpose = (trip_purpose or "tourism").lower()
-
-        # Build orchestrator input
+        # Build orchestrator input using normalized data
         orchestrator_input = {
             "trip_id": trip_id,
-            "user_nationality": traveler.get("nationality", "US"),
-            "destination_country": primary_dest.get("country", "Unknown"),
-            "destination_city": primary_dest.get("city", "Unknown"),
+            "user_nationality": normalized["traveler"]["nationality"],
+            "destination_country": normalized["destination"]["country"],
+            "destination_city": normalized["destination"]["city"],
             "departure_date": departure_date,
             "return_date": return_date,
-            "trip_purpose": trip_purpose,
+            "trip_purpose": normalized["details"]["trip_purpose"],
         }
 
         print(f"[Task {self.request.id}] Prepared orchestrator input: {orchestrator_input}")
@@ -1632,29 +1715,23 @@ def _execute_single_agent(
     This is a helper function that routes to the appropriate agent
     based on agent_type.
     """
-    # Extract common data from trip
-    traveler = trip_data.get("traveler_details", {})
-    destinations = trip_data.get("destinations", [])
-    details = trip_data.get("trip_details", {})
-    preferences = trip_data.get("preferences", {})
+    # Normalize trip data to handle camelCase/snake_case mismatch
+    normalized = _normalize_trip_data(trip_data)
 
-    # Get primary destination
-    primary_dest = destinations[0] if destinations else {}
-
-    # Common input data
+    # Common input data using normalized fields
     base_input = {
-        "nationality": traveler.get("nationality", "US"),
-        "origin_city": traveler.get("origin_city", "New York"),
-        "destination_country": primary_dest.get("country", "Unknown"),
-        "destination_city": primary_dest.get("city", "Unknown"),
-        "departure_date": details.get("departure_date"),
-        "return_date": details.get("return_date"),
-        "budget": details.get("budget", 1000),
-        "currency": details.get("currency", "USD"),
-        "trip_purpose": details.get("trip_purpose", "tourism"),
-        "interests": preferences.get("interests", []),
-        "dietary_restrictions": preferences.get("dietary_restrictions", []),
-        "travel_style": preferences.get("travel_style", "balanced"),
+        "nationality": normalized["traveler"]["nationality"],
+        "origin_city": normalized["traveler"]["origin_city"] or "New York",
+        "destination_country": normalized["destination"]["country"],
+        "destination_city": normalized["destination"]["city"],
+        "departure_date": normalized["details"]["departure_date"],
+        "return_date": normalized["details"]["return_date"],
+        "budget": normalized["details"]["budget"],
+        "currency": normalized["details"]["currency"],
+        "trip_purpose": normalized["details"]["trip_purpose"],
+        "interests": normalized["preferences"]["interests"],
+        "dietary_restrictions": normalized["preferences"]["dietary_restrictions"],
+        "travel_style": normalized["preferences"]["travel_style"],
     }
 
     # Route to appropriate agent (using synchronous execution for simplicity)
