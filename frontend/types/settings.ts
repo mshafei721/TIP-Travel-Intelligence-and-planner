@@ -8,8 +8,8 @@
 // ============================================
 
 export type Theme = 'light' | 'dark' | 'system';
-export type ProfileVisibility = 'public' | 'private' | 'friends_only';
-export type DetailLevel = 'minimal' | 'standard' | 'detailed';
+export type ProfileVisibility = 'public' | 'private' | 'friends';
+export type DetailLevel = 'brief' | 'balanced' | 'detailed';
 export type DateFormat = 'MM/DD/YYYY' | 'DD/MM/YYYY' | 'YYYY-MM-DD';
 export type Units = 'metric' | 'imperial';
 
@@ -26,7 +26,7 @@ export const VISIBILITY_OPTIONS: {
 }[] = [
   { value: 'public', label: 'Public', description: 'Anyone can see your profile' },
   {
-    value: 'friends_only',
+    value: 'friends',
     label: 'Friends Only',
     description: 'Only friends can see your profile',
   },
@@ -34,8 +34,8 @@ export const VISIBILITY_OPTIONS: {
 ];
 
 export const DETAIL_LEVEL_OPTIONS: { value: DetailLevel; label: string; description: string }[] = [
-  { value: 'minimal', label: 'Minimal', description: 'Basic recommendations' },
-  { value: 'standard', label: 'Standard', description: 'Balanced detail level' },
+  { value: 'brief', label: 'Brief', description: 'Basic recommendations' },
+  { value: 'balanced', label: 'Balanced', description: 'Balanced detail level' },
   { value: 'detailed', label: 'Detailed', description: 'Comprehensive recommendations' },
 ];
 
@@ -51,36 +51,41 @@ export const DATE_FORMAT_OPTIONS: { value: DateFormat; label: string; example: s
 
 export interface AppearanceSettings {
   theme: Theme;
-  compact_mode: boolean;
-  show_animations: boolean;
-  font_size: 'small' | 'medium' | 'large';
+  language: string;
+  timezone: string;
+  date_format: DateFormat;
+  currency: string;
+  units: Units;
 }
 
 export interface NotificationSettings {
+  email_notifications: boolean;
   email_trip_updates: boolean;
-  email_report_ready: boolean;
-  email_weekly_digest: boolean;
+  email_report_completion: boolean;
+  email_recommendations: boolean;
   email_marketing: boolean;
+  email_weekly_digest: boolean;
+  push_notifications: boolean;
   push_trip_reminders: boolean;
-  push_agent_completion: boolean;
-  push_system_alerts: boolean;
+  push_travel_alerts: boolean;
 }
 
 export interface PrivacySettings {
   profile_visibility: ProfileVisibility;
   show_travel_history: boolean;
-  allow_recommendations_sharing: boolean;
-  data_collection_consent: boolean;
-  analytics_enabled: boolean;
+  allow_template_sharing: boolean;
+  analytics_opt_in: boolean;
+  personalization_opt_in: boolean;
+  share_usage_data: boolean;
 }
 
 export interface AIPreferences {
-  detail_level: DetailLevel;
-  include_budget_suggestions: boolean;
+  ai_temperature: number;
+  preferred_detail_level: DetailLevel;
+  include_budget_estimates: boolean;
   include_local_tips: boolean;
-  preferred_activity_types: string[];
-  excluded_categories: string[];
-  language_preference: string;
+  include_safety_warnings: boolean;
+  preferred_pace: string;
 }
 
 export interface UserSettings {
@@ -96,36 +101,41 @@ export interface UserSettings {
 
 export interface AppearanceSettingsUpdate {
   theme?: Theme;
-  compact_mode?: boolean;
-  show_animations?: boolean;
-  font_size?: 'small' | 'medium' | 'large';
+  language?: string;
+  timezone?: string;
+  date_format?: DateFormat;
+  currency?: string;
+  units?: Units;
 }
 
 export interface NotificationSettingsUpdate {
+  email_notifications?: boolean;
   email_trip_updates?: boolean;
-  email_report_ready?: boolean;
-  email_weekly_digest?: boolean;
+  email_report_completion?: boolean;
+  email_recommendations?: boolean;
   email_marketing?: boolean;
+  email_weekly_digest?: boolean;
+  push_notifications?: boolean;
   push_trip_reminders?: boolean;
-  push_agent_completion?: boolean;
-  push_system_alerts?: boolean;
+  push_travel_alerts?: boolean;
 }
 
 export interface PrivacySettingsUpdate {
   profile_visibility?: ProfileVisibility;
   show_travel_history?: boolean;
-  allow_recommendations_sharing?: boolean;
-  data_collection_consent?: boolean;
-  analytics_enabled?: boolean;
+  allow_template_sharing?: boolean;
+  analytics_opt_in?: boolean;
+  personalization_opt_in?: boolean;
+  share_usage_data?: boolean;
 }
 
 export interface AIPreferencesUpdate {
-  detail_level?: DetailLevel;
-  include_budget_suggestions?: boolean;
+  ai_temperature?: number;
+  preferred_detail_level?: DetailLevel;
+  include_budget_estimates?: boolean;
   include_local_tips?: boolean;
-  preferred_activity_types?: string[];
-  excluded_categories?: string[];
-  language_preference?: string;
+  include_safety_warnings?: boolean;
+  preferred_pace?: string;
 }
 
 // ============================================

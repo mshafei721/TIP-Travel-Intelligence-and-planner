@@ -322,20 +322,29 @@ export function hasFieldError(errors: z.ZodError | undefined, fieldPath: string)
 }
 
 /**
+ * Validation result type - discriminated union for proper type narrowing
+ */
+export type ValidationResult =
+  | { success: true; data: CompleteTripFormData; errors?: undefined }
+  | { success: false; errors: z.ZodError; data?: undefined };
+
+/**
  * Validates the entire trip form (all steps)
  * @param data - Complete trip form data
- * @returns Validation result
+ * @returns Validation result with discriminated union for type safety
  */
-export function validateCompleteForm(data: unknown): {
-  success: boolean;
-  errors?: z.ZodError;
-  data?: CompleteTripFormData;
-} {
+export function validateCompleteForm(data: unknown): ValidationResult {
   const result = completeTripFormSchema.safeParse(data);
 
+  if (result.success) {
+    return {
+      success: true,
+      data: result.data,
+    };
+  }
+
   return {
-    success: result.success,
-    errors: result.success ? undefined : result.error,
-    data: result.success ? result.data : undefined,
+    success: false,
+    errors: result.error,
   };
 }

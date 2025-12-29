@@ -181,29 +181,16 @@ export default function SettingsPage() {
               saveSettings({ appearance: { theme: theme as 'light' | 'dark' | 'system' } });
             }}
           />
-          <SettingsToggle
-            label="Compact Mode"
-            description="Use a more condensed layout"
-            checked={settings.appearance.compact_mode}
-            onChange={(compact_mode) => saveSettings({ appearance: { compact_mode } })}
-          />
-          <SettingsToggle
-            label="Show Animations"
-            description="Enable UI animations and transitions"
-            checked={settings.appearance.show_animations}
-            onChange={(show_animations) => saveSettings({ appearance: { show_animations } })}
-          />
           <SettingsSelect
-            label="Font Size"
-            description="Adjust the text size"
-            value={settings.appearance.font_size}
+            label="Units"
+            description="Measurement system preference"
+            value={settings.appearance.units}
             options={[
-              { value: 'small', label: 'Small' },
-              { value: 'medium', label: 'Medium' },
-              { value: 'large', label: 'Large' },
+              { value: 'metric', label: 'Metric', description: 'Kilometers, Celsius' },
+              { value: 'imperial', label: 'Imperial', description: 'Miles, Fahrenheit' },
             ]}
-            onChange={(font_size) =>
-              saveSettings({ appearance: { font_size: font_size as 'small' | 'medium' | 'large' } })
+            onChange={(units) =>
+              saveSettings({ appearance: { units: units as 'metric' | 'imperial' } })
             }
           />
         </SettingsSection>
@@ -215,6 +202,14 @@ export default function SettingsPage() {
           icon={Bell}
         >
           <SettingsToggle
+            label="Email Notifications"
+            description="Receive email notifications"
+            checked={settings.notifications.email_notifications}
+            onChange={(email_notifications) =>
+              saveSettings({ notifications: { email_notifications } })
+            }
+          />
+          <SettingsToggle
             label="Trip Updates"
             description="Get notified about changes to your trips"
             checked={settings.notifications.email_trip_updates}
@@ -223,11 +218,11 @@ export default function SettingsPage() {
             }
           />
           <SettingsToggle
-            label="Report Ready"
+            label="Report Completion"
             description="Notify when AI reports are complete"
-            checked={settings.notifications.email_report_ready}
-            onChange={(email_report_ready) =>
-              saveSettings({ notifications: { email_report_ready } })
+            checked={settings.notifications.email_report_completion}
+            onChange={(email_report_completion) =>
+              saveSettings({ notifications: { email_report_completion } })
             }
           />
           <SettingsToggle
@@ -245,19 +240,19 @@ export default function SettingsPage() {
             onChange={(email_marketing) => saveSettings({ notifications: { email_marketing } })}
           />
           <SettingsToggle
+            label="Push Notifications"
+            description="Enable push notifications"
+            checked={settings.notifications.push_notifications}
+            onChange={(push_notifications) =>
+              saveSettings({ notifications: { push_notifications } })
+            }
+          />
+          <SettingsToggle
             label="Trip Reminders"
             description="Push notifications for upcoming trips"
             checked={settings.notifications.push_trip_reminders}
             onChange={(push_trip_reminders) =>
               saveSettings({ notifications: { push_trip_reminders } })
-            }
-          />
-          <SettingsToggle
-            label="Agent Completion"
-            description="Notify when AI agents complete tasks"
-            checked={settings.notifications.push_agent_completion}
-            onChange={(push_agent_completion) =>
-              saveSettings({ notifications: { push_agent_completion } })
             }
           />
         </SettingsSection>
@@ -276,7 +271,7 @@ export default function SettingsPage() {
             onChange={(profile_visibility) =>
               saveSettings({
                 privacy: {
-                  profile_visibility: profile_visibility as 'public' | 'private' | 'friends_only',
+                  profile_visibility: profile_visibility as 'public' | 'private' | 'friends',
                 },
               })
             }
@@ -288,18 +283,26 @@ export default function SettingsPage() {
             onChange={(show_travel_history) => saveSettings({ privacy: { show_travel_history } })}
           />
           <SettingsToggle
-            label="Share Recommendations"
-            description="Allow sharing AI recommendations with others"
-            checked={settings.privacy.allow_recommendations_sharing}
-            onChange={(allow_recommendations_sharing) =>
-              saveSettings({ privacy: { allow_recommendations_sharing } })
+            label="Allow Template Sharing"
+            description="Allow sharing trip templates with others"
+            checked={settings.privacy.allow_template_sharing}
+            onChange={(allow_template_sharing) =>
+              saveSettings({ privacy: { allow_template_sharing } })
             }
           />
           <SettingsToggle
             label="Analytics"
             description="Help us improve by sharing usage data"
-            checked={settings.privacy.analytics_enabled}
-            onChange={(analytics_enabled) => saveSettings({ privacy: { analytics_enabled } })}
+            checked={settings.privacy.analytics_opt_in}
+            onChange={(analytics_opt_in) => saveSettings({ privacy: { analytics_opt_in } })}
+          />
+          <SettingsToggle
+            label="Personalization"
+            description="Enable personalized recommendations"
+            checked={settings.privacy.personalization_opt_in}
+            onChange={(personalization_opt_in) =>
+              saveSettings({ privacy: { personalization_opt_in } })
+            }
           />
         </SettingsSection>
 
@@ -312,22 +315,25 @@ export default function SettingsPage() {
           <SettingsSelect
             label="Detail Level"
             description="How detailed should AI responses be"
-            value={settings.ai_preferences.detail_level}
+            value={settings.ai_preferences.preferred_detail_level}
             options={DETAIL_LEVEL_OPTIONS}
-            onChange={(detail_level) =>
+            onChange={(preferred_detail_level) =>
               saveSettings({
                 ai_preferences: {
-                  detail_level: detail_level as 'minimal' | 'standard' | 'detailed',
+                  preferred_detail_level: preferred_detail_level as
+                    | 'brief'
+                    | 'balanced'
+                    | 'detailed',
                 },
               })
             }
           />
           <SettingsToggle
-            label="Budget Suggestions"
-            description="Include budget recommendations"
-            checked={settings.ai_preferences.include_budget_suggestions}
-            onChange={(include_budget_suggestions) =>
-              saveSettings({ ai_preferences: { include_budget_suggestions } })
+            label="Budget Estimates"
+            description="Include budget estimates in recommendations"
+            checked={settings.ai_preferences.include_budget_estimates}
+            onChange={(include_budget_estimates) =>
+              saveSettings({ ai_preferences: { include_budget_estimates } })
             }
           />
           <SettingsToggle
@@ -336,6 +342,14 @@ export default function SettingsPage() {
             checked={settings.ai_preferences.include_local_tips}
             onChange={(include_local_tips) =>
               saveSettings({ ai_preferences: { include_local_tips } })
+            }
+          />
+          <SettingsToggle
+            label="Safety Warnings"
+            description="Include safety and health warnings"
+            checked={settings.ai_preferences.include_safety_warnings}
+            onChange={(include_safety_warnings) =>
+              saveSettings({ ai_preferences: { include_safety_warnings } })
             }
           />
         </SettingsSection>

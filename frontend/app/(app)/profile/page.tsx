@@ -2,9 +2,13 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { ProfileSettingsPage } from '@/components/profile/ProfileSettingsPage';
 import { ProfileError } from '@/components/profile/ProfileError';
-import { getProfile } from '@/lib/api/profile';
-import { listTemplates } from '@/lib/api/templates';
-import type { ProfileSettings, TravelerDetails } from '@/types/profile';
+import { serverApiRequest } from '@/lib/api/auth-utils.server';
+import type {
+  ProfileSettings,
+  TravelerDetails,
+  ProfileResponse,
+  TripTemplate,
+} from '@/types/profile';
 
 /**
  * Profile Settings Page (Server Component)
@@ -31,8 +35,12 @@ export default async function ProfilePage() {
   }
 
   try {
-    // Fetch profile and templates from backend API
-    const [profileResponse, templates] = await Promise.all([getProfile(), listTemplates()]);
+    // Fetch profile and templates from backend API using server-side auth
+    const [profileResponse, templatesResponse] = await Promise.all([
+      serverApiRequest<ProfileResponse>('/api/profile'),
+      serverApiRequest<{ templates: TripTemplate[] }>('/api/templates'),
+    ]);
+    const templates = templatesResponse.templates;
 
     const residencyStatus = profileResponse.travelerProfile?.residency_status;
     const normalizedResidencyStatus: TravelerDetails['residencyStatus'] =

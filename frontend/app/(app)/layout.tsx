@@ -38,7 +38,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         } = await supabase.auth.getUser();
         if (authUser) {
           setUser({
-            name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'User',
+            name:
+              authUser.user_metadata?.display_name ||
+              authUser.user_metadata?.full_name ||
+              authUser.email?.split('@')[0] ||
+              'User',
             avatarUrl: authUser.user_metadata?.avatar_url,
           });
         }
@@ -58,7 +62,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       if (session?.user) {
         setUser({
           name:
-            session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
+            session.user.user_metadata?.display_name ||
+            session.user.user_metadata?.full_name ||
+            session.user.email?.split('@')[0] ||
+            'User',
           avatarUrl: session.user.user_metadata?.avatar_url,
         });
       } else {

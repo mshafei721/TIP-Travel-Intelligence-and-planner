@@ -16,6 +16,7 @@ import AutoSaveIndicator from './AutoSaveIndicator';
 import NavigationButtons from './NavigationButtons';
 import { validateStep, validateCompleteForm } from '@/lib/validation/trip-wizard-schemas';
 import { useToast } from '@/components/ui/toast';
+import { createClient } from '@/lib/supabase/client';
 
 // TypeScript interfaces matching the spec
 export interface TravelerDetails {
@@ -235,14 +236,67 @@ export default function TripCreationWizard() {
 
     setIsSubmitting(true);
     try {
+      // Get auth token from Supabase
+      const supabase = createClient();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session) {
+        toast.error('You must be logged in to create a trip.', 'Authentication Error');
+        router.push('/login');
+        return;
+      }
+
+      // Transform form data to match backend API contract
+      const tripData = {
+        traveler_details: {
+          name: validation.data.travelerDetails.name,
+          email: validation.data.travelerDetails.email,
+          age: validation.data.travelerDetails.age,
+          nationality: validation.data.travelerDetails.nationality,
+          residencyCountry: validation.data.travelerDetails.residenceCountry,
+          residencyStatus: validation.data.travelerDetails.residencyStatus,
+          originCity: validation.data.travelerDetails.originCity,
+          partySize: validation.data.travelerDetails.partySize,
+          companionAges: validation.data.travelerDetails.partyAges,
+        },
+        destinations: validation.data.destinations.map((dest, index) => ({
+          id: crypto.randomUUID(),
+          country: dest.country,
+          city: dest.city,
+          order: index,
+        })),
+        trip_details: {
+          departureDate: validation.data.tripDetails.departureDate,
+          returnDate: validation.data.tripDetails.returnDate,
+          budget: validation.data.tripDetails.budget,
+          budgetCurrency: validation.data.tripDetails.currency,
+          tripPurposes: validation.data.tripDetails.tripPurposes,
+        },
+        preferences: {
+          travelStyle: validation.data.preferences.travelStyle,
+          interests: validation.data.preferences.interests,
+          dietaryRestrictions: validation.data.preferences.dietaryRestrictions,
+          accessibilityNeeds: validation.data.preferences.accessibilityNeeds,
+        },
+      };
+
       // API call to create trip with validated data
-      const response = await fetch('/api/trips', {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
+      const response = await fetch(`${backendUrl}/api/trips`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(validation.data),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify(tripData),
       });
 
-      if (!response.ok) throw new Error('Failed to create trip');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ detail: 'Failed to create trip' }));
+        throw new Error(errorData.detail || 'Failed to create trip');
+      }
 
       const trip = await response.json();
 
@@ -256,7 +310,9 @@ export default function TripCreationWizard() {
       router.push(`/trips/${trip.id}`);
     } catch (error) {
       console.error('Submission error:', error);
-      toast.error('Failed to create trip. Please try again.');
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to create trip. Please try again.',
+      );
     } finally {
       setIsSubmitting(false);
     }
