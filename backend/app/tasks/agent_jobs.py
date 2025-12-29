@@ -566,9 +566,9 @@ def execute_orchestrator(self, trip_id: str) -> dict[str, Any]:
 
         print(f"[Task {self.request.id}] Prepared orchestrator input: {orchestrator_input}")
 
-        # Step 3: Update trip status to generating
+        # Step 3: Update trip status to processing
         supabase.table("trips").update({
-            "status": "generating",
+            "status": "processing",
             "updated_at": datetime.utcnow().isoformat(),
         }).eq("id", trip_id).execute()
 
