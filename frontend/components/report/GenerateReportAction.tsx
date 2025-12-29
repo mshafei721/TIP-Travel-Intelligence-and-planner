@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AlertTriangle, Info, Loader2, RefreshCw } from 'lucide-react';
 import { generateTripReport, getTripGenerationStatus } from '@/lib/api/reports';
+import { TripGenerationProgress } from '@/components/reports/TripGenerationProgress';
 
 interface GenerateReportActionProps {
   tripId: string;
@@ -19,6 +20,27 @@ export function GenerateReportAction({ tripId, variant = 'not-found' }: Generate
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState<string | null>(null);
+  const [showProgressTracker, setShowProgressTracker] = useState(false);
+
+  // Check if generation is already in progress on mount
+  useEffect(() => {
+    const checkExistingGeneration = async () => {
+      try {
+        const statusResult = await getTripGenerationStatus(tripId);
+        if (statusResult.success && statusResult.status) {
+          const status = statusResult.status.status;
+          // If already processing or pending, show the progress tracker
+          if (status === 'processing' || status === 'pending') {
+            setShowProgressTracker(true);
+            setIsGenerating(true);
+          }
+        }
+      } catch {
+        // Ignore errors - just means no existing generation
+      }
+    };
+    checkExistingGeneration();
+  }, [tripId]);
 
   const handleGenerateReport = async () => {
     setIsGenerating(true);
@@ -29,6 +51,13 @@ export function GenerateReportAction({ tripId, variant = 'not-found' }: Generate
       const result = await generateTripReport(tripId);
 
       if (!result.success) {
+        // Check if generation is already in progress
+        if (result.error?.includes('already in progress')) {
+          // Show the progress tracker instead of an error
+          setShowProgressTracker(true);
+          setError(null);
+          return;
+        }
         setError(result.error || 'Failed to start report generation');
         setIsGenerating(false);
         return;
@@ -119,6 +148,25 @@ export function GenerateReportAction({ tripId, variant = 'not-found' }: Generate
 
   const currentConfig = config[variant];
   const Icon = currentConfig.icon;
+
+  // Show full progress tracker when generation is in progress
+  if (showProgressTracker) {
+    return (
+      <div className="rounded-lg border-2 border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/30 p-6">
+        <TripGenerationProgress
+          tripId={tripId}
+          onComplete={() => {
+            router.refresh();
+          }}
+          onError={(errorMsg) => {
+            setShowProgressTracker(false);
+            setError(errorMsg);
+            setIsGenerating(false);
+          }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div
