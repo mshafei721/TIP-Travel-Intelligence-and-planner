@@ -232,7 +232,7 @@ class OrchestratorAgent:
 
     async def _run_phase(self, trip_data: TripData, agent_names: list[str]) -> dict[str, Any]:
         """
-        Run a phase of agents
+        Run a phase of agents sequentially to avoid API rate limits.
 
         Args:
             trip_data: Validated trip data
@@ -246,25 +246,31 @@ class OrchestratorAgent:
         # Filter to only available agents
         available_agents_in_phase = [name for name in agent_names if name in self.available_agents]
 
-        # Run agents in parallel
-        tasks = [self._run_agent(trip_data, agent_name) for agent_name in available_agents_in_phase]
+        # Run agents sequentially with delay to avoid rate limits
+        # Anthropic free tier: 30,000 input tokens/minute
+        DELAY_BETWEEN_AGENTS = 5  # seconds delay between agents
 
-        # Gather results with error handling
-        agent_results = await asyncio.gather(*tasks, return_exceptions=True)
-
-        # Process results
-        for agent_name, result in zip(available_agents_in_phase, agent_results, strict=False):
-            if isinstance(result, Exception):
-                # Log error and continue
+        for agent_name in available_agents_in_phase:
+            print(f"[Orchestrator] Running agent: {agent_name}")
+            try:
+                result = await self._run_agent(trip_data, agent_name)
+                results[agent_name] = result
+                print(f"[Orchestrator] Agent {agent_name} completed successfully")
+            except Exception as e:
+                # Log error and continue with next agent
+                print(f"[Orchestrator] Agent {agent_name} failed: {str(e)}")
                 self.errors.append(
                     {
                         "agent": agent_name,
-                        "error": str(result),
+                        "error": str(e),
                         "timestamp": datetime.utcnow().isoformat(),
                     }
                 )
-            else:
-                results[agent_name] = result
+
+            # Add delay between agents to avoid rate limiting
+            if agent_name != available_agents_in_phase[-1]:
+                print(f"[Orchestrator] Waiting {DELAY_BETWEEN_AGENTS}s before next agent...")
+                await asyncio.sleep(DELAY_BETWEEN_AGENTS)
 
         return results
 

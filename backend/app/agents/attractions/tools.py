@@ -271,16 +271,30 @@ def get_city_coordinates_tool(city_name: str, country_code: str | None = None) -
     import asyncio
     import json
 
-    client = OpenTripMapClient()
+    # Check if API key is configured
+    api_key = os.getenv("OPENTRIPMAP_API_KEY")
+    if not api_key:
+        # Return a message that helps the AI proceed without coordinates
+        return json.dumps({
+            "error": "OpenTripMap API not configured",
+            "message": "Cannot fetch coordinates. Please provide attraction information based on general knowledge.",
+            "city_name": city_name,
+            "country_code": country_code,
+        })
 
-    async def fetch():
-        return await client.get_location_coordinates(city_name, country_code)
+    try:
+        client = OpenTripMapClient(api_key=api_key)
 
-    result = asyncio.run(fetch())
+        async def fetch():
+            return await client.get_location_coordinates(city_name, country_code)
 
-    if result:
-        return json.dumps(result, indent=2)
-    return json.dumps({"error": f"City '{city_name}' not found"})
+        result = asyncio.run(fetch())
+
+        if result:
+            return json.dumps(result, indent=2)
+        return json.dumps({"error": f"City '{city_name}' not found"})
+    except Exception as e:
+        return json.dumps({"error": str(e), "city_name": city_name})
 
 
 @tool("Search Attractions Near Location")
@@ -309,22 +323,33 @@ def search_attractions_tool(
     import asyncio
     import json
 
-    client = OpenTripMapClient()
-    radius_meters = int(radius_km * 1000)  # Convert km to meters
+    # Check if API key is configured
+    api_key = os.getenv("OPENTRIPMAP_API_KEY")
+    if not api_key:
+        return json.dumps({
+            "error": "OpenTripMap API not configured",
+            "message": "Cannot search attractions. Please provide attraction recommendations based on general knowledge.",
+            "coordinates": {"lon": lon, "lat": lat},
+        })
 
-    async def fetch():
-        return await client.get_attractions_by_radius(
-            lon=lon,
-            lat=lat,
-            radius=radius_meters,
-            kinds=categories,
-            rate=min_rating,
-            limit=100,
-        )
+    try:
+        client = OpenTripMapClient(api_key=api_key)
+        radius_meters = int(radius_km * 1000)  # Convert km to meters
 
-    results = asyncio.run(fetch())
+        async def fetch():
+            return await client.get_attractions_by_radius(
+                lon=lon,
+                lat=lat,
+                radius=radius_meters,
+                kinds=categories,
+                rate=min_rating,
+                limit=100,
+            )
 
-    return json.dumps(results, indent=2)
+        results = asyncio.run(fetch())
+        return json.dumps(results, indent=2)
+    except Exception as e:
+        return json.dumps({"error": str(e), "coordinates": {"lon": lon, "lat": lat}})
 
 
 @tool("Get Attraction Details")
@@ -346,16 +371,28 @@ def get_attraction_details_tool(place_id: str) -> str:
     import asyncio
     import json
 
-    client = OpenTripMapClient()
+    # Check if API key is configured
+    api_key = os.getenv("OPENTRIPMAP_API_KEY")
+    if not api_key:
+        return json.dumps({
+            "error": "OpenTripMap API not configured",
+            "message": "Cannot fetch attraction details. Please provide information based on general knowledge.",
+            "place_id": place_id,
+        })
 
-    async def fetch():
-        return await client.get_place_details(place_id)
+    try:
+        client = OpenTripMapClient(api_key=api_key)
 
-    result = asyncio.run(fetch())
+        async def fetch():
+            return await client.get_place_details(place_id)
 
-    if result:
-        return json.dumps(result, indent=2)
-    return json.dumps({"error": f"Place '{place_id}' not found"})
+        result = asyncio.run(fetch())
+
+        if result:
+            return json.dumps(result, indent=2)
+        return json.dumps({"error": f"Place '{place_id}' not found"})
+    except Exception as e:
+        return json.dumps({"error": str(e), "place_id": place_id})
 
 
 # ============================================================================
