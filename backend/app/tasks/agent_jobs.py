@@ -251,8 +251,8 @@ def execute_visa_agent(self, trip_id: str, traveler_data: dict[str, Any]) -> dic
         agent = VisaAgent()
         result = agent.run(input_data)
 
-        # Store result in database (Supabase report_sections table)
-        from app.core.supabase import supabase
+        # Store result in database using idempotent upsert
+        from app.core.celery_app import upsert_report_section
 
         # Convert result to dict for JSON storage
         content_data = result.model_dump(mode="json")
@@ -260,29 +260,20 @@ def execute_visa_agent(self, trip_id: str, traveler_data: dict[str, Any]) -> dic
         # Convert confidence (0.0-1.0) to integer (0-100) for database
         confidence_integer = int(result.confidence * 100)
 
-        # Store in report_sections table
-        report_response = (
-            supabase.table("report_sections")
-            .insert(
-                {
-                    "trip_id": trip_id,
-                    "section_type": "visa",
-                    "title": "Visa Requirements",
-                    "content": content_data,
-                    "confidence_score": confidence_integer,
-                    "sources": [source.model_dump() for source in result.sources],
-                    "generated_at": result.generated_at.isoformat(),
-                }
-            )
-            .execute()
+        # Upsert ensures idempotency on task retry
+        report_response = upsert_report_section(
+            trip_id=trip_id,
+            section_type="visa",
+            title="Visa Requirements",
+            content=content_data,
+            confidence_score=confidence_integer,
+            sources=[source.model_dump() for source in result.sources],
+            generated_at=result.generated_at.isoformat(),
         )
-
-        if not report_response.data:
-            raise Exception("Failed to store visa report in database")
 
         print(f"[Task {self.request.id}] Completed Visa Agent for trip {trip_id}")
         print(f"[Task {self.request.id}] Confidence: {result.confidence}")
-        print(f"[Task {self.request.id}] Stored report ID: {report_response.data[0]['id']}")
+        print(f"[Task {self.request.id}] Stored report ID: {report_response.get('id', 'N/A')}")
 
         return {
             "trip_id": trip_id,
@@ -386,8 +377,8 @@ def execute_country_agent(self, trip_id: str, trip_data: dict[str, Any]) -> dict
         agent = CountryAgent()
         result = agent.run(input_data)
 
-        # Store result in database (Supabase report_sections table)
-        from app.core.supabase import supabase
+        # Store result in database using idempotent upsert
+        from app.core.celery_app import upsert_report_section
 
         # Convert result to dict for JSON storage
         content_data = result.model_dump(mode="json")
@@ -395,30 +386,21 @@ def execute_country_agent(self, trip_id: str, trip_data: dict[str, Any]) -> dict
         # Convert confidence (0.0-1.0) to integer (0-100) for database
         confidence_integer = int(result.confidence_score * 100)
 
-        # Store in report_sections table
-        report_response = (
-            supabase.table("report_sections")
-            .insert(
-                {
-                    "trip_id": trip_id,
-                    "section_type": "country",
-                    "title": f"Country Information: {result.country_name}",
-                    "content": content_data,
-                    "confidence_score": confidence_integer,
-                    "sources": [source.model_dump() for source in result.sources],
-                    "generated_at": result.generated_at.isoformat(),
-                }
-            )
-            .execute()
+        # Upsert ensures idempotency on task retry
+        report_response = upsert_report_section(
+            trip_id=trip_id,
+            section_type="country",
+            title=f"Country Information: {result.country_name}",
+            content=content_data,
+            confidence_score=confidence_integer,
+            sources=[source.model_dump() for source in result.sources],
+            generated_at=result.generated_at.isoformat(),
         )
-
-        if not report_response.data:
-            raise Exception("Failed to store country report in database")
 
         print(f"[Task {self.request.id}] Completed Country Agent for trip {trip_id}")
         print(f"[Task {self.request.id}] Country: {result.country_name}")
         print(f"[Task {self.request.id}] Confidence: {result.confidence_score}")
-        print(f"[Task {self.request.id}] Stored report ID: {report_response.data[0]['id']}")
+        print(f"[Task {self.request.id}] Stored report ID: {report_response.get('id', 'N/A')}")
 
         return {
             "trip_id": trip_id,
@@ -526,8 +508,8 @@ def execute_weather_agent(self, trip_id: str, trip_data: dict[str, Any]) -> dict
         agent = WeatherAgent()
         result = agent.run(input_data)
 
-        # Store result in database (Supabase report_sections table)
-        from app.core.supabase import supabase
+        # Store result in database using idempotent upsert
+        from app.core.celery_app import upsert_report_section
 
         # Convert result to dict for JSON storage
         content_data = result.model_dump(mode="json")
@@ -535,31 +517,22 @@ def execute_weather_agent(self, trip_id: str, trip_data: dict[str, Any]) -> dict
         # Convert confidence (0.0-1.0) to integer (0-100) for database
         confidence_integer = int(result.confidence_score * 100)
 
-        # Store in report_sections table
-        report_response = (
-            supabase.table("report_sections")
-            .insert(
-                {
-                    "trip_id": trip_id,
-                    "section_type": "weather",
-                    "title": f"Weather Forecast: {result.location}",
-                    "content": content_data,
-                    "confidence_score": confidence_integer,
-                    "sources": result.sources,
-                    "generated_at": result.generated_at.isoformat(),
-                }
-            )
-            .execute()
+        # Upsert ensures idempotency on task retry
+        report_response = upsert_report_section(
+            trip_id=trip_id,
+            section_type="weather",
+            title=f"Weather Forecast: {result.location}",
+            content=content_data,
+            confidence_score=confidence_integer,
+            sources=result.sources,
+            generated_at=result.generated_at.isoformat(),
         )
-
-        if not report_response.data:
-            raise Exception("Failed to store weather report in database")
 
         print(f"[Task {self.request.id}] Completed Weather Agent for trip {trip_id}")
         print(f"[Task {self.request.id}] Location: {result.location}")
         print(f"[Task {self.request.id}] Average Temp: {result.average_temp}°C")
         print(f"[Task {self.request.id}] Confidence: {result.confidence_score}")
-        print(f"[Task {self.request.id}] Stored report ID: {report_response.data[0]['id']}")
+        print(f"[Task {self.request.id}] Stored report ID: {report_response.get('id', 'N/A')}")
 
         return {
             "trip_id": trip_id,
@@ -1149,8 +1122,8 @@ def execute_attractions_agent(self, trip_id: str, trip_data: dict[str, Any]) -> 
         agent = AttractionsAgent()
         result = agent.run(input_data)
 
-        # Store result in database (Supabase report_sections table)
-        from app.core.supabase import supabase
+        # Store result in database using idempotent upsert
+        from app.core.celery_app import upsert_report_section
 
         # Convert result to dict for JSON storage
         content_data = result.model_dump(mode="json")
@@ -1158,31 +1131,22 @@ def execute_attractions_agent(self, trip_id: str, trip_data: dict[str, Any]) -> 
         # Convert confidence (0.0-1.0) to integer (0-100) for database
         confidence_integer = int(result.confidence_score * 100)
 
-        # Store in report_sections table
-        report_response = (
-            supabase.table("report_sections")
-            .insert(
-                {
-                    "trip_id": trip_id,
-                    "section_type": "attractions",
-                    "title": f"Attractions: {trip_data.get('destination_city') or trip_data['destination_country']}",
-                    "content": content_data,
-                    "confidence_score": confidence_integer,
-                    "sources": [source.model_dump() for source in result.sources],
-                    "generated_at": result.generated_at.isoformat(),
-                }
-            )
-            .execute()
+        # Upsert ensures idempotency on task retry
+        report_response = upsert_report_section(
+            trip_id=trip_id,
+            section_type="attractions",
+            title=f"Attractions: {trip_data.get('destination_city') or trip_data['destination_country']}",
+            content=content_data,
+            confidence_score=confidence_integer,
+            sources=[source.model_dump() for source in result.sources],
+            generated_at=result.generated_at.isoformat(),
         )
-
-        if not report_response.data:
-            raise Exception("Failed to store attractions report in database")
 
         print(f"[Task {self.request.id}] Completed Attractions Agent for trip {trip_id}")
         print(f"[Task {self.request.id}] Destination: {trip_data.get('destination_city') or trip_data['destination_country']}")
         print(f"[Task {self.request.id}] Attractions found: {len(result.top_attractions)}")
         print(f"[Task {self.request.id}] Confidence: {result.confidence_score}")
-        print(f"[Task {self.request.id}] Stored report ID: {report_response.data[0]['id']}")
+        print(f"[Task {self.request.id}] Stored report ID: {report_response.get('id', 'N/A')}")
 
         return {
             "trip_id": trip_id,
@@ -1308,8 +1272,8 @@ def execute_itinerary_agent(self, trip_id: str, trip_data: dict[str, Any]) -> di
         agent = ItineraryAgent()
         result = agent.run(input_data)
 
-        # Store result in database (Supabase report_sections table)
-        from app.core.supabase import supabase
+        # Store result in database using idempotent upsert
+        from app.core.celery_app import upsert_report_section
 
         # Convert result to dict for JSON storage
         content_data = result.model_dump(mode="json")
@@ -1317,25 +1281,16 @@ def execute_itinerary_agent(self, trip_id: str, trip_data: dict[str, Any]) -> di
         # Convert confidence (0.0-1.0) to integer (0-100) for database
         confidence_integer = int(result.confidence_score * 100)
 
-        # Store in report_sections table
-        report_response = (
-            supabase.table("report_sections")
-            .insert(
-                {
-                    "trip_id": trip_id,
-                    "section_type": "itinerary",
-                    "title": f"Itinerary: {trip_data.get('destination_city') or trip_data['destination_country']}",
-                    "content": content_data,
-                    "confidence_score": confidence_integer,
-                    "sources": [source.model_dump() for source in result.sources],
-                    "generated_at": result.generated_at.isoformat(),
-                }
-            )
-            .execute()
+        # Upsert ensures idempotency on task retry
+        report_response = upsert_report_section(
+            trip_id=trip_id,
+            section_type="itinerary",
+            title=f"Itinerary: {trip_data.get('destination_city') or trip_data['destination_country']}",
+            content=content_data,
+            confidence_score=confidence_integer,
+            sources=[source.model_dump() for source in result.sources],
+            generated_at=result.generated_at.isoformat(),
         )
-
-        if not report_response.data:
-            raise Exception("Failed to store itinerary report in database")
 
         trip_duration = (return_date - departure_date).days
         print(f"[Task {self.request.id}] Completed Itinerary Agent for trip {trip_id}")
@@ -1343,7 +1298,7 @@ def execute_itinerary_agent(self, trip_id: str, trip_data: dict[str, Any]) -> di
         print(f"[Task {self.request.id}] Duration: {trip_duration} days")
         print(f"[Task {self.request.id}] Daily plans: {len(result.daily_plans)}")
         print(f"[Task {self.request.id}] Confidence: {result.confidence_score}")
-        print(f"[Task {self.request.id}] Stored report ID: {report_response.data[0]['id']}")
+        print(f"[Task {self.request.id}] Stored report ID: {report_response.get('id', 'N/A')}")
 
         return {
             "trip_id": trip_id,
@@ -1464,8 +1419,8 @@ def execute_flight_agent(self, trip_id: str, trip_data: dict[str, Any]) -> dict[
         agent = FlightAgent()
         result = agent.run(input_data)
 
-        # Store result in database (Supabase report_sections table)
-        from app.core.supabase import supabase
+        # Store result in database using idempotent upsert
+        from app.core.celery_app import upsert_report_section
 
         # Convert result to dict for JSON storage
         content_data = result.model_dump(mode="json")
@@ -1473,25 +1428,16 @@ def execute_flight_agent(self, trip_id: str, trip_data: dict[str, Any]) -> dict[
         # Convert confidence (0.0-1.0) to integer (0-100) for database
         confidence_integer = int(result.confidence_score * 100)
 
-        # Store in report_sections table
-        report_response = (
-            supabase.table("report_sections")
-            .insert(
-                {
-                    "trip_id": trip_id,
-                    "section_type": "flight",
-                    "title": f"Flights: {trip_data['origin_city']} → {trip_data['destination_city']}",
-                    "content": content_data,
-                    "confidence_score": confidence_integer,
-                    "sources": [source.model_dump() for source in result.sources],
-                    "generated_at": result.generated_at.isoformat(),
-                }
-            )
-            .execute()
+        # Upsert ensures idempotency on task retry
+        report_response = upsert_report_section(
+            trip_id=trip_id,
+            section_type="flight",
+            title=f"Flights: {trip_data['origin_city']} → {trip_data['destination_city']}",
+            content=content_data,
+            confidence_score=confidence_integer,
+            sources=[source.model_dump() for source in result.sources],
+            generated_at=result.generated_at.isoformat(),
         )
-
-        if not report_response.data:
-            raise Exception("Failed to store flight report in database")
 
         trip_type = "round-trip" if return_date else "one-way"
         print(f"[Task {self.request.id}] Completed Flight Agent for trip {trip_id}")
@@ -1502,7 +1448,7 @@ def execute_flight_agent(self, trip_id: str, trip_data: dict[str, Any]) -> dict[
         print(f"[Task {self.request.id}] Passengers: {input_data.passengers}")
         print(f"[Task {self.request.id}] Cabin: {cabin_class.value}")
         print(f"[Task {self.request.id}] Confidence: {result.confidence_score}")
-        print(f"[Task {self.request.id}] Stored report ID: {report_response.data[0]['id']}")
+        print(f"[Task {self.request.id}] Stored report ID: {report_response.get('id', 'N/A')}")
 
         return {
             "trip_id": trip_id,

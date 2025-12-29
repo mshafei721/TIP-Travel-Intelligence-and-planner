@@ -159,7 +159,8 @@ class TestBaseAgent:
         """AgentConfig should have sensible defaults"""
         config = AgentConfig(agent_type="mock")
 
-        assert config.llm_model == "claude-3-5-sonnet-20241022"
+        # Default model is claude-sonnet-4-20250514 (can be overridden via ANTHROPIC_MODEL env)
+        assert config.llm_model == "claude-sonnet-4-20250514"
         assert config.temperature == 0.1
         assert config.max_tokens == 4000
         assert config.verbose is True

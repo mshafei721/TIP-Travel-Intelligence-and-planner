@@ -255,14 +255,14 @@ class AttractionsAgent(BaseAgent):
                 confidence_score=confidence,
                 sources=[
                     SourceReference(
-                        source="OpenTripMap API",
                         url="https://opentripmap.io",
-                        retrieved_at=now,
+                        title="OpenTripMap API",
+                        verified_at=now,
                     ),
                     SourceReference(
-                        source="Tourism Knowledge Base",
-                        url="internal",
-                        retrieved_at=now,
+                        url="internal://tourism-knowledge-base",
+                        title="Tourism Knowledge Base",
+                        verified_at=now,
                     ),
                 ],
                 warnings=[],

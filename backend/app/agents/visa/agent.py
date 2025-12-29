@@ -232,19 +232,18 @@ class VisaAgent(BaseAgent):
                 return_ticket=entry_req_data.get("return_ticket", False),
             )
 
-            # Build sources
+            # Build sources (using correct SourceReference fields)
             sources_data = result_data.get("sources", [])
+            now = datetime.utcnow()
             sources = [
                 SourceReference(
-                    source_type=s.get("source_type", "api"),
                     url=s.get("url", ""),
-                    description=s.get("description", ""),
-                    last_accessed=(
+                    title=s.get("description", s.get("source_type", "Visa Source")),
+                    verified_at=(
                         datetime.fromisoformat(s["last_accessed"])
                         if "last_accessed" in s
-                        else datetime.utcnow()
+                        else now
                     ),
-                    confidence=s.get("confidence", 0.9),
                 )
                 for s in sources_data
             ]
@@ -300,11 +299,9 @@ class VisaAgent(BaseAgent):
             warnings=["This is a fallback result. Verification recommended."],
             sources=[
                 SourceReference(
-                    source_type="agent",
-                    url="",
-                    description="Visa Agent analysis (fallback mode)",
-                    last_accessed=datetime.utcnow(),
-                    confidence=0.7,
+                    url="internal://visa-agent",
+                    title="Visa Agent analysis (fallback mode)",
+                    verified_at=datetime.utcnow(),
                 )
             ],
             last_verified=datetime.utcnow(),

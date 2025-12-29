@@ -18,6 +18,7 @@ interface SearchableSelectProps {
   isClearable?: boolean;
   noOptionsMessage?: string;
   className?: string;
+  menuPosition?: 'fixed' | 'absolute';
 }
 
 export function SearchableSelect({
@@ -30,9 +31,14 @@ export function SearchableSelect({
   isClearable = true,
   noOptionsMessage = 'No options found',
   className,
+  menuPosition = 'fixed',
 }: SearchableSelectProps) {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === 'dark';
+
+  // Portal target for the menu - use document.body on client-side
+  // This is safe because 'use client' ensures this only runs on the client
+  const menuPortalTarget = typeof window !== 'undefined' ? document.body : null;
 
   const customStyles: StylesConfig<SelectOption, false, GroupBase<SelectOption>> = {
     control: (base, state) => ({
@@ -56,8 +62,12 @@ export function SearchableSelect({
       backgroundColor: isDark ? 'rgb(15 23 42)' : 'white',
       borderRadius: '0.5rem',
       border: isDark ? '1px solid rgb(51 65 85)' : '1px solid rgb(203 213 225)',
-      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-      zIndex: 50,
+      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)',
+      zIndex: 9999,
+    }),
+    menuPortal: (base) => ({
+      ...base,
+      zIndex: 9999,
     }),
     menuList: (base) => ({
       ...base,
@@ -135,6 +145,8 @@ export function SearchableSelect({
       noOptionsMessage={() => noOptionsMessage}
       className={className}
       classNamePrefix="react-select"
+      menuPortalTarget={menuPortalTarget}
+      menuPosition={menuPosition}
     />
   );
 }
