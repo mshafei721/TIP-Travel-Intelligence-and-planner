@@ -554,8 +554,9 @@ def execute_orchestrator(self, trip_id: str) -> dict[str, Any]:
         primary_dest = destinations[0] if destinations else {}
 
         # Validate required dates before proceeding
-        departure_date = details.get("departure_date")
-        return_date = details.get("return_date")
+        # Handle both camelCase (frontend) and snake_case (backend) field names
+        departure_date = details.get("departure_date") or details.get("departureDate")
+        return_date = details.get("return_date") or details.get("returnDate")
 
         if not departure_date or not return_date:
             error_msg = "Cannot generate report: trip dates are required. Please set departure and return dates for your trip."
@@ -577,6 +578,13 @@ def execute_orchestrator(self, trip_id: str) -> dict[str, Any]:
                 "error": error_msg,
             }
 
+        # Extract trip purpose (handle both array and string formats)
+        trip_purposes = details.get("tripPurposes") or details.get("trip_purposes") or []
+        trip_purpose = details.get("trip_purpose") or details.get("tripPurpose")
+        if not trip_purpose and trip_purposes:
+            trip_purpose = trip_purposes[0] if isinstance(trip_purposes, list) else trip_purposes
+        trip_purpose = (trip_purpose or "tourism").lower()
+
         # Build orchestrator input
         orchestrator_input = {
             "trip_id": trip_id,
@@ -585,7 +593,7 @@ def execute_orchestrator(self, trip_id: str) -> dict[str, Any]:
             "destination_city": primary_dest.get("city", "Unknown"),
             "departure_date": departure_date,
             "return_date": return_date,
-            "trip_purpose": details.get("trip_purpose", "tourism"),
+            "trip_purpose": trip_purpose,
         }
 
         print(f"[Task {self.request.id}] Prepared orchestrator input: {orchestrator_input}")
