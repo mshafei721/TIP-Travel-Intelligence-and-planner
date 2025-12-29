@@ -87,6 +87,7 @@ export type Database = {
           destinations: Json;
           trip_details: Json;
           preferences: Json;
+          cover_image_url: string | null;
           auto_delete_at: string | null;
           deleted_at: string | null;
           created_at: string;
@@ -101,6 +102,7 @@ export type Database = {
           destinations: Json;
           trip_details: Json;
           preferences: Json;
+          cover_image_url?: string | null;
           auto_delete_at?: string | null;
           deleted_at?: string | null;
           created_at?: string;
@@ -115,6 +117,7 @@ export type Database = {
           destinations?: Json;
           trip_details?: Json;
           preferences?: Json;
+          cover_image_url?: string | null;
           auto_delete_at?: string | null;
           deleted_at?: string | null;
           created_at?: string;

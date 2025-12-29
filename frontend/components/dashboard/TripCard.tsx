@@ -1,7 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import Image from 'next/image';
+import { Plus, Loader2 } from 'lucide-react';
 import { analytics } from '@/lib/analytics';
+import { createClient } from '@/lib/supabase/client';
 
 interface TripCardProps {
   trip: {
@@ -15,6 +18,8 @@ interface TripCardProps {
   showCountdown?: boolean;
   onClick?: (tripId: string) => void;
   location?: string;
+  editable?: boolean;
+  onImageUpdate?: (url: string) => void;
 }
 
 export function TripCard({
@@ -22,11 +27,53 @@ export function TripCard({
   showCountdown = false,
   onClick,
   location = 'dashboard',
+  editable = false,
+  onImageUpdate,
 }: TripCardProps) {
+  const [isUploading, setIsUploading] = useState(false);
+  const [coverImage, setCoverImage] = useState(trip.coverImageUrl);
+
   const handleClick = () => {
     if (onClick) {
       analytics.tripCardClick(trip.id, location);
       onClick(trip.id);
+    }
+  };
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    event.stopPropagation();
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!validTypes.includes(file.type) || file.size > 5 * 1024 * 1024) return;
+
+    setIsUploading(true);
+    try {
+      const supabase = createClient();
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${trip.id}/${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('trip-images')
+        .upload(fileName, file, { cacheControl: '3600', upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage.from('trip-images').getPublicUrl(fileName);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (supabase as any)
+        .from('trips')
+        .update({ cover_image_url: urlData.publicUrl })
+        .eq('id', trip.id);
+
+      setCoverImage(urlData.publicUrl);
+      onImageUpdate?.(urlData.publicUrl);
+    } catch (err) {
+      console.error('Upload error:', err);
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -75,10 +122,10 @@ export function TripCard({
       `}
     >
       {/* Cover Image */}
-      <div className="relative h-32 w-full">
-        {trip.coverImageUrl ? (
+      <div className="relative h-32 w-full group">
+        {coverImage ? (
           <Image
-            src={trip.coverImageUrl}
+            src={coverImage}
             alt={`${trip.destination} cover`}
             fill
             className="object-cover"
@@ -87,6 +134,33 @@ export function TripCard({
         ) : (
           <div className="h-full w-full bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500" />
         )}
+
+        {/* Upload Button (+ icon) */}
+        {editable && (
+          <label
+            className={`
+              absolute top-2 right-2 p-2 rounded-full cursor-pointer
+              bg-white/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-700
+              shadow-md transition-all opacity-0 group-hover:opacity-100
+              ${isUploading ? 'opacity-100' : ''}
+            `}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {isUploading ? (
+              <Loader2 size={18} className="text-slate-600 dark:text-slate-300 animate-spin" />
+            ) : (
+              <Plus size={18} className="text-slate-600 dark:text-slate-300" />
+            )}
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              onChange={handleImageUpload}
+              className="hidden"
+              disabled={isUploading}
+            />
+          </label>
+        )}
+
         {/* Status Badge Overlay */}
         <div className="absolute bottom-2 left-2">
           <span
