@@ -90,6 +90,11 @@ export type Database = {
           cover_image_url: string | null;
           auto_delete_at: string | null;
           deleted_at: string | null;
+          is_archived: boolean;
+          archived_at: string | null;
+          user_rating: number | null;
+          user_notes: string | null;
+          version: number;
           created_at: string;
           updated_at: string;
         };
@@ -105,6 +110,11 @@ export type Database = {
           cover_image_url?: string | null;
           auto_delete_at?: string | null;
           deleted_at?: string | null;
+          is_archived?: boolean;
+          archived_at?: string | null;
+          user_rating?: number | null;
+          user_notes?: string | null;
+          version?: number;
           created_at?: string;
           updated_at?: string;
         };
@@ -120,6 +130,11 @@ export type Database = {
           cover_image_url?: string | null;
           auto_delete_at?: string | null;
           deleted_at?: string | null;
+          is_archived?: boolean;
+          archived_at?: string | null;
+          user_rating?: number | null;
+          user_notes?: string | null;
+          version?: number;
           created_at?: string;
           updated_at?: string;
         };

@@ -261,6 +261,7 @@ class TripResponse(BaseModel):
 
     id: str
     user_id: str
+    title: str
     status: TripStatus
     created_at: datetime
     updated_at: datetime
@@ -270,6 +271,12 @@ class TripResponse(BaseModel):
     preferences: TripPreferences
     template_id: str | None = None
     auto_delete_at: datetime | None = None
+    deleted_at: datetime | None = None
+    is_archived: bool = False
+    archived_at: datetime | None = None
+    user_rating: int | None = None
+    user_notes: str | None = None
+    version: int = 1
     cover_image_url: str | None = None
 
     class Config:
