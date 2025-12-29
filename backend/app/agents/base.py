@@ -207,8 +207,8 @@ class BaseAgent(ABC):
         """
         import asyncio
 
-        loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(None, self.run, input_data)
+        # Use asyncio.to_thread for Python 3.9+ (preferred over deprecated get_event_loop)
+        return await asyncio.to_thread(self.run, input_data)
 
     def __repr__(self) -> str:
         """String representation of agent"""

@@ -176,12 +176,16 @@ class OrchestratorAgent:
             # Phase 1: Independent agents (can run in parallel)
             # These agents don't depend on each other and can run simultaneously
             phase1_agents = ["visa", "country", "weather", "currency", "culture"]
+            print(f"[Orchestrator] Starting Phase 1 with agents: {phase1_agents}")
             phase1_results = await self._run_phase(validated_data, phase1_agents)
+            print(f"[Orchestrator] Phase 1 completed. Results: {list(phase1_results.keys())}, Errors: {len(self.errors)}")
             sections.update(phase1_results)
 
             # Phase 2: Dependent agents (depend on culture/country)
             phase2_agents = ["food", "attractions"]
+            print(f"[Orchestrator] Starting Phase 2 with agents: {phase2_agents}")
             phase2_results = await self._run_phase(validated_data, phase2_agents)
+            print(f"[Orchestrator] Phase 2 completed. Results: {list(phase2_results.keys())}, Errors: {len(self.errors)}")
             sections.update(phase2_results)
 
             # Phase 3: Synthesis agents (future implementation)
@@ -196,7 +200,9 @@ class OrchestratorAgent:
             # sections.update(phase4_results)
 
             # Save results to database
+            print(f"[Orchestrator] Saving {len(sections)} sections to database")
             await self._save_results(validated_data.trip_id, sections)
+            print(f"[Orchestrator] Sections saved successfully")
 
             # Update job status to completed
             await self._update_job_status(
@@ -204,18 +210,22 @@ class OrchestratorAgent:
                 "completed",
                 {"sections_generated": list(sections.keys())},
             )
+            print(f"[Orchestrator] Job status updated to completed")
 
             # Aggregate and return results
-            return self._aggregate_results(
+            result = self._aggregate_results(
                 {
                     "trip_id": validated_data.trip_id,
                     "sections": sections,
                     "errors": self.errors,
                 }
             )
+            print(f"[Orchestrator] Returning result with {len(sections)} sections and {len(self.errors)} errors")
+            return result
 
         except Exception as e:
             # Update job status to failed
+            print(f"[Orchestrator] ERROR: {str(e)}")
             await self._update_job_status(validated_data.trip_id, "failed", {"error": str(e)})
             raise
 
