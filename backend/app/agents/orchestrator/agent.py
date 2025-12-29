@@ -78,9 +78,21 @@ class TripData(BaseModel):
     user_nationality: str
     destination_country: str
     destination_city: str
-    departure_date: date
-    return_date: date
+    departure_date: date | None = None
+    return_date: date | None = None
     trip_purpose: str = "tourism"
+
+    def validate_dates(self) -> None:
+        """Validate that dates are present and valid for report generation"""
+        if self.departure_date is None or self.return_date is None:
+            raise ValueError(
+                "Trip dates are required for report generation. "
+                "Please set departure and return dates."
+            )
+        if self.return_date < self.departure_date:
+            raise ValueError(
+                "Return date must be after departure date."
+            )
 
 
 class OrchestratorResult(BaseModel):
@@ -148,6 +160,9 @@ class OrchestratorAgent:
         """
         # Validate trip data
         validated_data = self._validate_trip_data(trip_data)
+
+        # Validate dates are present
+        validated_data.validate_dates()
 
         # Update job status to running
         await self._update_job_status(

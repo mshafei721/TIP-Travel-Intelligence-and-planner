@@ -553,14 +553,38 @@ def execute_orchestrator(self, trip_id: str) -> dict[str, Any]:
         # Get primary destination
         primary_dest = destinations[0] if destinations else {}
 
+        # Validate required dates before proceeding
+        departure_date = details.get("departure_date")
+        return_date = details.get("return_date")
+
+        if not departure_date or not return_date:
+            error_msg = "Cannot generate report: trip dates are required. Please set departure and return dates for your trip."
+            print(f"[Task {self.request.id}] Validation failed: {error_msg}")
+
+            # Update trip status to failed with clear error
+            supabase.table("trips").update({
+                "status": "failed",
+                "updated_at": datetime.utcnow().isoformat(),
+            }).eq("id", trip_id).execute()
+
+            return {
+                "trip_id": trip_id,
+                "status": "failed",
+                "agents_executed": [],
+                "total_duration": 0,
+                "sections": {},
+                "errors": [{"error": error_msg, "code": "MISSING_DATES"}],
+                "error": error_msg,
+            }
+
         # Build orchestrator input
         orchestrator_input = {
             "trip_id": trip_id,
             "user_nationality": traveler.get("nationality", "US"),
             "destination_country": primary_dest.get("country", "Unknown"),
             "destination_city": primary_dest.get("city", "Unknown"),
-            "departure_date": details.get("departure_date"),
-            "return_date": details.get("return_date"),
+            "departure_date": departure_date,
+            "return_date": return_date,
             "trip_purpose": details.get("trip_purpose", "tourism"),
         }
 
