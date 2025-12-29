@@ -13,6 +13,7 @@ error handling and result aggregation.
 """
 
 import asyncio
+import json
 from datetime import date, datetime
 from typing import Any
 
@@ -423,6 +424,31 @@ class OrchestratorAgent:
 
         raise ValueError(f"Unknown agent: {agent_name}")
 
+    def _serialize_for_json(self, obj: Any) -> Any:
+        """
+        Recursively serialize an object for JSON compatibility.
+
+        Converts datetime and date objects to ISO format strings.
+
+        Args:
+            obj: Object to serialize
+
+        Returns:
+            JSON-serializable object
+        """
+        if isinstance(obj, datetime):
+            return obj.isoformat()
+        elif isinstance(obj, date):
+            return obj.isoformat()
+        elif isinstance(obj, dict):
+            return {k: self._serialize_for_json(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [self._serialize_for_json(item) for item in obj]
+        elif hasattr(obj, "model_dump"):
+            # Pydantic model - convert to dict first
+            return self._serialize_for_json(obj.model_dump())
+        return obj
+
     async def _save_results(self, trip_id: str, sections: dict[str, Any]) -> None:
         """
         Save results to database
@@ -433,11 +459,13 @@ class OrchestratorAgent:
         """
         for section_type, content in sections.items():
             try:
+                # Serialize content to ensure all datetime objects are converted
+                serialized_content = self._serialize_for_json(content)
                 supabase.table("report_sections").insert(
                     {
                         "trip_id": trip_id,
                         "section_type": section_type,
-                        "content": content,
+                        "content": serialized_content,
                         "generated_at": datetime.utcnow().isoformat(),
                     }
                 ).execute()
@@ -509,10 +537,13 @@ class OrchestratorAgent:
             trip_id = data.get("trip_id", "unknown")
             errors = data.get("errors", [])
 
+        # Serialize sections to ensure JSON compatibility
+        serialized_sections = self._serialize_for_json(sections)
+
         return {
             "trip_id": trip_id,
             "generated_at": datetime.utcnow().isoformat(),
-            "sections": sections,
+            "sections": serialized_sections,
             "errors": errors,
             "metadata": {
                 "agent_count": len(sections),

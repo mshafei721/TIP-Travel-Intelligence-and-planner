@@ -9,7 +9,7 @@ from crewai import Agent, Crew
 from langchain_anthropic import ChatAnthropic
 
 from ..base import BaseAgent
-from ..config import AgentConfig
+from ..config import AgentConfig, DEFAULT_LLM_MODEL
 from ..interfaces import SourceReference
 from app.core.config import settings
 from .models import (
@@ -86,7 +86,7 @@ class CurrencyAgent(BaseAgent):
 
         # Initialize Claude AI (Anthropic)
         self.llm = ChatAnthropic(
-            model="claude-3-5-sonnet-20241022",
+            model=DEFAULT_LLM_MODEL,
             temperature=0.1,  # Low temperature for factual accuracy
             anthropic_api_key=anthropic_api_key or settings.ANTHROPIC_API_KEY,
         )

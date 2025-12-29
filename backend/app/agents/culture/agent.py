@@ -9,7 +9,7 @@ from crewai import Agent, Crew
 from langchain_anthropic import ChatAnthropic
 
 from ..base import BaseAgent
-from ..config import AgentConfig
+from ..config import AgentConfig, DEFAULT_LLM_MODEL
 from ..interfaces import SourceReference
 from .models import (
     CommonPhrase,
@@ -71,7 +71,7 @@ class CultureAgent(BaseAgent):
     def __init__(
         self,
         config: AgentConfig | None = None,
-        llm_model: str = "claude-3-5-sonnet-20241022",
+        llm_model: str = DEFAULT_LLM_MODEL,
     ):
         """
         Initialize Culture Agent.

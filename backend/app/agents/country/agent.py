@@ -12,7 +12,7 @@ from crewai import Agent, Crew, Process
 from langchain_anthropic import ChatAnthropic
 
 from ..base import BaseAgent
-from ..config import AgentConfig
+from ..config import AgentConfig, DEFAULT_LLM_MODEL
 from ..exceptions import AgentExecutionError
 from ..interfaces import AgentResult, SourceReference
 from .models import (
@@ -46,7 +46,7 @@ class CountryAgent(BaseAgent):
     def __init__(
         self,
         config: AgentConfig | None = None,
-        llm_model: str = "claude-3-5-sonnet-20241022",
+        llm_model: str = DEFAULT_LLM_MODEL,
     ):
         """
         Initialize Country Agent.

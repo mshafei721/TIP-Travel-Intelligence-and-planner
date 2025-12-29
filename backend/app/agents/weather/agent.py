@@ -9,7 +9,7 @@ from crewai import Agent, Crew
 from langchain_anthropic import ChatAnthropic
 
 from ..base import BaseAgent
-from ..config import AgentConfig
+from ..config import AgentConfig, DEFAULT_LLM_MODEL
 from ..interfaces import AgentResult
 from .models import (
     ClimateInfo,
@@ -63,7 +63,7 @@ class WeatherAgent(BaseAgent):
 
         # Initialize Claude AI LLM
         self.llm = ChatAnthropic(
-            model="claude-3-5-sonnet-20241022",
+            model=DEFAULT_LLM_MODEL,
             temperature=0.1,  # Low temperature for factual accuracy
             timeout=60.0,
         )

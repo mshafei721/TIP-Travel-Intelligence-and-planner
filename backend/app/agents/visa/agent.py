@@ -18,7 +18,7 @@ from crewai import Agent, Crew, Process
 from langchain_anthropic import ChatAnthropic
 
 from app.agents.base import BaseAgent
-from app.agents.config import AgentConfig
+from app.agents.config import AgentConfig, DEFAULT_LLM_MODEL
 from app.agents.exceptions import AgentExecutionError
 from app.agents.interfaces import SourceReference
 from app.core.config import settings
@@ -98,7 +98,7 @@ class VisaAgent(BaseAgent):
 
         # Initialize Claude AI (Anthropic)
         self.llm = ChatAnthropic(
-            model="claude-3-5-sonnet-20241022",
+            model=DEFAULT_LLM_MODEL,
             temperature=0.1,  # Low temperature for factual accuracy
             anthropic_api_key=anthropic_api_key or settings.ANTHROPIC_API_KEY,
         )
