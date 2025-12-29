@@ -640,10 +640,21 @@ async def generate_trip_report(trip_id: str, token_payload: dict = Depends(verif
             )
 
         if existing_trip["status"] == TripStatus.COMPLETED.value:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Report already generated for this trip",
+            # Check if report sections actually exist before refusing regeneration
+            sections_response = (
+                supabase.table("report_sections")
+                .select("id")
+                .eq("trip_id", trip_id)
+                .limit(1)
+                .execute()
             )
+            if sections_response.data and len(sections_response.data) > 0:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Report already generated for this trip",
+                )
+            # No sections exist - allow regeneration (previous run failed silently)
+            logger.warning(f"Trip {trip_id} marked completed but has no report sections. Allowing regeneration.")
 
         if existing_trip["status"] == TripStatus.FAILED.value:
             # Allow retry for failed trips
