@@ -1858,3 +1858,130 @@ def _budget_to_level(budget: float) -> str:
         return "moderate"
     else:
         return "luxury"
+
+
+@shared_task(
+    bind=True,
+    base=BaseTipTask,
+    name="app.tasks.agent_jobs.run_single_agent",
+    time_limit=1800,  # 30 minutes
+)
+def run_single_agent(self, trip_id: str, agent_type: str) -> dict[str, Any]:
+    """
+    Execute a single agent for retry functionality
+
+    Args:
+        trip_id: Trip ID from database
+        agent_type: Type of agent to execute (visa, country, weather, etc.)
+
+    Returns:
+        Agent execution results including status, data, and errors
+
+    This task is used to retry failed agents individually.
+    It fetches the trip data and runs the specified agent.
+    """
+    from datetime import datetime
+
+    from app.core.supabase import supabase
+
+    print(f"[Task {self.request.id}] Running single agent retry: {agent_type} for trip {trip_id}")
+
+    try:
+        # Step 1: Fetch trip data
+        trip_response = (
+            supabase.table("trips")
+            .select("*")
+            .eq("id", trip_id)
+            .single()
+            .execute()
+        )
+
+        if not trip_response.data:
+            raise ValueError(f"Trip not found: {trip_id}")
+
+        trip = trip_response.data
+
+        # Step 2: Update agent job status to running
+        supabase.table("agent_jobs").update({
+            "status": "running",
+            "started_at": datetime.utcnow().isoformat(),
+            "error_message": None,
+        }).eq("trip_id", trip_id).eq("agent_type", agent_type).execute()
+
+        # Step 3: Normalize trip data
+        normalized = _normalize_trip_data(trip)
+
+        # Step 4: Prepare agent input
+        base_input = {
+            "trip_id": trip_id,
+            "user_nationality": normalized["traveler"].get("nationality", "US"),
+            "residence_country": normalized["traveler"].get("residence_country", "US"),
+            "destination_country": normalized["destination"]["country"],
+            "destination_city": normalized["destination"]["city"],
+            "origin_city": normalized["traveler"].get("origin_city", ""),
+            "budget": normalized["details"].get("budget", 1000),
+            "currency": normalized["details"].get("currency", "USD"),
+            "departure_date": normalized["details"].get("departure_date"),
+            "return_date": normalized["details"].get("return_date"),
+            "trip_purpose": normalized["details"].get("trip_purpose", "tourism"),
+            "interests": normalized["preferences"].get("interests", []),
+            "travel_style": normalized["preferences"].get("travel_style", "balanced"),
+            "dietary_restrictions": normalized["preferences"].get("dietary_restrictions", []),
+        }
+
+        # Step 5: Execute agent
+        result = _execute_agent_by_type(agent_type, base_input)
+
+        # Step 6: Update agent job status
+        if result.get("status") == "completed":
+            # Store result in report_sections if successful
+            section_data = result.get("data", {})
+            if section_data:
+                supabase.table("report_sections").upsert({
+                    "trip_id": trip_id,
+                    "section_type": agent_type,
+                    "content": section_data,
+                    "confidence_score": section_data.get("confidence_score", 0.7),
+                    "last_updated": datetime.utcnow().isoformat(),
+                }, on_conflict="trip_id,section_type").execute()
+
+            supabase.table("agent_jobs").update({
+                "status": "completed",
+                "completed_at": datetime.utcnow().isoformat(),
+                "result_data": result,
+                "error_message": None,
+            }).eq("trip_id", trip_id).eq("agent_type", agent_type).execute()
+        else:
+            supabase.table("agent_jobs").update({
+                "status": "failed",
+                "completed_at": datetime.utcnow().isoformat(),
+                "error_message": result.get("error", "Unknown error"),
+            }).eq("trip_id", trip_id).eq("agent_type", agent_type).execute()
+
+        print(f"[Task {self.request.id}] Completed single agent: {agent_type} with status {result.get('status')}")
+        return result
+
+    except Exception as e:
+        error_msg = str(e)
+        print(f"[Task {self.request.id}] Error in single agent retry: {error_msg}")
+
+        # Update job status to failed
+        try:
+            from datetime import datetime
+
+            from app.core.supabase import supabase
+
+            supabase.table("agent_jobs").update({
+                "status": "failed",
+                "completed_at": datetime.utcnow().isoformat(),
+                "error_message": error_msg,
+            }).eq("trip_id", trip_id).eq("agent_type", agent_type).execute()
+        except Exception:
+            pass
+
+        return {
+            "trip_id": trip_id,
+            "agent_type": agent_type,
+            "status": "failed",
+            "error": error_msg,
+        }

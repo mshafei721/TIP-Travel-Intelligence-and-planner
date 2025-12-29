@@ -33,6 +33,10 @@ from app.models.report import (
 )
 from app.models.template import CreateTripFromTemplateRequest
 from app.models.trips import (
+    AgentJobListResponse,
+    AgentJobResponse,
+    AgentJobStatus,
+    AgentType,
     ArchiveResponse,
     ChangePreviewRequest,
     ChangePreviewResponse,
@@ -784,6 +788,180 @@ async def get_generation_status(trip_id: str, token_payload: dict = Depends(veri
         raise
     except Exception as e:
         log_and_raise_http_error("get generation status", e, "Failed to get generation status. Please try again.")
+
+
+# Agent Job Endpoints
+@router.get("/{trip_id}/jobs", response_model=AgentJobListResponse)
+async def list_agent_jobs(trip_id: str, token_payload: dict = Depends(verify_jwt_token)):
+    """
+    List all agent jobs for a trip
+
+    Path Parameters:
+    - trip_id: The unique identifier for the trip
+
+    Returns:
+    - items: List of all agent jobs with their status, timestamps, and retry counts
+
+    Notes:
+    - Returns jobs in order of creation
+    - Use this to monitor individual agent progress
+    """
+    try:
+        user_id = token_payload.get("sub")
+        if not user_id:
+            raise HTTPException(status_code=401, detail="User not authenticated")
+
+        # Verify trip exists and belongs to user
+        trip_response = (
+            supabase.table("trips")
+            .select("id, user_id")
+            .eq("id", trip_id)
+            .eq("user_id", user_id)
+            .single()
+            .execute()
+        )
+
+        if not trip_response.data:
+            raise HTTPException(status_code=404, detail="Trip not found")
+
+        # Get all agent jobs for this trip
+        jobs_response = (
+            supabase.table("agent_jobs")
+            .select("id, trip_id, agent_type, status, started_at, completed_at, retry_count, error_message")
+            .eq("trip_id", trip_id)
+            .order("created_at")
+            .execute()
+        )
+
+        jobs = jobs_response.data if jobs_response.data else []
+
+        # Map database records to response model
+        items = [
+            AgentJobResponse(
+                id=job["id"],
+                tripId=job["trip_id"],
+                agentType=job["agent_type"],
+                status=job["status"],
+                startedAt=job.get("started_at"),
+                completedAt=job.get("completed_at"),
+                retryCount=job.get("retry_count", 0),
+                errorMessage=job.get("error_message"),
+            )
+            for job in jobs
+        ]
+
+        return AgentJobListResponse(items=items)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        log_and_raise_http_error("list agent jobs", e, "Failed to list agent jobs. Please try again.")
+
+
+@router.post("/{trip_id}/jobs/{agent_type}/retry", status_code=status.HTTP_202_ACCEPTED, response_model=AgentJobResponse)
+async def retry_agent_job(trip_id: str, agent_type: AgentType, token_payload: dict = Depends(verify_jwt_token)):
+    """
+    Retry a failed agent job
+
+    Path Parameters:
+    - trip_id: The unique identifier for the trip
+    - agent_type: The type of agent to retry (visa, country, weather, etc.)
+
+    Returns:
+    - The updated agent job with retrying status
+
+    Notes:
+    - Can only retry jobs that have failed
+    - Increments the retry count
+    - Triggers a new agent execution via Celery
+    """
+    try:
+        user_id = token_payload.get("sub")
+        if not user_id:
+            raise HTTPException(status_code=401, detail="User not authenticated")
+
+        # Verify trip exists and belongs to user
+        trip_response = (
+            supabase.table("trips")
+            .select("id, user_id")
+            .eq("id", trip_id)
+            .eq("user_id", user_id)
+            .single()
+            .execute()
+        )
+
+        if not trip_response.data:
+            raise HTTPException(status_code=404, detail="Trip not found")
+
+        # Get the agent job
+        job_response = (
+            supabase.table("agent_jobs")
+            .select("id, trip_id, agent_type, status, retry_count")
+            .eq("trip_id", trip_id)
+            .eq("agent_type", agent_type.value)
+            .single()
+            .execute()
+        )
+
+        if not job_response.data:
+            raise HTTPException(status_code=404, detail=f"Agent job not found for type: {agent_type.value}")
+
+        job = job_response.data
+
+        # Check if job can be retried (only failed jobs)
+        if job["status"] != "failed":
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot retry job with status '{job['status']}'. Only failed jobs can be retried."
+            )
+
+        # Update job status to retrying and increment retry count
+        new_retry_count = (job.get("retry_count") or 0) + 1
+        update_response = (
+            supabase.table("agent_jobs")
+            .update({
+                "status": "retrying",
+                "retry_count": new_retry_count,
+                "error_message": None,
+            })
+            .eq("id", job["id"])
+            .execute()
+        )
+
+        if not update_response.data:
+            raise HTTPException(status_code=500, detail="Failed to update agent job")
+
+        updated_job = update_response.data[0]
+
+        # Queue the agent for re-execution via Celery
+        try:
+            from app.tasks.agent_jobs import run_single_agent
+            run_single_agent.delay(trip_id, agent_type.value)
+            logger.info(f"Queued retry for agent {agent_type.value} on trip {trip_id}")
+        except Exception as task_error:
+            logger.warning(f"Failed to queue agent retry task: {task_error}")
+            # Update status back to failed if we couldn't queue
+            supabase.table("agent_jobs").update({
+                "status": "failed",
+                "error_message": f"Failed to queue retry: {str(task_error)}"
+            }).eq("id", job["id"]).execute()
+            raise HTTPException(status_code=500, detail="Failed to queue agent retry")
+
+        return AgentJobResponse(
+            id=updated_job["id"],
+            tripId=updated_job["trip_id"],
+            agentType=updated_job["agent_type"],
+            status=updated_job["status"],
+            startedAt=updated_job.get("started_at"),
+            completedAt=updated_job.get("completed_at"),
+            retryCount=updated_job.get("retry_count", 0),
+            errorMessage=updated_job.get("error_message"),
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        log_and_raise_http_error("retry agent job", e, "Failed to retry agent job. Please try again.")
 
 
 # Draft Management Endpoints

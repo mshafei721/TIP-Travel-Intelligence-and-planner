@@ -647,3 +647,81 @@ class TripRatingRequest(BaseModel):
 
     rating: int = Field(..., ge=1, le=5, description="Rating from 1 to 5 stars")
     notes: str | None = Field(None, max_length=1000, description="Optional notes about the trip")
+
+
+# ============================================================================
+# AGENT JOB MODELS
+# ============================================================================
+
+
+class AgentType(str, Enum):
+    """Agent type enumeration matching OpenAPI spec"""
+
+    VISA = "visa"
+    COUNTRY = "country"
+    WEATHER = "weather"
+    CURRENCY = "currency"
+    CULTURE = "culture"
+    FOOD = "food"
+    ATTRACTIONS = "attractions"
+    ITINERARY = "itinerary"
+    FLIGHT = "flight"
+
+
+class AgentJobStatus(str, Enum):
+    """Agent job status enumeration matching OpenAPI spec"""
+
+    QUEUED = "queued"
+    RUNNING = "running"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    SKIPPED = "skipped"
+    RETRYING = "retrying"
+
+
+class AgentJobResponse(BaseModel):
+    """Response model for a single agent job"""
+
+    id: str
+    trip_id: str = Field(alias="tripId")
+    agent_type: AgentType = Field(alias="agentType")
+    status: AgentJobStatus
+    started_at: datetime | None = Field(None, alias="startedAt")
+    completed_at: datetime | None = Field(None, alias="completedAt")
+    retry_count: int = Field(default=0, alias="retryCount")
+    error_message: str | None = Field(None, alias="errorMessage")
+
+    class Config:
+        populate_by_name = True
+        json_schema_extra = {
+            "example": {
+                "id": "550e8400-e29b-41d4-a716-446655440000",
+                "tripId": "660e8400-e29b-41d4-a716-446655440000",
+                "agentType": "visa",
+                "status": "completed",
+                "startedAt": "2024-01-15T10:30:00Z",
+                "completedAt": "2024-01-15T10:31:00Z",
+                "retryCount": 0,
+            }
+        }
+
+
+class AgentJobListResponse(BaseModel):
+    """Response model for list of agent jobs"""
+
+    items: list[AgentJobResponse]
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "items": [
+                    {
+                        "id": "550e8400-e29b-41d4-a716-446655440000",
+                        "tripId": "660e8400-e29b-41d4-a716-446655440000",
+                        "agentType": "visa",
+                        "status": "completed",
+                        "retryCount": 0,
+                    }
+                ]
+            }
+        }
