@@ -723,7 +723,7 @@ async def get_generation_status(trip_id: str, token_payload: dict = Depends(veri
         # Using selective fields instead of SELECT * for better performance
         jobs_response = (
             supabase.table("agent_jobs")
-            .select("agent_type, status, error, created_at")
+            .select("agent_type, status, error_message, created_at")
             .eq("trip_id", trip_id)
             .order("created_at")
             .execute()
@@ -751,7 +751,7 @@ async def get_generation_status(trip_id: str, token_payload: dict = Depends(veri
             elif job_status == "failed":
                 agents_failed.append(agent_type)
                 if first_error is None:
-                    first_error = job.get("error")
+                    first_error = job.get("error_message")
             elif job_status in ("processing", "running"):
                 current_agent = agent_type
 
