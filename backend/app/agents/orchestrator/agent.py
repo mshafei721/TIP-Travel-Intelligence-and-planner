@@ -233,6 +233,7 @@ class OrchestratorAgent:
     async def _run_phase(self, trip_data: TripData, agent_names: list[str]) -> dict[str, Any]:
         """
         Run a phase of agents sequentially to avoid API rate limits.
+        Each agent's result is saved immediately after completion for incremental progress.
 
         Args:
             trip_data: Validated trip data
@@ -256,6 +257,11 @@ class OrchestratorAgent:
                 result = await self._run_agent(trip_data, agent_name)
                 results[agent_name] = result
                 print(f"[Orchestrator] Agent {agent_name} completed successfully")
+
+                # Save section immediately after agent completes (incremental save)
+                # This allows users to see partial results while generation continues
+                await self._save_section_incremental(trip_data.trip_id, agent_name, result)
+                print(f"[Orchestrator] Agent {agent_name} result saved to database")
             except Exception as e:
                 # Log error and continue with next agent
                 print(f"[Orchestrator] Agent {agent_name} failed: {str(e)}")
@@ -455,9 +461,49 @@ class OrchestratorAgent:
             return self._serialize_for_json(obj.model_dump())
         return obj
 
+    async def _save_section_incremental(self, trip_id: str, section_type: str, content: Any) -> None:
+        """
+        Save a single section to database immediately after agent completes.
+        Uses upsert to handle re-runs and partial failures.
+
+        Args:
+            trip_id: Trip ID
+            section_type: Type of section (visa, country, weather, etc.)
+            content: Section content to save
+        """
+        try:
+            # Serialize content to ensure all datetime objects are converted
+            serialized_content = self._serialize_for_json(content)
+
+            # Use upsert to handle cases where section already exists
+            # This is important for:
+            # 1. Re-running after partial failures
+            # 2. Regeneration requests
+            # 3. Avoiding duplicate entries
+            supabase.table("report_sections").upsert(
+                {
+                    "trip_id": trip_id,
+                    "section_type": section_type,
+                    "content": serialized_content,
+                    "generated_at": datetime.utcnow().isoformat(),
+                },
+                on_conflict="trip_id,section_type"
+            ).execute()
+        except Exception as e:
+            # Log error but don't fail the agent - section will be saved at end
+            self.errors.append(
+                {
+                    "operation": "save_section_incremental",
+                    "section": section_type,
+                    "error": str(e),
+                    "timestamp": datetime.utcnow().isoformat(),
+                }
+            )
+
     async def _save_results(self, trip_id: str, sections: dict[str, Any]) -> None:
         """
-        Save results to database
+        Save results to database (final batch save, kept for backward compatibility).
+        Note: Sections are now also saved incrementally in _run_phase.
 
         Args:
             trip_id: Trip ID
@@ -467,13 +513,15 @@ class OrchestratorAgent:
             try:
                 # Serialize content to ensure all datetime objects are converted
                 serialized_content = self._serialize_for_json(content)
-                supabase.table("report_sections").insert(
+                # Use upsert instead of insert to handle incremental saves
+                supabase.table("report_sections").upsert(
                     {
                         "trip_id": trip_id,
                         "section_type": section_type,
                         "content": serialized_content,
                         "generated_at": datetime.utcnow().isoformat(),
-                    }
+                    },
+                    on_conflict="trip_id,section_type"
                 ).execute()
             except Exception as e:
                 self.errors.append(
