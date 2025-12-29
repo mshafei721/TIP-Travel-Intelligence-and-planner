@@ -2892,3 +2892,52 @@ End of Session 29 - I10 Analytics and Settings Backend Complete
 ### Status
 - I10 Analytics & Settings: 100% complete (frontend + backend)
 - Project overall: 99% complete (176/177 features)
+
+Session 29 - 2025-12-29
+------------------------
+Status: BUG FIXES & INTEGRATION
+
+
+### Completed Fixes
+
+1. **Dropdown Menu Overlap Fix (SearchableSelect.tsx)**
+   - Issue: React-select dropdown menus were overlapping with text below
+   - Root cause: z-index stacking context issues
+   - Solution: Added portal rendering with `menuPortalTarget={document.body}` and z-index 9999
+   - Status: ✅ Fixed
+
+2. **SourceReference Field Mismatch Fix**
+   - Issue: Pydantic validation errors in attractions and visa agents
+   - Root cause: Using wrong field names (source vs url, retrieved_at vs verified_at)
+   - Files fixed:
+     * backend/app/agents/attractions/agent.py
+     * backend/app/agents/visa/agent.py
+   - Status: ✅ Fixed
+
+3. **Task Idempotency Fix (agent_jobs.py)**
+   - Issue: Celery tasks used .insert() which could create duplicates on retry
+   - Solution: Changed to use existing `upsert_report_section` function
+   - Agents updated: visa, country, weather, attractions, itinerary, flight
+   - Status: ✅ Fixed
+
+4. **LLM Model Test Update (test_base_agent.py)**
+   - Issue: Test expected old model name `claude-3-5-sonnet-20241022`
+   - Solution: Updated to expect `claude-sonnet-4-20250514`
+   - Status: ✅ Fixed
+
+### Test Results
+- Backend tests: 12/12 passed (test_base_agent.py)
+- Frontend build: ✅ Successful
+- ESLint: ✅ Passed
+
+### Git Commit
+- Hash: (pushed to main)
+- Message: "fix: resolve multiple backend/frontend issues"
+
+### Files Modified
+- frontend/components/ui/SearchableSelect.tsx
+- backend/app/agents/attractions/agent.py
+- backend/app/agents/visa/agent.py
+- backend/app/tasks/agent_jobs.py
+- backend/tests/agents/test_base_agent.py
+
