@@ -74,7 +74,7 @@ class TravelBuddyClient:
         self.headers = {
             "x-rapidapi-key": self.api_key,
             "x-rapidapi-host": "visa-requirement.p.rapidapi.com",
-            "Content-Type": "application/x-www-form-urlencoded",
+            "Content-Type": "application/json",
         }
 
     def _validate_country_code(self, code: str, code_type: str) -> None:
@@ -112,10 +112,10 @@ class TravelBuddyClient:
 
         # Make API request
         url = f"{self.base_url}/v2/visa/check"
-        data = {"passport": passport.upper(), "destination": destination.upper()}
+        payload = {"passport": passport.upper(), "destination": destination.upper()}
 
         with httpx.Client(timeout=30.0) as client:
-            response = client.post(url, headers=self.headers, data=data)
+            response = client.post(url, headers=self.headers, json=payload)
             response.raise_for_status()
             return self._parse_response(response.json(), passport, destination)
 
@@ -140,10 +140,10 @@ class TravelBuddyClient:
 
         # Make async API request
         url = f"{self.base_url}/v2/visa/check"
-        data = {"passport": passport.upper(), "destination": destination.upper()}
+        payload = {"passport": passport.upper(), "destination": destination.upper()}
 
         async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.post(url, headers=self.headers, data=data)
+            response = await client.post(url, headers=self.headers, json=payload)
             response.raise_for_status()
             return self._parse_response(response.json(), passport, destination)
 
