@@ -72,6 +72,29 @@ except ImportError:
     ATTRACTIONS_AGENT_AVAILABLE = False
 
 
+# Section type to title mapping for report_sections table
+SECTION_TITLES: dict[str, str] = {
+    "visa": "Visa Requirements",
+    "country": "Country Overview",
+    "weather": "Weather & Climate",
+    "currency": "Currency & Money",
+    "culture": "Culture & Customs",
+    "food": "Food & Dining",
+    "attractions": "Attractions & Activities",
+    "safety": "Safety Information",
+    "packing": "Packing List",
+    "flights": "Flight Information",
+    "accommodation": "Accommodation",
+    "transportation": "Transportation",
+    "itinerary": "Day-by-Day Itinerary",
+}
+
+
+def get_section_title(section_type: str) -> str:
+    """Get the display title for a section type."""
+    return SECTION_TITLES.get(section_type, section_type.replace("_", " ").title())
+
+
 class TripData(BaseModel):
     """Trip data model for orchestrator input"""
 
@@ -484,6 +507,7 @@ class OrchestratorAgent:
                 {
                     "trip_id": trip_id,
                     "section_type": section_type,
+                    "title": get_section_title(section_type),
                     "content": serialized_content,
                     "generated_at": datetime.utcnow().isoformat(),
                 },
@@ -518,6 +542,7 @@ class OrchestratorAgent:
                     {
                         "trip_id": trip_id,
                         "section_type": section_type,
+                        "title": get_section_title(section_type),
                         "content": serialized_content,
                         "generated_at": datetime.utcnow().isoformat(),
                     },
