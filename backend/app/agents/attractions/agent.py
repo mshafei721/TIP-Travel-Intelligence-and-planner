@@ -6,10 +6,9 @@ import re
 from datetime import UTC, datetime
 
 from crewai import Agent, Crew
-from langchain_anthropic import ChatAnthropic
 
 from ..base import BaseAgent
-from ..config import AgentConfig, DEFAULT_LLM_MODEL
+from ..config import AgentConfig, get_llm
 from ..interfaces import SourceReference
 from .models import (
     Attraction,
@@ -70,7 +69,7 @@ class AttractionsAgent(BaseAgent):
     def __init__(
         self,
         config: AgentConfig | None = None,
-        llm_model: str = DEFAULT_LLM_MODEL,
+        llm_model: str = "claude-sonnet-4-20250514",
     ):
         """
         Initialize Attractions Agent.
@@ -90,12 +89,8 @@ class AttractionsAgent(BaseAgent):
 
         super().__init__(config)
 
-        # Initialize Claude AI LLM
-        self.llm = ChatAnthropic(
-            model=llm_model,
-            temperature=0.1,  # Low temperature for factual information
-            timeout=60.0,
-        )
+        # Initialize LLM with fallback support (Anthropic -> Gemini -> OpenAI)
+        self.llm = get_llm(temperature=0.1)
 
         # Create CrewAI agent
         self.agent = self._create_agent()

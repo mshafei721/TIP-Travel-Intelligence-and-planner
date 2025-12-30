@@ -6,10 +6,9 @@ import re
 from datetime import datetime
 
 from crewai import Agent, Crew
-from langchain_anthropic import ChatAnthropic
 
 from ..base import BaseAgent
-from ..config import AgentConfig
+from ..config import AgentConfig, get_llm
 from ..interfaces import AgentResult, SourceReference
 from .models import (
     Airport,
@@ -90,12 +89,8 @@ class FlightAgent(BaseAgent):
 
         super().__init__(config)
 
-        # Initialize Claude AI LLM
-        self.llm = ChatAnthropic(
-            model=llm_model,
-            temperature=0.15,  # Low temperature for factual accuracy
-            timeout=60.0,
-        )
+        # Initialize LLM with fallback support (Anthropic -> Gemini -> OpenAI)
+        self.llm = get_llm(temperature=0.15)
 
         # Create CrewAI agent
         self.agent = self._create_agent()

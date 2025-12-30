@@ -9,10 +9,9 @@ import logging
 from datetime import datetime
 
 from crewai import Agent, Crew, Process
-from langchain_anthropic import ChatAnthropic
 
 from ..base import BaseAgent
-from ..config import AgentConfig, DEFAULT_LLM_MODEL
+from ..config import AgentConfig, get_llm
 from ..exceptions import AgentExecutionError
 from ..interfaces import AgentResult, SourceReference
 from .models import (
@@ -46,7 +45,7 @@ class CountryAgent(BaseAgent):
     def __init__(
         self,
         config: AgentConfig | None = None,
-        llm_model: str = DEFAULT_LLM_MODEL,
+        llm_model: str = "claude-sonnet-4-20250514",
     ):
         """
         Initialize Country Agent.
@@ -57,12 +56,8 @@ class CountryAgent(BaseAgent):
         """
         super().__init__(config or AgentConfig(agent_type="country"))
 
-        # Initialize Claude AI LLM
-        self.llm = ChatAnthropic(
-            model=llm_model,
-            temperature=0.1,  # Low temperature for factual information
-            timeout=60.0,
-        )
+        # Initialize LLM with fallback support (Anthropic -> Gemini -> OpenAI)
+        self.llm = get_llm(temperature=0.1)
 
         # Create CrewAI agent
         self.agent = self._create_crewai_agent()

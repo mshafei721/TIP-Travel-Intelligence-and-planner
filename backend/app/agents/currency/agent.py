@@ -6,10 +6,9 @@ import re
 from datetime import datetime
 
 from crewai import Agent, Crew
-from langchain_anthropic import ChatAnthropic
 
 from ..base import BaseAgent
-from ..config import AgentConfig, DEFAULT_LLM_MODEL
+from ..config import AgentConfig, get_llm
 from ..interfaces import SourceReference
 from app.core.config import settings
 from .models import (
@@ -85,12 +84,8 @@ class CurrencyAgent(BaseAgent):
         """
         super().__init__()
 
-        # Initialize Claude AI (Anthropic)
-        self.llm = ChatAnthropic(
-            model=DEFAULT_LLM_MODEL,
-            temperature=0.1,  # Low temperature for factual accuracy
-            anthropic_api_key=anthropic_api_key or settings.ANTHROPIC_API_KEY,
-        )
+        # Initialize LLM with fallback support (Anthropic -> Gemini -> OpenAI)
+        self.llm = get_llm(temperature=0.1)
 
         # Initialize CrewAI Agent
         self.agent = self._create_agent()

@@ -6,10 +6,9 @@ import re
 from datetime import datetime
 
 from crewai import Agent, Crew
-from langchain_anthropic import ChatAnthropic
 
 from ..base import BaseAgent
-from ..config import AgentConfig
+from ..config import AgentConfig, get_llm
 from ..interfaces import SourceReference
 from .models import ItineraryAgentInput, ItineraryAgentOutput
 from .prompts import (
@@ -81,12 +80,8 @@ class ItineraryAgent(BaseAgent):
 
         super().__init__(config)
 
-        # Initialize Claude AI LLM
-        self.llm = ChatAnthropic(
-            model=llm_model,
-            temperature=0.2,  # Slightly higher for creative itinerary planning
-            timeout=90.0,  # Longer timeout for complex planning
-        )
+        # Initialize LLM with fallback support (Anthropic -> Gemini -> OpenAI)
+        self.llm = get_llm(temperature=0.2)
 
         # Create CrewAI agent
         self.agent = self._create_agent()

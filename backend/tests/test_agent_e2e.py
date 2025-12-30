@@ -22,6 +22,10 @@ from unittest.mock import MagicMock, patch
 backend_path = Path(__file__).parent.parent
 sys.path.insert(0, str(backend_path))
 
+# Load environment variables
+from dotenv import load_dotenv
+load_dotenv(backend_path / ".env")
+
 
 def test_country_code_conversion():
     """Test that country names are converted to ISO codes correctly."""

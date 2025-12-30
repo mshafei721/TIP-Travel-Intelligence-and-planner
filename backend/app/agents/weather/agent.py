@@ -6,10 +6,9 @@ from datetime import date as DateType
 from datetime import datetime
 
 from crewai import Agent, Crew
-from langchain_anthropic import ChatAnthropic
 
 from ..base import BaseAgent
-from ..config import AgentConfig, DEFAULT_LLM_MODEL
+from ..config import AgentConfig, get_llm
 from ..interfaces import AgentResult
 from .models import (
     ClimateInfo,
@@ -61,12 +60,8 @@ class WeatherAgent(BaseAgent):
         """
         super().__init__(config or AgentConfig(agent_type="weather"))
 
-        # Initialize Claude AI LLM
-        self.llm = ChatAnthropic(
-            model=DEFAULT_LLM_MODEL,
-            temperature=0.1,  # Low temperature for factual accuracy
-            timeout=60.0,
-        )
+        # Initialize LLM with fallback support (Anthropic -> Gemini -> OpenAI)
+        self.llm = get_llm(temperature=0.1)
 
         self.crew_agent = self._create_agent()
 
