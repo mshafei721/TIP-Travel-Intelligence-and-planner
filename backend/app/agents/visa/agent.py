@@ -251,18 +251,27 @@ class VisaAgent(BaseAgent):
             # Build sources (using correct SourceReference fields)
             sources_data = result_data.get("sources", [])
             now = datetime.utcnow()
-            sources = [
-                SourceReference(
+            sources = []
+            for s in sources_data:
+                # Determine source type from data
+                raw_type = s.get("source_type", s.get("type", "third-party")).lower()
+                if "government" in raw_type or "gov" in raw_type:
+                    source_type = "government"
+                elif "embassy" in raw_type or "consulate" in raw_type:
+                    source_type = "embassy"
+                else:
+                    source_type = "third-party"
+
+                sources.append(SourceReference(
                     url=s.get("url", ""),
-                    title=s.get("description", s.get("source_type", "Visa Source")),
+                    title=s.get("description", s.get("title", s.get("name", "Visa Source"))),
                     verified_at=(
                         datetime.fromisoformat(s["last_accessed"])
                         if "last_accessed" in s
                         else now
                     ),
-                )
-                for s in sources_data
-            ]
+                    source_type=source_type,
+                ))
 
             # Create output
             return VisaAgentOutput(
@@ -318,6 +327,7 @@ class VisaAgent(BaseAgent):
                     url="internal://visa-agent",
                     title="Visa Agent analysis (fallback mode)",
                     verified_at=datetime.utcnow(),
+                    source_type="third-party",
                 )
             ],
             last_verified=datetime.utcnow(),

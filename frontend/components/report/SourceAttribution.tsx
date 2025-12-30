@@ -34,6 +34,15 @@ const SOURCE_TYPE_CONFIG = {
   },
 } as const;
 
+// Default config for unknown source types
+const DEFAULT_SOURCE_CONFIG = SOURCE_TYPE_CONFIG['third-party'];
+
+// Helper function to safely get source config
+function getSourceConfig(sourceType: string | undefined | null) {
+  if (!sourceType) return DEFAULT_SOURCE_CONFIG;
+  return SOURCE_TYPE_CONFIG[sourceType as keyof typeof SOURCE_TYPE_CONFIG] || DEFAULT_SOURCE_CONFIG;
+}
+
 export function SourceAttribution({
   sources,
   title = 'Sources',
@@ -62,7 +71,7 @@ export function SourceAttribution({
       <div className={`flex flex-wrap items-center gap-2 ${className}`}>
         <span className="text-sm font-medium text-slate-600 dark:text-slate-400">{title}:</span>
         {sources.map((source, index) => {
-          const config = SOURCE_TYPE_CONFIG[source.type];
+          const config = getSourceConfig(source.type);
           const Icon = config.icon;
 
           return (
@@ -107,7 +116,7 @@ export function SourceAttribution({
       {/* Source cards */}
       <div className="space-y-2">
         {sources.map((source, index) => {
-          const config = SOURCE_TYPE_CONFIG[source.type];
+          const config = getSourceConfig(source.type);
           const Icon = config.icon;
 
           return (
@@ -177,7 +186,7 @@ interface SourceLinkProps {
 }
 
 export function SourceLink({ source, showIcon = true }: SourceLinkProps) {
-  const config = SOURCE_TYPE_CONFIG[source.type];
+  const config = getSourceConfig(source.type);
 
   return (
     <a

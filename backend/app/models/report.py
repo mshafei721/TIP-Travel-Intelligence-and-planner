@@ -6,18 +6,45 @@ from pydantic import BaseModel, Field
 
 
 class SourceReferenceResponse(BaseModel):
-    """Source reference in API response"""
+    """
+    Source reference in API response
+
+    Field aliases ensure frontend compatibility:
+    - 'title' -> serialized as 'name' for frontend
+    - 'source_type' -> serialized as 'type' for frontend
+    - 'verified_at' -> serialized as 'lastVerified' for frontend
+
+    Accepts both original field names and frontend aliases during input.
+    Outputs using frontend-compatible aliases.
+    """
 
     url: str = ""
-    source_type: str = "unknown"
-    title: str | None = None
+    # source_type/type - accepts both, outputs as 'type'
+    source_type: str = Field(
+        default="third-party",
+        validation_alias="type",  # Accept 'type' during input
+        serialization_alias="type",  # Output as 'type'
+    )
+    # title/name - accepts both, outputs as 'name'
+    title: str | None = Field(
+        default=None,
+        validation_alias="name",  # Accept 'name' during input
+        serialization_alias="name",  # Output as 'name'
+    )
     reliability: str | None = None
     accessed_at: datetime | None = None
-    # Allow extra fields from agent output
-    verified_at: datetime | None = None
+    # verified_at/lastVerified - accepts both, outputs as 'lastVerified'
+    verified_at: datetime | None = Field(
+        default=None,
+        validation_alias="lastVerified",  # Accept 'lastVerified' during input
+        serialization_alias="lastVerified",  # Output as 'lastVerified'
+    )
 
-    class Config:
-        extra = "ignore"  # Ignore extra fields from agent output
+    model_config = {
+        "extra": "ignore",  # Ignore extra fields from agent output
+        "populate_by_name": True,  # Accept both original and alias names for input
+        "by_alias": True,  # Use alias names when serializing (for FastAPI responses)
+    }
 
 
 class VisaRequirementResponse(BaseModel):

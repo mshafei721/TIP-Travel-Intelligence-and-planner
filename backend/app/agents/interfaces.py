@@ -24,6 +24,20 @@ class SourceReference(BaseModel):
 
     verified_at: datetime = Field(description="Timestamp when this source was last verified")
 
+    source_type: str = Field(
+        default="third-party",
+        description="Type of source: government, embassy, or third-party"
+    )
+
+    def to_frontend_dict(self) -> dict:
+        """Convert to frontend-compatible format with renamed fields"""
+        return {
+            "url": self.url,
+            "name": self.title,  # Frontend expects 'name' not 'title'
+            "type": self.source_type,  # Frontend expects 'type' not 'source_type'
+            "lastVerified": self.verified_at.isoformat(),  # Frontend expects 'lastVerified'
+        }
+
     class Config:
         """Pydantic config"""
 
@@ -32,6 +46,7 @@ class SourceReference(BaseModel):
                 "url": "https://www.travel.state.gov/content/travel/en/international-travel/International-Travel-Country-Information-Pages.html",
                 "title": "U.S. Department of State - International Travel",
                 "verified_at": "2025-12-24T10:30:00Z",
+                "source_type": "government",
             }
         }
 
