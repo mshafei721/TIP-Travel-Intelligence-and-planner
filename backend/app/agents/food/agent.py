@@ -160,6 +160,155 @@ class FoodAgent(BaseAgent):
         except json.JSONDecodeError:
             return None
 
+    def _normalize_street_food(self, data: list | dict | None) -> list[str]:
+        """
+        Normalize street food data from LLM output.
+
+        LLM may return a dict like:
+        {"popular_items": ["Samsa", ...], "prices": "$1-5", "safety_tips": [...]}
+
+        We need to convert it to a list of strings.
+
+        Args:
+            data: Raw street food data
+
+        Returns:
+            List of street food items/tips
+        """
+        if data is None:
+            return []
+
+        if isinstance(data, list):
+            # Already a list - ensure items are strings
+            result = []
+            for item in data:
+                if isinstance(item, str):
+                    result.append(item)
+                elif isinstance(item, dict):
+                    # Extract name or description from dict
+                    name = item.get("name") or item.get("item") or str(item)
+                    result.append(name)
+            return result
+
+        if isinstance(data, dict):
+            # Extract popular items or combine information
+            items = []
+            if "popular_items" in data:
+                items.extend(data["popular_items"] if isinstance(data["popular_items"], list) else [])
+            if "recommendations" in data:
+                items.extend(data["recommendations"] if isinstance(data["recommendations"], list) else [])
+            if "safety_tips" in data:
+                items.extend(data["safety_tips"] if isinstance(data["safety_tips"], list) else [])
+            if "prices" in data:
+                items.append(f"Typical prices: {data['prices']}")
+            if "best_areas" in data:
+                areas = data["best_areas"]
+                if isinstance(areas, list):
+                    items.append(f"Best areas: {', '.join(areas)}")
+                else:
+                    items.append(f"Best areas: {areas}")
+            return items
+
+        return []
+
+    def _normalize_dining_etiquette(self, data: list | dict | None) -> list[str]:
+        """
+        Normalize dining etiquette data from LLM output.
+
+        LLM may return a dict like:
+        {"important_customs": ["Rule 1", ...], "taboos": ["Don't do X", ...]}
+
+        We need to convert it to a list of strings.
+
+        Args:
+            data: Raw dining etiquette data
+
+        Returns:
+            List of etiquette tips
+        """
+        if data is None:
+            return ["Observe local dining customs", "Be respectful of cultural differences"]
+
+        if isinstance(data, list):
+            # Already a list - ensure items are strings
+            result = []
+            for item in data:
+                if isinstance(item, str):
+                    result.append(item)
+                elif isinstance(item, dict):
+                    # Extract rule or description
+                    rule = item.get("rule") or item.get("custom") or item.get("tip") or str(item)
+                    result.append(rule)
+            return result
+
+        if isinstance(data, dict):
+            # Extract etiquette rules from dict
+            rules = []
+            if "important_customs" in data:
+                customs = data["important_customs"]
+                if isinstance(customs, list):
+                    rules.extend(customs)
+            if "dos" in data or "do" in data:
+                dos = data.get("dos") or data.get("do", [])
+                if isinstance(dos, list):
+                    rules.extend([f"Do: {d}" for d in dos])
+            if "donts" in data or "dont" in data:
+                donts = data.get("donts") or data.get("dont", [])
+                if isinstance(donts, list):
+                    rules.extend([f"Don't: {d}" for d in donts])
+            if "taboos" in data:
+                taboos = data["taboos"]
+                if isinstance(taboos, list):
+                    rules.extend([f"Avoid: {t}" for t in taboos])
+            if "general" in data:
+                general = data["general"]
+                if isinstance(general, list):
+                    rules.extend(general)
+                else:
+                    rules.append(str(general))
+            return rules if rules else ["Observe local dining customs"]
+
+        return ["Observe local dining customs"]
+
+    def _normalize_dietary_availability(self, data: dict | DietaryAvailability | None) -> DietaryAvailability:
+        """
+        Normalize dietary availability from LLM output.
+
+        Args:
+            data: Raw dietary availability data
+
+        Returns:
+            DietaryAvailability model instance
+        """
+        if data is None:
+            return DietaryAvailability(
+                vegetarian="limited",
+                vegan="limited",
+                halal="limited",
+                kosher="rare",
+                gluten_free="limited",
+            )
+
+        if isinstance(data, DietaryAvailability):
+            return data
+
+        if isinstance(data, dict):
+            return DietaryAvailability(
+                vegetarian=data.get("vegetarian", "limited"),
+                vegan=data.get("vegan", "limited"),
+                halal=data.get("halal", "limited"),
+                kosher=data.get("kosher", "rare"),
+                gluten_free=data.get("gluten_free", "limited"),
+            )
+
+        return DietaryAvailability(
+            vegetarian="limited",
+            vegan="limited",
+            halal="limited",
+            kosher="rare",
+            gluten_free="limited",
+        )
+
     def _calculate_confidence(self, result: dict) -> float:
         """
         Calculate confidence score based on data completeness.
@@ -245,6 +394,11 @@ class FoodAgent(BaseAgent):
             confidence = self._calculate_confidence(parsed_result)
             logger.info(f"Food Agent confidence: {confidence:.2f}")
 
+            # Normalize complex fields from LLM output
+            street_food = self._normalize_street_food(parsed_result.get("street_food"))
+            dining_etiquette = self._normalize_dining_etiquette(parsed_result.get("dining_etiquette"))
+            dietary_availability = self._normalize_dietary_availability(parsed_result.get("dietary_availability"))
+
             # Build output model
             output = FoodAgentOutput(
                 trip_id=input_data.trip_id,
@@ -266,23 +420,14 @@ class FoodAgent(BaseAgent):
                 warnings=[],
                 # Must-try dishes
                 must_try_dishes=parsed_result.get("must_try_dishes", []),
-                # Street food
-                street_food=parsed_result.get("street_food", []),
+                # Street food (normalized)
+                street_food=street_food,
                 # Restaurants
                 restaurant_recommendations=parsed_result.get("restaurant_recommendations", []),
-                # Dining etiquette
-                dining_etiquette=parsed_result.get("dining_etiquette", []),
-                # Dietary options
-                dietary_availability=parsed_result.get(
-                    "dietary_availability",
-                    DietaryAvailability(
-                        vegetarian="limited",
-                        vegan="limited",
-                        halal="limited",
-                        kosher="rare",
-                        gluten_free="limited",
-                    ),
-                ),
+                # Dining etiquette (normalized)
+                dining_etiquette=dining_etiquette,
+                # Dietary options (normalized)
+                dietary_availability=dietary_availability,
                 dietary_notes=parsed_result.get("dietary_notes", []),
                 # Price ranges
                 meal_price_ranges=parsed_result.get(

@@ -19,6 +19,77 @@ from typing import Any
 
 from pydantic import BaseModel, ValidationError
 
+# Common country name to ISO 3166-1 alpha-2 code mapping
+COUNTRY_NAME_TO_CODE: dict[str, str] = {
+    # Common countries - add more as needed
+    "afghanistan": "AF", "albania": "AL", "algeria": "DZ", "argentina": "AR",
+    "armenia": "AM", "australia": "AU", "austria": "AT", "azerbaijan": "AZ",
+    "bahrain": "BH", "bangladesh": "BD", "belarus": "BY", "belgium": "BE",
+    "bolivia": "BO", "bosnia and herzegovina": "BA", "brazil": "BR", "bulgaria": "BG",
+    "cambodia": "KH", "cameroon": "CM", "canada": "CA", "chile": "CL",
+    "china": "CN", "colombia": "CO", "costa rica": "CR", "croatia": "HR",
+    "cuba": "CU", "cyprus": "CY", "czech republic": "CZ", "czechia": "CZ",
+    "denmark": "DK", "dominican republic": "DO", "ecuador": "EC", "egypt": "EG",
+    "el salvador": "SV", "estonia": "EE", "ethiopia": "ET", "fiji": "FJ",
+    "finland": "FI", "france": "FR", "georgia": "GE", "germany": "DE",
+    "ghana": "GH", "greece": "GR", "guatemala": "GT", "honduras": "HN",
+    "hong kong": "HK", "hungary": "HU", "iceland": "IS", "india": "IN",
+    "indonesia": "ID", "iran": "IR", "iraq": "IQ", "ireland": "IE",
+    "israel": "IL", "italy": "IT", "jamaica": "JM", "japan": "JP",
+    "jordan": "JO", "kazakhstan": "KZ", "kenya": "KE", "kuwait": "KW",
+    "kyrgyzstan": "KG", "laos": "LA", "latvia": "LV", "lebanon": "LB",
+    "libya": "LY", "lithuania": "LT", "luxembourg": "LU", "macau": "MO",
+    "malaysia": "MY", "maldives": "MV", "malta": "MT", "mexico": "MX",
+    "moldova": "MD", "mongolia": "MN", "montenegro": "ME", "morocco": "MA",
+    "myanmar": "MM", "nepal": "NP", "netherlands": "NL", "new zealand": "NZ",
+    "nicaragua": "NI", "nigeria": "NG", "north korea": "KP", "north macedonia": "MK",
+    "norway": "NO", "oman": "OM", "pakistan": "PK", "panama": "PA",
+    "paraguay": "PY", "peru": "PE", "philippines": "PH", "poland": "PL",
+    "portugal": "PT", "qatar": "QA", "romania": "RO", "russia": "RU",
+    "russian federation": "RU", "rwanda": "RW", "saudi arabia": "SA", "senegal": "SN",
+    "serbia": "RS", "singapore": "SG", "slovakia": "SK", "slovenia": "SI",
+    "south africa": "ZA", "south korea": "KR", "korea": "KR", "spain": "ES",
+    "sri lanka": "LK", "sudan": "SD", "sweden": "SE", "switzerland": "CH",
+    "syria": "SY", "taiwan": "TW", "tajikistan": "TJ", "tanzania": "TZ",
+    "thailand": "TH", "tunisia": "TN", "turkey": "TR", "turkmenistan": "TM",
+    "uganda": "UG", "ukraine": "UA", "united arab emirates": "AE", "uae": "AE",
+    "united kingdom": "GB", "uk": "GB", "england": "GB", "scotland": "GB", "wales": "GB",
+    "united states": "US", "usa": "US", "america": "US", "united states of america": "US",
+    "uruguay": "UY", "uzbekistan": "UZ", "venezuela": "VE", "vietnam": "VN",
+    "yemen": "YE", "zambia": "ZM", "zimbabwe": "ZW",
+}
+
+
+def get_country_code(country_name: str) -> str:
+    """
+    Convert country name to ISO 3166-1 alpha-2 code.
+
+    Args:
+        country_name: Full country name or already an ISO code
+
+    Returns:
+        2-letter ISO country code, or original if already a code
+    """
+    if not country_name:
+        return "US"  # Default
+
+    # If already a 2-letter code, return uppercase
+    if len(country_name) == 2 and country_name.isalpha():
+        return country_name.upper()
+
+    # Look up in mapping
+    normalized = country_name.lower().strip()
+    if normalized in COUNTRY_NAME_TO_CODE:
+        return COUNTRY_NAME_TO_CODE[normalized]
+
+    # Try partial match
+    for name, code in COUNTRY_NAME_TO_CODE.items():
+        if name in normalized or normalized in name:
+            return code
+
+    # Last resort: return first 2 chars uppercase (may be wrong but won't crash)
+    return country_name[:2].upper() if len(country_name) >= 2 else "XX"
+
 from app.core.supabase import supabase
 
 # Import specialist agents as they become available
@@ -363,10 +434,13 @@ class OrchestratorAgent:
             from app.agents.visa.models import VisaAgentInput
 
             duration_days = (trip_data.return_date - trip_data.departure_date).days
+            # Convert country names to ISO codes for visa agent
+            nationality_code = get_country_code(trip_data.user_nationality)
+            destination_code = get_country_code(trip_data.destination_country)
             return VisaAgentInput(
                 trip_id=trip_data.trip_id,
-                user_nationality=trip_data.user_nationality,
-                destination_country=trip_data.destination_country,
+                user_nationality=nationality_code,
+                destination_country=destination_code,
                 destination_city=trip_data.destination_city,
                 trip_purpose=trip_data.trip_purpose,
                 duration_days=duration_days,

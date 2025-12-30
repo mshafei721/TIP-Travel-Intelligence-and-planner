@@ -207,6 +207,53 @@ class CurrencyAgent(BaseAgent):
 
         return estimates
 
+    def _normalize_tipping_customs(self, data: str | dict | None) -> str:
+        """
+        Normalize tipping customs from LLM output.
+
+        LLM may return a dict like:
+        {"tipping_culture": "Moderate", "typical_percentage": "10-15%", ...}
+
+        We need to convert it to a string.
+
+        Args:
+            data: Raw tipping customs data
+
+        Returns:
+            String description of tipping customs
+        """
+        if data is None:
+            return "Tipping customs vary - research local practices"
+
+        if isinstance(data, str):
+            return data
+
+        if isinstance(data, dict):
+            # Build a descriptive string from the dict
+            parts = []
+            if "tipping_culture" in data:
+                parts.append(f"Tipping culture: {data['tipping_culture']}")
+            if "typical_percentage" in data:
+                parts.append(f"Typical tip: {data['typical_percentage']}")
+            if "restaurants" in data:
+                parts.append(f"Restaurants: {data['restaurants']}")
+            if "taxis" in data:
+                parts.append(f"Taxis: {data['taxis']}")
+            if "hotels" in data:
+                parts.append(f"Hotels: {data['hotels']}")
+            if "bargaining_customs" in data or "bargaining" in data:
+                bargaining = data.get("bargaining_customs") or data.get("bargaining", "")
+                if bargaining:
+                    parts.append(f"Bargaining: {bargaining}")
+
+            if parts:
+                return ". ".join(parts)
+
+            # Fallback: join all values
+            return ". ".join(str(v) for v in data.values() if v)
+
+        return "Tipping customs vary - research local practices"
+
     def _calculate_confidence(self, result: dict) -> float:
         """
         Calculate confidence score based on data completeness.
@@ -296,6 +343,7 @@ class CurrencyAgent(BaseAgent):
             # Normalize complex fields from LLM output
             local_currency = self._normalize_local_currency(parsed_result.get("local_currency"))
             cost_estimates = self._normalize_cost_estimates(parsed_result.get("cost_estimates"))
+            tipping_customs = self._normalize_tipping_customs(parsed_result.get("tipping_customs"))
 
             # Build output model
             output = CurrencyAgentOutput(
@@ -326,7 +374,7 @@ class CurrencyAgent(BaseAgent):
                 recommended_payment_methods=parsed_result.get(
                     "recommended_payment_methods", ["Cash", "Credit cards"]
                 ),
-                tipping_customs=parsed_result.get("tipping_customs", "Tipping customs vary"),
+                tipping_customs=tipping_customs,
                 tipping_percentage=parsed_result.get("tipping_percentage"),
                 bargaining_customs=parsed_result.get("bargaining_customs"),
                 cost_of_living_level=parsed_result.get("cost_of_living_level", "moderate"),
