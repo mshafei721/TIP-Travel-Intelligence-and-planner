@@ -2,7 +2,7 @@
 Flight Agent - Tools
 
 Tools for flight search, airport information, and booking guidance.
-Integrates with Amadeus API when credentials are available,
+Integrates with Skyscanner API via RapidAPI when credentials are available,
 falls back to AI knowledge base otherwise.
 """
 
@@ -22,22 +22,22 @@ _flight_client = None
 
 
 def _get_flight_client():
-    """Get or create Amadeus flight client (lazy initialization)."""
+    """Get or create Skyscanner flight client (lazy initialization)."""
     global _flight_client
     if _flight_client is None:
-        if settings.AMADEUS_API_KEY and settings.AMADEUS_API_SECRET:
-            from app.services.flight.amadeus_client import AmadeusFlightClient
+        if settings.RAPIDAPI_KEY:
+            from app.services.flight.skyscanner_client import SkyscannerClient
 
-            _flight_client = AmadeusFlightClient(test_mode=True)
-            logger.info("Amadeus flight client initialized")
+            _flight_client = SkyscannerClient()
+            logger.info("Skyscanner flight client initialized (via RapidAPI)")
         else:
-            logger.warning("Amadeus API not configured - using AI knowledge base")
+            logger.warning("RapidAPI key not configured - using AI knowledge base")
     return _flight_client
 
 
 def _has_api_credentials() -> bool:
-    """Check if Amadeus API credentials are configured."""
-    return bool(settings.AMADEUS_API_KEY and settings.AMADEUS_API_SECRET)
+    """Check if RapidAPI credentials are configured."""
+    return bool(settings.RAPIDAPI_KEY)
 
 
 @tool("Search Flight Routes")
@@ -51,7 +51,7 @@ def search_flight_routes(
     """
     Search for available flight routes between origin and destination.
 
-    Uses Amadeus API when available, falls back to AI knowledge base.
+    Uses Skyscanner API via RapidAPI when available, falls back to AI knowledge base.
     Returns actual flight offers with real-time pricing when API is configured.
 
     Args:
@@ -152,7 +152,7 @@ def search_flight_routes(
                 )
 
             response = {
-                "source": "amadeus_api",
+                "source": "skyscanner_api",
                 "origin": result.origin,
                 "destination": result.destination,
                 "departure_date": result.departure_date,
@@ -165,7 +165,7 @@ def search_flight_routes(
             return json.dumps(response, indent=2)
 
         except Exception as e:
-            logger.warning(f"Amadeus API search failed: {e}. Falling back to AI.")
+            logger.warning(f"Skyscanner API search failed: {e}. Falling back to AI.")
 
     # Fallback to AI knowledge base
     search_context = {
@@ -200,7 +200,7 @@ def get_airport_info(city: str, country: str | None = None) -> str:
     """
     Get comprehensive airport information for a city.
 
-    Uses Amadeus API when available for accurate IATA codes and locations.
+    Uses AI knowledge base for airport information.
 
     Args:
         city: City name or IATA code (e.g., "Paris", "JFK")
@@ -214,39 +214,7 @@ def get_airport_info(city: str, country: str | None = None) -> str:
     """
     logger.info(f"Getting airport info for: {city}, {country}")
 
-    client = _get_flight_client()
-
-    # Try real API lookup if client is available
-    if client and _has_api_credentials():
-        try:
-            # If city looks like IATA code (3 letters), look it up directly
-            if len(city) == 3 and city.isalpha():
-                result = client.get_airport_info(city.upper())
-
-                if "error" not in result:
-                    response = {
-                        "source": "amadeus_api",
-                        "airports": [
-                            {
-                                "iata_code": result["iata_code"],
-                                "name": result["name"],
-                                "city": result["city"],
-                                "country": result["country"],
-                                "country_code": result["country_code"],
-                                "timezone": result["timezone"],
-                                "coordinates": {
-                                    "latitude": result["latitude"],
-                                    "longitude": result["longitude"],
-                                },
-                            }
-                        ],
-                    }
-                    return json.dumps(response, indent=2)
-
-        except Exception as e:
-            logger.warning(f"Amadeus airport lookup failed: {e}. Falling back to AI.")
-
-    # Fallback to AI knowledge base
+    # Use AI knowledge base for airport information
     location = f"{city}, {country}" if country else city
 
     return f"""Provide comprehensive airport information for {location}.
@@ -383,7 +351,7 @@ def estimate_flight_pricing(
                 currencies = [o.currency for o in result.offers]
 
                 response = {
-                    "source": "amadeus_api",
+                    "source": "skyscanner_api",
                     "route": f"{origin} → {destination}",
                     "departure_date": departure_date,
                     "cabin_class": cabin_class,
@@ -395,12 +363,12 @@ def estimate_flight_pricing(
                         "currency": currencies[0] if currencies else "USD",
                         "sample_size": len(prices),
                     },
-                    "note": "Prices are real-time from Amadeus API",
+                    "note": "Prices are real-time from Skyscanner API",
                 }
                 return json.dumps(response, indent=2)
 
         except Exception as e:
-            logger.warning(f"Amadeus pricing search failed: {e}. Falling back to AI.")
+            logger.warning(f"Skyscanner pricing search failed: {e}. Falling back to AI.")
 
     # Parse date to determine season
     try:

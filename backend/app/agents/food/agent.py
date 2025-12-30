@@ -31,6 +31,7 @@ from .tools import (
     get_must_try_dishes,
     get_restaurant_price_ranges,
     get_street_food_info,
+    search_food_info,
 )
 
 logger = logging.getLogger(__name__)
@@ -112,6 +113,7 @@ class FoodAgent(BaseAgent):
             backstory=FOOD_AGENT_BACKSTORY,
             llm=self.llm,
             tools=[
+                search_food_info,  # Web search for real-time food info
                 get_must_try_dishes,
                 get_dietary_availability,
                 get_food_safety_info,
@@ -155,54 +157,60 @@ class FoodAgent(BaseAgent):
         except json.JSONDecodeError:
             return None
 
-    def _normalize_street_food(self, data: list | dict | None) -> list[str]:
+    def _normalize_street_food(self, data: list | dict | None) -> list:
         """
-        Normalize street food data from LLM output.
+        Normalize street food data from LLM output to StreetFood models.
 
-        LLM may return a dict like:
-        {"popular_items": ["Samsa", ...], "prices": "$1-5", "safety_tips": [...]}
-
-        We need to convert it to a list of strings.
+        LLM may return various formats:
+        - List of dicts with typical_prices instead of price_range
+        - Dict with popular_items
 
         Args:
             data: Raw street food data
 
         Returns:
-            List of street food items/tips
+            List of StreetFood-compatible dicts
         """
+        from .models import StreetFood
+
         if data is None:
             return []
 
         if isinstance(data, list):
-            # Already a list - ensure items are strings
             result = []
             for item in data:
-                if isinstance(item, str):
-                    result.append(item)
-                elif isinstance(item, dict):
-                    # Extract name or description from dict
-                    name = item.get("name") or item.get("item") or str(item)
-                    result.append(name)
+                if isinstance(item, dict):
+                    # Map typical_prices -> price_range
+                    normalized = {
+                        "name": item.get("name", "Unknown"),
+                        "description": item.get("description", "Street food item"),
+                        "where_to_find": item.get("where_to_find", item.get("location", "Various locations")),
+                        "safety_rating": item.get("safety_rating", "generally-safe"),
+                        "price_range": item.get("price_range") or item.get("typical_prices", "$1-5"),
+                    }
+                    try:
+                        result.append(StreetFood(**normalized))
+                    except Exception:
+                        # If validation fails, skip this item
+                        pass
+                elif isinstance(item, str):
+                    # Simple string item - create minimal StreetFood
+                    try:
+                        result.append(StreetFood(
+                            name=item,
+                            description=f"{item} - local street food",
+                            where_to_find="Street vendors",
+                            safety_rating="generally-safe",
+                            price_range="$1-5",
+                        ))
+                    except Exception:
+                        pass
             return result
 
         if isinstance(data, dict):
-            # Extract popular items or combine information
-            items = []
-            if "popular_items" in data:
-                items.extend(data["popular_items"] if isinstance(data["popular_items"], list) else [])
-            if "recommendations" in data:
-                items.extend(data["recommendations"] if isinstance(data["recommendations"], list) else [])
-            if "safety_tips" in data:
-                items.extend(data["safety_tips"] if isinstance(data["safety_tips"], list) else [])
-            if "prices" in data:
-                items.append(f"Typical prices: {data['prices']}")
-            if "best_areas" in data:
-                areas = data["best_areas"]
-                if isinstance(areas, list):
-                    items.append(f"Best areas: {', '.join(areas)}")
-                else:
-                    items.append(f"Best areas: {areas}")
-            return items
+            # Handle dict with popular_items
+            items = data.get("popular_items", [])
+            return self._normalize_street_food(items)
 
         return []
 
@@ -304,6 +312,88 @@ class FoodAgent(BaseAgent):
             gluten_free="limited",
         )
 
+    def _normalize_restaurant_recommendations(self, data: list | None) -> list:
+        """
+        Normalize restaurant recommendations from LLM output.
+
+        LLM may return specialties as comma-separated string instead of list.
+
+        Args:
+            data: Raw restaurant recommendations data
+
+        Returns:
+            List of Restaurant-compatible dicts
+        """
+        from .models import Restaurant
+
+        if data is None:
+            return []
+
+        result = []
+        for item in data:
+            if isinstance(item, dict):
+                # Convert comma-separated specialties to list
+                specialties = item.get("specialties", [])
+                if isinstance(specialties, str):
+                    specialties = [s.strip() for s in specialties.split(",") if s.strip()]
+
+                normalized = {
+                    "name": item.get("name", "Restaurant"),
+                    "type": item.get("type", "restaurant"),
+                    "cuisine": item.get("cuisine", "Local"),
+                    "price_level": item.get("price_level", item.get("price_range", "$$")),
+                    "location": item.get("location"),
+                    "specialties": specialties,
+                    "notes": item.get("notes"),
+                }
+                try:
+                    result.append(Restaurant(**normalized))
+                except Exception:
+                    pass
+        return result
+
+    def _normalize_must_try_dishes(self, data: list | None) -> list:
+        """
+        Normalize must-try dishes from LLM output.
+
+        Args:
+            data: Raw dishes data
+
+        Returns:
+            List of Dish-compatible dicts
+        """
+        from .models import Dish
+
+        if data is None:
+            return []
+
+        result = []
+        for item in data:
+            if isinstance(item, dict):
+                normalized = {
+                    "name": item.get("name", "Local Dish"),
+                    "description": item.get("description", "Traditional local dish"),
+                    "category": item.get("category", "main"),
+                    "spicy_level": item.get("spicy_level"),
+                    "is_vegetarian": item.get("is_vegetarian", False),
+                    "is_vegan": item.get("is_vegan", False),
+                    "typical_price_range": item.get("typical_price_range", item.get("price_range", "$$")),
+                }
+                try:
+                    result.append(Dish(**normalized))
+                except Exception:
+                    pass
+            elif isinstance(item, str):
+                try:
+                    result.append(Dish(
+                        name=item,
+                        description=f"{item} - must-try local dish",
+                        category="main",
+                    ))
+                except Exception:
+                    pass
+        return result
+
     def _calculate_confidence(self, result: dict) -> float:
         """
         Calculate confidence score based on data completeness.
@@ -393,6 +483,8 @@ class FoodAgent(BaseAgent):
             street_food = self._normalize_street_food(parsed_result.get("street_food"))
             dining_etiquette = self._normalize_dining_etiquette(parsed_result.get("dining_etiquette"))
             dietary_availability = self._normalize_dietary_availability(parsed_result.get("dietary_availability"))
+            restaurant_recommendations = self._normalize_restaurant_recommendations(parsed_result.get("restaurant_recommendations"))
+            must_try_dishes = self._normalize_must_try_dishes(parsed_result.get("must_try_dishes"))
 
             # Build output model
             output = FoodAgentOutput(
@@ -413,12 +505,12 @@ class FoodAgent(BaseAgent):
                     ),
                 ],
                 warnings=[],
-                # Must-try dishes
-                must_try_dishes=parsed_result.get("must_try_dishes", []),
+                # Must-try dishes (normalized)
+                must_try_dishes=must_try_dishes,
                 # Street food (normalized)
                 street_food=street_food,
-                # Restaurants
-                restaurant_recommendations=parsed_result.get("restaurant_recommendations", []),
+                # Restaurants (normalized)
+                restaurant_recommendations=restaurant_recommendations,
                 # Dining etiquette (normalized)
                 dining_etiquette=dining_etiquette,
                 # Dietary options (normalized)

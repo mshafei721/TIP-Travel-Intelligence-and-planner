@@ -650,6 +650,11 @@ def execute_orchestrator(self, trip_id: str) -> dict[str, Any]:
             "departure_date": departure_date,
             "return_date": return_date,
             "trip_purpose": normalized["details"]["trip_purpose"],
+            "origin_city": normalized["traveler"].get("origin_city"),
+            "group_size": normalized["traveler"].get("party_size", 1),
+            "budget_level": normalized["preferences"].get("travel_style", "mid-range"),
+            "interests": normalized["preferences"].get("interests"),
+            "dietary_restrictions": normalized["preferences"].get("dietary_restrictions"),
         }
 
         print(f"[Task {self.request.id}] Prepared orchestrator input: {orchestrator_input}")

@@ -17,6 +17,25 @@ class AgentExecutionError(Exception):
     - Data validation errors
     """
 
+    def __init__(
+        self,
+        message: str = "Agent execution failed",
+        agent_name: str | None = None,
+        original_error: Exception | None = None,
+    ):
+        """
+        Initialize AgentExecutionError.
+
+        Args:
+            message: Error message description
+            agent_name: Name of the agent that failed
+            original_error: The original exception that caused this error
+        """
+        self.agent_name = agent_name
+        self.original_error = original_error
+        full_message = f"[{agent_name}] {message}" if agent_name else message
+        super().__init__(full_message)
+
 
 class AgentConfigurationError(Exception):
     """

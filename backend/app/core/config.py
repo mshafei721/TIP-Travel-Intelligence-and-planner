@@ -69,6 +69,9 @@ class Settings(BaseSettings):
     # Visa APIs (alternatives to Travel Buddy)
     SHERPA_API_KEY: str = ""  # Sherpa visa API (optional)
 
+    # Web Search & Scraping
+    FIRECRAWL_API_KEY: str = ""  # Firecrawl for web search (Culture, Food agents)
+
     @property
     def cors_origins_list(self) -> list[str]:
         """Parse CORS origins from comma-separated string"""

@@ -142,6 +142,20 @@ try:
 except ImportError:
     ATTRACTIONS_AGENT_AVAILABLE = False
 
+try:
+    from app.agents.itinerary.agent import ItineraryAgent
+
+    ITINERARY_AGENT_AVAILABLE = True
+except ImportError:
+    ITINERARY_AGENT_AVAILABLE = False
+
+try:
+    from app.agents.flight.agent import FlightAgent
+
+    FLIGHT_AGENT_AVAILABLE = True
+except ImportError:
+    FLIGHT_AGENT_AVAILABLE = False
+
 
 # Section type to title mapping for report_sections table
 SECTION_TITLES: dict[str, str] = {
@@ -176,6 +190,11 @@ class TripData(BaseModel):
     departure_date: date | None = None
     return_date: date | None = None
     trip_purpose: str = "tourism"
+    origin_city: str | None = None  # For flight agent
+    group_size: int = 1
+    budget_level: str = "mid-range"
+    interests: list[str] | None = None
+    dietary_restrictions: list[str] | None = None
 
     def validate_dates(self) -> None:
         """Validate that dates are present and valid for report generation"""
@@ -234,9 +253,11 @@ class OrchestratorAgent:
         if ATTRACTIONS_AGENT_AVAILABLE:
             self.available_agents["attractions"] = AttractionsAgent
 
-        # Placeholder for future agents
-        # self.available_agents['itinerary'] = ItineraryAgent
-        # self.available_agents['flight'] = FlightAgent
+        if ITINERARY_AGENT_AVAILABLE:
+            self.available_agents["itinerary"] = ItineraryAgent
+
+        if FLIGHT_AGENT_AVAILABLE:
+            self.available_agents["flight"] = FlightAgent
 
         self.errors: list[dict[str, str]] = []
 
@@ -283,16 +304,22 @@ class OrchestratorAgent:
             print(f"[Orchestrator] Phase 2 completed. Results: {list(phase2_results.keys())}, Errors: {len(self.errors)}")
             sections.update(phase2_results)
 
-            # Phase 3: Synthesis agents (future implementation)
-            # Itinerary agent will depend on all Phase 1-2 results
-            # phase3_agents = ['itinerary']
-            # phase3_results = await self._run_phase(validated_data, phase3_agents)
-            # sections.update(phase3_results)
+            # Phase 3: Synthesis agents (itinerary depends on Phase 1-2 results)
+            phase3_agents = ["itinerary"]
+            print(f"[Orchestrator] Starting Phase 3 with agents: {phase3_agents}")
+            phase3_results = await self._run_phase(validated_data, phase3_agents)
+            print(f"[Orchestrator] Phase 3 completed. Results: {list(phase3_results.keys())}, Errors: {len(self.errors)}")
+            sections.update(phase3_results)
 
-            # Phase 4: Final agents (future implementation)
-            # phase4_agents = ['flight']
-            # phase4_results = await self._run_phase(validated_data, phase4_agents)
-            # sections.update(phase4_results)
+            # Phase 4: Flight agent (requires origin city from trip data)
+            if validated_data.origin_city:
+                phase4_agents = ["flight"]
+                print(f"[Orchestrator] Starting Phase 4 with agents: {phase4_agents}")
+                phase4_results = await self._run_phase(validated_data, phase4_agents)
+                print(f"[Orchestrator] Phase 4 completed. Results: {list(phase4_results.keys())}, Errors: {len(self.errors)}")
+                sections.update(phase4_results)
+            else:
+                print("[Orchestrator] Skipping Phase 4 (flight): no origin_city provided")
 
             # Save results to database
             print(f"[Orchestrator] Saving {len(sections)} sections to database")
@@ -528,7 +555,37 @@ class OrchestratorAgent:
                 departure_date=trip_data.departure_date,
                 return_date=trip_data.return_date,
                 traveler_nationality=trip_data.user_nationality,
-                interests=None,  # Can be extended to include user preferences
+                interests=trip_data.interests,
+            )
+
+        # For itinerary agent
+        if agent_name == "itinerary":
+            from app.agents.itinerary.models import ItineraryAgentInput
+
+            return ItineraryAgentInput(
+                trip_id=trip_data.trip_id,
+                destination_country=trip_data.destination_country,
+                destination_city=trip_data.destination_city,
+                departure_date=trip_data.departure_date,
+                return_date=trip_data.return_date,
+                traveler_nationality=trip_data.user_nationality,
+                group_size=trip_data.group_size,
+                budget_level=trip_data.budget_level,
+                interests=trip_data.interests,
+                dietary_restrictions=trip_data.dietary_restrictions,
+            )
+
+        # For flight agent
+        if agent_name == "flight":
+            from app.agents.flight.models import FlightAgentInput
+
+            return FlightAgentInput(
+                trip_id=trip_data.trip_id,
+                origin_city=trip_data.origin_city or "Unknown",
+                destination_city=trip_data.destination_city,
+                departure_date=trip_data.departure_date,
+                return_date=trip_data.return_date,
+                passengers=trip_data.group_size,
             )
 
         raise ValueError(f"Unknown agent: {agent_name}")

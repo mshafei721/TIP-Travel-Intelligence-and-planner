@@ -64,7 +64,8 @@ class AgentResult(BaseModel):
     )
 
     data: dict[str, Any] = Field(
-        description="Agent-specific result data (structure varies by agent)"
+        default_factory=dict,
+        description="Agent-specific result data (structure varies by agent). Optional when subclass has typed fields.",
     )
 
     sources: list[SourceReference] = Field(

@@ -31,6 +31,7 @@ from .tools import (
     get_etiquette_guidelines,
     get_greeting_customs,
     get_religious_considerations,
+    search_cultural_info,
 )
 
 logger = logging.getLogger(__name__)
@@ -111,6 +112,7 @@ class CultureAgent(BaseAgent):
             backstory=CULTURE_AGENT_BACKSTORY,
             llm=self.llm,
             tools=[
+                search_cultural_info,  # Web search for real-time cultural info
                 get_greeting_customs,
                 get_dress_code_guidelines,
                 get_religious_considerations,

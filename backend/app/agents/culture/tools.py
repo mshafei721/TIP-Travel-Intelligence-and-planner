@@ -2,13 +2,92 @@
 Culture Agent CrewAI Tools
 
 Tools for cultural research, etiquette guidance, and cultural intelligence.
+Uses Firecrawl for real-time web search when configured.
 """
 
+import json
 import logging
 
 from crewai.tools import tool
 
+from app.core.config import settings
+
 logger = logging.getLogger(__name__)
+
+
+def _search_culture_info(query: str, limit: int = 3) -> list[dict]:
+    """
+    Search web for cultural information using Firecrawl.
+
+    Args:
+        query: Search query
+        limit: Max results
+
+    Returns:
+        List of search results with content
+    """
+    if not settings.FIRECRAWL_API_KEY:
+        logger.warning("Firecrawl API key not configured - using static data")
+        return []
+
+    try:
+        from app.services.web_search import search_web
+
+        results = search_web(query, limit=limit)
+        return results
+    except Exception as e:
+        logger.error(f"Web search error: {e}")
+        return []
+
+
+@tool("Search cultural information")
+def search_cultural_info(country: str, topic: str) -> str:
+    """
+    Search the web for current cultural information about a country.
+
+    Uses Firecrawl to find up-to-date cultural guides, travel advice,
+    and local customs information.
+
+    Args:
+        country: Country name (e.g., "Japan", "Morocco")
+        topic: Specific topic (e.g., "dining etiquette", "dress code", "greetings")
+
+    Returns:
+        JSON string with search results containing real-time cultural information
+
+    Example:
+        >>> search_cultural_info("Japan", "business etiquette")
+    """
+    query = f"{country} {topic} culture travel guide customs"
+
+    results = _search_culture_info(query, limit=3)
+
+    if results:
+        # Extract relevant content from search results
+        extracted = []
+        for r in results:
+            extracted.append({
+                "title": r.get("title", ""),
+                "url": r.get("url", ""),
+                "content": r.get("markdown", r.get("content", ""))[:2000],  # Limit content size
+            })
+
+        logger.info(f"Found {len(extracted)} web results for {country} {topic}")
+        return json.dumps({
+            "country": country,
+            "topic": topic,
+            "source": "web_search",
+            "results": extracted,
+        })
+    else:
+        logger.info(f"No web results for {country} {topic}, using static data")
+        return json.dumps({
+            "country": country,
+            "topic": topic,
+            "source": "static",
+            "results": [],
+            "note": "No web search results available. Using built-in cultural knowledge.",
+        })
 
 
 @tool("Get greeting customs")
