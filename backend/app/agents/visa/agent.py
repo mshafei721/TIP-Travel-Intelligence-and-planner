@@ -176,24 +176,45 @@ class VisaAgent(BaseAgent):
             VisaAgentOutput: Structured output
 
         Note:
-            CrewAI returns results as strings. We need to parse and structure them.
+            CrewAI returns results as CrewOutput objects. We need to extract and parse them.
         """
         try:
-            # Try to parse as JSON first
-            if isinstance(crew_result, str):
+            # Handle CrewOutput object - extract the actual data
+            # CrewOutput has .raw (string), .json_dict (dict), and other properties
+            if hasattr(crew_result, 'json_dict') and crew_result.json_dict:
+                # Use pre-parsed JSON dict if available
+                result_data = crew_result.json_dict
+            elif hasattr(crew_result, 'raw'):
+                # Extract raw string and parse it
+                raw_result = crew_result.raw
                 # Extract JSON from markdown code blocks if present
-                if "```json" in crew_result:
-                    json_start = crew_result.find("```json") + 7
-                    json_end = crew_result.find("```", json_start)
-                    crew_result = crew_result[json_start:json_end].strip()
-                elif "```" in crew_result:
-                    json_start = crew_result.find("```") + 3
-                    json_end = crew_result.find("```", json_start)
-                    crew_result = crew_result[json_start:json_end].strip()
-
-                result_data = json.loads(crew_result)
-            else:
+                if "```json" in raw_result:
+                    json_start = raw_result.find("```json") + 7
+                    json_end = raw_result.find("```", json_start)
+                    raw_result = raw_result[json_start:json_end].strip()
+                elif "```" in raw_result:
+                    json_start = raw_result.find("```") + 3
+                    json_end = raw_result.find("```", json_start)
+                    raw_result = raw_result[json_start:json_end].strip()
+                result_data = json.loads(raw_result)
+            elif isinstance(crew_result, str):
+                # Legacy: direct string input
+                raw_result = crew_result
+                if "```json" in raw_result:
+                    json_start = raw_result.find("```json") + 7
+                    json_end = raw_result.find("```", json_start)
+                    raw_result = raw_result[json_start:json_end].strip()
+                elif "```" in raw_result:
+                    json_start = raw_result.find("```") + 3
+                    json_end = raw_result.find("```", json_start)
+                    raw_result = raw_result[json_start:json_end].strip()
+                result_data = json.loads(raw_result)
+            elif isinstance(crew_result, dict):
+                # Already a dict
                 result_data = crew_result
+            else:
+                # Unknown type - try to convert to string and parse
+                result_data = json.loads(str(crew_result))
 
             # Build VisaRequirement
             visa_req_data = result_data.get("visa_requirement", {})
