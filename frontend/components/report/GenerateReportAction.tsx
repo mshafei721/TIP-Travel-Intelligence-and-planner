@@ -29,8 +29,9 @@ export function GenerateReportAction({ tripId, variant = 'not-found' }: Generate
         const statusResult = await getTripGenerationStatus(tripId);
         if (statusResult.success && statusResult.status) {
           const status = statusResult.status.status;
-          // If already processing or pending, show the progress tracker
-          if (status === 'processing' || status === 'pending') {
+          // Only show progress tracker if actively processing
+          // 'pending' means ready to start, not in progress
+          if (status === 'processing') {
             setShowProgressTracker(true);
             setIsGenerating(true);
           }
