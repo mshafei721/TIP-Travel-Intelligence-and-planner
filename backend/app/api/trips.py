@@ -1282,9 +1282,10 @@ async def get_visa_report(trip_id: str, token_payload: dict = Depends(verify_jwt
 
     try:
         # 1. Verify trip exists and user owns it - fetch full trip data for context
+        # Note: dates and trip_purposes are inside trip_details JSONB, not top-level columns
         trip_response = (
             supabase.table("trips")
-            .select("id, user_id, traveler_details, destinations, departure_date, return_date, trip_purposes")
+            .select("id, user_id, traveler_details, destinations, trip_details")
             .eq("id", trip_id)
             .single()
             .execute()
@@ -1332,19 +1333,22 @@ async def get_visa_report(trip_id: str, token_payload: dict = Depends(verify_jwt
         traveler_details = trip_data.get("traveler_details") or {}
         destinations = trip_data.get("destinations") or []
         first_destination = destinations[0] if destinations else {}
+        trip_details = trip_data.get("trip_details") or {}
 
-        # Calculate trip duration
+        # Calculate trip duration (dates are in trip_details JSONB with camelCase)
         duration_days = None
-        if trip_data.get("departure_date") and trip_data.get("return_date"):
+        departure_date = trip_details.get("departureDate")
+        return_date = trip_details.get("returnDate")
+        if departure_date and return_date:
             try:
-                dep = datetime.fromisoformat(trip_data["departure_date"].replace("Z", "+00:00"))
-                ret = datetime.fromisoformat(trip_data["return_date"].replace("Z", "+00:00"))
+                dep = datetime.fromisoformat(str(departure_date).replace("Z", "+00:00"))
+                ret = datetime.fromisoformat(str(return_date).replace("Z", "+00:00"))
                 duration_days = (ret - dep).days
             except (ValueError, AttributeError):
                 pass
 
-        # Get trip purpose (first one if array)
-        trip_purposes = trip_data.get("trip_purposes") or []
+        # Get trip purpose (tripPurposes is in trip_details JSONB)
+        trip_purposes = trip_details.get("tripPurposes") or []
         trip_purpose = trip_purposes[0] if trip_purposes else None
 
         # Parse sources safely - agent might have different field names
