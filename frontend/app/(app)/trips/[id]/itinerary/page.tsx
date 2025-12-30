@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import dynamic from 'next/dynamic';
@@ -9,8 +9,18 @@ import { FlightOptions } from '@/components/itinerary/FlightOptions';
 import { ActivityModal } from '@/components/itinerary/ActivityModal';
 import { ConfirmDialog } from '@/components/itinerary/ConfirmDialog';
 import { sampleItinerary } from '@/lib/mock-data/itinerary-sample';
+import { fetchFullItinerary } from '@/lib/api/itinerary';
 import type { Activity, TimeOfDay, TripItinerary } from '@/types/itinerary';
-import { Calendar, MapPin, Plane, ChevronRight, Map as MapIcon, List } from 'lucide-react';
+import {
+  Calendar,
+  MapPin,
+  Plane,
+  ChevronRight,
+  Map as MapIcon,
+  List,
+  Loader2,
+  AlertCircle,
+} from 'lucide-react';
 
 // Dynamically import MapView with no SSR to avoid mapbox-gl issues
 const MapView = dynamic(
@@ -29,14 +39,45 @@ const MapView = dynamic(
 );
 
 interface ItineraryPageProps {
-  params: {
-    id: string;
-  };
+  params: Promise<{ id: string }>;
 }
 
 export default function ItineraryPage({ params }: ItineraryPageProps) {
-  // State for itinerary data (using sample data, in production this would come from API)
-  const [itinerary, setItinerary] = useState<TripItinerary>(sampleItinerary);
+  // Unwrap params with React.use()
+  const resolvedParams = React.use(params);
+  const tripId = resolvedParams.id;
+
+  // State for itinerary data
+  const [itinerary, setItinerary] = useState<TripItinerary | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [useSampleData, setUseSampleData] = useState(false);
+
+  // Fetch itinerary data from API
+  useEffect(() => {
+    async function loadItinerary() {
+      setIsLoading(true);
+
+      const result = await fetchFullItinerary(tripId);
+
+      if (result.success && result.data) {
+        setItinerary(result.data);
+        setUseSampleData(false);
+      } else if (result.error === 'REPORT_NOT_FOUND') {
+        // No report generated yet - use sample data for preview
+        setItinerary(sampleItinerary);
+        setUseSampleData(true);
+      } else {
+        // Error occurred - fall back to sample data
+        console.error('Failed to load itinerary:', result.error);
+        setItinerary(sampleItinerary);
+        setUseSampleData(true);
+      }
+
+      setIsLoading(false);
+    }
+
+    loadItinerary();
+  }, [tripId]);
 
   // View mode state
   const [viewMode, setViewMode] = useState<'timeline' | 'map'>('timeline');
@@ -50,6 +91,19 @@ export default function ItineraryPage({ params }: ItineraryPageProps) {
   const [selectedDayNumber, setSelectedDayNumber] = useState<number>(1);
   const [selectedTimeOfDay, setSelectedTimeOfDay] = useState<TimeOfDay>('morning');
 
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-950 dark:to-slate-900">
+        <div className="text-center">
+          <Loader2 className="mx-auto h-12 w-12 animate-spin text-blue-600" />
+          <p className="mt-4 text-lg text-slate-600 dark:text-slate-400">Loading itinerary...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // No data state
   if (!itinerary) {
     notFound();
   }
@@ -95,6 +149,7 @@ export default function ItineraryPage({ params }: ItineraryPageProps) {
   // Handler: Save activity (add or edit)
   const handleSaveActivity = (activityData: Partial<Activity>) => {
     setItinerary((prev) => {
+      if (!prev) return prev;
       const newItinerary = { ...prev };
       const dayIndex = newItinerary.days.findIndex((d) => d.dayNumber === selectedDayNumber);
 
@@ -140,6 +195,7 @@ export default function ItineraryPage({ params }: ItineraryPageProps) {
     if (!activityToDelete) return;
 
     setItinerary((prev) => {
+      if (!prev) return prev;
       const newItinerary = { ...prev };
 
       // Find and remove the activity
@@ -182,12 +238,15 @@ export default function ItineraryPage({ params }: ItineraryPageProps) {
 
   // Handler: Select flight
   const handleSelectFlight = (flightId: string) => {
-    setItinerary((prev) => ({
-      ...prev,
-      flights: prev.flights.map((flight) =>
-        flight.id === flightId ? { ...flight, bookingStatus: 'selected' as const } : flight,
-      ),
-    }));
+    setItinerary((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        flights: prev.flights.map((flight) =>
+          flight.id === flightId ? { ...flight, bookingStatus: 'selected' as const } : flight,
+        ),
+      };
+    });
   };
 
   // Get activity by ID (for confirm dialog)
@@ -208,6 +267,17 @@ export default function ItineraryPage({ params }: ItineraryPageProps) {
       {/* Header */}
       <div className="border-b border-slate-200 bg-white/80 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/80">
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+          {/* Sample Data Banner */}
+          {useSampleData && (
+            <div className="mb-4 flex items-center gap-2 rounded-lg bg-amber-50 border border-amber-200 p-3 text-amber-800 dark:bg-amber-950/30 dark:border-amber-900 dark:text-amber-200">
+              <AlertCircle className="h-5 w-5 flex-shrink-0" />
+              <p className="text-sm">
+                <strong>Preview Mode:</strong> This is sample data. Generate your trip report to see
+                your personalized itinerary.
+              </p>
+            </div>
+          )}
+
           {/* Breadcrumb */}
           <div className="mb-4 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
             <Link href="/trips" className="hover:text-blue-600 dark:hover:text-blue-400">
@@ -215,7 +285,7 @@ export default function ItineraryPage({ params }: ItineraryPageProps) {
             </Link>
             <ChevronRight className="h-4 w-4" />
             <Link
-              href={`/trips/${params.id}`}
+              href={`/trips/${tripId}`}
               className="hover:text-blue-600 dark:hover:text-blue-400"
             >
               {itinerary.tripName}

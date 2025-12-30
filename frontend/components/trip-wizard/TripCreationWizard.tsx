@@ -46,8 +46,12 @@ export interface Destination {
 export type TripPurposeType =
   | 'Tourism'
   | 'Business'
+  | 'Adventure'
   | 'Education'
   | 'Family Visit'
+  | 'Transit'
+  | 'Work'
+  | 'Study'
   | 'Medical'
   | 'Other';
 
@@ -272,7 +276,9 @@ export default function TripCreationWizard() {
           returnDate: validation.data.tripDetails.returnDate,
           budget: validation.data.tripDetails.budget,
           budgetCurrency: validation.data.tripDetails.currency,
-          tripPurposes: validation.data.tripDetails.tripPurposes,
+          tripPurposes: validation.data.tripDetails.tripPurposes.map((p: string) =>
+            p.toLowerCase().replace(/ /g, '_'),
+          ),
         },
         preferences: {
           travelStyle: validation.data.preferences.travelStyle,

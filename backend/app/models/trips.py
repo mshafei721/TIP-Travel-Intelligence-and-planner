@@ -24,6 +24,10 @@ class TripPurpose(str, Enum):
     ADVENTURE = "adventure"
     EDUCATION = "education"
     FAMILY_VISIT = "family_visit"
+    TRANSIT = "transit"
+    WORK = "work"
+    STUDY = "study"
+    MEDICAL = "medical"
     OTHER = "other"
 
 

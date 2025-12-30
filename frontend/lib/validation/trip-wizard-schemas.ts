@@ -180,7 +180,20 @@ export const tripDetailsSchema = z
     }),
 
     tripPurposes: z
-      .array(z.enum(['Tourism', 'Business', 'Education', 'Family Visit', 'Medical', 'Other']))
+      .array(
+        z.enum([
+          'Tourism',
+          'Business',
+          'Adventure',
+          'Education',
+          'Family Visit',
+          'Transit',
+          'Work',
+          'Study',
+          'Medical',
+          'Other',
+        ]),
+      )
       .min(1, 'Please select at least one trip purpose'),
   })
   .refine(

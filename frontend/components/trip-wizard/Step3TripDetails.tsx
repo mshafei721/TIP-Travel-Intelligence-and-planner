@@ -20,8 +20,12 @@ const CURRENCIES = [
 const TRIP_PURPOSES = [
   { value: 'Tourism', icon: '🏖️', desc: 'Leisure and sightseeing' },
   { value: 'Business', icon: '💼', desc: 'Work-related travel' },
+  { value: 'Adventure', icon: '🏔️', desc: 'Outdoor adventures' },
   { value: 'Education', icon: '📚', desc: 'Study or research' },
   { value: 'Family Visit', icon: '👨‍👩‍👧', desc: 'Visiting relatives' },
+  { value: 'Transit', icon: '🚂', desc: 'Passing through' },
+  { value: 'Work', icon: '👔', desc: 'Employment assignment' },
+  { value: 'Study', icon: '🎓', desc: 'Academic program' },
   { value: 'Medical', icon: '🏥', desc: 'Healthcare purposes' },
   { value: 'Other', icon: '✈️', desc: 'Other purposes' },
 ];

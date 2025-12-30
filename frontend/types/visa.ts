@@ -5,7 +5,17 @@
 
 export type ConfidenceLevel = 'official' | 'third-party' | 'uncertain';
 export type VisaCategory = 'visa-free' | 'visa-on-arrival' | 'evisa' | 'visa-required' | 'eta';
-export type TripPurpose = 'tourism' | 'business' | 'transit';
+export type TripPurpose =
+  | 'tourism'
+  | 'business'
+  | 'adventure'
+  | 'education'
+  | 'family_visit'
+  | 'transit'
+  | 'work'
+  | 'study'
+  | 'medical'
+  | 'other';
 
 export interface SourceReference {
   name: string;

@@ -54,7 +54,17 @@ type VisaReportApi = {
     user_nationality?: string;
     destination_country?: string;
     destination_city?: string;
-    trip_purpose?: 'tourism' | 'business' | 'work' | 'study' | 'medical' | 'transit' | 'other';
+    trip_purpose?:
+      | 'tourism'
+      | 'business'
+      | 'adventure'
+      | 'education'
+      | 'family_visit'
+      | 'transit'
+      | 'work'
+      | 'study'
+      | 'medical'
+      | 'other';
     duration_days?: number;
     visa_required?: boolean;
     visa_type?: string;
