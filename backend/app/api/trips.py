@@ -710,7 +710,7 @@ async def get_generation_status(trip_id: str, token_payload: dict = Depends(veri
     - status: Trip status (draft, pending, processing, completed, failed)
     - progress: Overall completion percentage (0-100)
     - current_agent: Current agent being executed (if processing)
-    - agents_completed: List of completed agents
+    - agents_completed: List of completed agents (sections saved to database)
     - agents_failed: List of failed agents
     - error: Error message (if failed)
     - started_at: When report generation started
@@ -734,42 +734,52 @@ async def get_generation_status(trip_id: str, token_payload: dict = Depends(veri
 
         trip = trip_response.data
 
-        # Optimized: Get only the fields we need with a single query
-        # Using selective fields instead of SELECT * for better performance
+        # Get orchestrator job for start time and error info
         jobs_response = (
             supabase.table("agent_jobs")
-            .select("agent_type, status, error_message, created_at")
+            .select("agent_type, status, error_message, started_at, created_at")
             .eq("trip_id", trip_id)
-            .order("created_at")
+            .eq("agent_type", "orchestrator")
+            .order("created_at", desc=True)
+            .limit(1)
             .execute()
         )
 
-        agent_jobs = jobs_response.data if jobs_response.data else []
+        orchestrator_job = jobs_response.data[0] if jobs_response.data else None
+        started_at = orchestrator_job.get("started_at") if orchestrator_job else None
+        first_error = orchestrator_job.get("error_message") if orchestrator_job else None
 
-        # Calculate progress using list comprehensions (more efficient)
-        total_agents = 10  # 10 specialized agents
-        agents_completed = []
+        # Get completed sections from report_sections table
+        # This gives us accurate progress since sections are saved incrementally
+        sections_response = (
+            supabase.table("report_sections")
+            .select("section_type")
+            .eq("trip_id", trip_id)
+            .execute()
+        )
+
+        completed_sections = [s["section_type"] for s in (sections_response.data or [])]
+
+        # Total agents that will be run (Phase 1 + Phase 2)
+        # Phase 1: visa, country, weather, currency, culture
+        # Phase 2: food, attractions
+        total_agents = 7
+        agents_completed = completed_sections
         agents_failed = []
+
+        # Determine current agent based on what's completed
+        # Agents run in order: visa, country, weather, currency, culture, food, attractions
+        agent_order = ["visa", "country", "weather", "currency", "culture", "food", "attractions"]
         current_agent = None
-        first_error = None
-        started_at = None
 
-        for job in agent_jobs:
-            if started_at is None:
-                started_at = job["created_at"]
+        if trip["status"] == "processing":
+            # Find the first agent not yet in completed sections
+            for agent_name in agent_order:
+                if agent_name not in completed_sections:
+                    current_agent = agent_name
+                    break
 
-            job_status = job["status"]
-            agent_type = job["agent_type"]
-
-            if job_status == "completed":
-                agents_completed.append(agent_type)
-            elif job_status == "failed":
-                agents_failed.append(agent_type)
-                if first_error is None:
-                    first_error = job.get("error_message")
-            elif job_status in ("processing", "running"):
-                current_agent = agent_type
-
+        # Calculate progress
         completed_count = len(agents_completed)
         progress = int((completed_count / total_agents) * 100) if total_agents > 0 else 0
 

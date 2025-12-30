@@ -13,6 +13,7 @@ from ..config import AgentConfig, DEFAULT_LLM_MODEL
 from ..interfaces import SourceReference
 from app.core.config import settings
 from .models import (
+    CostEstimate,
     CurrencyAgentInput,
     CurrencyAgentOutput,
     LocalCurrency,
@@ -149,6 +150,63 @@ class CurrencyAgent(BaseAgent):
         except json.JSONDecodeError:
             return None
 
+    def _normalize_local_currency(self, data: dict | LocalCurrency | None) -> LocalCurrency:
+        """
+        Normalize local currency data from LLM output.
+
+        Args:
+            data: Raw local currency data (dict or LocalCurrency or None)
+
+        Returns:
+            LocalCurrency model instance
+        """
+        if data is None:
+            return LocalCurrency(code="USD", name="US Dollar", symbol="$")
+
+        if isinstance(data, LocalCurrency):
+            return data
+
+        if isinstance(data, dict):
+            return LocalCurrency(
+                code=data.get("code", "USD"),
+                name=data.get("name", "Unknown"),
+                symbol=data.get("symbol", "$"),
+            )
+
+        return LocalCurrency(code="USD", name="US Dollar", symbol="$")
+
+    def _normalize_cost_estimates(self, data: list | None) -> list[CostEstimate]:
+        """
+        Normalize cost estimates from LLM output.
+
+        Args:
+            data: Raw cost estimates list
+
+        Returns:
+            List of CostEstimate model instances
+        """
+        if not data or not isinstance(data, list):
+            return []
+
+        estimates = []
+        for item in data:
+            if isinstance(item, CostEstimate):
+                estimates.append(item)
+            elif isinstance(item, dict):
+                try:
+                    estimates.append(CostEstimate(
+                        category=item.get("category", "Unknown"),
+                        cost_min=float(item.get("cost_min", 0)),
+                        cost_max=float(item.get("cost_max", 0)),
+                        currency=item.get("currency", "USD"),
+                        notes=item.get("notes"),
+                    ))
+                except (ValueError, TypeError):
+                    # Skip invalid cost estimate entries
+                    pass
+
+        return estimates
+
     def _calculate_confidence(self, result: dict) -> float:
         """
         Calculate confidence score based on data completeness.
@@ -235,6 +293,10 @@ class CurrencyAgent(BaseAgent):
             confidence = self._calculate_confidence(parsed_result)
             logger.info(f"Currency Agent confidence: {confidence:.2f}")
 
+            # Normalize complex fields from LLM output
+            local_currency = self._normalize_local_currency(parsed_result.get("local_currency"))
+            cost_estimates = self._normalize_cost_estimates(parsed_result.get("cost_estimates"))
+
             # Build output model
             output = CurrencyAgentOutput(
                 trip_id=input_data.trip_id,
@@ -254,10 +316,8 @@ class CurrencyAgent(BaseAgent):
                     ),
                 ],
                 warnings=[],
-                # Currency data
-                local_currency=parsed_result.get(
-                    "local_currency", LocalCurrency(code="USD", name="US Dollar", symbol="$")
-                ),
+                # Currency data (normalized)
+                local_currency=local_currency,
                 exchange_rate=parsed_result.get("exchange_rate", 1.0),
                 base_currency=input_data.base_currency,
                 atm_availability=parsed_result.get("atm_availability", "common"),
@@ -270,7 +330,7 @@ class CurrencyAgent(BaseAgent):
                 tipping_percentage=parsed_result.get("tipping_percentage"),
                 bargaining_customs=parsed_result.get("bargaining_customs"),
                 cost_of_living_level=parsed_result.get("cost_of_living_level", "moderate"),
-                cost_estimates=parsed_result.get("cost_estimates", []),
+                cost_estimates=cost_estimates,
                 currency_exchange_tips=parsed_result.get(
                     "currency_exchange_tips", ["Use ATMs for best rates", "Avoid airport exchanges"]
                 ),
