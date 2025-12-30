@@ -1266,17 +1266,37 @@ async def get_visa_report(trip_id: str, token_payload: dict = Depends(verify_jwt
     """
     user_id = token_payload["user_id"]
 
+    def parse_datetime_safe(date_str: str | None) -> datetime | None:
+        """Safely parse datetime string with various formats."""
+        if not date_str:
+            return None
+        try:
+            if isinstance(date_str, datetime):
+                return date_str
+            # Handle ISO format with Z suffix
+            if date_str.endswith("Z"):
+                return datetime.fromisoformat(date_str.replace("Z", "+00:00"))
+            return datetime.fromisoformat(date_str)
+        except (ValueError, AttributeError):
+            return None
+
     try:
-        # 1. Verify trip exists and user owns it
+        # 1. Verify trip exists and user owns it - fetch full trip data for context
         trip_response = (
-            supabase.table("trips").select("id, user_id").eq("id", trip_id).single().execute()
+            supabase.table("trips")
+            .select("id, user_id, traveler_details, destinations, departure_date, return_date, trip_purposes")
+            .eq("id", trip_id)
+            .single()
+            .execute()
         )
 
         if not trip_response.data:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Trip not found")
 
+        trip_data = trip_response.data
+
         # 2. Check ownership
-        if trip_response.data["user_id"] != user_id:
+        if trip_data["user_id"] != user_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You do not have permission to access this report",
@@ -1308,29 +1328,63 @@ async def get_visa_report(trip_id: str, token_payload: dict = Depends(verify_jwt
             float(report["confidence_score"]) / 100.0 if report.get("confidence_score") else 0.0
         )
 
-        # 5. Build response
+        # Extract context from trip data
+        traveler_details = trip_data.get("traveler_details") or {}
+        destinations = trip_data.get("destinations") or []
+        first_destination = destinations[0] if destinations else {}
+
+        # Calculate trip duration
+        duration_days = None
+        if trip_data.get("departure_date") and trip_data.get("return_date"):
+            try:
+                dep = datetime.fromisoformat(trip_data["departure_date"].replace("Z", "+00:00"))
+                ret = datetime.fromisoformat(trip_data["return_date"].replace("Z", "+00:00"))
+                duration_days = (ret - dep).days
+            except (ValueError, AttributeError):
+                pass
+
+        # Get trip purpose (first one if array)
+        trip_purposes = trip_data.get("trip_purposes") or []
+        trip_purpose = trip_purposes[0] if trip_purposes else None
+
+        # Parse sources safely - agent might have different field names
+        sources = []
+        for source in content.get("sources", []):
+            try:
+                sources.append(SourceReferenceResponse(**source))
+            except Exception:
+                # If parsing fails, create minimal source
+                sources.append(SourceReferenceResponse(
+                    url=source.get("url", ""),
+                    title=source.get("title"),
+                ))
+
+        # 5. Build response with context from trip data
         return VisaReportResponse(
             report_id=report["id"],
             trip_id=report["trip_id"],
-            generated_at=datetime.fromisoformat(report["generated_at"].replace("Z", "+00:00")),
+            generated_at=parse_datetime_safe(report["generated_at"]) or datetime.utcnow(),
             confidence_score=confidence_float,
-            visa_requirement=VisaRequirementResponse(**content["visa_requirement"]),
-            application_process=ApplicationProcessResponse(**content["application_process"]),
-            entry_requirements=EntryRequirementResponse(**content["entry_requirements"]),
+            confidence_level=content.get("confidence_level"),
+            # Trip context
+            user_nationality=traveler_details.get("nationality"),
+            destination_country=first_destination.get("country"),
+            destination_city=first_destination.get("city"),
+            trip_purpose=trip_purpose,
+            duration_days=duration_days,
+            # Core visa information
+            visa_requirement=VisaRequirementResponse(**content.get("visa_requirement", {})),
+            application_process=ApplicationProcessResponse(**content.get("application_process", {})),
+            entry_requirements=EntryRequirementResponse(**content.get("entry_requirements", {})),
             tips=content.get("tips", []),
             warnings=content.get("warnings", []),
-            sources=[SourceReferenceResponse(**source) for source in content.get("sources", [])],
-            last_verified=datetime.fromisoformat(content["last_verified"].replace("Z", "+00:00")),
+            sources=sources,
+            last_verified=parse_datetime_safe(content.get("last_verified")),
+            is_partial_data=content.get("is_partial_data", False),
         )
 
     except HTTPException:
         raise
-    except KeyError as e:
-        # Handle missing fields in content data
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Invalid report data format. Please regenerate the report.",
-        )
     except Exception as e:
         log_and_raise_http_error("retrieve visa report", e, "Failed to retrieve visa report. Please try again.")
 
@@ -1380,6 +1434,19 @@ async def get_destination_report(trip_id: str, token_payload: dict = Depends(ver
     """
     user_id = token_payload["user_id"]
 
+    def parse_datetime_safe(date_str: str | None) -> datetime | None:
+        """Safely parse datetime string with various formats."""
+        if not date_str:
+            return None
+        try:
+            if isinstance(date_str, datetime):
+                return date_str
+            if date_str.endswith("Z"):
+                return datetime.fromisoformat(date_str.replace("Z", "+00:00"))
+            return datetime.fromisoformat(date_str)
+        except (ValueError, AttributeError):
+            return None
+
     try:
         # 1. Verify trip exists and user owns it
         trip_response = (
@@ -1422,51 +1489,85 @@ async def get_destination_report(trip_id: str, token_payload: dict = Depends(ver
             float(report["confidence_score"]) / 100.0 if report.get("confidence_score") else 0.0
         )
 
-        # 5. Build response
+        # Parse sources safely
+        sources = []
+        for source in content.get("sources", []):
+            try:
+                sources.append(SourceReferenceResponse(**source))
+            except Exception:
+                sources.append(SourceReferenceResponse(
+                    url=source.get("url", ""),
+                    title=source.get("title"),
+                ))
+
+        # Parse emergency numbers safely
+        emergency_numbers = []
+        for contact in content.get("emergency_numbers", []):
+            try:
+                emergency_numbers.append(EmergencyContactResponse(**contact))
+            except Exception:
+                emergency_numbers.append(EmergencyContactResponse(
+                    service=contact.get("service", "Unknown"),
+                    number=contact.get("number", ""),
+                    notes=contact.get("notes"),
+                ))
+
+        # Parse power outlet safely
+        power_outlet_data = content.get("power_outlet", {})
+        power_outlet = PowerOutletResponse(
+            plug_types=power_outlet_data.get("plug_types", []),
+            voltage=power_outlet_data.get("voltage", "Unknown"),
+            frequency=power_outlet_data.get("frequency", "Unknown"),
+        )
+
+        # Parse travel advisories safely
+        travel_advisories = []
+        for advisory in content.get("travel_advisories", []):
+            try:
+                travel_advisories.append(TravelAdvisoryResponse(**advisory))
+            except Exception:
+                travel_advisories.append(TravelAdvisoryResponse(
+                    level=advisory.get("level", "Unknown"),
+                    title=advisory.get("title", ""),
+                    summary=advisory.get("summary", ""),
+                    updated_at=advisory.get("updated_at"),
+                    source=advisory.get("source", "Unknown"),
+                ))
+
+        # 5. Build response with safe field access
         return CountryReportResponse(
             report_id=report["id"],
             trip_id=report["trip_id"],
-            generated_at=datetime.fromisoformat(report["generated_at"].replace("Z", "+00:00")),
+            generated_at=parse_datetime_safe(report["generated_at"]) or datetime.utcnow(),
             confidence_score=confidence_float,
-            country_name=content["country_name"],
-            country_code=content["country_code"],
-            capital=content["capital"],
-            region=content["region"],
+            country_name=content.get("country_name", "Unknown"),
+            country_code=content.get("country_code", "XX"),
+            capital=content.get("capital", "Unknown"),
+            region=content.get("region", "Unknown"),
             subregion=content.get("subregion"),
-            population=content["population"],
+            population=content.get("population", 0),
             area_km2=content.get("area_km2"),
             population_density=content.get("population_density"),
-            official_languages=content["official_languages"],
+            official_languages=content.get("official_languages", []),
             common_languages=content.get("common_languages"),
-            time_zones=content["time_zones"],
+            time_zones=content.get("time_zones", []),
             coordinates=content.get("coordinates"),
             borders=content.get("borders"),
-            emergency_numbers=[
-                EmergencyContactResponse(**contact) for contact in content["emergency_numbers"]
-            ],
-            power_outlet=PowerOutletResponse(**content["power_outlet"]),
-            driving_side=content["driving_side"],
-            currencies=content["currencies"],
-            currency_codes=content["currency_codes"],
-            safety_rating=content["safety_rating"],
-            travel_advisories=[
-                TravelAdvisoryResponse(**advisory)
-                for advisory in content.get("travel_advisories", [])
-            ],
+            emergency_numbers=emergency_numbers,
+            power_outlet=power_outlet,
+            driving_side=content.get("driving_side", "right"),
+            currencies=content.get("currencies", []),
+            currency_codes=content.get("currency_codes", []),
+            safety_rating=content.get("safety_rating", 0.0),
+            travel_advisories=travel_advisories,
             notable_facts=content.get("notable_facts", []),
             best_time_to_visit=content.get("best_time_to_visit"),
-            sources=[SourceReferenceResponse(**source) for source in content.get("sources", [])],
+            sources=sources,
             warnings=content.get("warnings", []),
         )
 
     except HTTPException:
         raise
-    except KeyError as e:
-        # Handle missing fields in content data
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Invalid report data format. Please regenerate the report.",
-        )
     except Exception as e:
         log_and_raise_http_error("retrieve destination report", e, "Failed to retrieve destination report. Please try again.")
 
@@ -1518,6 +1619,19 @@ async def get_itinerary_report(trip_id: str, token_payload: dict = Depends(verif
     """
     user_id = token_payload["user_id"]
 
+    def parse_datetime_safe(date_str: str | None) -> datetime | None:
+        """Safely parse datetime string with various formats."""
+        if not date_str:
+            return None
+        try:
+            if isinstance(date_str, datetime):
+                return date_str
+            if date_str.endswith("Z"):
+                return datetime.fromisoformat(date_str.replace("Z", "+00:00"))
+            return datetime.fromisoformat(date_str)
+        except (ValueError, AttributeError):
+            return None
+
     try:
         # 1. Verify trip exists and user owns it
         trip_response = (
@@ -1560,16 +1674,26 @@ async def get_itinerary_report(trip_id: str, token_payload: dict = Depends(verif
             float(report["confidence_score"]) / 100.0 if report.get("confidence_score") else 0.0
         )
 
+        # Parse sources safely - sources may be in content or report
+        sources = []
+        raw_sources = content.get("sources", []) or report.get("sources", [])
+        for source in raw_sources:
+            try:
+                sources.append(SourceReferenceResponse(**source))
+            except Exception:
+                sources.append(SourceReferenceResponse(
+                    url=source.get("url", ""),
+                    title=source.get("title"),
+                ))
+
         # 5. Build response
         return ItineraryReportResponse(
             report_id=report["id"],
             trip_id=report["trip_id"],
-            generated_at=datetime.fromisoformat(report["generated_at"].replace("Z", "+00:00")),
+            generated_at=parse_datetime_safe(report["generated_at"]) or datetime.utcnow(),
             confidence_score=confidence_float,
             content=content,
-            sources=[
-                SourceReferenceResponse(**source) for source in report.get("sources", [])
-            ],
+            sources=sources,
             warnings=content.get("warnings", []),
         )
 
@@ -1626,6 +1750,19 @@ async def get_flight_report(trip_id: str, token_payload: dict = Depends(verify_j
     """
     user_id = token_payload["user_id"]
 
+    def parse_datetime_safe(date_str: str | None) -> datetime | None:
+        """Safely parse datetime string with various formats."""
+        if not date_str:
+            return None
+        try:
+            if isinstance(date_str, datetime):
+                return date_str
+            if date_str.endswith("Z"):
+                return datetime.fromisoformat(date_str.replace("Z", "+00:00"))
+            return datetime.fromisoformat(date_str)
+        except (ValueError, AttributeError):
+            return None
+
     try:
         # 1. Verify trip exists and user owns it
         trip_response = (
@@ -1668,16 +1805,26 @@ async def get_flight_report(trip_id: str, token_payload: dict = Depends(verify_j
             float(report["confidence_score"]) / 100.0 if report.get("confidence_score") else 0.0
         )
 
+        # Parse sources safely - sources may be in content or report
+        sources = []
+        raw_sources = content.get("sources", []) or report.get("sources", [])
+        for source in raw_sources:
+            try:
+                sources.append(SourceReferenceResponse(**source))
+            except Exception:
+                sources.append(SourceReferenceResponse(
+                    url=source.get("url", ""),
+                    title=source.get("title"),
+                ))
+
         # 5. Build response
         return FlightReportResponse(
             report_id=report["id"],
             trip_id=report["trip_id"],
-            generated_at=datetime.fromisoformat(report["generated_at"].replace("Z", "+00:00")),
+            generated_at=parse_datetime_safe(report["generated_at"]) or datetime.utcnow(),
             confidence_score=confidence_float,
             content=content,
-            sources=[
-                SourceReferenceResponse(**source) for source in report.get("sources", [])
-            ],
+            sources=sources,
             warnings=content.get("warnings", []),
         )
 

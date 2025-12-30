@@ -8,20 +8,31 @@ from pydantic import BaseModel, Field
 class SourceReferenceResponse(BaseModel):
     """Source reference in API response"""
 
-    url: str
-    source_type: str
+    url: str = ""
+    source_type: str = "unknown"
     title: str | None = None
     reliability: str | None = None
     accessed_at: datetime | None = None
+    # Allow extra fields from agent output
+    verified_at: datetime | None = None
+
+    class Config:
+        extra = "ignore"  # Ignore extra fields from agent output
 
 
 class VisaRequirementResponse(BaseModel):
     """Visa requirement details"""
 
-    visa_required: bool
+    visa_required: bool = True
     visa_type: str | None = None
+    visa_category: str | None = None  # Added from agent
     max_stay_days: int | None = None
     validity_period: str | None = None
+    multiple_entry: bool | None = None  # Added from agent
+    urgency_level: str | None = None  # Added from agent
+
+    class Config:
+        extra = "ignore"
 
 
 class ApplicationProcessResponse(BaseModel):
@@ -33,6 +44,9 @@ class ApplicationProcessResponse(BaseModel):
     cost_local: str | None = None
     required_documents: list[str] = Field(default_factory=list)
     application_url: str | None = None
+
+    class Config:
+        extra = "ignore"
 
 
 class EntryRequirementResponse(BaseModel):
@@ -46,6 +60,9 @@ class EntryRequirementResponse(BaseModel):
     proof_of_funds: bool = False
     return_ticket: bool = False
 
+    class Config:
+        extra = "ignore"
+
 
 class VisaReportResponse(BaseModel):
     """
@@ -58,6 +75,14 @@ class VisaReportResponse(BaseModel):
     trip_id: str
     generated_at: datetime
     confidence_score: float  # 0.0 - 1.0
+    confidence_level: str | None = None  # Added: human-readable confidence
+
+    # Trip context (from trip data)
+    user_nationality: str | None = None
+    destination_country: str | None = None
+    destination_city: str | None = None
+    trip_purpose: str | None = None
+    duration_days: int | None = None
 
     # Core visa information
     visa_requirement: VisaRequirementResponse
@@ -70,7 +95,8 @@ class VisaReportResponse(BaseModel):
 
     # Data provenance
     sources: list[SourceReferenceResponse] = Field(default_factory=list)
-    last_verified: datetime
+    last_verified: datetime | None = None
+    is_partial_data: bool = False
 
     class Config:
         from_attributes = True

@@ -43,35 +43,42 @@ export async function fetchVisaReportServer(tripId: string): Promise<VisaIntelli
 // Type definitions for API response
 type VisaSourceApi = {
   name?: string;
+  title?: string; // Backend uses 'title' instead of 'name'
   url?: string;
+  source_type?: string;
   type?: 'government' | 'embassy' | 'third-party';
+  reliability?: string;
   last_verified?: string;
+  accessed_at?: string;
+  verified_at?: string;
 };
 
 type VisaReportApi = {
   generated_at?: string;
+  // Top-level trip context fields (new backend structure)
+  user_nationality?: string;
+  destination_country?: string;
+  destination_city?: string;
+  trip_purpose?: string;
+  duration_days?: number;
+  confidence_level?: 'official' | 'verified' | 'uncertain';
+  // Nested visa requirement (agent output)
   visa_requirement?: {
+    // Legacy: some fields may still be here from old data
     user_nationality?: string;
     destination_country?: string;
     destination_city?: string;
-    trip_purpose?:
-      | 'tourism'
-      | 'business'
-      | 'adventure'
-      | 'education'
-      | 'family_visit'
-      | 'transit'
-      | 'work'
-      | 'study'
-      | 'medical'
-      | 'other';
+    trip_purpose?: string;
     duration_days?: number;
+    // Core visa fields
     visa_required?: boolean;
     visa_type?: string;
     visa_category?: string;
     max_stay_days?: number;
     max_stay_duration?: string;
+    validity_period?: string;
     multiple_entry?: boolean;
+    urgency_level?: string;
     confidence_level?: 'official' | 'verified' | 'uncertain';
   } | null;
   application_process?: {
@@ -80,7 +87,7 @@ type VisaReportApi = {
     processing_time?: string;
     processing_time_days?: number;
     cost_usd?: number;
-    cost_local?: { amount?: number; currency?: string };
+    cost_local?: string | { amount?: number; currency?: string };
     required_documents?: string[];
     steps?: string[];
   } | null;
@@ -89,6 +96,8 @@ type VisaReportApi = {
     passport_validity_months?: number;
     blank_pages_required?: number;
     vaccinations?: string[];
+    health_declaration?: boolean;
+    travel_insurance?: boolean;
     return_ticket?: boolean;
     proof_of_accommodation?: boolean;
     proof_of_funds?: boolean;
@@ -104,30 +113,44 @@ type VisaReportApi = {
 };
 
 function transformVisaReport(apiData: VisaReportApi, tripId: string): VisaIntelligence {
+  // Handle cost_local which can be string or object
   const costLocal = apiData.application_process?.cost_local;
-  const normalizedCostLocal =
-    costLocal && typeof costLocal.amount === 'number' && typeof costLocal.currency === 'string'
-      ? { amount: costLocal.amount, currency: costLocal.currency }
-      : undefined;
+  let normalizedCostLocal: { amount: number; currency: string } | undefined;
+  if (costLocal && typeof costLocal === 'object' && 'amount' in costLocal) {
+    if (typeof costLocal.amount === 'number' && typeof costLocal.currency === 'string') {
+      normalizedCostLocal = { amount: costLocal.amount, currency: costLocal.currency };
+    }
+  }
+
+  // Get trip context - prefer top-level fields (new structure) over nested (legacy)
+  const userNationality =
+    apiData.user_nationality || apiData.visa_requirement?.user_nationality || 'Unknown';
+  const destinationCountry =
+    apiData.destination_country || apiData.visa_requirement?.destination_country || 'Unknown';
+  const destinationCity = apiData.destination_city || apiData.visa_requirement?.destination_city;
+  const tripPurpose = apiData.trip_purpose || apiData.visa_requirement?.trip_purpose || 'tourism';
+  const durationDays = apiData.duration_days ?? apiData.visa_requirement?.duration_days ?? 0;
+  const confidenceLevel =
+    apiData.confidence_level || apiData.visa_requirement?.confidence_level || 'uncertain';
 
   return {
     tripId,
     generatedAt: apiData.generated_at || new Date().toISOString(),
-    userNationality: apiData.visa_requirement?.user_nationality || 'Unknown',
-    destinationCountry: apiData.visa_requirement?.destination_country || 'Unknown',
-    destinationCity: apiData.visa_requirement?.destination_city,
-    tripPurpose: (apiData.visa_requirement?.trip_purpose as TripPurpose) || 'tourism',
-    durationDays: apiData.visa_requirement?.duration_days || 0,
+    userNationality,
+    destinationCountry,
+    destinationCity,
+    tripPurpose: tripPurpose as TripPurpose,
+    durationDays,
     visaRequirement: {
       visaRequired: apiData.visa_requirement?.visa_required ?? true,
       visaType: apiData.visa_requirement?.visa_type || 'Unknown',
       visaCategory: apiData.visa_requirement
         ?.visa_category as VisaIntelligence['visaRequirement']['visaCategory'],
       maxStayDays: apiData.visa_requirement?.max_stay_days,
-      maxStayDuration: apiData.visa_requirement?.max_stay_duration,
+      maxStayDuration:
+        apiData.visa_requirement?.max_stay_duration || apiData.visa_requirement?.validity_period,
       multipleEntry: apiData.visa_requirement?.multiple_entry,
-      confidenceLevel:
-        (apiData.visa_requirement?.confidence_level as ConfidenceLevel) || 'uncertain',
+      confidenceLevel: confidenceLevel as ConfidenceLevel,
     },
     applicationProcess: {
       applicationMethod: apiData.application_process?.application_method || 'unknown',
@@ -153,7 +176,7 @@ function transformVisaReport(apiData: VisaReportApi, tripId: string): VisaIntell
     warnings: apiData.warnings || [],
     confidenceScore: apiData.confidence_score || 0.0,
     sources: (apiData.sources || []).map((source) => ({
-      name: source.name || 'Unknown Source',
+      name: source.name || source.title || 'Unknown Source',
       url: source.url || '',
       type: source.type || 'third-party',
       lastVerified: source.last_verified || new Date().toISOString(),
