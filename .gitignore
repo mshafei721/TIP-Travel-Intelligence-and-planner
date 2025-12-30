@@ -193,6 +193,18 @@ docker-compose.override.yml
 # ============================================
 .claude-cache/
 .ai-cache/
+.clavix/
+notebooklm/
+
+# Windows artifacts
+nul
+backend/nul
+
+# Log JSON files (not package.json)
+logs.*.json
+
+# Root level images
+/image*.png
 
 .vercel
 .env*.local
