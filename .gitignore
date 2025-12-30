@@ -195,6 +195,10 @@ docker-compose.override.yml
 .ai-cache/
 .clavix/
 notebooklm/
+celery_logs.txt
+
+# Local claude config (not shared)
+.claude/*.local.md
 
 # Windows artifacts
 nul
