@@ -21,3 +21,22 @@
 21. all external services to be confirgured by user before it is integrated: example; if supabase is required user should provide the keys in advance in the .env file (interact with user until it is complete)
 don't use "&& dir /b" use "&& ls" or "&& ls -la"
 23. don't use "Remove-Item" when deleting a folder as this is not a command in powershell
+24. for git operations: 
+
+A) Stop listing file paths. Add by directory (best for Claude Code)
+Run from repo root:
+
+git add -A frontend
+# or just everything:
+git add -A
+
+
+This avoids the (app) tokenization issue entirely.
+
+B) If you must add specific files, quote every path and use --
+From repo root:
+
+git add -- \
+  'frontend/app/(app)/layout.tsx' \
+  'frontend/app/(app)/profile/page.tsx' \
+  'frontend/app/(app)/settings/page.tsx'

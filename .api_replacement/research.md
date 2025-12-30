@@ -139,12 +139,12 @@
   - Scraping: $65             - Scraping: $0 (self-hosted Playwright)
   - Weather: $35              - Weather: $0 (Open-Meteo/WeatherAPI free)
   - Currency: $40             - Currency: $0 (ExchangeRate-API free)
-  - Flights: $50              - Flights: $0 (Amadeus free tier)
+  - Flights: $50              - Flights: $0 (Rapid API)
   - Maps: $50                 - Maps: $0 (OpenStreetMap/Overpass)
   - LLM: $200                 - LLM: $200
   - Vercel: $20               - Vercel: $20
   - Railway: $20              - Railway: $20
-  - Sentry: $26               - Sentry: $0 (use free tier)
+  - Sentry: $26               - PostHog: $0 (use free tier)
   -----------------           -----------------
   Total: $541/mo              Total: $275/mo → ~$150/mo optimized
 
