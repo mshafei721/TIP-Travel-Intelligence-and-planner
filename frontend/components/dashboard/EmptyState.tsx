@@ -2,7 +2,6 @@
 
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { analytics } from '@/lib/analytics';
 
 interface EmptyStateProps {
   onCreateTrip?: () => void;
@@ -12,7 +11,6 @@ export function EmptyState({ onCreateTrip }: EmptyStateProps) {
   const router = useRouter();
 
   const handleClick = () => {
-    analytics.createTripStart('empty_state');
     if (onCreateTrip) {
       onCreateTrip();
     } else {

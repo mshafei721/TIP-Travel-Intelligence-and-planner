@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { Plus, Loader2 } from 'lucide-react';
-import { analytics } from '@/lib/analytics';
 import { createClient } from '@/lib/supabase/client';
 import { updateTrip } from '@/lib/api/trips';
 
@@ -27,7 +26,6 @@ export function TripCard({
   trip,
   showCountdown = false,
   onClick,
-  location = 'dashboard',
   editable = false,
   onImageUpdate,
 }: TripCardProps) {
@@ -36,7 +34,6 @@ export function TripCard({
 
   const handleClick = () => {
     if (onClick) {
-      analytics.tripCardClick(trip.id, location);
       onClick(trip.id);
     }
   };

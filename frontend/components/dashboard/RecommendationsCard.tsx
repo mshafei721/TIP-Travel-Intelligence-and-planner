@@ -1,7 +1,6 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { analytics } from '@/lib/analytics';
 import { features } from '@/lib/config/features';
 
 interface Recommendation {
@@ -32,8 +31,6 @@ export function RecommendationsCard({
   }
 
   const handleClick = (destination: string) => {
-    analytics.recommendationClick(destination, 'dashboard_recommendations');
-
     if (onRecommendationClick) {
       onRecommendationClick(destination);
     } else {

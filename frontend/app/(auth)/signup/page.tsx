@@ -22,8 +22,8 @@ export default function SignupPage() {
       if (result.error) {
         setError(result.error);
       } else {
-        // Auto-login successful, redirect to dashboard
-        router.push('/');
+        // Auto-login successful, redirect to onboarding
+        router.push('/onboarding');
       }
     } catch {
       setError('An unexpected error occurred. Please try again.');

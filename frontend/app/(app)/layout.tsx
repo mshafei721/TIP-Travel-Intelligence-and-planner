@@ -6,6 +6,8 @@ import { AppShell } from '@/components/shell';
 import { ToastProvider, ToastContainer } from '@/components/ui/toast';
 import { OfflineDetector } from '@/components/ui/OfflineDetector';
 import { createClient } from '@/lib/supabase/client';
+import { GenerationProgressProvider } from '@/contexts/GenerationProgressContext';
+import { GenerationProgressModal, GenerationProgressBadge } from '@/components/reports';
 
 const navigationItems = [
   { label: 'Dashboard', href: '/dashboard' },
@@ -13,7 +15,6 @@ const navigationItems = [
   { label: 'Templates', href: '/templates' },
   { label: 'History', href: '/history' },
   { label: 'Create Trip', href: '/trips/create' },
-  { label: 'Analytics', href: '/analytics' },
   { label: 'Profile', href: '/profile' },
   { label: 'Settings', href: '/settings' },
 ];
@@ -86,15 +87,19 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <ToastProvider>
-      <OfflineDetector />
-      <AppShell
-        navigationItems={navigationItems}
-        user={isLoading ? { name: 'Loading...' } : user || undefined}
-        onLogout={handleLogout}
-      >
-        {children}
-      </AppShell>
-      <ToastContainer />
+      <GenerationProgressProvider>
+        <OfflineDetector />
+        <AppShell
+          navigationItems={navigationItems}
+          user={isLoading ? { name: 'Loading...' } : user || undefined}
+          onLogout={handleLogout}
+        >
+          {children}
+        </AppShell>
+        <GenerationProgressModal />
+        <GenerationProgressBadge />
+        <ToastContainer />
+      </GenerationProgressProvider>
     </ToastProvider>
   );
 }

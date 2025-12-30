@@ -285,12 +285,6 @@ export default function SettingsPage() {
             onChange={(allowTemplateSharing) => saveSettings({ privacy: { allowTemplateSharing } })}
           />
           <SettingsToggle
-            label="Analytics"
-            description="Help us improve by sharing usage data"
-            checked={settings.privacy.analyticsOptIn}
-            onChange={(analyticsOptIn) => saveSettings({ privacy: { analyticsOptIn } })}
-          />
-          <SettingsToggle
             label="Personalization"
             description="Enable personalized recommendations"
             checked={settings.privacy.personalizationOptIn}

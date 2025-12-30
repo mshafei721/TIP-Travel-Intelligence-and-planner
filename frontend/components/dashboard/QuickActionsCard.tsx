@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { analytics } from '@/lib/analytics';
 
 interface QuickActionsCardProps {
   onCreateTrip?: () => void;
@@ -20,7 +19,6 @@ export function QuickActionsCard({
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
 
   const handleCreateTrip = () => {
-    analytics.ctaClick('create_trip', 'dashboard_quick_actions');
     if (onCreateTrip) {
       onCreateTrip();
     } else {
@@ -29,7 +27,6 @@ export function QuickActionsCard({
   };
 
   const handleViewAllTrips = () => {
-    analytics.ctaClick('view_all_trips', 'dashboard_quick_actions');
     if (onViewAllTrips) {
       onViewAllTrips();
     } else {
@@ -38,8 +35,6 @@ export function QuickActionsCard({
   };
 
   const handleUseTemplate = () => {
-    analytics.ctaClick('use_template', 'dashboard_quick_actions');
-    analytics.templateModalOpen();
     if (onUseTemplate) {
       onUseTemplate();
     } else {

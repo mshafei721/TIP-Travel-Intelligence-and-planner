@@ -57,13 +57,43 @@ export async function GET(request: Request) {
     },
   );
 
-  const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+  const { data: sessionData, error: exchangeError } =
+    await supabase.auth.exchangeCodeForSession(code);
 
   if (exchangeError) {
     console.error('Code exchange error:', exchangeError.message);
     const loginUrl = new URL('/login', origin);
     loginUrl.searchParams.set('error', exchangeError.message);
     return NextResponse.redirect(loginUrl);
+  }
+
+  // Check if user has a traveler profile
+  // New users should be redirected to onboarding
+  if (sessionData?.user) {
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
+      const response = await fetch(`${backendUrl}/api/profile/traveler`, {
+        headers: {
+          Authorization: `Bearer ${sessionData.session?.access_token}`,
+        },
+      });
+
+      if (response.ok) {
+        const travelerProfile = await response.json();
+        // If no traveler profile exists, redirect to onboarding
+        if (!travelerProfile || !travelerProfile.nationality) {
+          const onboardingUrl = new URL('/onboarding', origin);
+          return NextResponse.redirect(onboardingUrl);
+        }
+      } else if (response.status === 404) {
+        // No profile found, redirect to onboarding
+        const onboardingUrl = new URL('/onboarding', origin);
+        return NextResponse.redirect(onboardingUrl);
+      }
+    } catch (error) {
+      console.warn('Could not check traveler profile:', error);
+      // Continue to default redirect on error
+    }
   }
 
   // Success - redirect to intended destination

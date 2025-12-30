@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.api import analytics, healthcheck, history, itinerary, places, profile, recommendations, sharing, templates, trips
+from app.api import healthcheck, history, itinerary, places, profile, recommendations, sharing, templates, trips
 from app.api import settings as settings_router
 from app.core.api_validation import startup_api_check
 from app.core.config import settings
@@ -82,7 +82,6 @@ app.include_router(itinerary.router, prefix="/api")
 app.include_router(places.router, prefix="/api")
 app.include_router(sharing.router, prefix="/api")
 app.include_router(history.router, prefix="/api")
-app.include_router(analytics.router, prefix="/api")
 app.include_router(settings_router.router, prefix="/api")
 
 

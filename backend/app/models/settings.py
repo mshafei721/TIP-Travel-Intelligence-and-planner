@@ -116,7 +116,6 @@ class PrivacySettings(BaseModel):
     )
     show_travel_history: bool = Field(default=False, alias="showTravelHistory")
     allow_template_sharing: bool = Field(default=True, alias="allowTemplateSharing")
-    analytics_opt_in: bool = Field(default=True, alias="analyticsOptIn")
     personalization_opt_in: bool = Field(default=True, alias="personalizationOptIn")
     share_usage_data: bool = Field(default=False, alias="shareUsageData")
 
@@ -239,7 +238,6 @@ class PrivacySettingsUpdate(BaseModel):
     profile_visibility: ProfileVisibility | None = Field(None, alias="profileVisibility")
     show_travel_history: bool | None = Field(None, alias="showTravelHistory")
     allow_template_sharing: bool | None = Field(None, alias="allowTemplateSharing")
-    analytics_opt_in: bool | None = Field(None, alias="analyticsOptIn")
     personalization_opt_in: bool | None = Field(None, alias="personalizationOptIn")
     share_usage_data: bool | None = Field(None, alias="shareUsageData")
 

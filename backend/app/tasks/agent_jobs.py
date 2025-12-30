@@ -121,26 +121,31 @@ def execute_agent_job(
     self, job_id: str, agent_type: str, input_data: dict[str, Any]
 ) -> dict[str, Any]:
     """
-    Execute an individual agent job
+    Execute an individual agent job by dispatching to the appropriate agent task.
 
     Args:
         job_id: Agent job ID from database
         agent_type: Type of agent to execute (visa, country, weather, etc.)
-        input_data: Agent input parameters
+        input_data: Agent input parameters including:
+            - trip_id: str (required)
+            - Additional agent-specific fields
 
     Returns:
         Agent execution results including data, confidence, sources
 
     Raises:
-        ValueError: If agent_type is invalid
+        ValueError: If agent_type is invalid or trip_id is missing
 
     Flow:
         1. Update job status to 'running'
-        2. Initialize agent based on agent_type
-        3. Execute agent with input_data
-        4. Store results in report_sections table
-        5. Update job status to 'completed' or 'failed'
+        2. Dispatch to appropriate agent based on agent_type
+        3. Agent stores results in report_sections table
+        4. Update job status to 'completed' or 'failed'
     """
+    from datetime import datetime
+
+    from app.core.supabase import supabase
+
     # Validate agent type
     valid_agent_types = [
         "visa",
@@ -157,22 +162,181 @@ def execute_agent_job(
     if agent_type not in valid_agent_types:
         raise ValueError(f"Invalid agent type: {agent_type}. Must be one of {valid_agent_types}")
 
-    print(f"[Task {self.request.id}] Executing {agent_type} agent for job {job_id}")
+    # Extract trip_id from input_data
+    trip_id = input_data.get("trip_id")
+    if not trip_id:
+        raise ValueError("trip_id is required in input_data")
 
-    # TODO: Implement agent execution logic in Phase 2 (Agents)
-    # For now, return placeholder result
-    result = {
-        "job_id": job_id,
-        "agent_type": agent_type,
-        "status": "placeholder",
-        "data": {},
-        "confidence": 0.0,
-        "sources": [],
-        "error": None,
-    }
+    print(f"[Task {self.request.id}] Executing {agent_type} agent for job {job_id}, trip {trip_id}")
 
-    print(f"[Task {self.request.id}] Completed {agent_type} agent for job {job_id}")
-    return result
+    # Step 1: Update job status to 'running'
+    try:
+        supabase.table("agent_jobs").update({
+            "status": "running",
+            "started_at": datetime.utcnow().isoformat(),
+            "error_message": None,
+        }).eq("id", job_id).execute()
+    except Exception as e:
+        print(f"[Task {self.request.id}] Warning: Failed to update job status: {e}")
+
+    # Step 2: Dispatch to appropriate agent
+    result = None
+    try:
+        if agent_type == "visa":
+            # Visa agent needs traveler_data format
+            traveler_data = {
+                "user_nationality": input_data.get("user_nationality"),
+                "destination_country": input_data.get("destination_country"),
+                "destination_city": input_data.get("destination_city"),
+                "trip_purpose": input_data.get("trip_purpose", "tourism"),
+                "duration_days": input_data.get("duration_days"),
+                "departure_date": input_data.get("departure_date"),
+                "traveler_count": input_data.get("traveler_count", 1),
+            }
+            result = execute_visa_agent(trip_id, traveler_data)
+
+        elif agent_type == "country":
+            trip_data = {
+                "destination_country": input_data.get("destination_country"),
+                "destination_city": input_data.get("destination_city"),
+                "departure_date": input_data.get("departure_date"),
+                "return_date": input_data.get("return_date"),
+                "traveler_nationality": input_data.get("user_nationality"),
+            }
+            result = execute_country_agent(trip_id, trip_data)
+
+        elif agent_type == "weather":
+            trip_data = {
+                "destination_city": input_data.get("destination_city"),
+                "destination_country": input_data.get("destination_country"),
+                "departure_date": input_data.get("departure_date"),
+                "return_date": input_data.get("return_date"),
+            }
+            result = execute_weather_agent(trip_id, trip_data)
+
+        elif agent_type == "currency":
+            trip_data = {
+                "destination_country": input_data.get("destination_country"),
+                "home_currency": input_data.get("home_currency", "USD"),
+                "budget_amount": input_data.get("budget_amount"),
+                "budget_level": input_data.get("budget_level", "mid-range"),
+                "duration_days": input_data.get("duration_days"),
+                "departure_date": input_data.get("departure_date"),
+                "return_date": input_data.get("return_date"),
+            }
+            result = execute_currency_agent(trip_id, trip_data)
+
+        elif agent_type == "culture":
+            trip_data = {
+                "destination_country": input_data.get("destination_country"),
+                "destination_city": input_data.get("destination_city"),
+                "user_nationality": input_data.get("user_nationality"),
+                "trip_purpose": input_data.get("trip_purpose", "tourism"),
+                "departure_date": input_data.get("departure_date"),
+                "return_date": input_data.get("return_date"),
+            }
+            result = execute_culture_agent(trip_id, trip_data)
+
+        elif agent_type == "food":
+            trip_data = {
+                "destination_country": input_data.get("destination_country"),
+                "destination_city": input_data.get("destination_city"),
+                "dietary_restrictions": input_data.get("dietary_restrictions", []),
+                "budget_level": input_data.get("budget_level", "mid-range"),
+                "departure_date": input_data.get("departure_date"),
+                "return_date": input_data.get("return_date"),
+            }
+            result = execute_food_agent(trip_id, trip_data)
+
+        elif agent_type == "attractions":
+            trip_data = {
+                "destination_country": input_data.get("destination_country"),
+                "destination_city": input_data.get("destination_city"),
+                "interests": input_data.get("interests", []),
+                "budget_level": input_data.get("budget_level", "mid-range"),
+                "duration_days": input_data.get("duration_days"),
+                "departure_date": input_data.get("departure_date"),
+                "return_date": input_data.get("return_date"),
+            }
+            result = execute_attractions_agent(trip_id, trip_data)
+
+        elif agent_type == "itinerary":
+            trip_data = {
+                "destination_country": input_data.get("destination_country"),
+                "destination_city": input_data.get("destination_city"),
+                "departure_date": input_data.get("departure_date"),
+                "return_date": input_data.get("return_date"),
+                "duration_days": input_data.get("duration_days"),
+                "interests": input_data.get("interests", []),
+                "budget_level": input_data.get("budget_level", "mid-range"),
+                "group_size": input_data.get("group_size", 1),
+                "dietary_restrictions": input_data.get("dietary_restrictions", []),
+            }
+            result = execute_itinerary_agent(trip_id, trip_data)
+
+        elif agent_type == "flight":
+            trip_data = {
+                "origin_city": input_data.get("origin_city"),
+                "destination_city": input_data.get("destination_city"),
+                "departure_date": input_data.get("departure_date"),
+                "return_date": input_data.get("return_date"),
+                "passengers": input_data.get("group_size", 1),
+                "cabin_class": input_data.get("cabin_class", "economy"),
+                "budget_level": input_data.get("budget_level", "mid-range"),
+            }
+            result = execute_flight_agent(trip_id, trip_data)
+
+        elif agent_type == "orchestrator":
+            # Orchestrator only needs trip_id
+            result = execute_orchestrator(trip_id)
+
+        # Step 3: Update job status based on result
+        if result and result.get("status") == "completed":
+            supabase.table("agent_jobs").update({
+                "status": "completed",
+                "completed_at": datetime.utcnow().isoformat(),
+                "result_data": result,
+                "error_message": None,
+            }).eq("id", job_id).execute()
+        else:
+            error_msg = result.get("error", "Unknown error") if result else "No result returned"
+            supabase.table("agent_jobs").update({
+                "status": "failed",
+                "completed_at": datetime.utcnow().isoformat(),
+                "error_message": error_msg,
+            }).eq("id", job_id).execute()
+
+        print(f"[Task {self.request.id}] Completed {agent_type} agent for job {job_id}")
+        return result or {
+            "job_id": job_id,
+            "agent_type": agent_type,
+            "status": "failed",
+            "error": "No result returned from agent",
+        }
+
+    except Exception as e:
+        error_msg = str(e)
+        print(f"[Task {self.request.id}] Error executing {agent_type} agent: {error_msg}")
+
+        # Update job status to failed
+        try:
+            supabase.table("agent_jobs").update({
+                "status": "failed",
+                "completed_at": datetime.utcnow().isoformat(),
+                "error_message": error_msg,
+            }).eq("id", job_id).execute()
+        except Exception:
+            pass
+
+        return {
+            "job_id": job_id,
+            "agent_type": agent_type,
+            "status": "failed",
+            "data": {},
+            "confidence": 0.0,
+            "sources": [],
+            "error": error_msg,
+        }
 
 
 @shared_task(
@@ -820,14 +984,39 @@ def execute_currency_agent(self, trip_id: str, trip_data: dict[str, Any]) -> dic
         agent = CurrencyAgent()
         result = agent.run(input_data)
 
+        # Store result in database using idempotent upsert
+        from app.core.celery_app import upsert_report_section
+
+        # Convert result to dict for JSON storage
+        content_data = result.model_dump(mode="json")
+
+        # Convert confidence (0.0-1.0) to integer (0-100) for database
+        confidence_integer = int(result.confidence_score * 100)
+
+        # Upsert ensures idempotency on task retry
+        report_response = upsert_report_section(
+            trip_id=trip_id,
+            section_type="currency",
+            title="Currency & Financial Guide",
+            content=content_data,
+            confidence_score=confidence_integer,
+            sources=[source.model_dump() for source in result.sources],
+            generated_at=result.generated_at.isoformat(),
+        )
+
+        print(f"[Task {self.request.id}] Completed Currency Agent for trip {trip_id}")
+        print(f"[Task {self.request.id}] Confidence: {result.confidence_score}")
+        print(f"[Task {self.request.id}] Stored report ID: {report_response.get('id', 'N/A')}")
+
         # Return structured response
         return {
             "trip_id": trip_id,
             "agent_type": result.agent_type,
-            "status": "success",
-            "data": result.model_dump(mode="json"),
+            "status": "completed",
+            "data": content_data,
             "confidence": result.confidence_score,
             "sources": [s.model_dump() for s in result.sources],
+            "error": None,
         }
 
     except Exception as e:
@@ -921,14 +1110,39 @@ def execute_culture_agent(self, trip_id: str, trip_data: dict[str, Any]) -> dict
         agent = CultureAgent()
         result = agent.run(input_data)
 
+        # Store result in database using idempotent upsert
+        from app.core.celery_app import upsert_report_section
+
+        # Convert result to dict for JSON storage
+        content_data = result.model_dump(mode="json")
+
+        # Convert confidence (0.0-1.0) to integer (0-100) for database
+        confidence_integer = int(result.confidence_score * 100)
+
+        # Upsert ensures idempotency on task retry
+        report_response = upsert_report_section(
+            trip_id=trip_id,
+            section_type="culture",
+            title="Cultural Guide & Etiquette",
+            content=content_data,
+            confidence_score=confidence_integer,
+            sources=[source.model_dump() for source in result.sources],
+            generated_at=result.generated_at.isoformat(),
+        )
+
+        print(f"[Task {self.request.id}] Completed Culture Agent for trip {trip_id}")
+        print(f"[Task {self.request.id}] Confidence: {result.confidence_score}")
+        print(f"[Task {self.request.id}] Stored report ID: {report_response.get('id', 'N/A')}")
+
         # Return structured response
         return {
             "trip_id": trip_id,
             "agent_type": result.agent_type,
-            "status": "success",
-            "data": result.model_dump(mode="json"),
+            "status": "completed",
+            "data": content_data,
             "confidence": result.confidence_score,
             "sources": [s.model_dump() for s in result.sources],
+            "error": None,
         }
 
     except Exception as e:
@@ -1024,14 +1238,39 @@ def execute_food_agent(self, trip_id: str, trip_data: dict[str, Any]) -> dict[st
         agent = FoodAgent()
         result = agent.run(input_data)
 
+        # Store result in database using idempotent upsert
+        from app.core.celery_app import upsert_report_section
+
+        # Convert result to dict for JSON storage
+        content_data = result.model_dump(mode="json")
+
+        # Convert confidence (0.0-1.0) to integer (0-100) for database
+        confidence_integer = int(result.confidence_score * 100)
+
+        # Upsert ensures idempotency on task retry
+        report_response = upsert_report_section(
+            trip_id=trip_id,
+            section_type="food",
+            title="Food & Dining Guide",
+            content=content_data,
+            confidence_score=confidence_integer,
+            sources=[source.model_dump() for source in result.sources],
+            generated_at=result.generated_at.isoformat(),
+        )
+
+        print(f"[Task {self.request.id}] Completed Food Agent for trip {trip_id}")
+        print(f"[Task {self.request.id}] Confidence: {result.confidence_score}")
+        print(f"[Task {self.request.id}] Stored report ID: {report_response.get('id', 'N/A')}")
+
         # Return structured response
         return {
             "trip_id": trip_id,
             "agent_type": result.agent_type,
-            "status": "success",
-            "data": result.model_dump(mode="json"),
+            "status": "completed",
+            "data": content_data,
             "confidence": result.confidence_score,
             "sources": [s.model_dump() for s in result.sources],
+            "error": None,
         }
 
     except Exception as e:

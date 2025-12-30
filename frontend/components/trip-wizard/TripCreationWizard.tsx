@@ -17,6 +17,9 @@ import NavigationButtons from './NavigationButtons';
 import { validateStep, validateCompleteForm } from '@/lib/validation/trip-wizard-schemas';
 import { useToast } from '@/components/ui/toast';
 import { apiRequest, getAuthToken } from '@/lib/api/auth-utils';
+import { getTravelerProfile } from '@/lib/api/profile';
+import { getCountryName } from '@/lib/data/countries';
+import { useGenerationProgress } from '@/contexts/GenerationProgressContext';
 
 // TypeScript interfaces matching the spec
 export interface TravelerDetails {
@@ -80,9 +83,40 @@ export interface TripFormData {
 const TOTAL_STEPS = 4;
 const DRAFT_KEY = 'trip-wizard-draft';
 
+type ResidencyStatusForm =
+  | 'Citizen'
+  | 'Permanent Resident'
+  | 'Temporary Resident'
+  | 'Student Visa'
+  | 'Work Visa'
+  | '';
+type TravelStyleForm = 'Relaxed' | 'Balanced' | 'Packed' | 'Budget-Focused' | '';
+
+// Map profile residency status to form values
+function mapResidencyStatus(status: string): ResidencyStatusForm {
+  const mapping: Record<string, ResidencyStatusForm> = {
+    citizen: 'Citizen',
+    permanent_resident: 'Permanent Resident',
+    temporary_resident: 'Temporary Resident',
+    visitor: 'Temporary Resident',
+  };
+  return mapping[status] || '';
+}
+
+// Map profile travel style to form values
+function mapTravelStyle(style: string): TravelStyleForm {
+  const mapping: Record<string, TravelStyleForm> = {
+    budget: 'Budget-Focused',
+    balanced: 'Balanced',
+    luxury: 'Relaxed',
+  };
+  return mapping[style] || '';
+}
+
 export default function TripCreationWizard() {
   const router = useRouter();
   const toast = useToast();
+  const { startGeneration } = useGenerationProgress();
   const [currentStep, setCurrentStep] = useState(1);
   const [showSummary, setShowSummary] = useState(false);
   const [showSaveIndicator, setShowSaveIndicator] = useState(false);
@@ -120,18 +154,70 @@ export default function TripCreationWizard() {
     },
   });
 
-  // Load draft on mount
+  // Load draft and profile on mount
   useEffect(() => {
+    let hasDraft = false;
+
+    // First, try to load saved draft
     const savedDraft = localStorage.getItem(DRAFT_KEY);
     if (savedDraft) {
       try {
         const parsed = JSON.parse(savedDraft);
         setFormData(parsed.formData);
         setCurrentStep(parsed.currentStep || 1);
+        hasDraft = true;
       } catch (error) {
         console.error('Failed to load draft:', error);
       }
     }
+
+    // Then, load traveler profile and pre-fill empty fields
+    const loadProfile = async () => {
+      try {
+        const profile = await getTravelerProfile();
+        if (profile) {
+          setFormData((prev) => {
+            // Only pre-fill if no draft exists or if fields are empty
+            const shouldPreFillTraveler = !hasDraft || !prev.travelerDetails.nationality;
+            const shouldPreFillPrefs = !hasDraft || !prev.preferences.travelStyle;
+
+            return {
+              ...prev,
+              travelerDetails: shouldPreFillTraveler
+                ? {
+                    ...prev.travelerDetails,
+                    nationality:
+                      getCountryName(profile.nationality) || prev.travelerDetails.nationality,
+                    residenceCountry:
+                      getCountryName(profile.residencyCountry) ||
+                      prev.travelerDetails.residenceCountry,
+                    residencyStatus:
+                      mapResidencyStatus(profile.residencyStatus) ||
+                      prev.travelerDetails.residencyStatus,
+                  }
+                : prev.travelerDetails,
+              preferences: shouldPreFillPrefs
+                ? {
+                    ...prev.preferences,
+                    travelStyle:
+                      mapTravelStyle(profile.travelStyle) || prev.preferences.travelStyle,
+                    dietaryRestrictions: profile.dietaryRestrictions?.length
+                      ? profile.dietaryRestrictions
+                      : prev.preferences.dietaryRestrictions,
+                    accessibilityNeeds:
+                      profile.accessibilityNeeds || prev.preferences.accessibilityNeeds,
+                  }
+                : prev.preferences,
+            };
+          });
+        }
+      } catch (error) {
+        // Silently fail - profile pre-fill is optional
+        console.warn('Could not load traveler profile for pre-fill:', error);
+      }
+    };
+
+    loadProfile();
   }, []);
 
   // Auto-save draft
@@ -295,9 +381,10 @@ export default function TripCreationWizard() {
       setValidationErrors(null);
       setShowValidationErrors(false);
 
-      // Show success toast and redirect
-      toast.success('Trip created successfully! Redirecting...', 'Success');
-      router.push(`/trips/${trip.id}`);
+      // Start generation modal and redirect to trips list
+      startGeneration(trip.id);
+      toast.success('Trip created! Generating your report...', 'Success');
+      router.push('/trips');
     } catch (error) {
       console.error('Submission error:', error);
       toast.error(

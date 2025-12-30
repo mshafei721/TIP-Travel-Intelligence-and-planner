@@ -75,7 +75,6 @@ export interface PrivacySettings {
   profileVisibility: ProfileVisibility;
   showTravelHistory: boolean;
   allowTemplateSharing: boolean;
-  analyticsOptIn: boolean;
   personalizationOptIn: boolean;
   shareUsageData: boolean;
 }
@@ -125,7 +124,6 @@ export interface PrivacySettingsUpdate {
   profileVisibility?: ProfileVisibility;
   showTravelHistory?: boolean;
   allowTemplateSharing?: boolean;
-  analyticsOptIn?: boolean;
   personalizationOptIn?: boolean;
   shareUsageData?: boolean;
 }
