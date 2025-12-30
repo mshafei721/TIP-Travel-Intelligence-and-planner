@@ -159,6 +159,76 @@ class CultureAgent(BaseAgent):
         except json.JSONDecodeError:
             return None
 
+    def _normalize_dress_code(self, dress_code_data: dict | DressCodeInfo | None) -> DressCodeInfo:
+        """
+        Normalize dress code data from LLM output to DressCodeInfo model.
+
+        Handles field name variations:
+        - casual_guidelines -> casual
+        - formal_guidelines -> formal
+        - religious_site_requirements -> religious_sites
+        - beach_swimwear_guidelines -> beaches
+        """
+        if dress_code_data is None:
+            return DressCodeInfo(
+                casual="Dress modestly",
+                formal=None,
+                religious_sites="Cover shoulders and knees",
+                beaches=None,
+                general_notes="Research local dress norms",
+            )
+
+        if isinstance(dress_code_data, DressCodeInfo):
+            return dress_code_data
+
+        if isinstance(dress_code_data, dict):
+            return DressCodeInfo(
+                casual=dress_code_data.get("casual") or dress_code_data.get("casual_guidelines", "Dress modestly"),
+                formal=dress_code_data.get("formal") or dress_code_data.get("formal_guidelines"),
+                religious_sites=dress_code_data.get("religious_sites") or dress_code_data.get("religious_site_requirements"),
+                beaches=dress_code_data.get("beaches") or dress_code_data.get("beach_swimwear_guidelines"),
+                general_notes=dress_code_data.get("general_notes"),
+            )
+
+        return DressCodeInfo(casual="Dress modestly")
+
+    def _normalize_religious_considerations(self, data: dict | list | None) -> tuple[str | None, list]:
+        """
+        Normalize religious considerations from LLM output.
+
+        LLM may return a dict with:
+        - primary_religions: list
+        - considerations: list of dicts
+
+        Or a list of ReligiousConsideration-like dicts.
+
+        Returns:
+            Tuple of (primary_religion string, list of ReligiousConsideration dicts)
+        """
+        if data is None:
+            return None, []
+
+        primary_religion = None
+        considerations = []
+
+        if isinstance(data, dict):
+            # Extract primary religion(s)
+            primary_religions = data.get("primary_religions", [])
+            if isinstance(primary_religions, list) and primary_religions:
+                primary_religion = ", ".join(primary_religions)
+            elif isinstance(primary_religions, str):
+                primary_religion = primary_religions
+
+            # Extract considerations list
+            considerations_data = data.get("considerations", [])
+            if isinstance(considerations_data, list):
+                considerations = considerations_data
+        elif isinstance(data, list):
+            # Already a list of considerations
+            considerations = data
+
+        return primary_religion, considerations
+
     def _calculate_confidence(self, result: dict) -> float:
         """
         Calculate confidence score based on data completeness.
@@ -249,6 +319,28 @@ class CultureAgent(BaseAgent):
             confidence = self._calculate_confidence(parsed_result)
             logger.info(f"Culture Agent confidence: {confidence:.2f}")
 
+            # Handle nested greetings_communication structure
+            greetings_comm = parsed_result.get("greetings_communication", {})
+            if isinstance(greetings_comm, dict):
+                # LLM may wrap greeting data in a greetings_communication object
+                if not parsed_result.get("greeting_customs") and greetings_comm.get("greeting_customs"):
+                    parsed_result["greeting_customs"] = greetings_comm.get("greeting_customs")
+                if not parsed_result.get("communication_style") and greetings_comm.get("communication_style"):
+                    parsed_result["communication_style"] = greetings_comm.get("communication_style")
+                if not parsed_result.get("body_language_notes") and greetings_comm.get("body_language_notes"):
+                    parsed_result["body_language_notes"] = greetings_comm.get("body_language_notes")
+
+            # Normalize dress code data from LLM output
+            dress_code = self._normalize_dress_code(parsed_result.get("dress_code"))
+
+            # Normalize religious considerations from LLM output
+            primary_religion, religious_considerations = self._normalize_religious_considerations(
+                parsed_result.get("religious_considerations")
+            )
+            # Also check for primary_religion at top level
+            if not primary_religion and parsed_result.get("primary_religion"):
+                primary_religion = parsed_result.get("primary_religion")
+
             # Build output model
             output = CultureAgentOutput(
                 trip_id=input_data.trip_id,
@@ -272,20 +364,11 @@ class CultureAgent(BaseAgent):
                 greeting_customs=parsed_result.get("greeting_customs", ["Greet respectfully"]),
                 communication_style=parsed_result.get("communication_style", "varies by culture"),
                 body_language_notes=parsed_result.get("body_language_notes", []),
-                # Dress Code
-                dress_code=parsed_result.get(
-                    "dress_code",
-                    DressCodeInfo(
-                        casual="Dress modestly",
-                        formal=None,
-                        religious_sites="Cover shoulders and knees",
-                        beaches=None,
-                        general_notes="Research local dress norms",
-                    ),
-                ),
-                # Religious Considerations
-                primary_religion=parsed_result.get("primary_religion"),
-                religious_considerations=parsed_result.get("religious_considerations", []),
+                # Dress Code (normalized)
+                dress_code=dress_code,
+                # Religious Considerations (normalized)
+                primary_religion=primary_religion,
+                religious_considerations=religious_considerations,
                 # Taboos
                 taboos=parsed_result.get("taboos", []),
                 # Etiquette
