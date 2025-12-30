@@ -28,7 +28,7 @@ export const BudgetChart = memo(function BudgetChart({
   const chartData = useMemo(
     () =>
       data.map((item) => ({
-        name: item.range_label,
+        name: item.rangeLabel,
         value: item.count,
         percentage: item.percentage,
       })),

@@ -35,7 +35,7 @@ export async function updateAllSettings(data: {
   appearance?: AppearanceSettingsUpdate;
   notifications?: NotificationSettingsUpdate;
   privacy?: PrivacySettingsUpdate;
-  ai_preferences?: AIPreferencesUpdate;
+  aiPreferences?: AIPreferencesUpdate;
 }): Promise<UserSettingsResponse> {
   return apiRequest<UserSettingsResponse>('/api/settings', {
     method: 'PUT',

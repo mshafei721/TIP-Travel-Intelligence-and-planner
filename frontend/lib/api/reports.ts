@@ -192,53 +192,9 @@ export async function exportTripReportPDF(
 
 /**
  * Delete a trip and all associated data
+ * @deprecated Use deleteTrip from '@/lib/api/trips' instead
  */
-export async function deleteTrip(tripId: string): Promise<{
-  success: boolean;
-  error?: string;
-}> {
-  try {
-    const supabase = createClient();
-
-    // Delete trip from database (cascade will delete related data)
-    const { error } = await supabase.from('trips').delete().eq('id', tripId);
-
-    if (error) {
-      console.error('Error deleting trip:', error);
-      return {
-        success: false,
-        error: error.message || 'Failed to delete trip',
-      };
-    }
-
-    // Also call backend to clean up report sections and any cached data
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    if (session) {
-      try {
-        await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/trips/${tripId}`, {
-          method: 'DELETE',
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-        });
-      } catch (backendError) {
-        // Log but don't fail if backend cleanup fails
-        console.warn('Backend cleanup failed:', backendError);
-      }
-    }
-
-    return { success: true };
-  } catch (error) {
-    console.error('Error deleting trip:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to delete trip',
-    };
-  }
-}
+export { deleteTrip } from './trips';
 
 /**
  * Share trip report via shareable link

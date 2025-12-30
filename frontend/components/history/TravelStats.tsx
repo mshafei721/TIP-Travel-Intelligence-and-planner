@@ -71,29 +71,29 @@ export function TravelStats({ stats, loading }: TravelStatsProps) {
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <StatCard
           label="Countries Visited"
-          value={stats.countries_visited}
+          value={stats.countriesVisited}
           icon={Globe}
           color="blue"
         />
         <StatCard
           label="Cities Explored"
-          value={stats.cities_visited}
+          value={stats.citiesVisited}
           icon={Building2}
           color="amber"
         />
-        <StatCard label="Total Trips" value={stats.total_trips} icon={Plane} color="green" />
+        <StatCard label="Total Trips" value={stats.totalTrips} icon={Plane} color="green" />
         <StatCard
           label="Days Traveled"
-          value={stats.total_days_traveled}
+          value={stats.totalDaysTraveled}
           icon={Calendar}
           color="purple"
         />
       </div>
 
       {/* Additional stats (if available) */}
-      {(stats.favorite_destination || stats.travel_streak > 0) && (
+      {(stats.favoriteDestination || stats.travelStreak > 0) && (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          {stats.favorite_destination && (
+          {stats.favoriteDestination && (
             <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
               <div className="rounded-lg bg-rose-50 p-2 text-rose-600 dark:bg-rose-950/30 dark:text-rose-400">
                 <MapPin className="h-5 w-5" />
@@ -101,12 +101,12 @@ export function TravelStats({ stats, loading }: TravelStatsProps) {
               <div>
                 <p className="text-sm text-slate-500 dark:text-slate-400">Favorite Destination</p>
                 <p className="font-semibold text-slate-900 dark:text-slate-50">
-                  {stats.favorite_destination}
+                  {stats.favoriteDestination}
                 </p>
               </div>
             </div>
           )}
-          {stats.travel_streak > 0 && (
+          {stats.travelStreak > 0 && (
             <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
               <div className="rounded-lg bg-green-50 p-2 text-green-600 dark:bg-green-950/30 dark:text-green-400">
                 <TrendingUp className="h-5 w-5" />
@@ -114,7 +114,7 @@ export function TravelStats({ stats, loading }: TravelStatsProps) {
               <div>
                 <p className="text-sm text-slate-500 dark:text-slate-400">Travel Streak</p>
                 <p className="font-semibold text-slate-900 dark:text-slate-50">
-                  {stats.travel_streak} month{stats.travel_streak !== 1 ? 's' : ''}
+                  {stats.travelStreak} month{stats.travelStreak !== 1 ? 's' : ''}
                 </p>
               </div>
             </div>

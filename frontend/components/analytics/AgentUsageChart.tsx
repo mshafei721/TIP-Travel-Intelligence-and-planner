@@ -33,16 +33,16 @@ export const AgentUsageChart = memo(function AgentUsageChart({
   const chartData = useMemo(
     () =>
       data.map((item) => {
-        // Calculate successful/failed from total and success_rate
-        const successful = Math.round((item.invocations * item.success_rate) / 100);
+        // Calculate successful/failed from total and successRate
+        const successful = Math.round((item.invocations * item.successRate) / 100);
         const failed = item.invocations - successful;
         return {
-          name: formatAgentName(item.agent_type),
+          name: formatAgentName(item.agentType),
           successful,
           failed,
           total: item.invocations,
-          success_rate: item.success_rate,
-          avg_time: item.avg_duration_seconds,
+          successRate: item.successRate,
+          avgTime: item.avgDurationSeconds,
         };
       }),
     [data],
@@ -81,7 +81,7 @@ export const AgentUsageChart = memo(function AgentUsageChart({
                 formatter={(value, name, props) => {
                   if (name === 'Successful' && props.payload) {
                     return [
-                      `${value} (${props.payload.success_rate?.toFixed(1) ?? 0}% success rate)`,
+                      `${value} (${props.payload.successRate?.toFixed(1) ?? 0}% success rate)`,
                       name,
                     ];
                   }

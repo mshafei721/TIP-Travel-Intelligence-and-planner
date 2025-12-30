@@ -45,10 +45,18 @@ export async function updateTrip(
 /**
  * Delete a trip
  */
-export async function deleteTrip(tripId: string): Promise<{ success: boolean; message: string }> {
-  return apiRequest(`/api/trips/${tripId}`, {
-    method: 'DELETE',
-  });
+export async function deleteTrip(tripId: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    await apiRequest(`/api/trips/${tripId}`, {
+      method: 'DELETE',
+    });
+    return { success: true };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : 'Failed to delete trip',
+    };
+  }
 }
 
 // ============================================

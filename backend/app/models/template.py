@@ -1,29 +1,33 @@
 """Pydantic models for trip template management"""
 
-from datetime import datetime
-
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class TemplateDestination(BaseModel):
     """Destination within a template"""
 
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
     country: str = Field(..., description="Country name")
     city: str | None = Field(None, description="City name")
-    suggested_days: int | None = Field(None, ge=1, description="Suggested days to spend")
+    suggested_days: int | None = Field(None, ge=1, description="Suggested days to spend", alias="suggestedDays")
     highlights: list[str] = Field(default_factory=list, description="Key highlights")
 
 
 class TripTemplateCreate(BaseModel):
     """Model for creating a trip template"""
 
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
     name: str = Field(..., min_length=1, max_length=100, description="Template name")
     description: str | None = Field(None, max_length=500, description="Template description")
-    cover_image: str | None = Field(None, description="Cover image URL")
-    is_public: bool = Field(False, description="Make template publicly visible")
+    cover_image: str | None = Field(None, description="Cover image URL", alias="coverImage")
+    is_public: bool = Field(False, description="Make template publicly visible", alias="isPublic")
     tags: list[str] = Field(default_factory=list, description="Template tags for filtering")
     traveler_details: dict | None = Field(
-        None, description="Default traveler details (nationality, residency, etc.)"
+        None,
+        description="Default traveler details (nationality, residency, etc.)",
+        alias="travelerDetails",
     )
     destinations: list[dict] = Field(
         default_factory=list,
@@ -32,8 +36,12 @@ class TripTemplateCreate(BaseModel):
     preferences: dict | None = Field(
         None, description="Travel preferences (style, dietary restrictions, etc.)"
     )
-    typical_duration: int | None = Field(None, ge=1, description="Typical trip duration in days")
-    estimated_budget: float | None = Field(None, ge=0, description="Estimated budget")
+    typical_duration: int | None = Field(
+        None, ge=1, description="Typical trip duration in days", alias="typicalDuration"
+    )
+    estimated_budget: float | None = Field(
+        None, ge=0, description="Estimated budget", alias="estimatedBudget"
+    )
     currency: str = Field("USD", max_length=3, description="Currency code")
 
     @field_validator("name")
@@ -57,39 +65,22 @@ class TripTemplateCreate(BaseModel):
 
         return v
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "name": "Weekend Getaway",
-                "description": "Quick 3-day city break template",
-                "destinations": [{"country": "France", "city": "Paris"}],
-                "traveler_details": {
-                    "nationality": "US",
-                    "residency_country": "US",
-                    "residency_status": "citizen",
-                },
-                "preferences": {
-                    "travel_style": "balanced",
-                    "dietary_restrictions": ["vegetarian"],
-                    "budget": "moderate",
-                },
-            }
-        }
-
 
 class TripTemplateUpdate(BaseModel):
     """Model for updating a trip template (all fields optional)"""
 
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
     name: str | None = Field(None, min_length=1, max_length=100)
     description: str | None = Field(None, max_length=500)
-    cover_image: str | None = None
-    is_public: bool | None = None
+    cover_image: str | None = Field(None, alias="coverImage")
+    is_public: bool | None = Field(None, alias="isPublic")
     tags: list[str] | None = None
-    traveler_details: dict | None = None
+    traveler_details: dict | None = Field(None, alias="travelerDetails")
     destinations: list[dict] | None = None
     preferences: dict | None = None
-    typical_duration: int | None = None
-    estimated_budget: float | None = None
+    typical_duration: int | None = Field(None, alias="typicalDuration")
+    estimated_budget: float | None = Field(None, alias="estimatedBudget")
     currency: str | None = None
 
     @field_validator("name")
@@ -114,95 +105,71 @@ class TripTemplateUpdate(BaseModel):
 
         return v
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "name": "Updated Weekend Getaway",
-                "destinations": [
-                    {"country": "France", "city": "Paris"},
-                    {"country": "France", "city": "Lyon"},
-                ],
-            }
-        }
-
 
 class TripTemplateResponse(BaseModel):
     """Response model for trip template"""
 
+    model_config = ConfigDict(
+        populate_by_name=True, serialize_by_alias=True, from_attributes=True
+    )
+
     id: str
-    user_id: str
+    user_id: str = Field(..., alias="userId")
     name: str
     description: str | None
-    cover_image: str | None = None
-    is_public: bool = False
-    tags: list[str] = []
-    traveler_details: dict | None
+    cover_image: str | None = Field(None, alias="coverImage")
+    is_public: bool = Field(default=False, alias="isPublic")
+    tags: list[str] = Field(default_factory=list)
+    traveler_details: dict | None = Field(None, alias="travelerDetails")
     destinations: list[dict]
     preferences: dict | None
-    typical_duration: int | None = None
-    estimated_budget: float | None = None
+    typical_duration: int | None = Field(None, alias="typicalDuration")
+    estimated_budget: float | None = Field(None, alias="estimatedBudget")
     currency: str = "USD"
-    use_count: int = 0
-    created_at: str
-    updated_at: str
-
-    class Config:
-        from_attributes = True
-        json_schema_extra = {
-            "example": {
-                "id": "123e4567-e89b-12d3-a456-426614174000",
-                "user_id": "987e4567-e89b-12d3-a456-426614174000",
-                "name": "Weekend Getaway",
-                "description": "Quick 3-day city break template",
-                "cover_image": "https://example.com/paris.jpg",
-                "is_public": False,
-                "tags": ["weekend", "city-break", "europe"],
-                "destinations": [
-                    {"country": "France", "city": "Paris", "suggested_days": 3}
-                ],
-                "traveler_details": {"nationality": "US", "residency_country": "US"},
-                "preferences": {
-                    "travel_style": "balanced",
-                    "dietary_restrictions": ["vegetarian"],
-                },
-                "typical_duration": 3,
-                "estimated_budget": 1500.00,
-                "currency": "USD",
-                "use_count": 0,
-                "created_at": "2025-12-25T10:00:00Z",
-                "updated_at": "2025-12-25T10:00:00Z",
-            }
-        }
+    use_count: int = Field(default=0, alias="useCount")
+    created_at: str = Field(..., alias="createdAt")
+    updated_at: str = Field(..., alias="updatedAt")
 
 
 class PublicTemplateResponse(BaseModel):
     """Response model for public template (excludes user_id for privacy)"""
 
+    model_config = ConfigDict(
+        populate_by_name=True, serialize_by_alias=True, from_attributes=True
+    )
+
     id: str
     name: str
     description: str | None
-    cover_image: str | None = None
-    tags: list[str] = []
+    cover_image: str | None = Field(None, alias="coverImage")
+    tags: list[str] = Field(default_factory=list)
     destinations: list[dict]
-    typical_duration: int | None = None
-    estimated_budget: float | None = None
+    typical_duration: int | None = Field(None, alias="typicalDuration")
+    estimated_budget: float | None = Field(None, alias="estimatedBudget")
     currency: str = "USD"
-    use_count: int = 0
-    created_at: str
+    use_count: int = Field(default=0, alias="useCount")
+    created_at: str = Field(..., alias="createdAt")
 
-    class Config:
-        from_attributes = True
+
+class TemplatesListResponse(BaseModel):
+    """Response model for listing user's templates"""
+
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
+    templates: list[TripTemplateResponse]
 
 
 class CreateTripFromTemplateRequest(BaseModel):
     """Request to create a trip from a template"""
 
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
     title: str | None = Field(None, description="Custom trip title (optional)")
-    start_date: str | None = Field(None, description="Trip start date (ISO format)")
-    end_date: str | None = Field(None, description="Trip end date (ISO format)")
+    start_date: str | None = Field(None, description="Trip start date (ISO format)", alias="startDate")
+    end_date: str | None = Field(None, description="Trip end date (ISO format)", alias="endDate")
     override_traveler_details: dict | None = Field(
-        None, description="Override template traveler details"
+        None, description="Override template traveler details", alias="overrideTravelerDetails"
     )
     override_preferences: dict | None = Field(
-        None, description="Override template preferences"
+        None, description="Override template preferences", alias="overridePreferences"
     )

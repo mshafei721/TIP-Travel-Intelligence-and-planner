@@ -2,7 +2,7 @@
 
 from enum import Enum
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class Theme(str, Enum):
@@ -53,10 +53,12 @@ class Units(str, Enum):
 class AppearanceSettings(BaseModel):
     """Appearance and display settings"""
 
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
     theme: Theme = Theme.SYSTEM
     language: str = Field(default="en", min_length=2, max_length=5)
     timezone: str = Field(default="UTC", max_length=50)
-    date_format: DateFormat = DateFormat.MDY
+    date_format: DateFormat = Field(default=DateFormat.MDY, alias="dateFormat")
     currency: str = Field(default="USD", min_length=3, max_length=3)
     units: Units = Units.METRIC
 
@@ -74,18 +76,6 @@ class AppearanceSettings(BaseModel):
             return v.upper()
         return v
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "theme": "dark",
-                "language": "en",
-                "timezone": "America/New_York",
-                "date_format": "MM/DD/YYYY",
-                "currency": "USD",
-                "units": "metric",
-            }
-        }
-
 
 # =============================================================================
 # Notification Settings
@@ -95,33 +85,20 @@ class AppearanceSettings(BaseModel):
 class NotificationSettings(BaseModel):
     """Email and push notification preferences"""
 
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
     # Email notifications
-    email_notifications: bool = True
-    email_trip_updates: bool = True
-    email_report_completion: bool = True
-    email_recommendations: bool = False
-    email_marketing: bool = False
-    email_weekly_digest: bool = False
+    email_notifications: bool = Field(default=True, alias="emailNotifications")
+    email_trip_updates: bool = Field(default=True, alias="emailTripUpdates")
+    email_report_completion: bool = Field(default=True, alias="emailReportCompletion")
+    email_recommendations: bool = Field(default=False, alias="emailRecommendations")
+    email_marketing: bool = Field(default=False, alias="emailMarketing")
+    email_weekly_digest: bool = Field(default=False, alias="emailWeeklyDigest")
 
     # Push notifications (for future mobile app)
-    push_notifications: bool = False
-    push_trip_reminders: bool = False
-    push_travel_alerts: bool = False
-
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "email_notifications": True,
-                "email_trip_updates": True,
-                "email_report_completion": True,
-                "email_recommendations": False,
-                "email_marketing": False,
-                "email_weekly_digest": False,
-                "push_notifications": False,
-                "push_trip_reminders": False,
-                "push_travel_alerts": False,
-            }
-        }
+    push_notifications: bool = Field(default=False, alias="pushNotifications")
+    push_trip_reminders: bool = Field(default=False, alias="pushTripReminders")
+    push_travel_alerts: bool = Field(default=False, alias="pushTravelAlerts")
 
 
 # =============================================================================
@@ -132,24 +109,16 @@ class NotificationSettings(BaseModel):
 class PrivacySettings(BaseModel):
     """Privacy and data sharing settings"""
 
-    profile_visibility: ProfileVisibility = ProfileVisibility.PRIVATE
-    show_travel_history: bool = False
-    allow_template_sharing: bool = True
-    analytics_opt_in: bool = True
-    personalization_opt_in: bool = True
-    share_usage_data: bool = False
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "profile_visibility": "private",
-                "show_travel_history": False,
-                "allow_template_sharing": True,
-                "analytics_opt_in": True,
-                "personalization_opt_in": True,
-                "share_usage_data": False,
-            }
-        }
+    profile_visibility: ProfileVisibility = Field(
+        default=ProfileVisibility.PRIVATE, alias="profileVisibility"
+    )
+    show_travel_history: bool = Field(default=False, alias="showTravelHistory")
+    allow_template_sharing: bool = Field(default=True, alias="allowTemplateSharing")
+    analytics_opt_in: bool = Field(default=True, alias="analyticsOptIn")
+    personalization_opt_in: bool = Field(default=True, alias="personalizationOptIn")
+    share_usage_data: bool = Field(default=False, alias="shareUsageData")
 
 
 # =============================================================================
@@ -160,19 +129,25 @@ class PrivacySettings(BaseModel):
 class AIPreferences(BaseModel):
     """AI behavior and generation preferences"""
 
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
     ai_temperature: float = Field(
         default=0.7,
         ge=0.0,
         le=1.0,
         description="Creativity level (0.0 = precise, 1.0 = creative)",
+        alias="aiTemperature",
     )
-    preferred_detail_level: DetailLevel = DetailLevel.BALANCED
-    include_budget_estimates: bool = True
-    include_local_tips: bool = True
-    include_safety_warnings: bool = True
+    preferred_detail_level: DetailLevel = Field(
+        default=DetailLevel.BALANCED, alias="preferredDetailLevel"
+    )
+    include_budget_estimates: bool = Field(default=True, alias="includeBudgetEstimates")
+    include_local_tips: bool = Field(default=True, alias="includeLocalTips")
+    include_safety_warnings: bool = Field(default=True, alias="includeSafetyWarnings")
     preferred_pace: str = Field(
         default="balanced",
         description="Trip pacing preference: relaxed, balanced, packed",
+        alias="preferredPace",
     )
 
     @field_validator("preferred_pace")
@@ -184,18 +159,6 @@ class AIPreferences(BaseModel):
             raise ValueError(f"Pace must be one of: {valid_paces}")
         return v.lower()
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "ai_temperature": 0.7,
-                "preferred_detail_level": "balanced",
-                "include_budget_estimates": True,
-                "include_local_tips": True,
-                "include_safety_warnings": True,
-                "preferred_pace": "balanced",
-            }
-        }
-
 
 # =============================================================================
 # Complete User Settings
@@ -204,6 +167,8 @@ class AIPreferences(BaseModel):
 
 class UserSettings(BaseModel):
     """Complete user settings model"""
+
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
 
     # Appearance
     appearance: AppearanceSettings = Field(default_factory=AppearanceSettings)
@@ -215,34 +180,7 @@ class UserSettings(BaseModel):
     privacy: PrivacySettings = Field(default_factory=PrivacySettings)
 
     # AI preferences
-    ai_preferences: AIPreferences = Field(default_factory=AIPreferences)
-
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "appearance": {
-                    "theme": "dark",
-                    "language": "en",
-                    "timezone": "UTC",
-                    "date_format": "MM/DD/YYYY",
-                    "currency": "USD",
-                    "units": "metric",
-                },
-                "notifications": {
-                    "email_notifications": True,
-                    "email_trip_updates": True,
-                    "push_notifications": False,
-                },
-                "privacy": {
-                    "profile_visibility": "private",
-                    "analytics_opt_in": True,
-                },
-                "ai_preferences": {
-                    "ai_temperature": 0.7,
-                    "preferred_detail_level": "balanced",
-                },
-            }
-        }
+    ai_preferences: AIPreferences = Field(default_factory=AIPreferences, alias="aiPreferences")
 
 
 # =============================================================================
@@ -253,10 +191,12 @@ class UserSettings(BaseModel):
 class AppearanceSettingsUpdate(BaseModel):
     """Partial update for appearance settings"""
 
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
     theme: Theme | None = None
     language: str | None = Field(None, min_length=2, max_length=5)
     timezone: str | None = Field(None, max_length=50)
-    date_format: DateFormat | None = None
+    date_format: DateFormat | None = Field(None, alias="dateFormat")
     currency: str | None = Field(None, min_length=3, max_length=3)
     units: Units | None = None
 
@@ -274,65 +214,47 @@ class AppearanceSettingsUpdate(BaseModel):
             return v.upper()
         return v
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "theme": "dark",
-                "timezone": "America/New_York",
-            }
-        }
-
 
 class NotificationSettingsUpdate(BaseModel):
     """Partial update for notification settings"""
 
-    email_notifications: bool | None = None
-    email_trip_updates: bool | None = None
-    email_report_completion: bool | None = None
-    email_recommendations: bool | None = None
-    email_marketing: bool | None = None
-    email_weekly_digest: bool | None = None
-    push_notifications: bool | None = None
-    push_trip_reminders: bool | None = None
-    push_travel_alerts: bool | None = None
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "email_notifications": True,
-                "push_notifications": True,
-            }
-        }
+    email_notifications: bool | None = Field(None, alias="emailNotifications")
+    email_trip_updates: bool | None = Field(None, alias="emailTripUpdates")
+    email_report_completion: bool | None = Field(None, alias="emailReportCompletion")
+    email_recommendations: bool | None = Field(None, alias="emailRecommendations")
+    email_marketing: bool | None = Field(None, alias="emailMarketing")
+    email_weekly_digest: bool | None = Field(None, alias="emailWeeklyDigest")
+    push_notifications: bool | None = Field(None, alias="pushNotifications")
+    push_trip_reminders: bool | None = Field(None, alias="pushTripReminders")
+    push_travel_alerts: bool | None = Field(None, alias="pushTravelAlerts")
 
 
 class PrivacySettingsUpdate(BaseModel):
     """Partial update for privacy settings"""
 
-    profile_visibility: ProfileVisibility | None = None
-    show_travel_history: bool | None = None
-    allow_template_sharing: bool | None = None
-    analytics_opt_in: bool | None = None
-    personalization_opt_in: bool | None = None
-    share_usage_data: bool | None = None
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "profile_visibility": "friends",
-                "show_travel_history": True,
-            }
-        }
+    profile_visibility: ProfileVisibility | None = Field(None, alias="profileVisibility")
+    show_travel_history: bool | None = Field(None, alias="showTravelHistory")
+    allow_template_sharing: bool | None = Field(None, alias="allowTemplateSharing")
+    analytics_opt_in: bool | None = Field(None, alias="analyticsOptIn")
+    personalization_opt_in: bool | None = Field(None, alias="personalizationOptIn")
+    share_usage_data: bool | None = Field(None, alias="shareUsageData")
 
 
 class AIPreferencesUpdate(BaseModel):
     """Partial update for AI preferences"""
 
-    ai_temperature: float | None = Field(None, ge=0.0, le=1.0)
-    preferred_detail_level: DetailLevel | None = None
-    include_budget_estimates: bool | None = None
-    include_local_tips: bool | None = None
-    include_safety_warnings: bool | None = None
-    preferred_pace: str | None = None
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
+    ai_temperature: float | None = Field(None, ge=0.0, le=1.0, alias="aiTemperature")
+    preferred_detail_level: DetailLevel | None = Field(None, alias="preferredDetailLevel")
+    include_budget_estimates: bool | None = Field(None, alias="includeBudgetEstimates")
+    include_local_tips: bool | None = Field(None, alias="includeLocalTips")
+    include_safety_warnings: bool | None = Field(None, alias="includeSafetyWarnings")
+    preferred_pace: str | None = Field(None, alias="preferredPace")
 
     @field_validator("preferred_pace")
     @classmethod
@@ -344,30 +266,16 @@ class AIPreferencesUpdate(BaseModel):
             return v.lower()
         return v
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "ai_temperature": 0.8,
-                "preferred_detail_level": "detailed",
-            }
-        }
-
 
 class UserSettingsUpdate(BaseModel):
     """Partial update for complete settings"""
 
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
     appearance: AppearanceSettingsUpdate | None = None
     notifications: NotificationSettingsUpdate | None = None
     privacy: PrivacySettingsUpdate | None = None
-    ai_preferences: AIPreferencesUpdate | None = None
-
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "appearance": {"theme": "dark"},
-                "notifications": {"email_notifications": True},
-            }
-        }
+    ai_preferences: AIPreferencesUpdate | None = Field(None, alias="aiPreferences")
 
 
 # =============================================================================
@@ -378,51 +286,56 @@ class UserSettingsUpdate(BaseModel):
 class UserSettingsResponse(BaseModel):
     """Response model for user settings"""
 
+    model_config = ConfigDict(
+        populate_by_name=True, serialize_by_alias=True, from_attributes=True
+    )
+
     success: bool = True
     data: UserSettings
-
-    class Config:
-        from_attributes = True
 
 
 class AppearanceSettingsResponse(BaseModel):
     """Response model for appearance settings"""
 
+    model_config = ConfigDict(
+        populate_by_name=True, serialize_by_alias=True, from_attributes=True
+    )
+
     success: bool = True
     data: AppearanceSettings
-
-    class Config:
-        from_attributes = True
 
 
 class NotificationSettingsResponse(BaseModel):
     """Response model for notification settings"""
 
+    model_config = ConfigDict(
+        populate_by_name=True, serialize_by_alias=True, from_attributes=True
+    )
+
     success: bool = True
     data: NotificationSettings
-
-    class Config:
-        from_attributes = True
 
 
 class PrivacySettingsResponse(BaseModel):
     """Response model for privacy settings"""
 
+    model_config = ConfigDict(
+        populate_by_name=True, serialize_by_alias=True, from_attributes=True
+    )
+
     success: bool = True
     data: PrivacySettings
-
-    class Config:
-        from_attributes = True
 
 
 class AIPreferencesResponse(BaseModel):
     """Response model for AI preferences"""
 
+    model_config = ConfigDict(
+        populate_by_name=True, serialize_by_alias=True, from_attributes=True
+    )
+
     success: bool = True
     data: AIPreferences
-
-    class Config:
-        from_attributes = True
 
 
 # =============================================================================
@@ -433,11 +346,13 @@ class AIPreferencesResponse(BaseModel):
 class DataExportRequest(BaseModel):
     """Request model for data export"""
 
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
     format: str = Field(default="json", description="Export format: json, csv")
-    include_trips: bool = True
-    include_reports: bool = True
-    include_templates: bool = True
-    include_settings: bool = True
+    include_trips: bool = Field(default=True, alias="includeTrips")
+    include_reports: bool = Field(default=True, alias="includeReports")
+    include_templates: bool = Field(default=True, alias="includeTemplates")
+    include_settings: bool = Field(default=True, alias="includeSettings")
 
     @field_validator("format")
     @classmethod
@@ -447,17 +362,6 @@ class DataExportRequest(BaseModel):
         if v.lower() not in valid_formats:
             raise ValueError(f"Format must be one of: {valid_formats}")
         return v.lower()
-
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "format": "json",
-                "include_trips": True,
-                "include_reports": True,
-                "include_templates": True,
-                "include_settings": True,
-            }
-        }
 
 
 class DataExportStatus(str, Enum):
@@ -473,21 +377,11 @@ class DataExportStatus(str, Enum):
 class DataExportResponse(BaseModel):
     """Response model for data export request"""
 
-    success: bool = True
-    export_id: str
-    status: DataExportStatus
-    download_url: str | None = None
-    expires_at: str | None = None
-    message: str | None = None
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "success": True,
-                "export_id": "exp_abc123",
-                "status": "completed",
-                "download_url": "https://storage.example.com/exports/abc123.json",
-                "expires_at": "2025-12-27T12:00:00Z",
-                "message": "Your data export is ready for download",
-            }
-        }
+    success: bool = True
+    export_id: str = Field(..., alias="exportId")
+    status: DataExportStatus
+    download_url: str | None = Field(None, alias="downloadUrl")
+    expires_at: str | None = Field(None, alias="expiresAt")
+    message: str | None = None

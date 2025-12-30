@@ -69,8 +69,8 @@ export function TemplateModal({ open, onOpenChange, template, onSave }: Template
             )
             .join('; '),
           description: template.description || '',
-          travelStyle: template.preferences?.travel_style || 'balanced',
-          dietaryRestrictions: template.preferences?.dietary_restrictions || [],
+          travelStyle: template.preferences?.travelStyle || 'balanced',
+          dietaryRestrictions: template.preferences?.dietaryRestrictions || [],
         });
       } else {
         setFormData({
@@ -110,8 +110,8 @@ export function TemplateModal({ open, onOpenChange, template, onSave }: Template
         description: formData.description.trim() || null,
         destinations,
         preferences: {
-          travel_style: formData.travelStyle,
-          dietary_restrictions: formData.dietaryRestrictions,
+          travelStyle: formData.travelStyle,
+          dietaryRestrictions: formData.dietaryRestrictions,
         },
       };
 

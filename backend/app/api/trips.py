@@ -760,16 +760,18 @@ async def get_generation_status(trip_id: str, token_payload: dict = Depends(veri
 
         completed_sections = [s["section_type"] for s in (sections_response.data or [])]
 
-        # Total agents that will be run (Phase 1 + Phase 2)
+        # Total agents that will be run (Phase 1 + Phase 2 + Phase 3 + Phase 4)
         # Phase 1: visa, country, weather, currency, culture
         # Phase 2: food, attractions
-        total_agents = 7
+        # Phase 3: itinerary
+        # Phase 4: flight (conditional, but count it for progress)
+        total_agents = 9
         agents_completed = completed_sections
         agents_failed = []
 
         # Determine current agent based on what's completed
-        # Agents run in order: visa, country, weather, currency, culture, food, attractions
-        agent_order = ["visa", "country", "weather", "currency", "culture", "food", "attractions"]
+        # Agents run in order: visa, country, weather, currency, culture, food, attractions, itinerary, flight
+        agent_order = ["visa", "country", "weather", "currency", "culture", "food", "attractions", "itinerary", "flight"]
         current_agent = None
 
         if trip["status"] == "processing":

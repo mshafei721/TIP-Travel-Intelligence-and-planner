@@ -32,18 +32,18 @@ export function TripHistoryCard({ trip, onArchive, onUnarchive, onRate }: TripHi
   const handleArchiveToggle = async () => {
     setLoading(true);
     try {
-      if (trip.is_archived) {
-        await onUnarchive(trip.trip_id);
+      if (trip.isArchived) {
+        await onUnarchive(trip.tripId);
       } else {
-        await onArchive(trip.trip_id);
+        await onArchive(trip.tripId);
       }
     } finally {
       setLoading(false);
     }
   };
 
-  const startDate = new Date(trip.start_date);
-  const endDate = new Date(trip.end_date);
+  const startDate = new Date(trip.startDate);
+  const endDate = new Date(trip.endDate);
   const durationDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
 
   const statusColors = {
@@ -54,16 +54,16 @@ export function TripHistoryCard({ trip, onArchive, onUnarchive, onRate }: TripHi
   return (
     <div
       className={`group relative overflow-hidden rounded-xl border bg-white shadow-sm transition-all hover:shadow-md dark:bg-slate-900 ${
-        trip.is_archived
+        trip.isArchived
           ? 'border-slate-300 opacity-75 dark:border-slate-700'
           : 'border-slate-200 dark:border-slate-800'
       }`}
     >
       {/* Cover Image or Gradient */}
       <div className="relative h-32 overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600">
-        {trip.cover_image && (
+        {trip.coverImage && (
           <Image
-            src={trip.cover_image}
+            src={trip.coverImage}
             alt={trip.destination}
             fill
             className="object-cover"
@@ -78,7 +78,7 @@ export function TripHistoryCard({ trip, onArchive, onUnarchive, onRate }: TripHi
         </div>
 
         {/* Archived Badge */}
-        {trip.is_archived && (
+        {trip.isArchived && (
           <div className="absolute left-3 top-3">
             <Badge variant="secondary" className="gap-1">
               <Archive className="h-3 w-3" />
@@ -103,25 +103,25 @@ export function TripHistoryCard({ trip, onArchive, onUnarchive, onRate }: TripHi
         <div className="mb-3 flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
           <div className="flex items-center gap-1">
             <Calendar className="h-4 w-4" />
-            <span>{formatDateRange(trip.start_date, trip.end_date)}</span>
+            <span>{formatDateRange(trip.startDate, trip.endDate)}</span>
           </div>
           <span>{formatDuration(durationDays)}</span>
         </div>
 
         {/* Rating */}
-        {trip.user_rating ? (
+        {trip.userRating ? (
           <div className="mb-3 flex items-center gap-1">
             {[1, 2, 3, 4, 5].map((star) => (
               <Star
                 key={star}
                 className={`h-4 w-4 ${
-                  star <= trip.user_rating!
+                  star <= trip.userRating!
                     ? 'fill-amber-400 text-amber-400'
                     : 'text-slate-300 dark:text-slate-600'
                 }`}
               />
             ))}
-            {trip.user_notes && (
+            {trip.userNotes && (
               <span className="ml-2 text-xs text-slate-500 dark:text-slate-400">(with notes)</span>
             )}
           </div>
@@ -139,7 +139,7 @@ export function TripHistoryCard({ trip, onArchive, onUnarchive, onRate }: TripHi
 
         {/* Actions */}
         <div className="flex items-center justify-between">
-          <Button variant="outline" size="sm" onClick={() => router.push(`/trips/${trip.trip_id}`)}>
+          <Button variant="outline" size="sm" onClick={() => router.push(`/trips/${trip.tripId}`)}>
             <Eye className="mr-1 h-4 w-4" />
             View Details
           </Button>
@@ -153,10 +153,10 @@ export function TripHistoryCard({ trip, onArchive, onUnarchive, onRate }: TripHi
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => onRate(trip)}>
                 <Star className="mr-2 h-4 w-4" />
-                {trip.user_rating ? 'Update Rating' : 'Rate Trip'}
+                {trip.userRating ? 'Update Rating' : 'Rate Trip'}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleArchiveToggle} disabled={loading}>
-                {trip.is_archived ? (
+                {trip.isArchived ? (
                   <>
                     <ArchiveRestore className="mr-2 h-4 w-4" />
                     Unarchive

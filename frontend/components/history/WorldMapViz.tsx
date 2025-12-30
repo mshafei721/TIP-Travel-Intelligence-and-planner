@@ -73,7 +73,7 @@ export function WorldMapViz({ countries, className = '' }: WorldMapVizProps) {
     const map = new Map<string, CountryVisit>();
     countries.forEach((c) => {
       // Convert Alpha-2 to Alpha-3 for matching with geography data
-      const alpha3 = ALPHA2_TO_ALPHA3[c.country_code] || c.country_code;
+      const alpha3 = ALPHA2_TO_ALPHA3[c.countryCode] || c.countryCode;
       map.set(alpha3, c);
     });
     return map;
@@ -84,9 +84,9 @@ export function WorldMapViz({ countries, className = '' }: WorldMapVizProps) {
     const visit = visitedCountries.get(alpha3Code);
     if (!visit) return '#e2e8f0'; // Not visited - slate-200
 
-    if (visit.visit_count >= 5) return '#1e40af'; // 5+ visits - blue-800
-    if (visit.visit_count >= 3) return '#3b82f6'; // 3-4 visits - blue-500
-    if (visit.visit_count >= 2) return '#60a5fa'; // 2 visits - blue-400
+    if (visit.visitCount >= 5) return '#1e40af'; // 5+ visits - blue-800
+    if (visit.visitCount >= 3) return '#3b82f6'; // 3-4 visits - blue-500
+    if (visit.visitCount >= 2) return '#60a5fa'; // 2 visits - blue-400
     return '#93c5fd'; // 1 visit - blue-300
   };
 
@@ -157,7 +157,7 @@ export function WorldMapViz({ countries, className = '' }: WorldMapVizProps) {
                       }}
                       onMouseEnter={(evt) => {
                         const tooltip = visit
-                          ? `${countryName}: ${visit.visit_count} visit${visit.visit_count !== 1 ? 's' : ''}`
+                          ? `${countryName}: ${visit.visitCount} visit${visit.visitCount !== 1 ? 's' : ''}`
                           : countryName;
                         setTooltipContent(tooltip);
                         setTooltipPosition({ x: evt.clientX, y: evt.clientY });

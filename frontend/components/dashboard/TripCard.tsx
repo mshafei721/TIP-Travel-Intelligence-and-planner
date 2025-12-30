@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Plus, Loader2 } from 'lucide-react';
 import { analytics } from '@/lib/analytics';
 import { createClient } from '@/lib/supabase/client';
+import { updateTrip } from '@/lib/api/trips';
 
 interface TripCardProps {
   trip: {
@@ -62,11 +63,8 @@ export function TripCard({
 
       const { data: urlData } = supabase.storage.from('trip-images').getPublicUrl(fileName);
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase as any)
-        .from('trips')
-        .update({ cover_image_url: urlData.publicUrl })
-        .eq('id', trip.id);
+      // Update trip via backend API
+      await updateTrip(trip.id, { coverImageUrl: urlData.publicUrl });
 
       setCoverImage(urlData.publicUrl);
       onImageUpdate?.(urlData.publicUrl);

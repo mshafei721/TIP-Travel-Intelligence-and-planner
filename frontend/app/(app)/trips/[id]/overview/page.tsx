@@ -82,14 +82,14 @@ export default function TripOverviewPage() {
         getTrip(tripId),
         getVersionHistory(tripId).catch(() => ({
           versions: [],
-          total_count: 0,
-          current_version: 1,
+          totalCount: 0,
+          currentVersion: 1,
         })),
       ]);
 
       setTrip(tripData);
       setVersions(versionData.versions);
-      setCurrentVersion(versionData.current_version);
+      setCurrentVersion(versionData.currentVersion);
 
       // Check for ongoing recalculation
       try {
@@ -216,7 +216,7 @@ export default function TripOverviewPage() {
     setTrip(result.trip);
     if (result.version) {
       setVersions((prev) => [result.version, ...prev]);
-      setCurrentVersion(result.version.version_number);
+      setCurrentVersion(result.version.versionNumber);
     }
 
     if (options.triggerRecalculation && result.recalculation) {
@@ -259,7 +259,7 @@ export default function TripOverviewPage() {
   const handleConfirmRestore = async () => {
     if (!selectedRestoreVersion) return;
 
-    const result = await restoreVersionApi(tripId, selectedRestoreVersion.version_number);
+    const result = await restoreVersionApi(tripId, selectedRestoreVersion.versionNumber);
 
     if (result.success) {
       await loadTripData();
@@ -269,8 +269,8 @@ export default function TripOverviewPage() {
   };
 
   const handleCompareVersions = async (versionA: number, versionB: number) => {
-    const versionAData = versions.find((v) => v.version_number === versionA)?.snapshot;
-    const versionBData = versions.find((v) => v.version_number === versionB)?.snapshot;
+    const versionAData = versions.find((v) => v.versionNumber === versionA)?.snapshot;
+    const versionBData = versions.find((v) => v.versionNumber === versionB)?.snapshot;
 
     if (versionAData && versionBData) {
       setCompareVersions({
@@ -306,7 +306,7 @@ export default function TripOverviewPage() {
     );
   }
 
-  const tripName = `${trip.destination_city}, ${trip.destination_country}`;
+  const tripName = `${trip.destinationCity}, ${trip.destinationCountry}`;
 
   return (
     <TripReportLayout tripId={tripId} tripName={tripName} currentSection="overview">

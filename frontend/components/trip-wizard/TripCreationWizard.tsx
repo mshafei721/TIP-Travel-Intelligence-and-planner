@@ -16,7 +16,7 @@ import AutoSaveIndicator from './AutoSaveIndicator';
 import NavigationButtons from './NavigationButtons';
 import { validateStep, validateCompleteForm } from '@/lib/validation/trip-wizard-schemas';
 import { useToast } from '@/components/ui/toast';
-import { createClient } from '@/lib/supabase/client';
+import { apiRequest, getAuthToken } from '@/lib/api/auth-utils';
 
 // TypeScript interfaces matching the spec
 export interface TravelerDetails {
@@ -240,13 +240,9 @@ export default function TripCreationWizard() {
 
     setIsSubmitting(true);
     try {
-      // Get auth token from Supabase
-      const supabase = createClient();
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session) {
+      // Check if user is authenticated
+      const token = await getAuthToken();
+      if (!token) {
         toast.error('You must be logged in to create a trip.', 'Authentication Error');
         router.push('/login');
         return;
@@ -289,22 +285,10 @@ export default function TripCreationWizard() {
       };
 
       // API call to create trip with validated data
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
-      const response = await fetch(`${backendUrl}/api/trips`, {
+      const trip = await apiRequest<{ id: string }>('/api/trips', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
-        },
         body: JSON.stringify(tripData),
       });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ detail: 'Failed to create trip' }));
-        throw new Error(errorData.detail || 'Failed to create trip');
-      }
-
-      const trip = await response.json();
 
       // Clear draft and validation errors
       localStorage.removeItem(DRAFT_KEY);

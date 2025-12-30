@@ -1,6 +1,7 @@
 /**
  * User Profile & Settings Types
  * Aligned with backend API and database schema
+ * Using camelCase to match API contract (backend uses Pydantic aliases)
  */
 
 // ============================================
@@ -9,50 +10,50 @@
 
 export interface UserProfile {
   id: string;
-  display_name: string | null;
-  avatar_url: string | null;
+  displayName: string | null;
+  avatarUrl: string | null;
   preferences: UserPreferences;
-  created_at: string;
-  updated_at: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface UserProfileUpdate {
-  display_name?: string | null;
-  avatar_url?: string | null;
+  displayName?: string | null;
+  avatarUrl?: string | null;
 }
 
 export type TravelStyle = 'budget' | 'balanced' | 'luxury';
 
 export interface TravelerProfile {
   id: string;
-  user_id: string;
+  userId: string;
   nationality: string; // ISO Alpha-2 country code (e.g., "US")
-  residency_country: string; // ISO Alpha-2 country code
-  residency_status: string;
-  date_of_birth: string | null; // ISO date format (YYYY-MM-DD)
-  travel_style: TravelStyle;
-  dietary_restrictions: string[]; // JSONB array
-  accessibility_needs: string | null;
-  created_at: string;
-  updated_at: string;
+  residencyCountry: string; // ISO Alpha-2 country code
+  residencyStatus: string;
+  dateOfBirth: string | null; // ISO date format (YYYY-MM-DD)
+  travelStyle: TravelStyle;
+  dietaryRestrictions: string[]; // JSONB array
+  accessibilityNeeds: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface TravelerProfileUpdate {
   nationality?: string;
-  residency_country?: string;
-  residency_status?: string;
-  date_of_birth?: string | null;
-  travel_style?: TravelStyle;
-  dietary_restrictions?: string[];
-  accessibility_needs?: string | null;
+  residencyCountry?: string;
+  residencyStatus?: string;
+  dateOfBirth?: string | null;
+  travelStyle?: TravelStyle;
+  dietaryRestrictions?: string[];
+  accessibilityNeeds?: string | null;
 }
 
 export type Units = 'metric' | 'imperial';
 
 export interface UserPreferences {
-  email_notifications: boolean;
-  push_notifications: boolean;
-  marketing_emails: boolean;
+  emailNotifications: boolean;
+  pushNotifications: boolean;
+  marketingEmails: boolean;
   language: string; // ISO 639-1 language code (e.g., "en")
   currency: string; // ISO 4217 currency code (e.g., "USD")
   units: Units;
@@ -88,18 +89,18 @@ export interface TravelStatistics {
 // ============================================
 
 export interface ProfileFormErrors {
-  display_name?: string;
-  avatar_url?: string;
+  displayName?: string;
+  avatarUrl?: string;
 }
 
 export interface TravelerProfileFormErrors {
   nationality?: string;
-  residency_country?: string;
-  residency_status?: string;
-  date_of_birth?: string;
-  travel_style?: string;
-  dietary_restrictions?: string;
-  accessibility_needs?: string;
+  residencyCountry?: string;
+  residencyStatus?: string;
+  dateOfBirth?: string;
+  travelStyle?: string;
+  dietaryRestrictions?: string;
+  accessibilityNeeds?: string;
 }
 
 export interface PreferencesFormErrors {
@@ -211,85 +212,85 @@ export interface TravelPreferences {
 // ============================================
 
 export interface TripTemplatePreferences {
-  travel_style?: TravelStyle;
-  dietary_restrictions?: string[];
-  accessibility_needs?: string | null;
+  travelStyle?: TravelStyle;
+  dietaryRestrictions?: string[];
+  accessibilityNeeds?: string | null;
 }
 
 export interface TemplateDestination {
   country: string;
   city?: string;
-  suggested_days?: number;
+  suggestedDays?: number;
   highlights?: string[];
 }
 
 export interface TripTemplate {
   id: string;
-  user_id: string;
+  userId: string;
   name: string;
   description: string | null;
-  cover_image?: string | null;
-  is_public: boolean;
+  coverImage?: string | null;
+  isPublic: boolean;
   tags: string[];
-  traveler_details: Record<string, unknown> | null;
+  travelerDetails: Record<string, unknown> | null;
   destinations: TemplateDestination[];
   preferences: TripTemplatePreferences | null;
-  typical_duration?: number | null;
-  estimated_budget?: number | null;
+  typicalDuration?: number | null;
+  estimatedBudget?: number | null;
   currency: string;
-  use_count: number;
-  created_at: string;
-  updated_at: string;
+  useCount: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface PublicTemplate {
   id: string;
   name: string;
   description: string | null;
-  cover_image?: string | null;
+  coverImage?: string | null;
   tags: string[];
   destinations: TemplateDestination[];
-  typical_duration?: number | null;
-  estimated_budget?: number | null;
+  typicalDuration?: number | null;
+  estimatedBudget?: number | null;
   currency: string;
-  use_count: number;
-  created_at: string;
+  useCount: number;
+  createdAt: string;
 }
 
 export interface TripTemplateCreate {
   name: string;
   description?: string | null;
-  cover_image?: string | null;
-  is_public?: boolean;
+  coverImage?: string | null;
+  isPublic?: boolean;
   tags?: string[];
-  traveler_details?: Record<string, unknown> | null;
+  travelerDetails?: Record<string, unknown> | null;
   destinations: TemplateDestination[];
   preferences?: TripTemplatePreferences | null;
-  typical_duration?: number;
-  estimated_budget?: number;
+  typicalDuration?: number;
+  estimatedBudget?: number;
   currency?: string;
 }
 
 export interface TripTemplateUpdate {
   name?: string;
   description?: string | null;
-  cover_image?: string | null;
-  is_public?: boolean;
+  coverImage?: string | null;
+  isPublic?: boolean;
   tags?: string[];
-  traveler_details?: Record<string, unknown> | null;
+  travelerDetails?: Record<string, unknown> | null;
   destinations?: TemplateDestination[];
   preferences?: TripTemplatePreferences | null;
-  typical_duration?: number;
-  estimated_budget?: number;
+  typicalDuration?: number;
+  estimatedBudget?: number;
   currency?: string;
 }
 
 export interface CreateTripFromTemplateRequest {
   title?: string;
-  start_date?: string;
-  end_date?: string;
-  override_traveler_details?: Record<string, unknown>;
-  override_preferences?: Record<string, unknown>;
+  startDate?: string;
+  endDate?: string;
+  overrideTravelerDetails?: Record<string, unknown>;
+  overridePreferences?: Record<string, unknown>;
 }
 
 // ============================================
@@ -297,40 +298,40 @@ export interface CreateTripFromTemplateRequest {
 // ============================================
 
 export interface TravelHistoryEntry {
-  trip_id: string;
+  tripId: string;
   destination: string;
   country: string;
-  start_date: string;
-  end_date: string;
+  startDate: string;
+  endDate: string;
   status: 'completed' | 'cancelled';
-  user_rating?: number | null;
-  user_notes?: string | null;
-  is_archived: boolean;
-  archived_at?: string | null;
-  cover_image?: string | null;
+  userRating?: number | null;
+  userNotes?: string | null;
+  isArchived: boolean;
+  archivedAt?: string | null;
+  coverImage?: string | null;
 }
 
 export interface TravelStats {
-  total_trips: number;
-  countries_visited: number;
-  cities_visited: number;
-  total_days_traveled: number;
-  favorite_destination?: string | null;
-  most_visited_country?: string | null;
-  travel_streak: number;
+  totalTrips: number;
+  countriesVisited: number;
+  citiesVisited: number;
+  totalDaysTraveled: number;
+  favoriteDestination?: string | null;
+  mostVisitedCountry?: string | null;
+  travelStreak: number;
 }
 
 export interface CountryVisit {
-  country_code: string;
-  country_name: string;
-  visit_count: number;
-  last_visited?: string | null;
+  countryCode: string;
+  countryName: string;
+  visitCount: number;
+  lastVisited?: string | null;
   cities: string[];
 }
 
 export interface TravelHistoryResponse {
   entries: TravelHistoryEntry[];
-  total_count: number;
+  totalCount: number;
 }
 
 export interface TravelStatsResponse {
@@ -339,12 +340,12 @@ export interface TravelStatsResponse {
 }
 
 export interface TravelTimelineEntry {
-  trip_id: string;
+  tripId: string;
   title: string;
   destination: string;
-  start_date: string;
-  end_date: string;
-  duration_days: number;
+  startDate: string;
+  endDate: string;
+  durationDays: number;
   status: string;
   thumbnail?: string | null;
 }
@@ -360,9 +361,9 @@ export interface TripRatingRequest {
 }
 
 export interface ArchiveResponse {
-  trip_id: string;
-  is_archived: boolean;
-  archived_at?: string | null;
+  tripId: string;
+  isArchived: boolean;
+  archivedAt?: string | null;
   message: string;
 }
 

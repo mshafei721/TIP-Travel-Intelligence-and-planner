@@ -30,7 +30,7 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
           .join(', ')
       : 'No destinations';
   const datePattern = template.description || 'Custom trip';
-  const travelStyle = template.preferences?.travel_style || 'balanced';
+  const travelStyle = template.preferences?.travelStyle || 'balanced';
   const travelStyleLabel = travelStyle
     .split('-')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))

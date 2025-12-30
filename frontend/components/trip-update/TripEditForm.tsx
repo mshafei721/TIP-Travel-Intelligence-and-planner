@@ -94,39 +94,39 @@ export function TripEditForm({ trip, onSave, onPreview, disabled = false }: Trip
     const newErrors: EditFormErrors = {};
 
     // Validate dates
-    const departure = currentData.departure_date ? new Date(currentData.departure_date) : null;
-    const returnDate = currentData.return_date ? new Date(currentData.return_date) : null;
+    const departure = currentData.departureDate ? new Date(currentData.departureDate) : null;
+    const returnDate = currentData.returnDate ? new Date(currentData.returnDate) : null;
 
     if (!currentData.title?.trim()) {
       newErrors.title = 'Title is required';
     }
 
-    if (!currentData.destination_city?.trim()) {
-      newErrors.destination_city = 'Destination city is required';
+    if (!currentData.destinationCity?.trim()) {
+      newErrors.destinationCity = 'Destination city is required';
     }
 
-    if (!currentData.destination_country?.trim()) {
-      newErrors.destination_country = 'Destination country is required';
+    if (!currentData.destinationCountry?.trim()) {
+      newErrors.destinationCountry = 'Destination country is required';
     }
 
     if (!departure) {
-      newErrors.departure_date = 'Departure date is required';
+      newErrors.departureDate = 'Departure date is required';
     }
 
     if (!returnDate) {
-      newErrors.return_date = 'Return date is required';
+      newErrors.returnDate = 'Return date is required';
     }
 
     if (departure && returnDate && returnDate <= departure) {
-      newErrors.return_date = 'Return date must be after departure date';
+      newErrors.returnDate = 'Return date must be after departure date';
     }
 
     if (currentData.budget !== undefined && currentData.budget < 0) {
       newErrors.budget = 'Budget must be a positive number';
     }
 
-    if (currentData.party_size !== undefined && currentData.party_size < 1) {
-      newErrors.party_size = 'Party size must be at least 1';
+    if (currentData.partySize !== undefined && currentData.partySize < 1) {
+      newErrors.partySize = 'Party size must be at least 1';
     }
 
     setErrors(newErrors);
@@ -210,55 +210,55 @@ export function TripEditForm({ trip, onSave, onPreview, disabled = false }: Trip
         {/* Destination */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="destination_city">Destination City</Label>
+            <Label htmlFor="destinationCity">Destination City</Label>
             {isEditing ? (
               <>
                 <Input
-                  id="destination_city"
-                  value={currentData.destination_city || ''}
-                  onChange={(e) => updateField('destination_city', e.target.value)}
-                  className={errors.destination_city ? 'border-red-500' : ''}
+                  id="destinationCity"
+                  value={currentData.destinationCity || ''}
+                  onChange={(e) => updateField('destinationCity', e.target.value)}
+                  className={errors.destinationCity ? 'border-red-500' : ''}
                 />
-                {errors.destination_city && (
-                  <p className="mt-1 text-sm text-red-600">{errors.destination_city}</p>
+                {errors.destinationCity && (
+                  <p className="mt-1 text-sm text-red-600">{errors.destinationCity}</p>
                 )}
               </>
             ) : (
-              <p className="mt-1 text-slate-700 dark:text-slate-300">{trip.destination_city}</p>
+              <p className="mt-1 text-slate-700 dark:text-slate-300">{trip.destinationCity}</p>
             )}
           </div>
           <div>
-            <Label htmlFor="destination_country">Destination Country</Label>
+            <Label htmlFor="destinationCountry">Destination Country</Label>
             {isEditing ? (
               <>
                 <Input
-                  id="destination_country"
-                  value={currentData.destination_country || ''}
-                  onChange={(e) => updateField('destination_country', e.target.value)}
-                  className={errors.destination_country ? 'border-red-500' : ''}
+                  id="destinationCountry"
+                  value={currentData.destinationCountry || ''}
+                  onChange={(e) => updateField('destinationCountry', e.target.value)}
+                  className={errors.destinationCountry ? 'border-red-500' : ''}
                 />
-                {errors.destination_country && (
-                  <p className="mt-1 text-sm text-red-600">{errors.destination_country}</p>
+                {errors.destinationCountry && (
+                  <p className="mt-1 text-sm text-red-600">{errors.destinationCountry}</p>
                 )}
               </>
             ) : (
-              <p className="mt-1 text-slate-700 dark:text-slate-300">{trip.destination_country}</p>
+              <p className="mt-1 text-slate-700 dark:text-slate-300">{trip.destinationCountry}</p>
             )}
           </div>
         </div>
 
         {/* Origin City */}
         <div>
-          <Label htmlFor="origin_city">Origin City</Label>
+          <Label htmlFor="originCity">Origin City</Label>
           {isEditing ? (
             <Input
-              id="origin_city"
-              value={currentData.origin_city || ''}
-              onChange={(e) => updateField('origin_city', e.target.value)}
+              id="originCity"
+              value={currentData.originCity || ''}
+              onChange={(e) => updateField('originCity', e.target.value)}
             />
           ) : (
             <p className="mt-1 text-slate-700 dark:text-slate-300">
-              {trip.origin_city || 'Not specified'}
+              {trip.originCity || 'Not specified'}
             </p>
           )}
         </div>
@@ -266,47 +266,45 @@ export function TripEditForm({ trip, onSave, onPreview, disabled = false }: Trip
         {/* Dates */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="departure_date">Departure Date</Label>
+            <Label htmlFor="departureDate">Departure Date</Label>
             {isEditing ? (
               <>
                 <Input
-                  id="departure_date"
+                  id="departureDate"
                   type="date"
-                  value={currentData.departure_date || ''}
-                  onChange={(e) => updateField('departure_date', e.target.value)}
-                  className={errors.departure_date ? 'border-red-500' : ''}
+                  value={currentData.departureDate || ''}
+                  onChange={(e) => updateField('departureDate', e.target.value)}
+                  className={errors.departureDate ? 'border-red-500' : ''}
                 />
-                {errors.departure_date && (
-                  <p className="mt-1 text-sm text-red-600">{errors.departure_date}</p>
+                {errors.departureDate && (
+                  <p className="mt-1 text-sm text-red-600">{errors.departureDate}</p>
                 )}
               </>
             ) : (
               <p className="mt-1 text-slate-700 dark:text-slate-300">
-                {trip.departure_date
-                  ? new Date(trip.departure_date).toLocaleDateString()
-                  : 'Not set'}
+                {trip.departureDate ? new Date(trip.departureDate).toLocaleDateString() : 'Not set'}
               </p>
             )}
           </div>
           <div>
-            <Label htmlFor="return_date">Return Date</Label>
+            <Label htmlFor="returnDate">Return Date</Label>
             {isEditing ? (
               <>
                 <Input
-                  id="return_date"
+                  id="returnDate"
                   type="date"
-                  value={currentData.return_date || ''}
-                  onChange={(e) => updateField('return_date', e.target.value)}
-                  min={currentData.departure_date || undefined}
-                  className={errors.return_date ? 'border-red-500' : ''}
+                  value={currentData.returnDate || ''}
+                  onChange={(e) => updateField('returnDate', e.target.value)}
+                  min={currentData.departureDate || undefined}
+                  className={errors.returnDate ? 'border-red-500' : ''}
                 />
-                {errors.return_date && (
-                  <p className="mt-1 text-sm text-red-600">{errors.return_date}</p>
+                {errors.returnDate && (
+                  <p className="mt-1 text-sm text-red-600">{errors.returnDate}</p>
                 )}
               </>
             ) : (
               <p className="mt-1 text-slate-700 dark:text-slate-300">
-                {trip.return_date ? new Date(trip.return_date).toLocaleDateString() : 'Not set'}
+                {trip.returnDate ? new Date(trip.returnDate).toLocaleDateString() : 'Not set'}
               </p>
             )}
           </div>
@@ -358,12 +356,12 @@ export function TripEditForm({ trip, onSave, onPreview, disabled = false }: Trip
 
         {/* Trip Purpose */}
         <div>
-          <Label htmlFor="trip_purpose">Trip Purpose</Label>
+          <Label htmlFor="tripPurpose">Trip Purpose</Label>
           {isEditing ? (
             <select
-              id="trip_purpose"
-              value={currentData.trip_purpose || ''}
-              onChange={(e) => updateField('trip_purpose', e.target.value)}
+              id="tripPurpose"
+              value={currentData.tripPurpose || ''}
+              onChange={(e) => updateField('tripPurpose', e.target.value)}
               className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
             >
               <option value="">Select purpose</option>
@@ -375,48 +373,46 @@ export function TripEditForm({ trip, onSave, onPreview, disabled = false }: Trip
             </select>
           ) : (
             <p className="mt-1 text-slate-700 dark:text-slate-300">
-              {trip.trip_purpose || 'Not specified'}
+              {trip.tripPurpose || 'Not specified'}
             </p>
           )}
         </div>
 
         {/* Party Size */}
         <div>
-          <Label htmlFor="party_size">Party Size</Label>
+          <Label htmlFor="partySize">Party Size</Label>
           {isEditing ? (
             <>
               <Input
-                id="party_size"
+                id="partySize"
                 type="number"
                 min="1"
                 max="50"
-                value={currentData.party_size ?? 1}
-                onChange={(e) => updateField('party_size', parseInt(e.target.value) || 1)}
-                className={errors.party_size ? 'border-red-500' : ''}
+                value={currentData.partySize ?? 1}
+                onChange={(e) => updateField('partySize', parseInt(e.target.value) || 1)}
+                className={errors.partySize ? 'border-red-500' : ''}
               />
-              {errors.party_size && (
-                <p className="mt-1 text-sm text-red-600">{errors.party_size}</p>
-              )}
+              {errors.partySize && <p className="mt-1 text-sm text-red-600">{errors.partySize}</p>}
             </>
           ) : (
             <p className="mt-1 text-slate-700 dark:text-slate-300">
-              {trip.party_size || 1} {(trip.party_size || 1) === 1 ? 'person' : 'people'}
+              {trip.partySize || 1} {(trip.partySize || 1) === 1 ? 'person' : 'people'}
             </p>
           )}
         </div>
 
         {/* Travel Style */}
         <div>
-          <Label htmlFor="travel_style">Travel Style</Label>
+          <Label htmlFor="travelStyle">Travel Style</Label>
           {isEditing ? (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">
               {TRAVEL_STYLES.map((style) => (
                 <button
                   key={style.value}
                   type="button"
-                  onClick={() => updateField('travel_style', style.value)}
+                  onClick={() => updateField('travelStyle', style.value)}
                   className={`p-3 rounded-lg border-2 text-left transition-all ${
-                    currentData.travel_style === style.value
+                    currentData.travelStyle === style.value
                       ? 'border-blue-600 bg-blue-50 dark:bg-blue-950/30'
                       : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'
                   }`}
@@ -432,7 +428,7 @@ export function TripEditForm({ trip, onSave, onPreview, disabled = false }: Trip
             </div>
           ) : (
             <p className="mt-1 text-slate-700 dark:text-slate-300">
-              {trip.travel_style || 'Not specified'}
+              {trip.travelStyle || 'Not specified'}
             </p>
           )}
         </div>

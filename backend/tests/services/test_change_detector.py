@@ -16,7 +16,6 @@ from app.models.trips import (
     TravelStyle,
     TripDetails,
     TripPreferences,
-    TripPurpose,
     TripResponse,
 )
 from app.services.change_detector import ChangeDetector, ChangeResult
@@ -54,7 +53,7 @@ def base_trip_data():
             return_date=date(2025, 6, 15),
             budget=5000.00,
             currency="USD",
-            trip_purpose=TripPurpose.TOURISM,
+            trip_purposes=["tourism"],
         ),
         "preferences": TripPreferences(
             travel_style=TravelStyle.BALANCED,
@@ -129,7 +128,7 @@ class TestDetectChanges:
             return_date=date(2025, 7, 15),
             budget=5000.00,
             currency="USD",
-            trip_purpose=TripPurpose.TOURISM,
+            trip_purposes=["tourism"],
         )
 
         result = change_detector.detect_changes(old_trip, new_trip)
@@ -170,7 +169,7 @@ class TestDetectChanges:
             return_date=date(2025, 6, 15),
             budget=10000.00,  # Doubled budget
             currency="USD",
-            trip_purpose=TripPurpose.TOURISM,
+            trip_purposes=["tourism"],
         )
 
         result = change_detector.detect_changes(old_trip, new_trip)
@@ -227,7 +226,7 @@ class TestDetectChanges:
             return_date=date(2025, 6, 15),
             budget=4500.00,
             currency="EUR",  # Changed currency
-            trip_purpose=TripPurpose.TOURISM,
+            trip_purposes=["tourism"],
         )
 
         result = change_detector.detect_changes(old_trip, new_trip)
@@ -244,7 +243,7 @@ class TestDetectChanges:
             return_date=date(2025, 6, 15),
             budget=5000.00,
             currency="USD",
-            trip_purpose=TripPurpose.BUSINESS,  # Changed from TOURISM
+            trip_purposes=["business"],  # Changed from tourism
         )
 
         result = change_detector.detect_changes(old_trip, new_trip)
@@ -347,12 +346,12 @@ class TestAgentDependencies:
     """Test agent dependency mappings."""
 
     def test_visa_dependencies(self, change_detector):
-        """Visa agent should depend on nationality, destination, and trip_purpose."""
+        """Visa agent should depend on nationality, destination, and trip_purposes."""
         deps = change_detector.AGENT_DEPENDENCIES.get("visa", [])
 
         assert "nationality" in deps
         assert "destination" in deps
-        assert "trip_purpose" in deps
+        assert "trip_purposes" in deps
 
     def test_weather_dependencies(self, change_detector):
         """Weather agent should depend on destination and dates."""

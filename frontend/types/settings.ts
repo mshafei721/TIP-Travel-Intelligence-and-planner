@@ -1,6 +1,7 @@
 /**
  * Settings Types
  * Aligned with backend API models
+ * Using camelCase to match API contract (backend uses Pydantic aliases)
  */
 
 // ============================================
@@ -53,46 +54,46 @@ export interface AppearanceSettings {
   theme: Theme;
   language: string;
   timezone: string;
-  date_format: DateFormat;
+  dateFormat: DateFormat;
   currency: string;
   units: Units;
 }
 
 export interface NotificationSettings {
-  email_notifications: boolean;
-  email_trip_updates: boolean;
-  email_report_completion: boolean;
-  email_recommendations: boolean;
-  email_marketing: boolean;
-  email_weekly_digest: boolean;
-  push_notifications: boolean;
-  push_trip_reminders: boolean;
-  push_travel_alerts: boolean;
+  emailNotifications: boolean;
+  emailTripUpdates: boolean;
+  emailReportCompletion: boolean;
+  emailRecommendations: boolean;
+  emailMarketing: boolean;
+  emailWeeklyDigest: boolean;
+  pushNotifications: boolean;
+  pushTripReminders: boolean;
+  pushTravelAlerts: boolean;
 }
 
 export interface PrivacySettings {
-  profile_visibility: ProfileVisibility;
-  show_travel_history: boolean;
-  allow_template_sharing: boolean;
-  analytics_opt_in: boolean;
-  personalization_opt_in: boolean;
-  share_usage_data: boolean;
+  profileVisibility: ProfileVisibility;
+  showTravelHistory: boolean;
+  allowTemplateSharing: boolean;
+  analyticsOptIn: boolean;
+  personalizationOptIn: boolean;
+  shareUsageData: boolean;
 }
 
 export interface AIPreferences {
-  ai_temperature: number;
-  preferred_detail_level: DetailLevel;
-  include_budget_estimates: boolean;
-  include_local_tips: boolean;
-  include_safety_warnings: boolean;
-  preferred_pace: string;
+  aiTemperature: number;
+  preferredDetailLevel: DetailLevel;
+  includeBudgetEstimates: boolean;
+  includeLocalTips: boolean;
+  includeSafetyWarnings: boolean;
+  preferredPace: string;
 }
 
 export interface UserSettings {
   appearance: AppearanceSettings;
   notifications: NotificationSettings;
   privacy: PrivacySettings;
-  ai_preferences: AIPreferences;
+  aiPreferences: AIPreferences;
 }
 
 // ============================================
@@ -103,39 +104,39 @@ export interface AppearanceSettingsUpdate {
   theme?: Theme;
   language?: string;
   timezone?: string;
-  date_format?: DateFormat;
+  dateFormat?: DateFormat;
   currency?: string;
   units?: Units;
 }
 
 export interface NotificationSettingsUpdate {
-  email_notifications?: boolean;
-  email_trip_updates?: boolean;
-  email_report_completion?: boolean;
-  email_recommendations?: boolean;
-  email_marketing?: boolean;
-  email_weekly_digest?: boolean;
-  push_notifications?: boolean;
-  push_trip_reminders?: boolean;
-  push_travel_alerts?: boolean;
+  emailNotifications?: boolean;
+  emailTripUpdates?: boolean;
+  emailReportCompletion?: boolean;
+  emailRecommendations?: boolean;
+  emailMarketing?: boolean;
+  emailWeeklyDigest?: boolean;
+  pushNotifications?: boolean;
+  pushTripReminders?: boolean;
+  pushTravelAlerts?: boolean;
 }
 
 export interface PrivacySettingsUpdate {
-  profile_visibility?: ProfileVisibility;
-  show_travel_history?: boolean;
-  allow_template_sharing?: boolean;
-  analytics_opt_in?: boolean;
-  personalization_opt_in?: boolean;
-  share_usage_data?: boolean;
+  profileVisibility?: ProfileVisibility;
+  showTravelHistory?: boolean;
+  allowTemplateSharing?: boolean;
+  analyticsOptIn?: boolean;
+  personalizationOptIn?: boolean;
+  shareUsageData?: boolean;
 }
 
 export interface AIPreferencesUpdate {
-  ai_temperature?: number;
-  preferred_detail_level?: DetailLevel;
-  include_budget_estimates?: boolean;
-  include_local_tips?: boolean;
-  include_safety_warnings?: boolean;
-  preferred_pace?: string;
+  aiTemperature?: number;
+  preferredDetailLevel?: DetailLevel;
+  includeBudgetEstimates?: boolean;
+  includeLocalTips?: boolean;
+  includeSafetyWarnings?: boolean;
+  preferredPace?: string;
 }
 
 // ============================================
@@ -171,10 +172,10 @@ export interface DataExportResponse {
   success: boolean;
   message: string;
   data: {
-    export_id: string;
+    exportId: string;
     status: 'pending' | 'processing' | 'completed' | 'failed';
-    download_url: string | null;
-    expires_at: string | null;
+    downloadUrl: string | null;
+    expiresAt: string | null;
   };
 }
 

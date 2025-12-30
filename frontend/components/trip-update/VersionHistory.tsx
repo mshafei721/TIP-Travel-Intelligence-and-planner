@@ -161,9 +161,9 @@ export function VersionHistory({
       <div className="divide-y divide-slate-200 dark:divide-slate-800 max-h-[400px] overflow-y-auto">
         {versions.map((version) => {
           const isExpanded = expandedVersions.has(version.id);
-          const isCurrent = version.version_number === currentVersion;
-          const isSelected = compareSelection.includes(version.version_number);
-          const CreatorIcon = CREATOR_ICONS[version.created_by] || User;
+          const isCurrent = version.versionNumber === currentVersion;
+          const isSelected = compareSelection.includes(version.versionNumber);
+          const CreatorIcon = CREATOR_ICONS[version.createdBy] || User;
 
           return (
             <div
@@ -175,7 +175,7 @@ export function VersionHistory({
                     : 'hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer'
                   : ''
               }`}
-              onClick={compareMode ? () => handleCompareClick(version.version_number) : undefined}
+              onClick={compareMode ? () => handleCompareClick(version.versionNumber) : undefined}
             >
               {/* Version Header */}
               <div className="flex items-center gap-3 p-4">
@@ -201,7 +201,7 @@ export function VersionHistory({
                         : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                     }`}
                   >
-                    v{version.version_number}
+                    v{version.versionNumber}
                   </div>
                 </div>
 
@@ -209,7 +209,7 @@ export function VersionHistory({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="font-medium text-slate-900 dark:text-slate-100">
-                      {version.change_summary || 'Changes saved'}
+                      {version.changeSummary || 'Changes saved'}
                     </span>
                     {isCurrent && (
                       <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-400">
@@ -220,13 +220,13 @@ export function VersionHistory({
                   <div className="flex items-center gap-3 mt-1 text-sm text-slate-500 dark:text-slate-400">
                     <span className="flex items-center gap-1">
                       <CreatorIcon className="h-3 w-3" />
-                      {CREATOR_LABELS[version.created_by]}
+                      {CREATOR_LABELS[version.createdBy]}
                     </span>
-                    <span>{formatDate(version.created_at)}</span>
-                    {version.changed_fields.length > 0 && (
+                    <span>{formatDate(version.createdAt)}</span>
+                    {version.changedFields.length > 0 && (
                       <span>
-                        {version.changed_fields.length} field
-                        {version.changed_fields.length !== 1 ? 's' : ''} changed
+                        {version.changedFields.length} field
+                        {version.changedFields.length !== 1 ? 's' : ''} changed
                       </span>
                     )}
                   </div>
@@ -282,9 +282,9 @@ export function VersionHistory({
                     <h5 className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">
                       Changed Fields
                     </h5>
-                    {version.changed_fields.length > 0 ? (
+                    {version.changedFields.length > 0 ? (
                       <div className="flex flex-wrap gap-1">
-                        {version.changed_fields.map((field) => (
+                        {version.changedFields.map((field) => (
                           <Badge key={field} variant="secondary" className="text-xs">
                             {field.replace(/_/g, ' ')}
                           </Badge>

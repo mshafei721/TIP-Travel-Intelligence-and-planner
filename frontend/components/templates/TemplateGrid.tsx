@@ -63,7 +63,7 @@ export function TemplateGrid({ templates, onEdit, onDelete, variant = 'user' }: 
                   <h3 className="font-semibold text-slate-900 dark:text-slate-50">
                     {template.name}
                   </h3>
-                  {template.is_public ? (
+                  {template.isPublic ? (
                     <span title="Public template">
                       <Globe className="h-4 w-4 text-blue-500" />
                     </span>
@@ -120,14 +120,14 @@ export function TemplateGrid({ templates, onEdit, onDelete, variant = 'user' }: 
 
             {/* Duration & Budget */}
             <div className="mb-3 flex items-center gap-4 text-sm text-slate-500 dark:text-slate-400">
-              {template.typical_duration && (
+              {template.typicalDuration && (
                 <div className="flex items-center gap-1">
                   <Calendar className="h-4 w-4" />
-                  <span>{template.typical_duration} days</span>
+                  <span>{template.typicalDuration} days</span>
                 </div>
               )}
-              {template.estimated_budget && (
-                <span>~{formatBudget(template.estimated_budget, template.currency)}</span>
+              {template.estimatedBudget && (
+                <span>~{formatBudget(template.estimatedBudget, template.currency)}</span>
               )}
             </div>
 
@@ -148,9 +148,9 @@ export function TemplateGrid({ templates, onEdit, onDelete, variant = 'user' }: 
             )}
 
             {/* Use count (for public templates) */}
-            {template.is_public && template.use_count > 0 && (
+            {template.isPublic && template.useCount > 0 && (
               <div className="mt-3 text-xs text-slate-400 dark:text-slate-500">
-                Used {template.use_count} time{template.use_count !== 1 ? 's' : ''}
+                Used {template.useCount} time{template.useCount !== 1 ? 's' : ''}
               </div>
             )}
           </div>

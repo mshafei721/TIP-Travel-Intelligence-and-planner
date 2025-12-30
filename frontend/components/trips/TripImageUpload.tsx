@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import Image from 'next/image';
 import { Plus, X, Loader2, ImageIcon } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { updateTrip } from '@/lib/api/trips';
 
 interface TripImageUploadProps {
   tripId: string;
@@ -75,20 +76,12 @@ export function TripImageUpload({
 
       const publicUrl = urlData.publicUrl;
 
+      // Update trip via backend API
+      await updateTrip(tripId, { coverImageUrl: publicUrl });
+
       // Update preview and notify parent
       setPreviewUrl(publicUrl);
       onImageUploaded(publicUrl);
-
-      // Update trip in database
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error: updateError } = await (supabase as any)
-        .from('trips')
-        .update({ cover_image_url: publicUrl })
-        .eq('id', tripId);
-
-      if (updateError) {
-        console.error('Failed to update trip:', updateError);
-      }
     } catch (err) {
       console.error('Upload error:', err);
       setError('Failed to upload image. Please try again.');
@@ -115,9 +108,8 @@ export function TripImageUpload({
         await supabase.storage.from('trip-images').remove([filePath]);
       }
 
-      // Update trip in database
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase as any).from('trips').update({ cover_image_url: null }).eq('id', tripId);
+      // Update trip via backend API
+      await updateTrip(tripId, { coverImageUrl: null });
 
       setPreviewUrl(null);
       onImageRemoved?.();
@@ -257,11 +249,8 @@ export function TripImageUploadCompact({
 
       const { data: urlData } = supabase.storage.from('trip-images').getPublicUrl(fileName);
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase as any)
-        .from('trips')
-        .update({ cover_image_url: urlData.publicUrl })
-        .eq('id', tripId);
+      // Update trip via backend API
+      await updateTrip(tripId, { coverImageUrl: urlData.publicUrl });
 
       onImageUploaded(urlData.publicUrl);
     } catch (err) {

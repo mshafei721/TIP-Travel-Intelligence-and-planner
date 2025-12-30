@@ -34,16 +34,16 @@ export function CountryBadges({ countries, maxDisplay = 12 }: CountryBadgesProps
     <div className="flex flex-wrap gap-2">
       {displayCountries.map((country) => (
         <Badge
-          key={country.country_code}
+          key={country.countryCode}
           variant="secondary"
           className="cursor-default px-3 py-1.5 text-sm"
-          title={`Visited ${country.visit_count} time${country.visit_count !== 1 ? 's' : ''}`}
+          title={`Visited ${country.visitCount} time${country.visitCount !== 1 ? 's' : ''}`}
         >
-          <span className="mr-1.5 text-base">{getFlagEmoji(country.country_code)}</span>
-          {country.country_name}
-          {country.visit_count > 1 && (
+          <span className="mr-1.5 text-base">{getFlagEmoji(country.countryCode)}</span>
+          {country.countryName}
+          {country.visitCount > 1 && (
             <span className="ml-1.5 rounded-full bg-slate-200 px-1.5 py-0.5 text-xs dark:bg-slate-700">
-              {country.visit_count}
+              {country.visitCount}
             </span>
           )}
         </Badge>

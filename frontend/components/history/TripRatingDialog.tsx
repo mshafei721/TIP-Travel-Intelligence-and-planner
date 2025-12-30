@@ -35,8 +35,8 @@ export function TripRatingDialog({ trip, open, onOpenChange, onSubmit }: TripRat
   // Reset form when dialog opens with a trip
   useEffect(() => {
     if (trip && open) {
-      setRating(trip.user_rating || 0);
-      setNotes(trip.user_notes || '');
+      setRating(trip.userRating || 0);
+      setNotes(trip.userNotes || '');
       setError(null);
     }
   }, [trip, open]);
@@ -53,7 +53,7 @@ export function TripRatingDialog({ trip, open, onOpenChange, onSubmit }: TripRat
     setError(null);
 
     try {
-      await onSubmit(trip.trip_id, rating, notes || undefined);
+      await onSubmit(trip.tripId, rating, notes || undefined);
       onOpenChange(false);
     } catch (err) {
       console.error('Error rating trip:', err);

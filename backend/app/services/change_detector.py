@@ -44,7 +44,7 @@ class ChangeDetector:
 
     # Agent dependencies - which fields affect which agents
     AGENT_DEPENDENCIES: dict[str, list[str]] = {
-        "visa": ["nationality", "destination", "trip_purpose"],
+        "visa": ["nationality", "destination", "trip_purposes"],
         "weather": ["destination", "departure_date", "return_date"],
         "currency": ["destination", "budget", "currency"],
         "culture": ["destination"],
@@ -134,8 +134,9 @@ class ChangeDetector:
             return changes
 
         # Handle both dict and TravelerDetails objects
-        old_dict = old_td.model_dump() if isinstance(old_td, TravelerDetails) else old_td
-        new_dict = new_td.model_dump() if isinstance(new_td, TravelerDetails) else new_td
+        # Use by_alias=False to get snake_case keys for comparison
+        old_dict = old_td.model_dump(by_alias=False) if isinstance(old_td, TravelerDetails) else old_td
+        new_dict = new_td.model_dump(by_alias=False) if isinstance(new_td, TravelerDetails) else new_td
 
         # Check nationality
         if old_dict.get("nationality") != new_dict.get("nationality"):
@@ -172,9 +173,10 @@ class ChangeDetector:
         new_dests = new_trip.get("destinations", [])
 
         # Convert to comparable format
+        # Use by_alias=False to get snake_case keys for comparison
         def dest_to_dict(d: Destination | dict) -> dict:
             if isinstance(d, Destination):
-                return d.model_dump()
+                return d.model_dump(by_alias=False)
             return d
 
         old_list = [dest_to_dict(d) for d in old_dests]
@@ -211,8 +213,9 @@ class ChangeDetector:
             return changes
 
         # Handle both dict and TripDetails objects
-        old_dict = old_td.model_dump() if isinstance(old_td, TripDetails) else old_td
-        new_dict = new_td.model_dump() if isinstance(new_td, TripDetails) else new_td
+        # Use by_alias=False to get snake_case keys for comparison
+        old_dict = old_td.model_dump(by_alias=False) if isinstance(old_td, TripDetails) else old_td
+        new_dict = new_td.model_dump(by_alias=False) if isinstance(new_td, TripDetails) else new_td
 
         # Convert dates to comparable format
         def to_date_str(d: date | str | None) -> str | None:
@@ -248,16 +251,11 @@ class ChangeDetector:
                 "new": new_dict.get("currency"),
             }
 
-        # Check trip purpose
-        old_purpose = old_dict.get("trip_purpose")
-        new_purpose = new_dict.get("trip_purpose")
-        # Handle enum values
-        if hasattr(old_purpose, "value"):
-            old_purpose = old_purpose.value
-        if hasattr(new_purpose, "value"):
-            new_purpose = new_purpose.value
-        if old_purpose != new_purpose:
-            changes["trip_purpose"] = {"old": old_purpose, "new": new_purpose}
+        # Check trip purposes (list)
+        old_purposes = sorted(old_dict.get("trip_purposes", []))
+        new_purposes = sorted(new_dict.get("trip_purposes", []))
+        if old_purposes != new_purposes:
+            changes["trip_purposes"] = {"old": old_purposes, "new": new_purposes}
 
         return changes
 
@@ -276,8 +274,9 @@ class ChangeDetector:
             return changes
 
         # Handle both dict and TripPreferences objects
-        old_dict = old_prefs.model_dump() if isinstance(old_prefs, TripPreferences) else old_prefs
-        new_dict = new_prefs.model_dump() if isinstance(new_prefs, TripPreferences) else new_prefs
+        # Use by_alias=False to get snake_case keys for comparison
+        old_dict = old_prefs.model_dump(by_alias=False) if isinstance(old_prefs, TripPreferences) else old_prefs
+        new_dict = new_prefs.model_dump(by_alias=False) if isinstance(new_prefs, TripPreferences) else new_prefs
 
         # Check travel style
         old_style = old_dict.get("travel_style")

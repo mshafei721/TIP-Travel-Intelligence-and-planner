@@ -125,14 +125,14 @@ export default function AnalyticsPage() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <StatCard
               title="Total Trips"
-              value={usageStats?.total_trips ?? 0}
-              description={`${usageStats?.trips_completed ?? 0} completed`}
+              value={usageStats?.totalTrips ?? 0}
+              description={`${usageStats?.tripsCompleted ?? 0} completed`}
               icon={Plane}
             />
             <StatCard
               title="Countries Visited"
-              value={tripAnalytics?.unique_countries ?? 0}
-              description={`${tripAnalytics?.unique_cities ?? 0} cities explored`}
+              value={tripAnalytics?.uniqueCountries ?? 0}
+              description={`${tripAnalytics?.uniqueCities ?? 0} cities explored`}
               icon={MapPin}
             />
             <StatCard
@@ -144,8 +144,8 @@ export default function AnalyticsPage() {
             <StatCard
               title="Avg Trip Duration"
               value={
-                tripAnalytics?.avg_trip_duration_days
-                  ? `${tripAnalytics.avg_trip_duration_days.toFixed(1)} days`
+                tripAnalytics?.avgTripDurationDays
+                  ? `${tripAnalytics.avgTripDurationDays.toFixed(1)} days`
                   : 'N/A'
               }
               description="Average trip length"
@@ -159,7 +159,7 @@ export default function AnalyticsPage() {
               <UsageChart data={usageTrends} />
             </div>
             <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
-              <DestinationChart data={tripAnalytics?.top_destinations ?? []} />
+              <DestinationChart data={tripAnalytics?.topDestinations ?? []} />
             </div>
           </div>
 
@@ -167,8 +167,8 @@ export default function AnalyticsPage() {
           <div className="grid gap-6 lg:grid-cols-2">
             <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
               <BudgetChart
-                data={tripAnalytics?.budget_analysis.budget_ranges ?? []}
-                averageBudget={tripAnalytics?.budget_analysis.average_budget ?? null}
+                data={tripAnalytics?.budgetAnalysis.budgetRanges ?? []}
+                averageBudget={tripAnalytics?.budgetAnalysis.averageBudget ?? null}
               />
             </div>
             <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
@@ -186,8 +186,8 @@ export default function AnalyticsPage() {
                   Seasonal Trends
                 </h3>
                 <div className="space-y-3">
-                  {tripAnalytics.seasonal_trends.length > 0 ? (
-                    tripAnalytics.seasonal_trends.map((trend) => (
+                  {tripAnalytics.seasonalTrends.length > 0 ? (
+                    tripAnalytics.seasonalTrends.map((trend) => (
                       <div key={trend.season} className="flex items-center justify-between">
                         <span className="capitalize text-slate-600 dark:text-slate-400">
                           {trend.season}
@@ -218,8 +218,8 @@ export default function AnalyticsPage() {
                   Trip Purpose
                 </h3>
                 <div className="space-y-3">
-                  {tripAnalytics.purpose_breakdown.length > 0 ? (
-                    tripAnalytics.purpose_breakdown.map((purpose) => (
+                  {tripAnalytics.purposeBreakdown.length > 0 ? (
+                    tripAnalytics.purposeBreakdown.map((purpose) => (
                       <div key={purpose.purpose} className="flex items-center justify-between">
                         <span className="capitalize text-slate-600 dark:text-slate-400">
                           {purpose.purpose}
@@ -253,24 +253,24 @@ export default function AnalyticsPage() {
                   <div className="flex items-center justify-between">
                     <span className="text-slate-600 dark:text-slate-400">Average</span>
                     <span className="font-semibold text-slate-900 dark:text-slate-100">
-                      {tripAnalytics.budget_analysis.average_budget
-                        ? `$${tripAnalytics.budget_analysis.average_budget.toLocaleString()}`
+                      {tripAnalytics.budgetAnalysis.averageBudget
+                        ? `$${tripAnalytics.budgetAnalysis.averageBudget.toLocaleString()}`
                         : 'N/A'}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-slate-600 dark:text-slate-400">Minimum</span>
                     <span className="font-semibold text-slate-900 dark:text-slate-100">
-                      {tripAnalytics.budget_analysis.min_budget
-                        ? `$${tripAnalytics.budget_analysis.min_budget.toLocaleString()}`
+                      {tripAnalytics.budgetAnalysis.minBudget
+                        ? `$${tripAnalytics.budgetAnalysis.minBudget.toLocaleString()}`
                         : 'N/A'}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-slate-600 dark:text-slate-400">Maximum</span>
                     <span className="font-semibold text-slate-900 dark:text-slate-100">
-                      {tripAnalytics.budget_analysis.max_budget
-                        ? `$${tripAnalytics.budget_analysis.max_budget.toLocaleString()}`
+                      {tripAnalytics.budgetAnalysis.maxBudget
+                        ? `$${tripAnalytics.budgetAnalysis.maxBudget.toLocaleString()}`
                         : 'N/A'}
                     </span>
                   </div>

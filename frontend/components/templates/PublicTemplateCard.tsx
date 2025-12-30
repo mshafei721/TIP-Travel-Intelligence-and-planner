@@ -62,9 +62,9 @@ export function PublicTemplateCard({
     <div className="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-lg dark:border-slate-800 dark:bg-slate-900">
       {/* Cover Image */}
       <div className="relative aspect-video overflow-hidden bg-gradient-to-br from-blue-500 to-blue-700">
-        {template.cover_image ? (
+        {template.coverImage ? (
           <Image
-            src={template.cover_image}
+            src={template.coverImage}
             alt={template.name}
             fill
             className="object-cover transition-transform group-hover:scale-105"
@@ -75,10 +75,10 @@ export function PublicTemplateCard({
           </div>
         )}
         {/* Use count badge */}
-        {template.use_count > 0 && (
+        {template.useCount > 0 && (
           <div className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-black/50 px-2 py-1 text-xs text-white">
             <Users className="h-3 w-3" />
-            <span>{template.use_count}</span>
+            <span>{template.useCount}</span>
           </div>
         )}
       </div>
@@ -119,16 +119,16 @@ export function PublicTemplateCard({
 
         {/* Meta info */}
         <div className="mt-auto flex items-center gap-4 text-sm text-slate-500 dark:text-slate-400">
-          {template.typical_duration && (
+          {template.typicalDuration && (
             <div className="flex items-center gap-1">
               <Calendar className="h-4 w-4" />
-              <span>{formatDuration(template.typical_duration)}</span>
+              <span>{formatDuration(template.typicalDuration)}</span>
             </div>
           )}
-          {template.estimated_budget && (
+          {template.estimatedBudget && (
             <div className="flex items-center gap-1">
               <DollarSign className="h-4 w-4" />
-              <span>~{formatBudget(template.estimated_budget, template.currency)}</span>
+              <span>~{formatBudget(template.estimatedBudget, template.currency)}</span>
             </div>
           )}
         </div>

@@ -46,8 +46,8 @@ export function ProfileSettingsPage({ initialSettings }: ProfileSettingsPageProp
   const handleProfileUpdate = async (data: Partial<LegacyUserProfile>) => {
     try {
       await profileApi.updateProfile({
-        display_name: data.name || undefined,
-        avatar_url: data.photoUrl || undefined,
+        displayName: data.name || undefined,
+        avatarUrl: data.photoUrl || undefined,
       });
       toast.success('Profile updated successfully');
       router.refresh();
@@ -85,7 +85,7 @@ export function ProfileSettingsPage({ initialSettings }: ProfileSettingsPageProp
       } = supabase.storage.from('profile-photos').getPublicUrl(filePath);
 
       // Update profile with new photo URL
-      await profileApi.updateProfile({ avatar_url: publicUrl });
+      await profileApi.updateProfile({ avatarUrl: publicUrl });
 
       toast.success('Photo uploaded successfully');
       router.refresh();
@@ -101,9 +101,9 @@ export function ProfileSettingsPage({ initialSettings }: ProfileSettingsPageProp
     try {
       await profileApi.updateTravelerProfile({
         nationality: data.nationality,
-        residency_country: data.residenceCountry,
-        residency_status: data.residencyStatus,
-        date_of_birth: data.dateOfBirth || null,
+        residencyCountry: data.residenceCountry,
+        residencyStatus: data.residencyStatus,
+        dateOfBirth: data.dateOfBirth || null,
       });
       toast.success('Traveler details updated');
       router.refresh();
@@ -118,9 +118,9 @@ export function ProfileSettingsPage({ initialSettings }: ProfileSettingsPageProp
     try {
       // Update traveler profile with travel preferences
       await profileApi.updateTravelerProfile({
-        travel_style: data.travelStyle,
-        dietary_restrictions: data.dietaryRestrictions,
-        accessibility_needs: data.accessibilityNeeds || null,
+        travelStyle: data.travelStyle,
+        dietaryRestrictions: data.dietaryRestrictions,
+        accessibilityNeeds: data.accessibilityNeeds || null,
       });
       toast.success('Travel preferences updated');
       router.refresh();
@@ -171,9 +171,9 @@ export function ProfileSettingsPage({ initialSettings }: ProfileSettingsPageProp
     try {
       // Update user preferences with notification settings
       await profileApi.updatePreferences({
-        email_notifications: notifications.reportCompletion,
-        push_notifications: false, // Not implemented yet
-        marketing_emails: notifications.productUpdates,
+        emailNotifications: notifications.reportCompletion,
+        pushNotifications: false, // Not implemented yet
+        marketingEmails: notifications.productUpdates,
         language: 'en', // Keep existing
         currency: 'USD', // Keep existing
         units: 'metric', // Keep existing

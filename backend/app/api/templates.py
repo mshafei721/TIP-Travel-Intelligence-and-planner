@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 from app.models.template import (
     CreateTripFromTemplateRequest,
     PublicTemplateResponse,
+    TemplatesListResponse,
     TripTemplateCreate,
     TripTemplateResponse,
     TripTemplateUpdate,
@@ -180,13 +181,13 @@ async def clone_template(
         log_and_raise_http_error("clone template", e, "Failed to clone template. Please try again.")
 
 
-@router.get("", response_model=list[TripTemplateResponse])
+@router.get("", response_model=TemplatesListResponse)
 async def list_templates(token_payload: dict = Depends(verify_jwt_token)):
     """
     List all trip templates for the authenticated user
 
     Returns:
-    - List of trip templates ordered by created_at descending
+    - Object with templates array for frontend compatibility
     """
     user_id = token_payload["user_id"]
 
@@ -199,7 +200,7 @@ async def list_templates(token_payload: dict = Depends(verify_jwt_token)):
             .execute()
         )
 
-        return response.data if response.data else []
+        return {"templates": response.data if response.data else []}
 
     except Exception as e:
         log_and_raise_http_error("fetch templates", e, "Failed to fetch templates. Please try again.")

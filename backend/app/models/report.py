@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class SourceReferenceResponse(BaseModel):
@@ -18,77 +18,71 @@ class SourceReferenceResponse(BaseModel):
     Outputs using frontend-compatible aliases.
     """
 
+    model_config = ConfigDict(
+        extra="ignore",
+        populate_by_name=True,
+        serialize_by_alias=True,
+    )
+
     url: str = ""
     # source_type/type - accepts both, outputs as 'type'
     source_type: str = Field(
         default="third-party",
-        validation_alias="type",  # Accept 'type' during input
-        serialization_alias="type",  # Output as 'type'
+        alias="type",
     )
     # title/name - accepts both, outputs as 'name'
     title: str | None = Field(
         default=None,
-        validation_alias="name",  # Accept 'name' during input
-        serialization_alias="name",  # Output as 'name'
+        alias="name",
     )
     reliability: str | None = None
-    accessed_at: datetime | None = None
+    accessed_at: datetime | None = Field(default=None, alias="accessedAt")
     # verified_at/lastVerified - accepts both, outputs as 'lastVerified'
     verified_at: datetime | None = Field(
         default=None,
-        validation_alias="lastVerified",  # Accept 'lastVerified' during input
-        serialization_alias="lastVerified",  # Output as 'lastVerified'
+        alias="lastVerified",
     )
-
-    model_config = {
-        "extra": "ignore",  # Ignore extra fields from agent output
-        "populate_by_name": True,  # Accept both original and alias names for input
-        "by_alias": True,  # Use alias names when serializing (for FastAPI responses)
-    }
 
 
 class VisaRequirementResponse(BaseModel):
     """Visa requirement details"""
 
-    visa_required: bool = True
-    visa_type: str | None = None
-    visa_category: str | None = None  # Added from agent
-    max_stay_days: int | None = None
-    validity_period: str | None = None
-    multiple_entry: bool | None = None  # Added from agent
-    urgency_level: str | None = None  # Added from agent
+    model_config = ConfigDict(extra="ignore", populate_by_name=True, serialize_by_alias=True)
 
-    class Config:
-        extra = "ignore"
+    visa_required: bool = Field(default=True, alias="visaRequired")
+    visa_type: str | None = Field(default=None, alias="visaType")
+    visa_category: str | None = Field(default=None, alias="visaCategory")  # Added from agent
+    max_stay_days: int | None = Field(default=None, alias="maxStayDays")
+    validity_period: str | None = Field(default=None, alias="validityPeriod")
+    multiple_entry: bool | None = Field(default=None, alias="multipleEntry")  # Added from agent
+    urgency_level: str | None = Field(default=None, alias="urgencyLevel")  # Added from agent
 
 
 class ApplicationProcessResponse(BaseModel):
     """Visa application process details"""
 
-    application_method: str | None = None
-    processing_time: str | None = None
-    cost_usd: float | None = None
-    cost_local: str | None = None
-    required_documents: list[str] = Field(default_factory=list)
-    application_url: str | None = None
+    model_config = ConfigDict(extra="ignore", populate_by_name=True, serialize_by_alias=True)
 
-    class Config:
-        extra = "ignore"
+    application_method: str | None = Field(default=None, alias="applicationMethod")
+    processing_time: str | None = Field(default=None, alias="processingTime")
+    cost_usd: float | None = Field(default=None, alias="costUsd")
+    cost_local: str | None = Field(default=None, alias="costLocal")
+    required_documents: list[str] = Field(default_factory=list, alias="requiredDocuments")
+    application_url: str | None = Field(default=None, alias="applicationUrl")
 
 
 class EntryRequirementResponse(BaseModel):
     """Entry requirements beyond visa"""
 
-    passport_validity: str | None = None
-    blank_pages_required: int | None = None
-    vaccinations: list[str] = Field(default_factory=list)
-    health_declaration: bool = False
-    travel_insurance: bool = False
-    proof_of_funds: bool = False
-    return_ticket: bool = False
+    model_config = ConfigDict(extra="ignore", populate_by_name=True, serialize_by_alias=True)
 
-    class Config:
-        extra = "ignore"
+    passport_validity: str | None = Field(default=None, alias="passportValidity")
+    blank_pages_required: int | None = Field(default=None, alias="blankPagesRequired")
+    vaccinations: list[str] = Field(default_factory=list)
+    health_declaration: bool = Field(default=False, alias="healthDeclaration")
+    travel_insurance: bool = Field(default=False, alias="travelInsurance")
+    proof_of_funds: bool = Field(default=False, alias="proofOfFunds")
+    return_ticket: bool = Field(default=False, alias="returnTicket")
 
 
 class VisaReportResponse(BaseModel):
@@ -98,23 +92,27 @@ class VisaReportResponse(BaseModel):
     This is the API response format for GET /trips/{id}/report/visa
     """
 
-    report_id: str
-    trip_id: str
-    generated_at: datetime
-    confidence_score: float  # 0.0 - 1.0
-    confidence_level: str | None = None  # Added: human-readable confidence
+    model_config = ConfigDict(
+        populate_by_name=True, serialize_by_alias=True, from_attributes=True
+    )
+
+    report_id: str = Field(..., alias="reportId")
+    trip_id: str = Field(..., alias="tripId")
+    generated_at: datetime = Field(..., alias="generatedAt")
+    confidence_score: float = Field(..., alias="confidenceScore")  # 0.0 - 1.0
+    confidence_level: str | None = Field(default=None, alias="confidenceLevel")
 
     # Trip context (from trip data)
-    user_nationality: str | None = None
-    destination_country: str | None = None
-    destination_city: str | None = None
-    trip_purpose: str | None = None
-    duration_days: int | None = None
+    user_nationality: str | None = Field(default=None, alias="userNationality")
+    destination_country: str | None = Field(default=None, alias="destinationCountry")
+    destination_city: str | None = Field(default=None, alias="destinationCity")
+    trip_purpose: str | None = Field(default=None, alias="tripPurpose")
+    duration_days: int | None = Field(default=None, alias="durationDays")
 
     # Core visa information
-    visa_requirement: VisaRequirementResponse
-    application_process: ApplicationProcessResponse
-    entry_requirements: EntryRequirementResponse
+    visa_requirement: VisaRequirementResponse = Field(..., alias="visaRequirement")
+    application_process: ApplicationProcessResponse = Field(..., alias="applicationProcess")
+    entry_requirements: EntryRequirementResponse = Field(..., alias="entryRequirements")
 
     # Additional intelligence
     tips: list[str] = Field(default_factory=list)
@@ -122,15 +120,14 @@ class VisaReportResponse(BaseModel):
 
     # Data provenance
     sources: list[SourceReferenceResponse] = Field(default_factory=list)
-    last_verified: datetime | None = None
-    is_partial_data: bool = False
-
-    class Config:
-        from_attributes = True
+    last_verified: datetime | None = Field(default=None, alias="lastVerified")
+    is_partial_data: bool = Field(default=False, alias="isPartialData")
 
 
 class ReportNotFoundError(BaseModel):
     """Error response when report is not found"""
+
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
 
     detail: str = "Visa report not found for this trip"
     code: str = "REPORT_NOT_FOUND"
@@ -139,6 +136,8 @@ class ReportNotFoundError(BaseModel):
 
 class ReportUnauthorizedError(BaseModel):
     """Error response when user doesn't own the trip"""
+
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
 
     detail: str = "You do not have permission to access this report"
     code: str = "UNAUTHORIZED"
@@ -150,6 +149,8 @@ class ReportUnauthorizedError(BaseModel):
 class EmergencyContactResponse(BaseModel):
     """Emergency contact information"""
 
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
     service: str
     number: str
     notes: str | None = None
@@ -158,7 +159,9 @@ class EmergencyContactResponse(BaseModel):
 class PowerOutletResponse(BaseModel):
     """Power outlet information"""
 
-    plug_types: list[str]
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
+    plug_types: list[str] = Field(..., alias="plugTypes")
     voltage: str
     frequency: str
 
@@ -166,10 +169,12 @@ class PowerOutletResponse(BaseModel):
 class TravelAdvisoryResponse(BaseModel):
     """Travel advisory information"""
 
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
     level: str
     title: str
     summary: str
-    updated_at: str | None = None
+    updated_at: str | None = Field(default=None, alias="updatedAt")
     source: str
 
 
@@ -180,55 +185,58 @@ class CountryReportResponse(BaseModel):
     This is the API response format for GET /trips/{id}/report/destination
     """
 
-    report_id: str
-    trip_id: str
-    generated_at: datetime
-    confidence_score: float  # 0.0 - 1.0
+    model_config = ConfigDict(
+        populate_by_name=True, serialize_by_alias=True, from_attributes=True
+    )
+
+    report_id: str = Field(..., alias="reportId")
+    trip_id: str = Field(..., alias="tripId")
+    generated_at: datetime = Field(..., alias="generatedAt")
+    confidence_score: float = Field(..., alias="confidenceScore")  # 0.0 - 1.0
 
     # Basic Information
-    country_name: str
-    country_code: str
+    country_name: str = Field(..., alias="countryName")
+    country_code: str = Field(..., alias="countryCode")
     capital: str
     region: str
     subregion: str | None = None
 
     # Demographics
     population: int
-    area_km2: float | None = None
-    population_density: float | None = None
+    area_km2: float | None = Field(default=None, alias="areaKm2")
+    population_density: float | None = Field(default=None, alias="populationDensity")
 
     # Languages and Communication
-    official_languages: list[str]
-    common_languages: list[str] | None = None
+    official_languages: list[str] = Field(..., alias="officialLanguages")
+    common_languages: list[str] | None = Field(default=None, alias="commonLanguages")
 
     # Time and Geography
-    time_zones: list[str]
+    time_zones: list[str] = Field(..., alias="timeZones")
     coordinates: dict | None = None
     borders: list[str] | None = None
 
     # Practical Information
-    emergency_numbers: list[EmergencyContactResponse]
-    power_outlet: PowerOutletResponse
-    driving_side: str
+    emergency_numbers: list[EmergencyContactResponse] = Field(..., alias="emergencyNumbers")
+    power_outlet: PowerOutletResponse = Field(..., alias="powerOutlet")
+    driving_side: str = Field(..., alias="drivingSide")
 
     # Currency
     currencies: list[str]
-    currency_codes: list[str]
+    currency_codes: list[str] = Field(..., alias="currencyCodes")
 
     # Safety and Advisories
-    safety_rating: float  # 0.0 - 5.0
-    travel_advisories: list[TravelAdvisoryResponse] = Field(default_factory=list)
+    safety_rating: float = Field(..., alias="safetyRating")  # 0.0 - 5.0
+    travel_advisories: list[TravelAdvisoryResponse] = Field(
+        default_factory=list, alias="travelAdvisories"
+    )
 
     # Additional Information
-    notable_facts: list[str] = Field(default_factory=list)
-    best_time_to_visit: str | None = None
+    notable_facts: list[str] = Field(default_factory=list, alias="notableFacts")
+    best_time_to_visit: str | None = Field(default=None, alias="bestTimeToVisit")
 
     # Metadata
     sources: list[SourceReferenceResponse] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
-
-    class Config:
-        from_attributes = True
 
 
 # Itinerary Report Models
@@ -242,10 +250,14 @@ class ItineraryReportResponse(BaseModel):
     Returns the full itinerary content as generated by the ItineraryAgent
     """
 
-    report_id: str
-    trip_id: str
-    generated_at: datetime
-    confidence_score: float  # 0.0 - 1.0
+    model_config = ConfigDict(
+        populate_by_name=True, serialize_by_alias=True, from_attributes=True
+    )
+
+    report_id: str = Field(..., alias="reportId")
+    trip_id: str = Field(..., alias="tripId")
+    generated_at: datetime = Field(..., alias="generatedAt")
+    confidence_score: float = Field(..., alias="confidenceScore")  # 0.0 - 1.0
 
     # Itinerary content (structured as per ItineraryAgentOutput)
     content: dict  # Full itinerary data including daily_plans, accommodations, etc.
@@ -253,9 +265,6 @@ class ItineraryReportResponse(BaseModel):
     # Metadata
     sources: list[SourceReferenceResponse] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
-
-    class Config:
-        from_attributes = True
 
 
 # Flight Report Models
@@ -269,10 +278,14 @@ class FlightReportResponse(BaseModel):
     Returns the full flight recommendations as generated by the FlightAgent
     """
 
-    report_id: str
-    trip_id: str
-    generated_at: datetime
-    confidence_score: float  # 0.0 - 1.0
+    model_config = ConfigDict(
+        populate_by_name=True, serialize_by_alias=True, from_attributes=True
+    )
+
+    report_id: str = Field(..., alias="reportId")
+    trip_id: str = Field(..., alias="tripId")
+    generated_at: datetime = Field(..., alias="generatedAt")
+    confidence_score: float = Field(..., alias="confidenceScore")  # 0.0 - 1.0
 
     # Flight content (structured as per FlightAgentOutput)
     content: dict  # Full flight data including recommended_flights, pricing, airport info, etc.
@@ -281,9 +294,6 @@ class FlightReportResponse(BaseModel):
     sources: list[SourceReferenceResponse] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
 
-    class Config:
-        from_attributes = True
-
 
 # Full Report Models (Aggregated)
 
@@ -291,25 +301,29 @@ class FlightReportResponse(BaseModel):
 class TripInfoResponse(BaseModel):
     """Basic trip information for the report header."""
 
-    trip_id: str
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
+    trip_id: str = Field(..., alias="tripId")
     title: str
-    destination_country: str
-    destination_city: str | None = None
-    departure_date: str
-    return_date: str | None = None
+    destination_country: str = Field(..., alias="destinationCountry")
+    destination_city: str | None = Field(default=None, alias="destinationCity")
+    departure_date: str = Field(..., alias="departureDate")
+    return_date: str | None = Field(default=None, alias="returnDate")
     travelers: int = 1
     status: str
-    created_at: datetime
+    created_at: datetime = Field(..., alias="createdAt")
 
 
 class ReportSectionResponse(BaseModel):
     """Individual report section in aggregated report."""
 
-    section_type: str
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
+    section_type: str = Field(..., alias="sectionType")
     title: str
     content: dict
-    confidence_score: float
-    generated_at: datetime
+    confidence_score: float = Field(..., alias="confidenceScore")
+    generated_at: datetime = Field(..., alias="generatedAt")
     sources: list[dict] = Field(default_factory=list)
 
 
@@ -321,32 +335,36 @@ class FullReportResponse(BaseModel):
     Returns all report sections combined into a single response.
     """
 
-    trip_id: str
-    trip_info: TripInfoResponse
-    sections: dict[str, ReportSectionResponse] = Field(default_factory=dict)
-    available_sections: list[str] = Field(default_factory=list)
-    missing_sections: list[str] = Field(default_factory=list)
-    overall_confidence: float = 0.0
-    generated_at: datetime
-    is_complete: bool = False
+    model_config = ConfigDict(
+        populate_by_name=True, serialize_by_alias=True, from_attributes=True
+    )
 
-    class Config:
-        from_attributes = True
+    trip_id: str = Field(..., alias="tripId")
+    trip_info: TripInfoResponse = Field(..., alias="tripInfo")
+    sections: dict[str, ReportSectionResponse] = Field(default_factory=dict)
+    available_sections: list[str] = Field(default_factory=list, alias="availableSections")
+    missing_sections: list[str] = Field(default_factory=list, alias="missingSections")
+    overall_confidence: float = Field(default=0.0, alias="overallConfidence")
+    generated_at: datetime = Field(..., alias="generatedAt")
+    is_complete: bool = Field(default=False, alias="isComplete")
 
 
 class PDFExportResponse(BaseModel):
     """Response for PDF export endpoint."""
 
-    success: bool
-    pdf_url: str | None = None
-    message: str | None = None
+    model_config = ConfigDict(
+        populate_by_name=True, serialize_by_alias=True, from_attributes=True
+    )
 
-    class Config:
-        from_attributes = True
+    success: bool
+    pdf_url: str | None = Field(default=None, alias="pdfUrl")
+    message: str | None = None
 
 
 class PDFExportError(BaseModel):
     """Error response for PDF export."""
+
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
 
     detail: str = "PDF generation failed"
     code: str = "PDF_GENERATION_ERROR"

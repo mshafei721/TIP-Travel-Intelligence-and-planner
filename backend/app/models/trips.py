@@ -3,7 +3,15 @@
 from datetime import date, datetime
 from enum import Enum
 
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import (
+    AliasChoices,
+    BaseModel,
+    ConfigDict,
+    EmailStr,
+    Field,
+    field_validator,
+    model_validator,
+)
 
 
 class TripStatus(str, Enum):
@@ -63,17 +71,28 @@ class TransportationPreference(str, Enum):
 class TravelerDetails(BaseModel):
     """Traveler information for trip creation"""
 
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
     name: str = Field(..., min_length=1, max_length=100)
     email: EmailStr
     nationality: str = Field(
         ..., min_length=2, max_length=2, description="ISO 3166-1 alpha-2 country code"
     )
     residence_country: str = Field(
-        ..., min_length=2, max_length=2, description="ISO 3166-1 alpha-2 country code"
+        ...,
+        min_length=2,
+        max_length=2,
+        description="ISO 3166-1 alpha-2 country code",
+        validation_alias=AliasChoices("residencyCountry", "residenceCountry", "residence_country"),
+        serialization_alias="residencyCountry",
     )
-    origin_city: str = Field(..., min_length=1, max_length=100)
-    party_size: int = Field(default=1, ge=1, le=20)
-    party_ages: list[int] = Field(default_factory=list)
+    origin_city: str = Field(..., min_length=1, max_length=100, alias="originCity")
+    party_size: int = Field(default=1, ge=1, le=20, alias="partySize")
+    party_ages: list[int] = Field(
+        default_factory=list,
+        validation_alias=AliasChoices("companionAges", "partyAges", "party_ages"),
+        serialization_alias="companionAges",
+    )
 
     @field_validator("nationality", "residence_country")
     @classmethod
@@ -102,39 +121,54 @@ class TravelerDetails(BaseModel):
 
         return v
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "name": "John Doe",
-                "email": "john.doe@example.com",
-                "nationality": "US",
-                "residence_country": "US",
-                "origin_city": "New York",
-                "party_size": 2,
-                "party_ages": [30, 28],
-            }
-        }
-
 
 class Destination(BaseModel):
     """Destination information for multi-city trips"""
 
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
     country: str = Field(..., min_length=1, max_length=100)
     city: str = Field(..., min_length=1, max_length=100)
-    duration_days: int | None = Field(None, ge=1, le=365)
-
-    class Config:
-        json_schema_extra = {"example": {"country": "France", "city": "Paris", "duration_days": 5}}
+    duration_days: int | None = Field(None, ge=1, le=365, alias="durationDays")
 
 
 class TripDetails(BaseModel):
     """Trip planning details"""
 
-    departure_date: date
-    return_date: date
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
+    departure_date: date = Field(..., alias="departureDate")
+    return_date: date = Field(..., alias="returnDate")
     budget: float = Field(..., gt=0)
-    currency: str = Field(default="USD", min_length=3, max_length=3)
-    trip_purpose: TripPurpose = TripPurpose.TOURISM
+    currency: str = Field(
+        default="USD",
+        min_length=3,
+        max_length=3,
+        validation_alias=AliasChoices("budgetCurrency", "currency"),
+        serialization_alias="budgetCurrency",
+    )
+    # Support both single trip_purpose and array tripPurposes
+    trip_purposes: list[str] = Field(
+        default_factory=list,
+        validation_alias=AliasChoices("tripPurposes", "trip_purposes"),
+        serialization_alias="tripPurposes",
+    )
+
+    @model_validator(mode="before")
+    @classmethod
+    def handle_legacy_trip_purpose(cls, data: dict) -> dict:
+        """Convert legacy trip_purpose (single string) to trip_purposes (array)"""
+        if isinstance(data, dict):
+            # Check for legacy single trip_purpose field
+            legacy_purpose = data.get("trip_purpose") or data.get("tripPurpose")
+            has_purposes = data.get("trip_purposes") or data.get("tripPurposes")
+
+            if legacy_purpose and not has_purposes:
+                # Convert single purpose to array
+                data["tripPurposes"] = (
+                    [legacy_purpose] if isinstance(legacy_purpose, str) else legacy_purpose
+                )
+        return data
 
     @field_validator("return_date")
     @classmethod
@@ -153,52 +187,85 @@ class TripDetails(BaseModel):
             raise ValueError("Currency code must be uppercase (ISO 4217)")
         return v
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "departure_date": "2025-06-01",
-                "return_date": "2025-06-15",
-                "budget": 5000.00,
-                "currency": "USD",
-                "trip_purpose": "tourism",
-            }
-        }
+    @field_validator("trip_purposes")
+    @classmethod
+    def validate_trip_purposes(cls, v: list[str]) -> list[str]:
+        """Normalize trip purposes to lowercase with underscores"""
+        normalized = []
+        for purpose in v:
+            # Convert "Family Visit" -> "family_visit", etc.
+            normalized_purpose = purpose.lower().replace(" ", "_")
+            normalized.append(normalized_purpose)
+        return normalized
 
 
 class TripPreferences(BaseModel):
     """Trip preferences and special requirements"""
 
-    travel_style: TravelStyle = TravelStyle.BALANCED
-    interests: list[str] = Field(default_factory=list)
-    dietary_restrictions: list[str] = Field(default_factory=list)
-    accessibility_needs: list[str] = Field(default_factory=list)
-    accommodation_type: AccommodationType = AccommodationType.HOTEL
-    transportation_preference: TransportationPreference = TransportationPreference.ANY
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "travel_style": "balanced",
-                "interests": ["museums", "food", "nature"],
-                "dietary_restrictions": ["vegetarian"],
-                "accessibility_needs": [],
-                "accommodation_type": "hotel",
-                "transportation_preference": "public",
+    travel_style: TravelStyle = Field(default=TravelStyle.BALANCED, alias="travelStyle")
+    interests: list[str] = Field(default_factory=list)
+    dietary_restrictions: list[str] = Field(default_factory=list, alias="dietaryRestrictions")
+    accessibility_needs: list[str] = Field(default_factory=list, alias="accessibilityNeeds")
+    accommodation_type: AccommodationType = Field(
+        default=AccommodationType.HOTEL, alias="accommodationType"
+    )
+    transportation_preference: TransportationPreference = Field(
+        default=TransportationPreference.ANY, alias="transportationPreference"
+    )
+
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_preferences(cls, data: dict) -> dict:
+        """Normalize frontend values to backend enum values"""
+        if isinstance(data, dict):
+            # Map frontend travel style values to backend enum
+            # Frontend: 'Relaxed', 'Balanced', 'Packed', 'Budget-Focused'
+            # Backend: 'budget', 'balanced', 'luxury'
+            travel_style_map = {
+                "relaxed": "balanced",
+                "balanced": "balanced",
+                "packed": "luxury",  # Packed = more activities = premium
+                "budget-focused": "budget",
+                "budget": "budget",
+                "luxury": "luxury",
             }
-        }
+            style = data.get("travelStyle") or data.get("travel_style")
+            if style:
+                normalized_style = travel_style_map.get(style.lower(), "balanced")
+                data["travelStyle"] = normalized_style
+
+            # Handle accessibilityNeeds - convert string to list
+            # Check both possible keys explicitly since empty string is falsy
+            needs = None
+            if "accessibilityNeeds" in data:
+                needs = data["accessibilityNeeds"]
+            elif "accessibility_needs" in data:
+                needs = data["accessibility_needs"]
+
+            if isinstance(needs, str):
+                if needs.strip():
+                    data["accessibilityNeeds"] = [needs]
+                else:
+                    data["accessibilityNeeds"] = []
+        return data
 
 
 class TripCreateRequest(BaseModel):
     """Request model for creating a new trip"""
 
-    traveler_details: TravelerDetails
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
+    traveler_details: TravelerDetails = Field(..., alias="travelerDetails")
     destinations: list[Destination] = Field(..., min_length=1)
-    trip_details: TripDetails
+    trip_details: TripDetails = Field(..., alias="tripDetails")
     preferences: TripPreferences
-    template_id: str | None = None
+    template_id: str | None = Field(default=None, alias="templateId")
     cover_image_url: str | None = Field(
         default=None,
         description="URL to the trip cover image in Supabase Storage",
+        alias="coverImageUrl",
     )
 
     @field_validator("destinations")
@@ -209,47 +276,17 @@ class TripCreateRequest(BaseModel):
             raise ValueError("At least one destination is required")
         return v
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "traveler_details": {
-                    "name": "John Doe",
-                    "email": "john.doe@example.com",
-                    "nationality": "US",
-                    "residence_country": "US",
-                    "origin_city": "New York",
-                    "party_size": 2,
-                    "party_ages": [30, 28],
-                },
-                "destinations": [{"country": "France", "city": "Paris", "duration_days": 7}],
-                "trip_details": {
-                    "departure_date": "2025-06-01",
-                    "return_date": "2025-06-15",
-                    "budget": 5000.00,
-                    "currency": "USD",
-                    "trip_purpose": "tourism",
-                },
-                "preferences": {
-                    "travel_style": "balanced",
-                    "interests": ["museums", "food"],
-                    "dietary_restrictions": [],
-                    "accessibility_needs": [],
-                    "accommodation_type": "hotel",
-                    "transportation_preference": "public",
-                },
-                "template_id": None,
-            }
-        }
-
 
 class TripUpdateRequest(BaseModel):
     """Request model for updating an existing trip (all fields optional)"""
 
-    traveler_details: TravelerDetails | None = None
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
+    traveler_details: TravelerDetails | None = Field(default=None, alias="travelerDetails")
     destinations: list[Destination] | None = None
-    trip_details: TripDetails | None = None
+    trip_details: TripDetails | None = Field(default=None, alias="tripDetails")
     preferences: TripPreferences | None = None
-    cover_image_url: str | None = None
+    cover_image_url: str | None = Field(default=None, alias="coverImageUrl")
 
     @field_validator("destinations")
     @classmethod
@@ -263,87 +300,55 @@ class TripUpdateRequest(BaseModel):
 class TripResponse(BaseModel):
     """Response model for trip data"""
 
+    model_config = ConfigDict(
+        populate_by_name=True, serialize_by_alias=True, from_attributes=True
+    )
+
     id: str
-    user_id: str
+    user_id: str = Field(..., alias="userId")
     title: str
     status: TripStatus
-    created_at: datetime
-    updated_at: datetime
-    traveler_details: TravelerDetails
+    created_at: datetime = Field(..., alias="createdAt")
+    updated_at: datetime = Field(..., alias="updatedAt")
+    traveler_details: TravelerDetails = Field(..., alias="travelerDetails")
     destinations: list[Destination]
-    trip_details: TripDetails
+    trip_details: TripDetails = Field(..., alias="tripDetails")
     preferences: TripPreferences
-    template_id: str | None = None
-    auto_delete_at: datetime | None = None
-    deleted_at: datetime | None = None
-    is_archived: bool = False
-    archived_at: datetime | None = None
-    user_rating: int | None = None
-    user_notes: str | None = None
+    template_id: str | None = Field(default=None, alias="templateId")
+    auto_delete_at: datetime | None = Field(default=None, alias="autoDeleteAt")
+    deleted_at: datetime | None = Field(default=None, alias="deletedAt")
+    is_archived: bool = Field(default=False, alias="isArchived")
+    archived_at: datetime | None = Field(default=None, alias="archivedAt")
+    user_rating: int | None = Field(default=None, alias="userRating")
+    user_notes: str | None = Field(default=None, alias="userNotes")
     version: int = 1
-    cover_image_url: str | None = None
-
-    class Config:
-        from_attributes = True
-        json_schema_extra = {
-            "example": {
-                "id": "550e8400-e29b-41d4-a716-446655440000",
-                "user_id": "123e4567-e89b-12d3-a456-426614174000",
-                "status": "draft",
-                "created_at": "2025-01-01T12:00:00Z",
-                "updated_at": "2025-01-01T12:00:00Z",
-                "traveler_details": {
-                    "name": "John Doe",
-                    "email": "john.doe@example.com",
-                    "nationality": "US",
-                    "residence_country": "US",
-                    "origin_city": "New York",
-                    "party_size": 2,
-                    "party_ages": [30, 28],
-                },
-                "destinations": [{"country": "France", "city": "Paris", "duration_days": 7}],
-                "trip_details": {
-                    "departure_date": "2025-06-01",
-                    "return_date": "2025-06-15",
-                    "budget": 5000.00,
-                    "currency": "USD",
-                    "trip_purpose": "tourism",
-                },
-                "preferences": {
-                    "travel_style": "balanced",
-                    "interests": ["museums", "food"],
-                    "dietary_restrictions": [],
-                    "accessibility_needs": [],
-                    "accommodation_type": "hotel",
-                    "transportation_preference": "public",
-                },
-                "template_id": None,
-                "auto_delete_at": "2025-07-15T00:00:00Z",
-            }
-        }
+    cover_image_url: str | None = Field(default=None, alias="coverImageUrl")
 
 
 # Draft models
 class DraftSaveRequest(BaseModel):
     """Request model for saving a draft (partial trip data)"""
 
-    traveler_details: TravelerDetails | None = None
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
+    traveler_details: TravelerDetails | None = Field(default=None, alias="travelerDetails")
     destinations: list[Destination] | None = None
-    trip_details: TripDetails | None = None
+    trip_details: TripDetails | None = Field(default=None, alias="tripDetails")
     preferences: TripPreferences | None = None
 
 
 class DraftResponse(BaseModel):
     """Response model for draft data"""
 
-    id: str
-    user_id: str
-    created_at: datetime
-    updated_at: datetime
-    draft_data: dict
+    model_config = ConfigDict(
+        populate_by_name=True, serialize_by_alias=True, from_attributes=True
+    )
 
-    class Config:
-        from_attributes = True
+    id: str
+    user_id: str = Field(..., alias="userId")
+    created_at: datetime = Field(..., alias="createdAt")
+    updated_at: datetime = Field(..., alias="updatedAt")
+    draft_data: dict = Field(..., alias="draftData")
 
 
 # ============================================================================
@@ -354,46 +359,40 @@ class DraftResponse(BaseModel):
 class ChangePreviewRequest(BaseModel):
     """Request model for previewing changes before applying."""
 
-    traveler_details: TravelerDetails | None = None
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
+    traveler_details: TravelerDetails | None = Field(default=None, alias="travelerDetails")
     destinations: list[Destination] | None = None
-    trip_details: TripDetails | None = None
+    trip_details: TripDetails | None = Field(default=None, alias="tripDetails")
     preferences: TripPreferences | None = None
 
 
 class FieldChange(BaseModel):
     """Represents a single field change."""
 
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
     field: str
-    old_value: str | int | float | list | dict | None
-    new_value: str | int | float | list | dict | None
+    old_value: str | int | float | list | dict | None = Field(..., alias="oldValue")
+    new_value: str | int | float | list | dict | None = Field(..., alias="newValue")
 
 
 class ChangePreviewResponse(BaseModel):
     """Response model for change preview."""
 
-    has_changes: bool
-    changes: list[FieldChange]
-    affected_agents: list[str]
-    estimated_recalc_time: int  # seconds
-    requires_recalculation: bool
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "has_changes": True,
-                "changes": [
-                    {"field": "destination", "old_value": "France", "new_value": "Japan"},
-                    {"field": "budget", "old_value": 5000, "new_value": 10000},
-                ],
-                "affected_agents": ["visa", "weather", "currency", "attractions", "itinerary"],
-                "estimated_recalc_time": 75,
-                "requires_recalculation": True,
-            }
-        }
+    has_changes: bool = Field(..., alias="hasChanges")
+    changes: list[FieldChange]
+    affected_agents: list[str] = Field(..., alias="affectedAgents")
+    estimated_recalc_time: int = Field(..., alias="estimatedRecalcTime")  # seconds
+    requires_recalculation: bool = Field(..., alias="requiresRecalculation")
 
 
 class RecalculationRequest(BaseModel):
     """Request model for manual recalculation."""
+
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
 
     agents: list[str] | None = None  # If None, recalculate all affected agents
     force: bool = False  # Force recalculation even if no changes detected
@@ -411,112 +410,78 @@ class RecalculationStatusEnum(str, Enum):
 class RecalculationResponse(BaseModel):
     """Response model for recalculation request."""
 
-    task_id: str
-    status: RecalculationStatusEnum
-    affected_agents: list[str]
-    estimated_time: int  # seconds
-    message: str
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "task_id": "abc123",
-                "status": "queued",
-                "affected_agents": ["visa", "weather", "currency"],
-                "estimated_time": 45,
-                "message": "Recalculation queued for 3 agents",
-            }
-        }
+    task_id: str = Field(..., alias="taskId")
+    status: RecalculationStatusEnum
+    affected_agents: list[str] = Field(..., alias="affectedAgents")
+    estimated_time: int = Field(..., alias="estimatedTime")  # seconds
+    message: str
 
 
 class RecalculationStatusResponse(BaseModel):
     """Response model for recalculation status check."""
 
-    task_id: str
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
+    task_id: str = Field(..., alias="taskId")
     status: RecalculationStatusEnum
     progress: float = 0.0  # 0-100 percentage
-    completed_agents: list[str] = []
-    pending_agents: list[str] = []
-    current_agent: str | None = None
-    started_at: datetime | None = None
-    estimated_completion: datetime | None = None
+    completed_agents: list[str] = Field(default_factory=list, alias="completedAgents")
+    pending_agents: list[str] = Field(default_factory=list, alias="pendingAgents")
+    current_agent: str | None = Field(default=None, alias="currentAgent")
+    started_at: datetime | None = Field(default=None, alias="startedAt")
+    estimated_completion: datetime | None = Field(default=None, alias="estimatedCompletion")
     error: str | None = None
-
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "task_id": "abc123",
-                "status": "in_progress",
-                "progress": 45.0,
-                "completed_agents": ["visa", "weather"],
-                "pending_agents": ["currency", "attractions"],
-                "current_agent": "currency",
-                "started_at": "2024-01-15T10:30:00Z",
-                "estimated_completion": "2024-01-15T10:32:00Z",
-                "error": None,
-            }
-        }
 
 
 class RecalculationCancelResponse(BaseModel):
     """Response model for recalculation cancellation."""
 
-    task_id: str
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
+    task_id: str = Field(..., alias="taskId")
     cancelled: bool
     message: str
-    completed_agents: list[str] = []  # Agents that completed before cancellation
-
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "task_id": "abc123",
-                "cancelled": True,
-                "message": "Recalculation cancelled successfully",
-                "completed_agents": ["visa", "weather"],
-            }
-        }
+    completed_agents: list[str] = Field(
+        default_factory=list, alias="completedAgents"
+    )  # Agents that completed before cancellation
 
 
 class VersionCompareResponse(BaseModel):
     """Response model for version comparison."""
 
-    trip_id: str
-    version_a: int
-    version_b: int
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
+    trip_id: str = Field(..., alias="tripId")
+    version_a: int = Field(..., alias="versionA")
+    version_b: int = Field(..., alias="versionB")
     changes: list[FieldChange]
     summary: str
-
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "trip_id": "abc123",
-                "version_a": 1,
-                "version_b": 3,
-                "changes": [
-                    {"field": "destination", "old_value": "France", "new_value": "Japan"},
-                    {"field": "budget", "old_value": 5000, "new_value": 8000},
-                ],
-                "summary": "2 fields changed between version 1 and version 3",
-            }
-        }
 
 
 class TripUpdateWithRecalcRequest(BaseModel):
     """Request model for updating trip with recalculation."""
 
-    traveler_details: TravelerDetails | None = None
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
+    traveler_details: TravelerDetails | None = Field(default=None, alias="travelerDetails")
     destinations: list[Destination] | None = None
-    trip_details: TripDetails | None = None
+    trip_details: TripDetails | None = Field(default=None, alias="tripDetails")
     preferences: TripPreferences | None = None
-    auto_recalculate: bool = True  # Whether to automatically trigger recalculation
+    auto_recalculate: bool = Field(
+        default=True, alias="autoRecalculate"
+    )  # Whether to automatically trigger recalculation
 
 
 class TripUpdateWithRecalcResponse(BaseModel):
     """Response model for trip update with recalculation."""
 
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
     trip: TripResponse
     recalculation: RecalculationResponse | None = None
-    changes_applied: list[FieldChange]
+    changes_applied: list[FieldChange] = Field(..., alias="changesApplied")
 
 
 # ============================================================================
@@ -527,36 +492,44 @@ class TripUpdateWithRecalcResponse(BaseModel):
 class TripVersionSummary(BaseModel):
     """Summary of a trip version."""
 
-    version_number: int
-    created_at: datetime
-    change_summary: str
-    fields_changed: list[str]
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
+    version_number: int = Field(..., alias="versionNumber")
+    created_at: datetime = Field(..., alias="createdAt")
+    change_summary: str = Field(..., alias="changeSummary")
+    fields_changed: list[str] = Field(..., alias="fieldsChanged")
 
 
 class TripVersionDetail(BaseModel):
     """Detailed trip version data."""
 
-    version_number: int
-    created_at: datetime
-    trip_data: dict
-    change_summary: str
-    fields_changed: list[str]
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
+    version_number: int = Field(..., alias="versionNumber")
+    created_at: datetime = Field(..., alias="createdAt")
+    trip_data: dict = Field(..., alias="tripData")
+    change_summary: str = Field(..., alias="changeSummary")
+    fields_changed: list[str] = Field(..., alias="fieldsChanged")
 
 
 class TripVersionListResponse(BaseModel):
     """Response model for listing trip versions."""
 
-    trip_id: str
-    current_version: int
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
+    trip_id: str = Field(..., alias="tripId")
+    current_version: int = Field(..., alias="currentVersion")
     versions: list[TripVersionSummary]
 
 
 class TripVersionRestoreResponse(BaseModel):
     """Response model for version restore."""
 
-    trip_id: str
-    restored_version: int
-    new_version: int
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
+    trip_id: str = Field(..., alias="tripId")
+    restored_version: int = Field(..., alias="restoredVersion")
+    new_version: int = Field(..., alias="newVersion")
     recalculation: RecalculationResponse | None = None
 
 
@@ -568,59 +541,71 @@ class TripVersionRestoreResponse(BaseModel):
 class ArchiveResponse(BaseModel):
     """Response model for archive/unarchive operations."""
 
-    trip_id: str
-    is_archived: bool
-    archived_at: datetime | None = None
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
+    trip_id: str = Field(..., alias="tripId")
+    is_archived: bool = Field(..., alias="isArchived")
+    archived_at: datetime | None = Field(default=None, alias="archivedAt")
     message: str
 
 
 class TravelHistoryEntry(BaseModel):
     """Single entry in travel history."""
 
-    trip_id: str
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
+    trip_id: str = Field(..., alias="tripId")
     destination: str
     country: str
-    start_date: str
-    end_date: str
+    start_date: str = Field(..., alias="startDate")
+    end_date: str = Field(..., alias="endDate")
     status: str  # completed, cancelled
-    user_rating: int | None = None  # 1-5
-    user_notes: str | None = None
-    is_archived: bool = False
-    archived_at: datetime | None = None
-    cover_image: str | None = None
+    user_rating: int | None = Field(default=None, alias="userRating")  # 1-5
+    user_notes: str | None = Field(default=None, alias="userNotes")
+    is_archived: bool = Field(default=False, alias="isArchived")
+    archived_at: datetime | None = Field(default=None, alias="archivedAt")
+    cover_image: str | None = Field(default=None, alias="coverImage")
 
 
 class TravelStats(BaseModel):
     """Aggregated travel statistics."""
 
-    total_trips: int
-    countries_visited: int
-    cities_visited: int
-    total_days_traveled: int
-    favorite_destination: str | None = None
-    most_visited_country: str | None = None
-    travel_streak: int = 0  # Consecutive months with travel
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
+    total_trips: int = Field(..., alias="totalTrips")
+    countries_visited: int = Field(..., alias="countriesVisited")
+    cities_visited: int = Field(..., alias="citiesVisited")
+    total_days_traveled: int = Field(..., alias="totalDaysTraveled")
+    favorite_destination: str | None = Field(default=None, alias="favoriteDestination")
+    most_visited_country: str | None = Field(default=None, alias="mostVisitedCountry")
+    travel_streak: int = Field(default=0, alias="travelStreak")  # Consecutive months with travel
 
 
 class CountryVisit(BaseModel):
     """Country visit information for the world map."""
 
-    country_code: str
-    country_name: str
-    visit_count: int
-    last_visited: str | None = None
-    cities: list[str] = []
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
+    country_code: str = Field(..., alias="countryCode")
+    country_name: str = Field(..., alias="countryName")
+    visit_count: int = Field(..., alias="visitCount")
+    last_visited: str | None = Field(default=None, alias="lastVisited")
+    cities: list[str] = Field(default_factory=list)
 
 
 class TravelHistoryResponse(BaseModel):
     """Response model for travel history endpoint."""
 
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
     entries: list[TravelHistoryEntry]
-    total_count: int
+    total_count: int = Field(..., alias="totalCount")
 
 
 class TravelStatsResponse(BaseModel):
     """Response model for travel statistics endpoint."""
+
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
 
     stats: TravelStats
     countries: list[CountryVisit]
@@ -629,12 +614,14 @@ class TravelStatsResponse(BaseModel):
 class TravelTimelineEntry(BaseModel):
     """Entry for timeline visualization."""
 
-    trip_id: str
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
+    trip_id: str = Field(..., alias="tripId")
     title: str
     destination: str
-    start_date: str
-    end_date: str
-    duration_days: int
+    start_date: str = Field(..., alias="startDate")
+    end_date: str = Field(..., alias="endDate")
+    duration_days: int = Field(..., alias="durationDays")
     status: str
     thumbnail: str | None = None
 
@@ -642,12 +629,16 @@ class TravelTimelineEntry(BaseModel):
 class TravelTimelineResponse(BaseModel):
     """Response model for travel timeline."""
 
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
     entries: list[TravelTimelineEntry]
     years: list[int]  # Years with travel for filtering
 
 
 class TripRatingRequest(BaseModel):
     """Request to rate a completed trip."""
+
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
 
     rating: int = Field(..., ge=1, le=5, description="Rating from 1 to 5 stars")
     notes: str | None = Field(None, max_length=1000, description="Optional notes about the trip")
@@ -686,46 +677,21 @@ class AgentJobStatus(str, Enum):
 class AgentJobResponse(BaseModel):
     """Response model for a single agent job"""
 
-    id: str
-    trip_id: str = Field(alias="tripId")
-    agent_type: AgentType = Field(alias="agentType")
-    status: AgentJobStatus
-    started_at: datetime | None = Field(None, alias="startedAt")
-    completed_at: datetime | None = Field(None, alias="completedAt")
-    retry_count: int = Field(default=0, alias="retryCount")
-    error_message: str | None = Field(None, alias="errorMessage")
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
 
-    class Config:
-        populate_by_name = True
-        json_schema_extra = {
-            "example": {
-                "id": "550e8400-e29b-41d4-a716-446655440000",
-                "tripId": "660e8400-e29b-41d4-a716-446655440000",
-                "agentType": "visa",
-                "status": "completed",
-                "startedAt": "2024-01-15T10:30:00Z",
-                "completedAt": "2024-01-15T10:31:00Z",
-                "retryCount": 0,
-            }
-        }
+    id: str
+    trip_id: str = Field(..., alias="tripId")
+    agent_type: AgentType = Field(..., alias="agentType")
+    status: AgentJobStatus
+    started_at: datetime | None = Field(default=None, alias="startedAt")
+    completed_at: datetime | None = Field(default=None, alias="completedAt")
+    retry_count: int = Field(default=0, alias="retryCount")
+    error_message: str | None = Field(default=None, alias="errorMessage")
 
 
 class AgentJobListResponse(BaseModel):
     """Response model for list of agent jobs"""
 
-    items: list[AgentJobResponse]
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "items": [
-                    {
-                        "id": "550e8400-e29b-41d4-a716-446655440000",
-                        "tripId": "660e8400-e29b-41d4-a716-446655440000",
-                        "agentType": "visa",
-                        "status": "completed",
-                        "retryCount": 0,
-                    }
-                ]
-            }
-        }
+    items: list[AgentJobResponse]

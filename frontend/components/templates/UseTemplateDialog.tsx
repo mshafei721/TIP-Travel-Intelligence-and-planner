@@ -58,8 +58,8 @@ export function UseTemplateDialog({ template, open, onOpenChange }: UseTemplateD
     try {
       const result = await createTripFromTemplate(template.id, {
         title: tripTitle || undefined,
-        start_date: startDate || undefined,
-        end_date: endDate || undefined,
+        startDate: startDate || undefined,
+        endDate: endDate || undefined,
       });
 
       // Navigate to the new trip
@@ -113,16 +113,16 @@ export function UseTemplateDialog({ template, open, onOpenChange }: UseTemplateD
               </div>
 
               <div className="flex gap-4 text-sm text-slate-500 dark:text-slate-400">
-                {template.typical_duration && (
+                {template.typicalDuration && (
                   <div className="flex items-center gap-1">
                     <Calendar className="h-4 w-4" />
-                    <span>{template.typical_duration} days</span>
+                    <span>{template.typicalDuration} days</span>
                   </div>
                 )}
-                {template.estimated_budget && (
+                {template.estimatedBudget && (
                   <div className="flex items-center gap-1">
                     <DollarSign className="h-4 w-4" />
-                    <span>~{formatBudget(template.estimated_budget, template.currency)}</span>
+                    <span>~{formatBudget(template.estimatedBudget, template.currency)}</span>
                   </div>
                 )}
               </div>

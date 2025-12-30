@@ -42,7 +42,7 @@ export default async function ProfilePage() {
     ]);
     const templates = templatesResponse.templates;
 
-    const residencyStatus = profileResponse.travelerProfile?.residency_status;
+    const residencyStatus = profileResponse.travelerProfile?.residencyStatus;
     const normalizedResidencyStatus: TravelerDetails['residencyStatus'] =
       residencyStatus === 'citizen' ||
       residencyStatus === 'permanent_resident' ||
@@ -55,28 +55,28 @@ export default async function ProfilePage() {
     const profileSettings: ProfileSettings = {
       profile: {
         id: profileResponse.user.id,
-        name: profileResponse.user.display_name || '',
+        name: profileResponse.user.displayName || '',
         email: user.email || '',
-        photoUrl: profileResponse.user.avatar_url ?? undefined,
+        photoUrl: profileResponse.user.avatarUrl ?? undefined,
         authProvider: user.app_metadata?.provider === 'google' ? 'google' : 'email',
-        createdAt: profileResponse.user.created_at,
-        updatedAt: profileResponse.user.updated_at,
+        createdAt: profileResponse.user.createdAt,
+        updatedAt: profileResponse.user.updatedAt,
       },
       travelerDetails: {
         nationality: profileResponse.travelerProfile?.nationality || '',
-        residenceCountry: profileResponse.travelerProfile?.residency_country || '',
+        residenceCountry: profileResponse.travelerProfile?.residencyCountry || '',
         residencyStatus: normalizedResidencyStatus,
-        dateOfBirth: profileResponse.travelerProfile?.date_of_birth || '',
+        dateOfBirth: profileResponse.travelerProfile?.dateOfBirth || '',
       },
       travelPreferences: {
-        travelStyle: profileResponse.travelerProfile?.travel_style || 'balanced',
-        dietaryRestrictions: profileResponse.travelerProfile?.dietary_restrictions || [],
-        accessibilityNeeds: profileResponse.travelerProfile?.accessibility_needs || undefined,
+        travelStyle: profileResponse.travelerProfile?.travelStyle || 'balanced',
+        dietaryRestrictions: profileResponse.travelerProfile?.dietaryRestrictions || [],
+        accessibilityNeeds: profileResponse.travelerProfile?.accessibilityNeeds || undefined,
       },
       notifications: {
         deletionReminders: true, // Default until backend supports this
-        reportCompletion: profileResponse.user.preferences?.email_notifications ?? true,
-        productUpdates: profileResponse.user.preferences?.marketing_emails ?? false,
+        reportCompletion: profileResponse.user.preferences?.emailNotifications ?? true,
+        productUpdates: profileResponse.user.preferences?.marketingEmails ?? false,
       },
       privacy: {
         dataRetentionAcknowledged: false, // TODO: Add to backend

@@ -44,12 +44,16 @@ export default function SettingsPage() {
     try {
       const response = await getAllSettings();
       setSettings(response.data);
+      // Sync theme with saved settings
+      if (response.data?.appearance?.theme) {
+        setTheme(response.data.appearance.theme);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load settings');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [setTheme]);
 
   useEffect(() => {
     fetchSettings();
@@ -59,7 +63,7 @@ export default function SettingsPage() {
     appearance?: AppearanceSettingsUpdate;
     notifications?: NotificationSettingsUpdate;
     privacy?: PrivacySettingsUpdate;
-    ai_preferences?: AIPreferencesUpdate;
+    aiPreferences?: AIPreferencesUpdate;
   }) => {
     if (!settings) return;
 
@@ -72,7 +76,7 @@ export default function SettingsPage() {
         appearance: { ...prev.appearance, ...updates.appearance },
         notifications: { ...prev.notifications, ...updates.notifications },
         privacy: { ...prev.privacy, ...updates.privacy },
-        ai_preferences: { ...prev.ai_preferences, ...updates.ai_preferences },
+        aiPreferences: { ...prev.aiPreferences, ...updates.aiPreferences },
       };
     });
 
@@ -204,56 +208,48 @@ export default function SettingsPage() {
           <SettingsToggle
             label="Email Notifications"
             description="Receive email notifications"
-            checked={settings.notifications.email_notifications}
-            onChange={(email_notifications) =>
-              saveSettings({ notifications: { email_notifications } })
+            checked={settings.notifications.emailNotifications}
+            onChange={(emailNotifications) =>
+              saveSettings({ notifications: { emailNotifications } })
             }
           />
           <SettingsToggle
             label="Trip Updates"
             description="Get notified about changes to your trips"
-            checked={settings.notifications.email_trip_updates}
-            onChange={(email_trip_updates) =>
-              saveSettings({ notifications: { email_trip_updates } })
-            }
+            checked={settings.notifications.emailTripUpdates}
+            onChange={(emailTripUpdates) => saveSettings({ notifications: { emailTripUpdates } })}
           />
           <SettingsToggle
             label="Report Completion"
             description="Notify when AI reports are complete"
-            checked={settings.notifications.email_report_completion}
-            onChange={(email_report_completion) =>
-              saveSettings({ notifications: { email_report_completion } })
+            checked={settings.notifications.emailReportCompletion}
+            onChange={(emailReportCompletion) =>
+              saveSettings({ notifications: { emailReportCompletion } })
             }
           />
           <SettingsToggle
             label="Weekly Digest"
             description="Receive a weekly summary of your activity"
-            checked={settings.notifications.email_weekly_digest}
-            onChange={(email_weekly_digest) =>
-              saveSettings({ notifications: { email_weekly_digest } })
-            }
+            checked={settings.notifications.emailWeeklyDigest}
+            onChange={(emailWeeklyDigest) => saveSettings({ notifications: { emailWeeklyDigest } })}
           />
           <SettingsToggle
             label="Marketing Emails"
             description="Receive news, tips, and promotional content"
-            checked={settings.notifications.email_marketing}
-            onChange={(email_marketing) => saveSettings({ notifications: { email_marketing } })}
+            checked={settings.notifications.emailMarketing}
+            onChange={(emailMarketing) => saveSettings({ notifications: { emailMarketing } })}
           />
           <SettingsToggle
             label="Push Notifications"
             description="Enable push notifications"
-            checked={settings.notifications.push_notifications}
-            onChange={(push_notifications) =>
-              saveSettings({ notifications: { push_notifications } })
-            }
+            checked={settings.notifications.pushNotifications}
+            onChange={(pushNotifications) => saveSettings({ notifications: { pushNotifications } })}
           />
           <SettingsToggle
             label="Trip Reminders"
             description="Push notifications for upcoming trips"
-            checked={settings.notifications.push_trip_reminders}
-            onChange={(push_trip_reminders) =>
-              saveSettings({ notifications: { push_trip_reminders } })
-            }
+            checked={settings.notifications.pushTripReminders}
+            onChange={(pushTripReminders) => saveSettings({ notifications: { pushTripReminders } })}
           />
         </SettingsSection>
 
@@ -266,12 +262,12 @@ export default function SettingsPage() {
           <SettingsSelect
             label="Profile Visibility"
             description="Who can see your profile"
-            value={settings.privacy.profile_visibility}
+            value={settings.privacy.profileVisibility}
             options={VISIBILITY_OPTIONS}
-            onChange={(profile_visibility) =>
+            onChange={(profileVisibility) =>
               saveSettings({
                 privacy: {
-                  profile_visibility: profile_visibility as 'public' | 'private' | 'friends',
+                  profileVisibility: profileVisibility as 'public' | 'private' | 'friends',
                 },
               })
             }
@@ -279,30 +275,26 @@ export default function SettingsPage() {
           <SettingsToggle
             label="Show Travel History"
             description="Display your past trips on your profile"
-            checked={settings.privacy.show_travel_history}
-            onChange={(show_travel_history) => saveSettings({ privacy: { show_travel_history } })}
+            checked={settings.privacy.showTravelHistory}
+            onChange={(showTravelHistory) => saveSettings({ privacy: { showTravelHistory } })}
           />
           <SettingsToggle
             label="Allow Template Sharing"
             description="Allow sharing trip templates with others"
-            checked={settings.privacy.allow_template_sharing}
-            onChange={(allow_template_sharing) =>
-              saveSettings({ privacy: { allow_template_sharing } })
-            }
+            checked={settings.privacy.allowTemplateSharing}
+            onChange={(allowTemplateSharing) => saveSettings({ privacy: { allowTemplateSharing } })}
           />
           <SettingsToggle
             label="Analytics"
             description="Help us improve by sharing usage data"
-            checked={settings.privacy.analytics_opt_in}
-            onChange={(analytics_opt_in) => saveSettings({ privacy: { analytics_opt_in } })}
+            checked={settings.privacy.analyticsOptIn}
+            onChange={(analyticsOptIn) => saveSettings({ privacy: { analyticsOptIn } })}
           />
           <SettingsToggle
             label="Personalization"
             description="Enable personalized recommendations"
-            checked={settings.privacy.personalization_opt_in}
-            onChange={(personalization_opt_in) =>
-              saveSettings({ privacy: { personalization_opt_in } })
-            }
+            checked={settings.privacy.personalizationOptIn}
+            onChange={(personalizationOptIn) => saveSettings({ privacy: { personalizationOptIn } })}
           />
         </SettingsSection>
 
@@ -315,15 +307,12 @@ export default function SettingsPage() {
           <SettingsSelect
             label="Detail Level"
             description="How detailed should AI responses be"
-            value={settings.ai_preferences.preferred_detail_level}
+            value={settings.aiPreferences.preferredDetailLevel}
             options={DETAIL_LEVEL_OPTIONS}
-            onChange={(preferred_detail_level) =>
+            onChange={(preferredDetailLevel) =>
               saveSettings({
-                ai_preferences: {
-                  preferred_detail_level: preferred_detail_level as
-                    | 'brief'
-                    | 'balanced'
-                    | 'detailed',
+                aiPreferences: {
+                  preferredDetailLevel: preferredDetailLevel as 'brief' | 'balanced' | 'detailed',
                 },
               })
             }
@@ -331,25 +320,23 @@ export default function SettingsPage() {
           <SettingsToggle
             label="Budget Estimates"
             description="Include budget estimates in recommendations"
-            checked={settings.ai_preferences.include_budget_estimates}
-            onChange={(include_budget_estimates) =>
-              saveSettings({ ai_preferences: { include_budget_estimates } })
+            checked={settings.aiPreferences.includeBudgetEstimates}
+            onChange={(includeBudgetEstimates) =>
+              saveSettings({ aiPreferences: { includeBudgetEstimates } })
             }
           />
           <SettingsToggle
             label="Local Tips"
             description="Include local insider tips and recommendations"
-            checked={settings.ai_preferences.include_local_tips}
-            onChange={(include_local_tips) =>
-              saveSettings({ ai_preferences: { include_local_tips } })
-            }
+            checked={settings.aiPreferences.includeLocalTips}
+            onChange={(includeLocalTips) => saveSettings({ aiPreferences: { includeLocalTips } })}
           />
           <SettingsToggle
             label="Safety Warnings"
             description="Include safety and health warnings"
-            checked={settings.ai_preferences.include_safety_warnings}
-            onChange={(include_safety_warnings) =>
-              saveSettings({ ai_preferences: { include_safety_warnings } })
+            checked={settings.aiPreferences.includeSafetyWarnings}
+            onChange={(includeSafetyWarnings) =>
+              saveSettings({ aiPreferences: { includeSafetyWarnings } })
             }
           />
         </SettingsSection>

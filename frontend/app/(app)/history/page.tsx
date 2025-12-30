@@ -81,14 +81,14 @@ export default function TravelHistoryPage() {
 
   // Filter history based on filterMode
   const filteredHistory = history.filter((trip) => {
-    if (filterMode === 'active') return !trip.is_archived;
-    if (filterMode === 'archived') return trip.is_archived;
+    if (filterMode === 'active') return !trip.isArchived;
+    if (filterMode === 'archived') return trip.isArchived;
     return true;
   });
 
   // Count for badges
-  const activeCount = history.filter((t) => !t.is_archived).length;
-  const archivedCount = history.filter((t) => t.is_archived).length;
+  const activeCount = history.filter((t) => !t.isArchived).length;
+  const archivedCount = history.filter((t) => t.isArchived).length;
 
   // Handlers
   const handleArchive = async (tripId: string) => {
@@ -96,8 +96,8 @@ export default function TravelHistoryPage() {
       await archiveTrip(tripId);
       setHistory((prev) =>
         prev.map((t) =>
-          t.trip_id === tripId
-            ? { ...t, is_archived: true, archived_at: new Date().toISOString() }
+          t.tripId === tripId
+            ? { ...t, isArchived: true, archivedAt: new Date().toISOString() }
             : t,
         ),
       );
@@ -111,9 +111,7 @@ export default function TravelHistoryPage() {
     try {
       await unarchiveTrip(tripId);
       setHistory((prev) =>
-        prev.map((t) =>
-          t.trip_id === tripId ? { ...t, is_archived: false, archived_at: null } : t,
-        ),
+        prev.map((t) => (t.tripId === tripId ? { ...t, isArchived: false, archivedAt: null } : t)),
       );
     } catch (err) {
       console.error('Error unarchiving trip:', err);
@@ -130,7 +128,7 @@ export default function TravelHistoryPage() {
     await rateTrip(tripId, { rating, notes });
     setHistory((prev) =>
       prev.map((t) =>
-        t.trip_id === tripId ? { ...t, user_rating: rating, user_notes: notes || null } : t,
+        t.tripId === tripId ? { ...t, userRating: rating, userNotes: notes || null } : t,
       ),
     );
   };
@@ -249,7 +247,7 @@ export default function TravelHistoryPage() {
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {filteredHistory.map((trip) => (
               <TripHistoryCard
-                key={trip.trip_id}
+                key={trip.tripId}
                 trip={trip}
                 onArchive={handleArchive}
                 onUnarchive={handleUnarchive}

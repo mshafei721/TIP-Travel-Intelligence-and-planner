@@ -1,6 +1,7 @@
 /**
  * Trip Update Types
  * Types for trip editing, version history, and change tracking
+ * Using camelCase to match API contract (backend uses Pydantic aliases)
  */
 
 // ============================================
@@ -9,44 +10,44 @@
 
 export interface TripData {
   id: string;
-  user_id: string;
+  userId: string;
   title: string;
-  destination_city: string;
-  destination_country: string;
-  origin_city: string;
-  departure_date: string;
-  return_date: string;
+  destinationCity: string;
+  destinationCountry: string;
+  originCity: string;
+  departureDate: string;
+  returnDate: string;
   budget: number;
   currency: string;
-  trip_purpose: string;
-  party_size: number;
-  travel_style: string;
+  tripPurpose: string;
+  partySize: number;
+  travelStyle: string;
   interests: string[];
-  dietary_restrictions: string[];
-  accessibility_needs: string | null;
+  dietaryRestrictions: string[];
+  accessibilityNeeds: string | null;
   status: 'draft' | 'pending' | 'processing' | 'completed' | 'failed';
-  generation_status: string | null;
-  created_at: string;
-  updated_at: string;
-  cover_image_url: string | null;
+  generationStatus: string | null;
+  createdAt: string;
+  updatedAt: string;
+  coverImageUrl: string | null;
 }
 
 export interface TripUpdateData {
   title?: string;
-  destination_city?: string;
-  destination_country?: string;
-  origin_city?: string;
-  departure_date?: string;
-  return_date?: string;
+  destinationCity?: string;
+  destinationCountry?: string;
+  originCity?: string;
+  departureDate?: string;
+  returnDate?: string;
   budget?: number;
   currency?: string;
-  trip_purpose?: string;
-  party_size?: number;
-  travel_style?: string;
+  tripPurpose?: string;
+  partySize?: number;
+  travelStyle?: string;
   interests?: string[];
-  dietary_restrictions?: string[];
-  accessibility_needs?: string | null;
-  cover_image_url?: string | null;
+  dietaryRestrictions?: string[];
+  accessibilityNeeds?: string | null;
+  coverImageUrl?: string | null;
 }
 
 // ============================================
@@ -81,21 +82,21 @@ export interface ChangePreviewData {
 
 export interface TripVersion {
   id: string;
-  trip_id: string;
-  version_number: number;
+  tripId: string;
+  versionNumber: number;
   snapshot: TripData;
-  change_summary: string;
-  changed_fields: string[];
-  created_by: 'user' | 'system' | 'ai';
-  created_at: string;
-  is_current: boolean;
+  changeSummary: string;
+  changedFields: string[];
+  createdBy: 'user' | 'system' | 'ai';
+  createdAt: string;
+  isCurrent: boolean;
 }
 
 export interface VersionDiff {
-  version_a: number;
-  version_b: number;
+  versionA: number;
+  versionB: number;
   differences: FieldChange[];
-  sections_affected: string[];
+  sectionsAffected: string[];
 }
 
 // ============================================
@@ -123,7 +124,7 @@ export interface RecalculationProgress {
 }
 
 export interface RecalculationRequest {
-  trip_id: string;
+  tripId: string;
   sections: string[];
   priority: 'normal' | 'high';
 }
@@ -158,41 +159,41 @@ export interface TripUpdateResponse {
 
 export interface VersionHistoryResponse {
   versions: TripVersion[];
-  total_count: number;
-  current_version: number;
+  totalCount: number;
+  currentVersion: number;
 }
 
 export interface RestoreVersionResponse {
   success: boolean;
   trip: TripData;
-  restored_version: number;
-  new_version: number;
+  restoredVersion: number;
+  newVersion: number;
   message: string;
 }
 
 export interface VersionCompareResponse {
-  trip_id: string;
-  version_a: number;
-  version_b: number;
+  tripId: string;
+  versionA: number;
+  versionB: number;
   changes: BackendFieldChange[];
   summary: string;
 }
 
 /**
- * Backend-compatible field change type (snake_case)
- * Used for API responses that haven't been transformed
+ * Backend-compatible field change type (camelCase from API)
+ * Used for API responses
  */
 export interface BackendFieldChange {
   field: string;
-  old_value: unknown;
-  new_value: unknown;
+  oldValue: unknown;
+  newValue: unknown;
 }
 
 export interface RecalculationCancelResponse {
-  task_id: string;
+  taskId: string;
   cancelled: boolean;
   message: string;
-  completed_agents: string[];
+  completedAgents: string[];
 }
 
 // ============================================
@@ -222,27 +223,27 @@ export const FIELD_IMPACT_MAP: Record<
     impactLevel: 'low',
     affectedSections: [],
   },
-  destination_city: {
+  destinationCity: {
     label: 'Destination City',
     impactLevel: 'high',
     affectedSections: ['visa', 'destination', 'itinerary', 'safety', 'culture', 'transportation'],
   },
-  destination_country: {
+  destinationCountry: {
     label: 'Destination Country',
     impactLevel: 'high',
     affectedSections: ['visa', 'destination', 'itinerary', 'safety', 'culture', 'transportation'],
   },
-  origin_city: {
+  originCity: {
     label: 'Origin City',
     impactLevel: 'medium',
     affectedSections: ['visa', 'transportation'],
   },
-  departure_date: {
+  departureDate: {
     label: 'Departure Date',
     impactLevel: 'medium',
     affectedSections: ['itinerary', 'budget', 'packing'],
   },
-  return_date: {
+  returnDate: {
     label: 'Return Date',
     impactLevel: 'medium',
     affectedSections: ['itinerary', 'budget', 'packing'],
@@ -257,17 +258,17 @@ export const FIELD_IMPACT_MAP: Record<
     impactLevel: 'low',
     affectedSections: ['budget'],
   },
-  trip_purpose: {
+  tripPurpose: {
     label: 'Trip Purpose',
     impactLevel: 'high',
     affectedSections: ['visa', 'itinerary', 'packing'],
   },
-  party_size: {
+  partySize: {
     label: 'Party Size',
     impactLevel: 'medium',
     affectedSections: ['itinerary', 'budget', 'transportation'],
   },
-  travel_style: {
+  travelStyle: {
     label: 'Travel Style',
     impactLevel: 'medium',
     affectedSections: ['itinerary', 'budget'],
@@ -277,12 +278,12 @@ export const FIELD_IMPACT_MAP: Record<
     impactLevel: 'medium',
     affectedSections: ['itinerary', 'destination'],
   },
-  dietary_restrictions: {
+  dietaryRestrictions: {
     label: 'Dietary Restrictions',
     impactLevel: 'low',
     affectedSections: ['itinerary'],
   },
-  accessibility_needs: {
+  accessibilityNeeds: {
     label: 'Accessibility Needs',
     impactLevel: 'medium',
     affectedSections: ['itinerary', 'transportation'],

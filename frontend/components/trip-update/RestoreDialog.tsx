@@ -67,7 +67,7 @@ export function RestoreDialog({
 }: RestoreDialogProps) {
   const [restoring, setRestoring] = useState(false);
 
-  const CreatorIcon = CREATOR_ICONS[version.created_by] || User;
+  const CreatorIcon = CREATOR_ICONS[version.createdBy] || User;
 
   const handleConfirm = async () => {
     setRestoring(true);
@@ -114,7 +114,7 @@ export function RestoreDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <History className="h-5 w-5 text-blue-600" />
-            Restore Version {version.version_number}
+            Restore Version {version.versionNumber}
           </DialogTitle>
           <DialogDescription>
             This will restore your trip to a previous state. A new version will be created to
@@ -130,7 +130,7 @@ export function RestoreDialog({
               <div>
                 <h4 className="font-medium text-amber-800 dark:text-amber-200">Important</h4>
                 <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
-                  Restoring to version {version.version_number} will revert all trip details to that
+                  Restoring to version {version.versionNumber} will revert all trip details to that
                   point. Your current version (v{currentVersion}) will remain in history if you need
                   to restore it later.
                 </p>
@@ -143,34 +143,34 @@ export function RestoreDialog({
             <div className="flex items-start justify-between mb-3">
               <div>
                 <div className="flex items-center gap-2">
-                  <Badge variant="secondary">Version {version.version_number}</Badge>
-                  <span className="text-sm text-slate-500">{version.change_summary}</span>
+                  <Badge variant="secondary">Version {version.versionNumber}</Badge>
+                  <span className="text-sm text-slate-500">{version.changeSummary}</span>
                 </div>
                 <div className="flex items-center gap-3 mt-2 text-xs text-slate-500">
                   <span className="flex items-center gap-1">
                     <CreatorIcon className="h-3 w-3" />
-                    {version.created_by === 'user'
+                    {version.createdBy === 'user'
                       ? 'Manual Edit'
-                      : version.created_by === 'ai'
+                      : version.createdBy === 'ai'
                         ? 'AI Recalculation'
                         : 'System'}
                   </span>
                   <span className="flex items-center gap-1">
                     <Calendar className="h-3 w-3" />
-                    {formatDate(version.created_at)}
+                    {formatDate(version.createdAt)}
                   </span>
                 </div>
               </div>
             </div>
 
             {/* Changed Fields in This Version */}
-            {version.changed_fields.length > 0 && (
+            {version.changedFields.length > 0 && (
               <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
                 <span className="text-xs font-medium text-slate-500">
                   Fields changed in this version:
                 </span>
                 <div className="flex flex-wrap gap-1 mt-1">
-                  {version.changed_fields.map((field) => (
+                  {version.changedFields.map((field) => (
                     <Badge key={field} variant="outline" className="text-xs">
                       {field.replace(/_/g, ' ')}
                     </Badge>

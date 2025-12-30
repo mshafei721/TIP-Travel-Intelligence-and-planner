@@ -3,7 +3,7 @@
 from datetime import date
 from enum import Enum
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class TravelStyle(str, Enum):
@@ -24,8 +24,10 @@ class Units(str, Enum):
 class UserProfileUpdate(BaseModel):
     """Model for updating user profile (user_profiles table)"""
 
-    display_name: str | None = Field(None, min_length=1, max_length=100)
-    avatar_url: str | None = Field(None, max_length=500)
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
+    display_name: str | None = Field(None, min_length=1, max_length=100, alias="displayName")
+    avatar_url: str | None = Field(None, max_length=500, alias="avatarUrl")
 
     @field_validator("display_name")
     @classmethod
@@ -34,29 +36,27 @@ class UserProfileUpdate(BaseModel):
             raise ValueError("Display name cannot be empty")
         return v.strip() if v else None
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "display_name": "John Doe",
-                "avatar_url": "https://example.com/avatar.jpg",
-            }
-        }
-
 
 class TravelerProfileCreate(BaseModel):
     """Model for creating traveler profile"""
+
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
 
     nationality: str = Field(
         ..., min_length=2, max_length=2, description="ISO Alpha-2 country code"
     )
     residency_country: str = Field(
-        ..., min_length=2, max_length=2, description="ISO Alpha-2 country code"
+        ...,
+        min_length=2,
+        max_length=2,
+        description="ISO Alpha-2 country code",
+        alias="residencyCountry",
     )
-    residency_status: str = Field(..., min_length=1, max_length=50)
-    date_of_birth: date | None = None
-    travel_style: TravelStyle = TravelStyle.BALANCED
-    dietary_restrictions: list[str] = Field(default_factory=list)
-    accessibility_needs: str | None = Field(None, max_length=500)
+    residency_status: str = Field(..., min_length=1, max_length=50, alias="residencyStatus")
+    date_of_birth: date | None = Field(None, alias="dateOfBirth")
+    travel_style: TravelStyle = Field(default=TravelStyle.BALANCED, alias="travelStyle")
+    dietary_restrictions: list[str] = Field(default_factory=list, alias="dietaryRestrictions")
+    accessibility_needs: str | None = Field(None, max_length=500, alias="accessibilityNeeds")
 
     @field_validator("nationality", "residency_country")
     @classmethod
@@ -76,30 +76,19 @@ class TravelerProfileCreate(BaseModel):
             raise ValueError("Date of birth must be in the past")
         return v
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "nationality": "US",
-                "residency_country": "US",
-                "residency_status": "citizen",
-                "date_of_birth": "1990-01-01",
-                "travel_style": "balanced",
-                "dietary_restrictions": ["vegetarian", "gluten-free"],
-                "accessibility_needs": "Wheelchair accessible",
-            }
-        }
-
 
 class TravelerProfileUpdate(BaseModel):
     """Model for updating traveler profile (all fields optional)"""
 
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
     nationality: str | None = Field(None, min_length=2, max_length=2)
-    residency_country: str | None = Field(None, min_length=2, max_length=2)
-    residency_status: str | None = Field(None, min_length=1, max_length=50)
-    date_of_birth: date | None = None
-    travel_style: TravelStyle | None = None
-    dietary_restrictions: list[str] | None = None
-    accessibility_needs: str | None = Field(None, max_length=500)
+    residency_country: str | None = Field(None, min_length=2, max_length=2, alias="residencyCountry")
+    residency_status: str | None = Field(None, min_length=1, max_length=50, alias="residencyStatus")
+    date_of_birth: date | None = Field(None, alias="dateOfBirth")
+    travel_style: TravelStyle | None = Field(None, alias="travelStyle")
+    dietary_restrictions: list[str] | None = Field(None, alias="dietaryRestrictions")
+    accessibility_needs: str | None = Field(None, max_length=500, alias="accessibilityNeeds")
 
     @field_validator("nationality", "residency_country")
     @classmethod
@@ -120,22 +109,15 @@ class TravelerProfileUpdate(BaseModel):
             raise ValueError("Date of birth must be in the past")
         return v
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "nationality": "US",
-                "travel_style": "luxury",
-                "dietary_restrictions": ["vegan"],
-            }
-        }
-
 
 class UserPreferences(BaseModel):
     """User preferences stored in user_profiles.preferences JSONB field"""
 
-    email_notifications: bool = True
-    push_notifications: bool = False
-    marketing_emails: bool = False
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
+    email_notifications: bool = Field(default=True, alias="emailNotifications")
+    push_notifications: bool = Field(default=False, alias="pushNotifications")
+    marketing_emails: bool = Field(default=False, alias="marketingEmails")
     language: str = Field(default="en", min_length=2, max_length=5)
     currency: str = Field(default="USD", min_length=3, max_length=3)
     units: Units = Units.METRIC
@@ -158,21 +140,11 @@ class UserPreferences(BaseModel):
             raise ValueError("Currency code must be 3 characters (ISO 4217)")
         return v
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "email_notifications": True,
-                "push_notifications": False,
-                "marketing_emails": False,
-                "language": "en",
-                "currency": "USD",
-                "units": "metric",
-            }
-        }
-
 
 class AccountDeletionRequest(BaseModel):
     """Model for account deletion confirmation"""
+
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
 
     confirmation: str = Field(..., min_length=1)
 
@@ -185,12 +157,11 @@ class AccountDeletionRequest(BaseModel):
             raise ValueError(f"Confirmation must be exactly: {expected}")
         return v
 
-    class Config:
-        json_schema_extra = {"example": {"confirmation": "DELETE MY ACCOUNT"}}
-
 
 class ConsentUpdate(BaseModel):
     """Model for updating user consent preferences (GDPR compliance)"""
+
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
 
     consent_type: str = Field(
         ...,
@@ -198,6 +169,7 @@ class ConsentUpdate(BaseModel):
             "Type of consent: terms_of_service, privacy_policy, "
             "marketing_emails, data_processing, third_party_sharing, analytics"
         ),
+        alias="consentType",
     )
     granted: bool = Field(..., description="Whether consent is granted or revoked")
     version: str = Field(default="1.0", description="Version of terms/policy")
@@ -218,45 +190,38 @@ class ConsentUpdate(BaseModel):
             raise ValueError(f"Invalid consent type. Must be one of: {valid_types}")
         return v
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "consent_type": "marketing_emails",
-                "granted": True,
-                "version": "1.0",
-            }
-        }
-
 
 # Response models
 class UserProfileResponse(BaseModel):
     """Response model for user profile"""
 
-    id: str
-    display_name: str | None
-    avatar_url: str | None
-    preferences: dict
-    created_at: str
-    updated_at: str
+    model_config = ConfigDict(
+        populate_by_name=True, serialize_by_alias=True, from_attributes=True
+    )
 
-    class Config:
-        from_attributes = True
+    id: str
+    display_name: str | None = Field(None, alias="displayName")
+    avatar_url: str | None = Field(None, alias="avatarUrl")
+    preferences: dict
+    created_at: str = Field(..., alias="createdAt")
+    updated_at: str = Field(..., alias="updatedAt")
 
 
 class TravelerProfileResponse(BaseModel):
     """Response model for traveler profile"""
 
-    id: str
-    user_id: str
-    nationality: str
-    residency_country: str
-    residency_status: str
-    date_of_birth: str | None
-    travel_style: str
-    dietary_restrictions: list[str]
-    accessibility_needs: str | None
-    created_at: str
-    updated_at: str
+    model_config = ConfigDict(
+        populate_by_name=True, serialize_by_alias=True, from_attributes=True
+    )
 
-    class Config:
-        from_attributes = True
+    id: str
+    user_id: str = Field(..., alias="userId")
+    nationality: str
+    residency_country: str = Field(..., alias="residencyCountry")
+    residency_status: str = Field(..., alias="residencyStatus")
+    date_of_birth: str | None = Field(None, alias="dateOfBirth")
+    travel_style: str = Field(..., alias="travelStyle")
+    dietary_restrictions: list[str] = Field(..., alias="dietaryRestrictions")
+    accessibility_needs: str | None = Field(None, alias="accessibilityNeeds")
+    created_at: str = Field(..., alias="createdAt")
+    updated_at: str = Field(..., alias="updatedAt")

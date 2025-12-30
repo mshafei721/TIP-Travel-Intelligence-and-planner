@@ -1,6 +1,7 @@
 /**
  * Analytics Types
  * Aligned with backend API models
+ * Using camelCase to match API contract (backend uses Pydantic aliases)
  */
 
 // ============================================
@@ -23,26 +24,26 @@ export const DATE_RANGE_OPTIONS: { value: DateRange; label: string }[] = [
 
 export interface UsageStats {
   period: DateRange;
-  total_trips: number;
-  trips_created: number;
-  trips_completed: number;
-  reports_generated: number;
-  agents_invoked: Record<string, number>;
-  avg_generation_time_seconds: number | null;
+  totalTrips: number;
+  tripsCreated: number;
+  tripsCompleted: number;
+  reportsGenerated: number;
+  agentsInvoked: Record<string, number>;
+  avgGenerationTimeSeconds: number | null;
 }
 
 export interface UsageTrend {
   date: string;
-  trips_created: number;
-  reports_generated: number;
-  countries_visited: number;
+  tripsCreated: number;
+  reportsGenerated: number;
+  countriesVisited: number;
 }
 
 export interface AgentUsageStats {
-  agent_type: string;
+  agentType: string;
   invocations: number;
-  avg_duration_seconds: number | null;
-  success_rate: number;
+  avgDurationSeconds: number | null;
+  successRate: number;
 }
 
 // ============================================
@@ -51,16 +52,16 @@ export interface AgentUsageStats {
 
 export interface DestinationCount {
   country: string;
-  country_code: string;
+  countryCode: string;
   city: string | null;
   count: number;
   percentage: number;
 }
 
 export interface BudgetRange {
-  range_label: string;
-  min_value: number;
-  max_value: number;
+  rangeLabel: string;
+  minValue: number;
+  maxValue: number;
   count: number;
   percentage: number;
 }
@@ -79,18 +80,18 @@ export interface PurposeCount {
 
 export interface TripAnalytics {
   period: DateRange;
-  unique_countries: number;
-  unique_cities: number;
-  top_destinations: DestinationCount[];
-  budget_analysis: {
-    average_budget: number | null;
-    min_budget: number | null;
-    max_budget: number | null;
-    budget_ranges: BudgetRange[];
+  uniqueCountries: number;
+  uniqueCities: number;
+  topDestinations: DestinationCount[];
+  budgetAnalysis: {
+    averageBudget: number | null;
+    minBudget: number | null;
+    maxBudget: number | null;
+    budgetRanges: BudgetRange[];
   };
-  seasonal_trends: SeasonalCount[];
-  purpose_breakdown: PurposeCount[];
-  avg_trip_duration_days: number | null;
+  seasonalTrends: SeasonalCount[];
+  purposeBreakdown: PurposeCount[];
+  avgTripDurationDays: number | null;
 }
 
 // ============================================
@@ -109,7 +110,7 @@ export interface UsageTrendsResponse {
 
 export interface AgentUsageResponse {
   success: boolean;
-  total_invocations: number;
+  totalInvocations: number;
   data: AgentUsageStats[];
 }
 
@@ -126,10 +127,10 @@ export interface DestinationAnalyticsResponse {
 export interface BudgetAnalyticsResponse {
   success: boolean;
   data: {
-    average_budget: number | null;
-    min_budget: number | null;
-    max_budget: number | null;
-    budget_ranges: BudgetRange[];
+    averageBudget: number | null;
+    minBudget: number | null;
+    maxBudget: number | null;
+    budgetRanges: BudgetRange[];
     currency: string;
   };
 }
