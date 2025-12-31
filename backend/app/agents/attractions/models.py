@@ -30,7 +30,8 @@ class AttractionsAgentInput(BaseModel):
     def validate_country(cls, v: str) -> str:
         """Ensure country name is not empty."""
         if not v or not v.strip():
-            raise ValueError("Destination country cannot be empty")
+            msg = "Destination country cannot be empty"
+            raise ValueError(msg)
         return v.strip()
 
     @field_validator("return_date")
@@ -38,7 +39,8 @@ class AttractionsAgentInput(BaseModel):
     def validate_dates(cls, v: date, info) -> date:
         """Ensure return date is after departure date."""
         if "departure_date" in info.data and v < info.data["departure_date"]:
-            raise ValueError("Return date must be after departure date")
+            msg = "Return date must be after departure date"
+            raise ValueError(msg)
         return v
 
 
@@ -52,9 +54,7 @@ class Attraction(BaseModel):
     )
     description: str = Field(..., description="Description of the attraction")
     location: str | None = Field(None, description="Location/neighborhood")
-    coordinates: dict[str, float] | None = Field(
-        None, description="GPS coordinates (lat, lon)"
-    )
+    coordinates: dict[str, float] | None = Field(None, description="GPS coordinates (lat, lon)")
     opening_hours: str | None = Field(None, description="Opening hours")
     entrance_fee: str | None = Field(None, description="Entrance fee information")
     estimated_duration: str | None = Field(
@@ -63,16 +63,12 @@ class Attraction(BaseModel):
     best_time_to_visit: str | None = Field(
         None, description="Best time to visit (morning, afternoon, evening, weekday, weekend)"
     )
-    booking_required: bool = Field(
-        default=False, description="Whether advance booking is required"
-    )
+    booking_required: bool = Field(default=False, description="Whether advance booking is required")
     accessibility: str | None = Field(
         None, description="Accessibility information for mobility-impaired visitors"
     )
     tips: list[str] = Field(default_factory=list, description="Visitor tips")
-    popularity_score: int | None = Field(
-        None, description="Popularity score (1-10)", ge=1, le=10
-    )
+    popularity_score: int | None = Field(None, description="Popularity score (1-10)", ge=1, le=10)
 
 
 class HiddenGem(BaseModel):
@@ -110,9 +106,7 @@ class AttractionsAgentOutput(AgentResult):
     data: dict = Field(default_factory=dict, description="Legacy field for compatibility")
 
     # Top Attractions
-    top_attractions: list[Attraction] = Field(
-        ..., description="Must-see attractions and landmarks"
-    )
+    top_attractions: list[Attraction] = Field(..., description="Must-see attractions and landmarks")
 
     # Hidden Gems
     hidden_gems: list[HiddenGem] = Field(
@@ -148,9 +142,7 @@ class AttractionsAgentOutput(AgentResult):
     )
 
     # Booking & Practical Tips
-    booking_tips: list[str] = Field(
-        ..., description="Booking and ticket purchasing tips"
-    )
+    booking_tips: list[str] = Field(..., description="Booking and ticket purchasing tips")
     crowd_avoidance_tips: list[str] = Field(
         default_factory=list, description="Tips for avoiding crowds"
     )

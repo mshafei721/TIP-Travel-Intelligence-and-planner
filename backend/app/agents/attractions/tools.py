@@ -7,6 +7,8 @@ Official API Documentation: https://dev.opentripmap.org/docs
 OpenAPI Spec: https://dev.opentripmap.org/openapi.en.json
 """
 
+import asyncio
+import json
 import logging
 import os
 from typing import Any
@@ -15,6 +17,9 @@ import httpx
 from crewai.tools import tool
 
 logger = logging.getLogger(__name__)
+
+# Constants
+MIN_AUTOSUGGEST_CHARS = 3
 
 
 class OpenTripMapClient:
@@ -45,7 +50,8 @@ class OpenTripMapClient:
         """
         self.api_key = api_key or os.getenv("OPENTRIPMAP_API_KEY")
         if not self.api_key:
-            raise ValueError("OPENTRIPMAP_API_KEY not found in environment variables")
+            msg = "OPENTRIPMAP_API_KEY not found in environment variables"
+            raise ValueError(msg)
         self.lang = lang
 
     async def get_location_coordinates(
@@ -87,10 +93,12 @@ class OpenTripMapClient:
                 return None
 
         except httpx.HTTPStatusError as e:
-            logger.warning("HTTP error fetching coordinates for %s: %s", name, e.response.status_code)
+            logger.warning(
+                "HTTP error fetching coordinates for %s: %s", name, e.response.status_code
+            )
             return None
-        except Exception as e:
-            logger.error("Error fetching coordinates for %s: %s", name, e)
+        except Exception:
+            logger.exception("Error fetching coordinates for %s", name)
             return None
 
     async def get_attractions_by_radius(
@@ -146,15 +154,15 @@ class OpenTripMapClient:
                 # Handle both json array and geojson FeatureCollection responses
                 if isinstance(data, list):
                     return data
-                elif isinstance(data, dict) and "features" in data:
+                if isinstance(data, dict) and "features" in data:
                     return data["features"]
                 return []
 
         except httpx.HTTPStatusError as e:
             logger.warning("HTTP error in radius search: %s", e.response.status_code)
             return []
-        except Exception as e:
-            logger.error("Error in radius search: %s", e)
+        except Exception:
+            logger.exception("Error in radius search")
             return []
 
     async def get_place_details(self, xid: str) -> dict[str, Any] | None:
@@ -186,10 +194,12 @@ class OpenTripMapClient:
                 return response.json()
 
         except httpx.HTTPStatusError as e:
-            logger.warning("HTTP error fetching place details for %s: %s", xid, e.response.status_code)
+            logger.warning(
+                "HTTP error fetching place details for %s: %s", xid, e.response.status_code
+            )
             return None
-        except Exception as e:
-            logger.error("Error fetching place details for %s: %s", xid, e)
+        except Exception:
+            logger.exception("Error fetching place details for %s", xid)
             return None
 
     async def autosuggest(
@@ -217,7 +227,7 @@ class OpenTripMapClient:
         Returns:
             List of SimpleSuggestFeature objects with highlighted_name
         """
-        if len(name) < 3:
+        if len(name) < MIN_AUTOSUGGEST_CHARS:
             return []
 
         url = f"{self.BASE_URL}/{self.lang}/places/autosuggest"
@@ -246,8 +256,8 @@ class OpenTripMapClient:
         except httpx.HTTPStatusError as e:
             logger.warning("HTTP error in autosuggest: %s", e.response.status_code)
             return []
-        except Exception as e:
-            logger.error("Error in autosuggest: %s", e)
+        except Exception:
+            logger.exception("Error in autosuggest")
             return []
 
 
@@ -268,19 +278,18 @@ def get_city_coordinates_tool(city_name: str, country_code: str | None = None) -
     Returns:
         JSON string with city coordinates and metadata
     """
-    import asyncio
-    import json
-
     # Check if API key is configured
     api_key = os.getenv("OPENTRIPMAP_API_KEY")
     if not api_key:
         # Return a message that helps the AI proceed without coordinates
-        return json.dumps({
-            "error": "OpenTripMap API not configured",
-            "message": "Cannot fetch coordinates. Please provide attraction information based on general knowledge.",
-            "city_name": city_name,
-            "country_code": country_code,
-        })
+        return json.dumps(
+            {
+                "error": "OpenTripMap API not configured",
+                "message": "Cannot fetch coordinates. Please provide attraction information based on general knowledge.",
+                "city_name": city_name,
+                "country_code": country_code,
+            }
+        )
 
     try:
         client = OpenTripMapClient(api_key=api_key)
@@ -320,17 +329,16 @@ def search_attractions_tool(
     Returns:
         JSON string with list of attractions (xid, name, kinds, point, distance)
     """
-    import asyncio
-    import json
-
     # Check if API key is configured
     api_key = os.getenv("OPENTRIPMAP_API_KEY")
     if not api_key:
-        return json.dumps({
-            "error": "OpenTripMap API not configured",
-            "message": "Cannot search attractions. Please provide attraction recommendations based on general knowledge.",
-            "coordinates": {"lon": lon, "lat": lat},
-        })
+        return json.dumps(
+            {
+                "error": "OpenTripMap API not configured",
+                "message": "Cannot search attractions. Please provide attraction recommendations based on general knowledge.",
+                "coordinates": {"lon": lon, "lat": lat},
+            }
+        )
 
     try:
         client = OpenTripMapClient(api_key=api_key)
@@ -368,17 +376,16 @@ def get_attraction_details_tool(place_id: str) -> str:
         - Exact coordinates and address
         - Sources and references
     """
-    import asyncio
-    import json
-
     # Check if API key is configured
     api_key = os.getenv("OPENTRIPMAP_API_KEY")
     if not api_key:
-        return json.dumps({
-            "error": "OpenTripMap API not configured",
-            "message": "Cannot fetch attraction details. Please provide information based on general knowledge.",
-            "place_id": place_id,
-        })
+        return json.dumps(
+            {
+                "error": "OpenTripMap API not configured",
+                "message": "Cannot fetch attraction details. Please provide information based on general knowledge.",
+                "place_id": place_id,
+            }
+        )
 
     try:
         client = OpenTripMapClient(api_key=api_key)
