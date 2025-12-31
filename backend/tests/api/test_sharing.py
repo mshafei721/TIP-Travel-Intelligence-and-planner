@@ -166,8 +166,9 @@ class TestGenerateShareLink:
 
         assert response.status_code == 201
         data = response.json()
-        assert "share_token" in data
-        assert "share_url" in data
+        # Note: API returns camelCase aliases
+        assert "shareToken" in data
+        assert "shareUrl" in data
 
     def test_generate_share_link_not_owner(self, client, mock_auth, mocker, mock_trip):
         """Should reject share link generation for non-owner."""
@@ -221,7 +222,8 @@ class TestGenerateShareLink:
         )
 
         assert response.status_code == 201
-        assert response.json()["expires_at"] is not None
+        # Note: API returns camelCase aliases
+        assert response.json()["expiresAt"] is not None
 
 
 class TestGetShareSettings:
@@ -242,8 +244,9 @@ class TestGetShareSettings:
 
         assert response.status_code == 200
         data = response.json()
-        assert data["is_public"] is True
-        assert data["share_token"] == MOCK_SHARE_TOKEN
+        # Note: API returns camelCase aliases
+        assert data["isPublic"] is True
+        assert data["shareToken"] == MOCK_SHARE_TOKEN
 
     def test_get_share_settings_no_link(self, client, mock_auth, mocker, mock_trip):
         """Should return empty settings if no share link exists."""
@@ -260,8 +263,9 @@ class TestGetShareSettings:
 
         assert response.status_code == 200
         data = response.json()
-        assert data["is_public"] is False
-        assert data["share_token"] is None
+        # Note: API returns camelCase aliases
+        assert data["isPublic"] is False
+        assert data["shareToken"] is None
 
 
 class TestRevokeShareLink:
@@ -517,7 +521,8 @@ class TestAcceptInvitation:
 
         assert response.status_code == 200
         data = response.json()
-        assert data["trip_id"] == mock_trip["id"]
+        # Note: API returns camelCase aliases
+        assert data["tripId"] == mock_trip["id"]
 
     def test_accept_invitation_invalid_token(self, client, mock_auth, mocker):
         """Should reject invalid invitation token."""
@@ -601,7 +606,8 @@ class TestCreateComment:
         )
 
         assert response.status_code == 201
-        assert response.json()["parent_id"] == parent_id
+        # Note: API returns camelCase aliases
+        assert response.json()["parentId"] == parent_id
 
 
 class TestListComments:
@@ -674,7 +680,8 @@ class TestUpdateComment:
         assert response.status_code == 200
         data = response.json()
         assert data["content"] == "Updated content"
-        assert data["is_edited"] is True
+        # Note: API returns camelCase aliases
+        assert data["isEdited"] is True
 
     def test_update_comment_not_author(self, client, mock_auth, mocker, mock_trip, mock_comment):
         """Should reject update from non-author."""

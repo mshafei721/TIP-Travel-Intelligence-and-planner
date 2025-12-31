@@ -10,6 +10,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from fastapi.testclient import TestClient
 
+from app.core.auth import verify_jwt_token
 from app.main import app
 
 
@@ -37,13 +38,16 @@ def mock_trip_id():
 
 
 @pytest.fixture
-def mock_auth(mocker, mock_user_id):
-    """Mock authentication."""
-    mocker.patch(
-        "app.core.auth.verify_jwt_token",
-        return_value={"user_id": mock_user_id},
-    )
-    return {"Authorization": "Bearer mock_token"}
+def mock_auth(mock_user_id):
+    """Mock authentication using FastAPI dependency override."""
+
+    def mock_verify_jwt_token():
+        return {"user_id": mock_user_id}
+
+    app.dependency_overrides[verify_jwt_token] = mock_verify_jwt_token
+    yield {"Authorization": "Bearer mock_token"}
+    # Cleanup after test
+    app.dependency_overrides.clear()
 
 
 @pytest.fixture
@@ -175,9 +179,10 @@ class TestGetItinerary:
 
         assert response.status_code == 200
         data = response.json()
-        assert data["trip_id"] == mock_trip_id
+        # Note: API returns camelCase aliases due to serialize_by_alias=True
+        assert data["tripId"] == mock_trip_id
         assert data["itinerary"]["days"] == []
-        assert data["has_ai_generated"] is False
+        assert data["hasAiGenerated"] is False
 
     def test_get_existing_itinerary(
         self, client, mock_auth, mock_trip_id, sample_trip_with_itinerary, mocker
@@ -461,7 +466,8 @@ class TestUpdateActivity:
         data = response.json()
         assert data["success"] is True
         assert data["activity"]["name"] == "Updated Activity Name"
-        assert data["activity"]["cost_estimate"] == 100.0
+        # Note: API returns camelCase aliases
+        assert data["activity"]["costEstimate"] == 100.0
 
     def test_update_activity_not_found(
         self, client, mock_auth, mock_trip_id, sample_trip_with_itinerary, mocker

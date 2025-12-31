@@ -10,6 +10,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from fastapi.testclient import TestClient
 
+from app.core.auth import verify_jwt_token
 from app.main import app
 
 
@@ -25,14 +26,17 @@ def client():
 
 
 @pytest.fixture
-def mock_auth(mocker):
-    """Mock authentication."""
+def mock_auth():
+    """Mock authentication using FastAPI dependency override."""
     user_id = str(uuid.uuid4())
-    mocker.patch(
-        "app.core.auth.verify_jwt_token",
-        return_value={"user_id": user_id},
-    )
-    return {"Authorization": "Bearer mock_token"}
+
+    def mock_verify_jwt_token():
+        return {"user_id": user_id}
+
+    app.dependency_overrides[verify_jwt_token] = mock_verify_jwt_token
+    yield {"Authorization": "Bearer mock_token"}
+    # Cleanup after test
+    app.dependency_overrides.clear()
 
 
 @pytest.fixture
@@ -96,7 +100,8 @@ class TestPlaceSearch:
         assert response.status_code == 200
         data = response.json()
         assert "results" in data
-        assert "total_count" in data
+        # Note: API returns camelCase aliases
+        assert "totalCount" in data
         assert len(data["results"]) > 0
 
     def test_search_with_location(self, client, mock_auth, mocker):
@@ -325,7 +330,8 @@ class TestPlaceResultTransformation:
 
         if data["results"]:
             result = data["results"][0]
-            assert "place_id" in result
+            # Note: API returns camelCase aliases
+            assert "placeId" in result
             assert "name" in result
             assert "address" in result
             assert "lat" in result

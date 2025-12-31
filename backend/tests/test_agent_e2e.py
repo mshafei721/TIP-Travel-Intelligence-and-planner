@@ -18,6 +18,8 @@ from datetime import date, datetime
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 # Add backend to path
 backend_path = Path(__file__).parent.parent
 sys.path.insert(0, str(backend_path))
@@ -236,6 +238,8 @@ def test_food_agent_normalization():
     print(f"[PASS] Food agent dining_etiquette normalization works! Result: {result[:2]}...")
 
 
+@pytest.mark.asyncio
+@pytest.mark.integration  # Mark as integration test - calls real LLM APIs
 async def test_orchestrator_with_mocked_db():
     """Test full orchestrator run with mocked database."""
     from app.agents.orchestrator.agent import OrchestratorAgent

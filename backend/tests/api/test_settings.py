@@ -84,7 +84,8 @@ class TestUserSettingsEndpoints:
         assert "appearance" in data["data"]
         assert "notifications" in data["data"]
         assert "privacy" in data["data"]
-        assert "ai_preferences" in data["data"]
+        # Note: API returns camelCase aliases
+        assert "aiPreferences" in data["data"]
 
     def test_get_all_settings_with_defaults(self, client, mock_supabase):
         """Test settings retrieval with default values"""
@@ -100,8 +101,9 @@ class TestUserSettingsEndpoints:
         assert response.status_code == 200
         data = response.json()
         # Should return default values
+        # Note: API returns camelCase aliases
         assert data["data"]["appearance"]["theme"] == "system"
-        assert data["data"]["notifications"]["email_notifications"] is True
+        assert data["data"]["notifications"]["emailNotifications"] is True
 
     def test_update_all_settings_success(self, client, mock_supabase):
         """Test successful update of settings"""
@@ -246,7 +248,8 @@ class TestNotificationSettings:
         assert response.status_code == 200
         data = response.json()
         assert data["success"] is True
-        assert data["data"]["email_notifications"] is True
+        # Note: API returns camelCase aliases
+        assert data["data"]["emailNotifications"] is True
 
     def test_update_notification_settings(self, client, mock_supabase):
         """Test update notification settings"""
@@ -308,7 +311,8 @@ class TestPrivacySettings:
         assert response.status_code == 200
         data = response.json()
         assert data["success"] is True
-        assert data["data"]["profile_visibility"] == "private"
+        # Note: API returns camelCase aliases
+        assert data["data"]["profileVisibility"] == "private"
 
     def test_update_privacy_settings(self, client, mock_supabase):
         """Test update privacy settings"""
@@ -371,7 +375,8 @@ class TestAIPreferences:
         assert response.status_code == 200
         data = response.json()
         assert data["success"] is True
-        assert data["data"]["ai_temperature"] == 0.7
+        # Note: API returns camelCase aliases
+        assert data["data"]["aiTemperature"] == 0.7
 
     def test_update_ai_preferences(self, client, mock_supabase):
         """Test update AI preferences"""
@@ -454,7 +459,8 @@ class TestDataExport:
         assert response.status_code == 200
         data = response.json()
         assert data["success"] is True
-        assert "export_id" in data
+        # Note: API returns camelCase aliases
+        assert "exportId" in data
         assert data["status"] == "completed"
 
     def test_get_export_status(self, client, mock_supabase):
@@ -528,7 +534,7 @@ class TestSettingsModels:
         settings = PrivacySettings()
 
         assert settings.profile_visibility == ProfileVisibility.PRIVATE
-        assert settings.analytics_opt_in is True
+        assert settings.personalization_opt_in is True
 
     def test_ai_preferences_model(self):
         """Test AIPreferences model with defaults"""
