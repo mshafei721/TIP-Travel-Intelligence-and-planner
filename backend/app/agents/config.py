@@ -32,11 +32,12 @@ DEFAULT_LLM_MODEL = DEFAULT_ANTHROPIC_MODEL
 
 def _create_anthropic_llm(temperature: float = 0.1):
     """Create Anthropic (Claude) LLM instance."""
-    from langchain_anthropic import ChatAnthropic
+    from langchain_anthropic import ChatAnthropic  # noqa: PLC0415
 
     api_key = os.getenv("ANTHROPIC_API_KEY")
     if not api_key:
-        raise ValueError("ANTHROPIC_API_KEY not set")
+        msg = "ANTHROPIC_API_KEY not set"
+        raise ValueError(msg)
 
     return ChatAnthropic(
         model=DEFAULT_ANTHROPIC_MODEL,
@@ -48,11 +49,12 @@ def _create_anthropic_llm(temperature: float = 0.1):
 
 def _create_google_llm(temperature: float = 0.1):
     """Create Google (Gemini) LLM instance."""
-    from langchain_google_genai import ChatGoogleGenerativeAI
+    from langchain_google_genai import ChatGoogleGenerativeAI  # noqa: PLC0415
 
     api_key = os.getenv("GOOGLE_API_KEY")
     if not api_key:
-        raise ValueError("GOOGLE_API_KEY not set")
+        msg = "GOOGLE_API_KEY not set"
+        raise ValueError(msg)
 
     return ChatGoogleGenerativeAI(
         model=DEFAULT_GOOGLE_MODEL,
@@ -63,11 +65,12 @@ def _create_google_llm(temperature: float = 0.1):
 
 def _create_openai_llm(temperature: float = 0.1):
     """Create OpenAI (GPT) LLM instance."""
-    from langchain_openai import ChatOpenAI
+    from langchain_openai import ChatOpenAI  # noqa: PLC0415
 
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
-        raise ValueError("OPENAI_API_KEY not set")
+        msg = "OPENAI_API_KEY not set"
+        raise ValueError(msg)
 
     return ChatOpenAI(
         model=DEFAULT_OPENAI_MODEL,
@@ -116,22 +119,25 @@ def get_llm(temperature: float = 0.1):
     for name, create_fn in providers:
         try:
             llm = create_fn(temperature)
-            logger.info(f"LLM initialized successfully with provider: {name}")
-            return llm
         except Exception as e:
             error_msg = str(e)
             errors.append((name, error_msg))
-            logger.warning(f"LLM provider '{name}' failed: {error_msg}")
+            logger.warning("LLM provider '%s' failed: %s", name, error_msg)
 
             # If fallback is disabled, raise immediately
             if not LLM_FALLBACK_ENABLED:
-                raise RuntimeError(f"LLM provider '{name}' failed and fallback is disabled: {error_msg}")
+                msg = f"LLM provider '{name}' failed and fallback is disabled: {error_msg}"
+                raise RuntimeError(msg) from e
 
             continue
+        else:
+            logger.info("LLM initialized successfully with provider: %s", name)
+            return llm
 
     # All providers failed
     error_details = "; ".join([f"{name}: {err}" for name, err in errors])
-    raise RuntimeError(f"All LLM providers failed: {error_details}")
+    msg = f"All LLM providers failed: {error_details}"
+    raise RuntimeError(msg)
 
 
 class AgentConfig(BaseModel):

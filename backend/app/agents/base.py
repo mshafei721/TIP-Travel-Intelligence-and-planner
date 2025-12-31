@@ -24,8 +24,9 @@ Usage:
             return AgentResult(...)
 """
 
+import asyncio
 from abc import ABC, abstractmethod
-from typing import Any, Optional
+from typing import Any
 
 from app.agents.config import AgentConfig
 from app.agents.interfaces import AgentResult
@@ -49,9 +50,9 @@ class BaseAgent(ABC):
         2. Define a @property config that returns AgentConfig (for CrewAI agents)
     """
 
-    _config: Optional[AgentConfig] = None
+    _config: AgentConfig | None = None
 
-    def __init__(self, config: Optional[AgentConfig] = None):
+    def __init__(self, config: AgentConfig | None = None):
         """
         Initialize base agent with optional configuration
 
@@ -62,7 +63,8 @@ class BaseAgent(ABC):
             TypeError: If instantiated directly (must use subclass)
         """
         if type(self) is BaseAgent:
-            raise TypeError("BaseAgent cannot be instantiated directly. Use a subclass.")
+            msg = "BaseAgent cannot be instantiated directly. Use a subclass."
+            raise TypeError(msg)
 
         if config is not None:
             self._config = config
@@ -77,10 +79,11 @@ class BaseAgent(ABC):
         if self._config is not None:
             return self._config
         # Subclasses should override this property if not using __init__ config
-        raise NotImplementedError(
+        msg = (
             f"{self.__class__.__name__} must either pass config to __init__ "
             "or override the config property"
         )
+        raise NotImplementedError(msg)
 
     @config.setter
     def config(self, value: AgentConfig) -> None:
@@ -114,7 +117,7 @@ class BaseAgent(ABC):
         """
         return []
 
-    def create_task(self, input_data: dict[str, Any]) -> Any:
+    def create_task(self, input_data: dict[str, Any]) -> Any:  # noqa: ARG002
         """
         Create task definition for agent execution (optional - can be overridden by subclasses)
 
@@ -205,8 +208,6 @@ class BaseAgent(ABC):
         Raises:
             AgentExecutionError: If agent fails to execute
         """
-        import asyncio
-
         # Use asyncio.to_thread for Python 3.9+ (preferred over deprecated get_event_loop)
         return await asyncio.to_thread(self.run, input_data)
 
