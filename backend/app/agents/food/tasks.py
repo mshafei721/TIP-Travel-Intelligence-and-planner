@@ -34,9 +34,7 @@ def create_dishes_task(agent, destination_country: str) -> Task:
     )
 
 
-def create_restaurants_task(
-    agent, destination_country: str, destination_city: str
-) -> Task:
+def create_restaurants_task(agent, destination_country: str, destination_city: str) -> Task:
     """
     Create task for compiling restaurant recommendations.
 

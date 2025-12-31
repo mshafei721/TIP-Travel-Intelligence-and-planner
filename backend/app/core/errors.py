@@ -102,21 +102,13 @@ class ErrorResponse(BaseModel):
     code: ErrorCode = Field(..., description="Machine-readable error code")
     message: str = Field(..., description="Human-readable error message")
     details: list[ErrorDetail] | None = Field(
-        None,
-        description="Additional error details (field-level errors)"
+        None, description="Additional error details (field-level errors)"
     )
     timestamp: datetime = Field(
-        default_factory=datetime.utcnow,
-        description="When the error occurred"
+        default_factory=datetime.utcnow, description="When the error occurred"
     )
-    request_id: str | None = Field(
-        None,
-        description="Request ID for support/debugging"
-    )
-    path: str | None = Field(
-        None,
-        description="API path that generated the error"
-    )
+    request_id: str | None = Field(None, description="Request ID for support/debugging")
+    path: str | None = Field(None, description="API path that generated the error")
 
     class Config:
         json_schema_extra = {
@@ -126,7 +118,7 @@ class ErrorResponse(BaseModel):
                 "details": None,
                 "timestamp": "2025-12-26T10:00:00Z",
                 "request_id": "req-abc123",
-                "path": "/api/trips/invalid-uuid"
+                "path": "/api/trips/invalid-uuid",
             }
         }
 
@@ -158,16 +150,9 @@ class TIPException(Exception):
 class ValidationError(TIPException):
     """Raised when input validation fails."""
 
-    def __init__(
-        self,
-        message: str = "Validation error",
-        details: list[ErrorDetail] | None = None
-    ):
+    def __init__(self, message: str = "Validation error", details: list[ErrorDetail] | None = None):
         super().__init__(
-            code=ErrorCode.VALIDATION_ERROR,
-            message=message,
-            status_code=400,
-            details=details
+            code=ErrorCode.VALIDATION_ERROR, message=message, status_code=400, details=details
         )
 
 
@@ -177,43 +162,25 @@ class AuthenticationError(TIPException):
     def __init__(
         self,
         message: str = "Authentication required",
-        code: ErrorCode = ErrorCode.AUTH_TOKEN_INVALID
+        code: ErrorCode = ErrorCode.AUTH_TOKEN_INVALID,
     ):
-        super().__init__(
-            code=code,
-            message=message,
-            status_code=401
-        )
+        super().__init__(code=code, message=message, status_code=401)
 
 
 class AuthorizationError(TIPException):
     """Raised when authorization fails."""
 
-    def __init__(
-        self,
-        message: str = "Access denied",
-        code: ErrorCode = ErrorCode.AUTH_FORBIDDEN
-    ):
-        super().__init__(
-            code=code,
-            message=message,
-            status_code=403
-        )
+    def __init__(self, message: str = "Access denied", code: ErrorCode = ErrorCode.AUTH_FORBIDDEN):
+        super().__init__(code=code, message=message, status_code=403)
 
 
 class NotFoundError(TIPException):
     """Raised when a resource is not found."""
 
     def __init__(
-        self,
-        message: str = "Resource not found",
-        code: ErrorCode = ErrorCode.NOT_FOUND_RESOURCE
+        self, message: str = "Resource not found", code: ErrorCode = ErrorCode.NOT_FOUND_RESOURCE
     ):
-        super().__init__(
-            code=code,
-            message=message,
-            status_code=404
-        )
+        super().__init__(code=code, message=message, status_code=404)
 
 
 class ConflictError(TIPException):
@@ -222,28 +189,16 @@ class ConflictError(TIPException):
     def __init__(
         self,
         message: str = "Resource state conflict",
-        code: ErrorCode = ErrorCode.CONFLICT_RESOURCE_STATE
+        code: ErrorCode = ErrorCode.CONFLICT_RESOURCE_STATE,
     ):
-        super().__init__(
-            code=code,
-            message=message,
-            status_code=409
-        )
+        super().__init__(code=code, message=message, status_code=409)
 
 
 class RateLimitError(TIPException):
     """Raised when rate limit is exceeded."""
 
-    def __init__(
-        self,
-        message: str = "Rate limit exceeded",
-        retry_after: int | None = None
-    ):
-        super().__init__(
-            code=ErrorCode.RATE_LIMIT_EXCEEDED,
-            message=message,
-            status_code=429
-        )
+    def __init__(self, message: str = "Rate limit exceeded", retry_after: int | None = None):
+        super().__init__(code=ErrorCode.RATE_LIMIT_EXCEEDED, message=message, status_code=429)
         self.retry_after = retry_after
 
 
@@ -251,15 +206,9 @@ class InternalError(TIPException):
     """Raised for internal server errors."""
 
     def __init__(
-        self,
-        message: str = "Internal server error",
-        code: ErrorCode = ErrorCode.INTERNAL_ERROR
+        self, message: str = "Internal server error", code: ErrorCode = ErrorCode.INTERNAL_ERROR
     ):
-        super().__init__(
-            code=code,
-            message=message,
-            status_code=500
-        )
+        super().__init__(code=code, message=message, status_code=500)
 
 
 class ExternalServiceError(TIPException):
@@ -269,13 +218,9 @@ class ExternalServiceError(TIPException):
         self,
         message: str = "External service error",
         code: ErrorCode = ErrorCode.EXTERNAL_SERVICE_ERROR,
-        service_name: str | None = None
+        service_name: str | None = None,
     ):
-        super().__init__(
-            code=code,
-            message=message,
-            status_code=502
-        )
+        super().__init__(code=code, message=message, status_code=502)
         self.service_name = service_name
 
 
@@ -285,34 +230,27 @@ ERROR_MESSAGES = {
     ErrorCode.VALIDATION_MISSING_FIELD: "Required field is missing: {field}",
     ErrorCode.VALIDATION_INVALID_FORMAT: "Invalid format for field: {field}",
     ErrorCode.VALIDATION_OUT_OF_RANGE: "Value out of valid range for field: {field}",
-
     ErrorCode.AUTH_TOKEN_MISSING: "Authentication token is required",
     ErrorCode.AUTH_TOKEN_EXPIRED: "Authentication token has expired",
     ErrorCode.AUTH_TOKEN_INVALID: "Invalid authentication token",
-
     ErrorCode.AUTH_FORBIDDEN: "Access to this resource is forbidden",
     ErrorCode.AUTH_INSUFFICIENT_PERMISSIONS: "Insufficient permissions for this action",
     ErrorCode.AUTH_RESOURCE_ACCESS_DENIED: "You do not have access to this resource",
-
     ErrorCode.NOT_FOUND_TRIP: "Trip not found",
     ErrorCode.NOT_FOUND_REPORT: "Report not found for this trip. Generate the report first.",
     ErrorCode.NOT_FOUND_TEMPLATE: "Template not found",
     ErrorCode.NOT_FOUND_USER: "User not found",
     ErrorCode.NOT_FOUND_DRAFT: "Draft not found",
     ErrorCode.NOT_FOUND_RESOURCE: "Requested resource not found",
-
     ErrorCode.CONFLICT_TRIP_STATUS: "Cannot perform this action on a trip with status: {status}",
     ErrorCode.CONFLICT_DUPLICATE_REQUEST: "A duplicate request was detected",
     ErrorCode.CONFLICT_RESOURCE_STATE: "Resource is in an invalid state for this operation",
-
     ErrorCode.RATE_LIMIT_EXCEEDED: "Too many requests. Please try again later.",
     ErrorCode.RATE_LIMIT_API_QUOTA: "API quota exceeded for this period",
-
     ErrorCode.INTERNAL_ERROR: "An internal error occurred. Please try again later.",
     ErrorCode.INTERNAL_DATABASE_ERROR: "Database operation failed",
     ErrorCode.INTERNAL_AGENT_ERROR: "AI agent execution failed",
     ErrorCode.INTERNAL_PDF_GENERATION_ERROR: "PDF generation failed",
-
     ErrorCode.EXTERNAL_SERVICE_ERROR: "External service error: {service}",
     ErrorCode.EXTERNAL_API_TIMEOUT: "External API request timed out",
     ErrorCode.EXTERNAL_API_UNAVAILABLE: "External API is currently unavailable",
@@ -370,7 +308,7 @@ def raise_internal_error(
             "operation": operation,
             "exception_type": type(exception).__name__,
             "exception_message": str(exception),
-        }
+        },
     )
 
     # Raise with secure message
@@ -418,7 +356,7 @@ def raise_external_service_error(
         extra={
             "service_name": service_name,
             "exception_type": type(exception).__name__,
-        }
+        },
     )
 
     message = get_error_message(error_code, service=service_name)
@@ -447,7 +385,7 @@ def raise_not_found_error(
         extra={
             "resource_type": resource_type,
             "resource_id": resource_id,
-        }
+        },
     )
     raise NotFoundError(message=message, code=error_code)
 

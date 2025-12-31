@@ -28,6 +28,7 @@ logger = logging.getLogger(__name__)
 # GDPR Configuration
 # =============================================================================
 
+
 class GDPRConfig:
     """GDPR compliance configuration."""
 
@@ -62,6 +63,7 @@ class GDPRConfig:
 # Consent Types
 # =============================================================================
 
+
 class ConsentType(str, Enum):
     """Types of consent that can be given/revoked."""
 
@@ -84,6 +86,7 @@ class ConsentAction(str, Enum):
 # =============================================================================
 # Audit Event Types
 # =============================================================================
+
 
 class AuditEventType(str, Enum):
     """Types of audit events for GDPR compliance."""
@@ -116,6 +119,7 @@ class AuditEventType(str, Enum):
 # =============================================================================
 # Models
 # =============================================================================
+
 
 class ConsentRecord(BaseModel):
     """Record of user consent."""
@@ -162,6 +166,7 @@ class DataExportResult(BaseModel):
 # Audit Logging
 # =============================================================================
 
+
 class GDPRAuditLogger:
     """Handles GDPR-compliant audit logging."""
 
@@ -201,22 +206,24 @@ class GDPRAuditLogger:
                 "resource_type": resource_type,
                 "resource_id": resource_id,
                 "action": action,
-            }
+            },
         )
 
         # Store in database for compliance records
         try:
-            supabase.table("gdpr_audit_log").insert({
-                "event_type": event_type.value,
-                "user_id": user_id,
-                "resource_type": resource_type,
-                "resource_id": resource_id,
-                "action": action,
-                "ip_address": ip_address,
-                "user_agent": user_agent,
-                "details": details,
-                "created_at": entry.timestamp.isoformat(),
-            }).execute()
+            supabase.table("gdpr_audit_log").insert(
+                {
+                    "event_type": event_type.value,
+                    "user_id": user_id,
+                    "resource_type": resource_type,
+                    "resource_id": resource_id,
+                    "action": action,
+                    "ip_address": ip_address,
+                    "user_agent": user_agent,
+                    "details": details,
+                    "created_at": entry.timestamp.isoformat(),
+                }
+            ).execute()
         except Exception as e:
             # Log error but don't fail the operation
             self.logger.error(f"Failed to store audit log: {e}")
@@ -277,6 +284,7 @@ audit_logger = GDPRAuditLogger()
 # Data Export (Right to Access / Portability)
 # =============================================================================
 
+
 class DataExporter:
     """
     Handles GDPR data export requests.
@@ -303,16 +311,10 @@ class DataExporter:
         # 1. User Profile
         try:
             profile_response = (
-                supabase.table("user_profiles")
-                .select("*")
-                .eq("id", user_id)
-                .single()
-                .execute()
+                supabase.table("user_profiles").select("*").eq("id", user_id).single().execute()
             )
             if profile_response.data:
-                export_data["profile"] = self._sanitize_for_export(
-                    profile_response.data
-                )
+                export_data["profile"] = self._sanitize_for_export(profile_response.data)
                 categories.append("profile")
         except Exception as e:
             logger.warning(f"Could not export profile: {e}")
@@ -320,10 +322,7 @@ class DataExporter:
         # 2. Traveler Profile
         try:
             traveler_response = (
-                supabase.table("traveler_profiles")
-                .select("*")
-                .eq("user_id", user_id)
-                .execute()
+                supabase.table("traveler_profiles").select("*").eq("user_id", user_id).execute()
             )
             if traveler_response.data:
                 export_data["traveler_profile"] = self._sanitize_for_export(
@@ -344,8 +343,7 @@ class DataExporter:
             )
             if trips_response.data:
                 export_data["trips"] = [
-                    self._sanitize_for_export(trip)
-                    for trip in trips_response.data
+                    self._sanitize_for_export(trip) for trip in trips_response.data
                 ]
                 categories.append("trips")
         except Exception as e:
@@ -356,15 +354,11 @@ class DataExporter:
             if export_data.get("trips"):
                 trip_ids = [trip["id"] for trip in export_data["trips"]]
                 reports_response = (
-                    supabase.table("report_sections")
-                    .select("*")
-                    .in_("trip_id", trip_ids)
-                    .execute()
+                    supabase.table("report_sections").select("*").in_("trip_id", trip_ids).execute()
                 )
                 if reports_response.data:
                     export_data["reports"] = [
-                        self._sanitize_for_export(report)
-                        for report in reports_response.data
+                        self._sanitize_for_export(report) for report in reports_response.data
                     ]
                     categories.append("reports")
         except Exception as e:
@@ -373,10 +367,7 @@ class DataExporter:
         # 5. Consent Records
         try:
             consent_response = (
-                supabase.table("user_consents")
-                .select("*")
-                .eq("user_id", user_id)
-                .execute()
+                supabase.table("user_consents").select("*").eq("user_id", user_id).execute()
             )
             if consent_response.data:
                 export_data["consent_history"] = consent_response.data
@@ -430,6 +421,7 @@ data_exporter = DataExporter()
 # Consent Management
 # =============================================================================
 
+
 class ConsentManager:
     """
     Manages user consent for GDPR compliance.
@@ -473,9 +465,7 @@ class ConsentManager:
 
             # Log the consent action
             event_type = (
-                AuditEventType.CONSENT_GRANTED
-                if granted
-                else AuditEventType.CONSENT_REVOKED
+                AuditEventType.CONSENT_GRANTED if granted else AuditEventType.CONSENT_REVOKED
             )
             await audit_logger.log_event(
                 event_type=event_type,
@@ -491,7 +481,7 @@ class ConsentManager:
                     "user_id": user_id,
                     "consent_type": consent_type.value,
                     "granted": granted,
-                }
+                },
             )
 
             return consent_record
@@ -503,12 +493,7 @@ class ConsentManager:
     async def get_user_consents(self, user_id: str) -> list[dict]:
         """Get all consent records for a user."""
         try:
-            response = (
-                supabase.table("user_consents")
-                .select("*")
-                .eq("user_id", user_id)
-                .execute()
-            )
+            response = supabase.table("user_consents").select("*").eq("user_id", user_id).execute()
             return response.data or []
         except Exception as e:
             logger.error(f"Failed to get consents: {e}")
@@ -556,6 +541,7 @@ consent_manager = ConsentManager()
 # Data Retention
 # =============================================================================
 
+
 class DataRetentionManager:
     """Manages data retention policies for GDPR compliance."""
 
@@ -578,10 +564,7 @@ class DataRetentionManager:
         """Get all data scheduled for deletion for a user."""
         try:
             response = (
-                supabase.table("deletion_schedule")
-                .select("*")
-                .eq("status", "pending")
-                .execute()
+                supabase.table("deletion_schedule").select("*").eq("status", "pending").execute()
             )
 
             # Filter to get trips belonging to this user
@@ -596,10 +579,7 @@ class DataRetentionManager:
                 )
                 user_trip_ids = {t["id"] for t in (trips_response.data or [])}
 
-                return [
-                    d for d in response.data
-                    if d["trip_id"] in user_trip_ids
-                ]
+                return [d for d in response.data if d["trip_id"] in user_trip_ids]
 
             return []
 
@@ -635,8 +615,7 @@ GDPR_RIGHTS_INFO = {
     "right_to_erasure": {
         "article": "Article 17",
         "description": (
-            "You have the right to have your personal data erased "
-            "('right to be forgotten')."
+            "You have the right to have your personal data erased " "('right to be forgotten')."
         ),
         "endpoint": "DELETE /api/profile",
         "implemented": True,

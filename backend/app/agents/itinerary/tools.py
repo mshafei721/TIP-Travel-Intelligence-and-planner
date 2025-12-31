@@ -194,7 +194,9 @@ def optimize_daily_schedule(activities: list[dict]) -> dict:
         # Time-of-day recommendations
         if category in ["museum", "gallery", "historical_site"]:
             morning_activities.append(activity)
-            suggestions.append(f"Visit {activity.get('name', 'museum')} in the morning to avoid crowds")
+            suggestions.append(
+                f"Visit {activity.get('name', 'museum')} in the morning to avoid crowds"
+            )
         elif category in ["park", "beach", "outdoor"]:
             afternoon_activities.append(activity)
         elif category in ["show", "dining", "nightlife"]:
@@ -260,10 +262,7 @@ def estimate_daily_budget(budget_level: str, destination_type: str = "city") -> 
     budget = budgets.get(budget_level, budgets["mid-range"])
     multiplier = multipliers.get(destination_type, 1.0)
 
-    adjusted_budget = {
-        category: int(cost * multiplier)
-        for category, cost in budget.items()
-    }
+    adjusted_budget = {category: int(cost * multiplier) for category, cost in budget.items()}
 
     total = sum(adjusted_budget.values())
 

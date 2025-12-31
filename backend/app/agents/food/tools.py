@@ -66,28 +66,34 @@ def search_food_info(country: str, topic: str) -> str:
         # Extract relevant content from search results
         extracted = []
         for r in results:
-            extracted.append({
-                "title": r.get("title", ""),
-                "url": r.get("url", ""),
-                "content": r.get("markdown", r.get("content", ""))[:2000],  # Limit content size
-            })
+            extracted.append(
+                {
+                    "title": r.get("title", ""),
+                    "url": r.get("url", ""),
+                    "content": r.get("markdown", r.get("content", ""))[:2000],  # Limit content size
+                }
+            )
 
         logger.info(f"Found {len(extracted)} web results for {country} {topic}")
-        return json.dumps({
-            "country": country,
-            "topic": topic,
-            "source": "web_search",
-            "results": extracted,
-        })
+        return json.dumps(
+            {
+                "country": country,
+                "topic": topic,
+                "source": "web_search",
+                "results": extracted,
+            }
+        )
     else:
         logger.info(f"No web results for {country} {topic}, using static data")
-        return json.dumps({
-            "country": country,
-            "topic": topic,
-            "source": "static",
-            "results": [],
-            "note": "No web search results available. Using built-in food knowledge.",
-        })
+        return json.dumps(
+            {
+                "country": country,
+                "topic": topic,
+                "source": "static",
+                "results": [],
+                "note": "No web search results available. Using built-in food knowledge.",
+            }
+        )
 
 
 @tool("Get must-try dishes")
@@ -215,7 +221,17 @@ def get_dietary_availability(country: str) -> str:
     # Moderate vegetarian availability
     moderate_veg = ["italy", "japan", "uk", "united kingdom", "usa", "united states", "spain"]
     # High halal availability
-    high_halal = ["malaysia", "indonesia", "turkey", "uae", "dubai", "saudi", "arabia", "egypt", "morocco"]
+    high_halal = [
+        "malaysia",
+        "indonesia",
+        "turkey",
+        "uae",
+        "dubai",
+        "saudi",
+        "arabia",
+        "egypt",
+        "morocco",
+    ]
     # High kosher availability
     high_kosher = ["israel"]
 
@@ -229,29 +245,40 @@ def get_dietary_availability(country: str) -> str:
     }
 
     if any(c in country_lower for c in high_veg):
-        result.update({
-            "vegetarian": "widespread",
-            "vegan": "common" if "india" in country_lower else "common",
-        })
+        result.update(
+            {
+                "vegetarian": "widespread",
+                "vegan": "common" if "india" in country_lower else "common",
+            }
+        )
     elif any(c in country_lower for c in moderate_veg):
-        result.update({
-            "vegetarian": "common",
-            "vegan": "limited",
-        })
+        result.update(
+            {
+                "vegetarian": "common",
+                "vegan": "limited",
+            }
+        )
 
     if any(c in country_lower for c in high_halal):
         result["halal"] = "widespread"
-    elif "muslim" in country_lower or any(c in country_lower for c in ["pakistan", "bangladesh", "afghanistan"]):
+    elif "muslim" in country_lower or any(
+        c in country_lower for c in ["pakistan", "bangladesh", "afghanistan"]
+    ):
         result["halal"] = "widespread"
 
     if any(c in country_lower for c in high_kosher):
         result["kosher"] = "widespread"
 
     # Gluten-free awareness is generally better in Western countries
-    if any(c in country_lower for c in ["usa", "united states", "uk", "united kingdom", "australia", "canada"]):
+    if any(
+        c in country_lower
+        for c in ["usa", "united states", "uk", "united kingdom", "australia", "canada"]
+    ):
         result["gluten_free"] = "common"
 
-    logger.info(f"Dietary availability for {country}: vegetarian={result['vegetarian']}, vegan={result['vegan']}")
+    logger.info(
+        f"Dietary availability for {country}: vegetarian={result['vegetarian']}, vegan={result['vegan']}"
+    )
     return str(result)
 
 
@@ -272,16 +299,47 @@ def get_food_safety_info(country: str) -> str:
 
     # Countries with generally safe tap water
     safe_water = [
-        "usa", "united states", "canada", "uk", "united kingdom", "australia",
-        "new zealand", "japan", "germany", "france", "italy", "spain", "portugal",
-        "netherlands", "belgium", "switzerland", "austria", "denmark", "sweden",
-        "norway", "finland", "singapore", "south korea"
+        "usa",
+        "united states",
+        "canada",
+        "uk",
+        "united kingdom",
+        "australia",
+        "new zealand",
+        "japan",
+        "germany",
+        "france",
+        "italy",
+        "spain",
+        "portugal",
+        "netherlands",
+        "belgium",
+        "switzerland",
+        "austria",
+        "denmark",
+        "sweden",
+        "norway",
+        "finland",
+        "singapore",
+        "south korea",
     ]
 
     # Countries where caution is needed
     caution_water = [
-        "mexico", "thailand", "vietnam", "cambodia", "india", "china", "philippines",
-        "indonesia", "egypt", "morocco", "turkey", "brazil", "peru", "ecuador"
+        "mexico",
+        "thailand",
+        "vietnam",
+        "cambodia",
+        "india",
+        "china",
+        "philippines",
+        "indonesia",
+        "egypt",
+        "morocco",
+        "turkey",
+        "brazil",
+        "peru",
+        "ecuador",
     ]
 
     water_status = "use-caution"
@@ -298,11 +356,13 @@ def get_food_safety_info(country: str) -> str:
     ]
 
     if water_status == "avoid-tap-water":
-        safety_tips.extend([
-            "Drink only bottled or boiled water",
-            "Avoid ice in drinks",
-            "Use bottled water for brushing teeth",
-        ])
+        safety_tips.extend(
+            [
+                "Drink only bottled or boiled water",
+                "Avoid ice in drinks",
+                "Use bottled water for brushing teeth",
+            ]
+        )
 
     if any(c in country_lower for c in ["thailand", "vietnam", "india", "mexico"]):
         safety_tips.append("Build up tolerance gradually - start with milder foods")
@@ -334,11 +394,37 @@ def get_restaurant_price_ranges(country: str) -> str:
     country_lower = country.lower()
 
     # Budget-friendly destinations
-    budget_countries = ["thailand", "vietnam", "india", "cambodia", "laos", "philippines", "indonesia", "egypt"]
+    budget_countries = [
+        "thailand",
+        "vietnam",
+        "india",
+        "cambodia",
+        "laos",
+        "philippines",
+        "indonesia",
+        "egypt",
+    ]
     # Moderate pricing
-    moderate_countries = ["mexico", "portugal", "spain", "greece", "turkey", "poland", "czech", "hungary"]
+    moderate_countries = [
+        "mexico",
+        "portugal",
+        "spain",
+        "greece",
+        "turkey",
+        "poland",
+        "czech",
+        "hungary",
+    ]
     # Expensive destinations
-    expensive_countries = ["switzerland", "norway", "denmark", "iceland", "singapore", "japan", "australia"]
+    expensive_countries = [
+        "switzerland",
+        "norway",
+        "denmark",
+        "iceland",
+        "singapore",
+        "japan",
+        "australia",
+    ]
 
     if any(c in country_lower for c in budget_countries):
         ranges = {
@@ -427,12 +513,15 @@ def get_dining_etiquette(country: str) -> str:
 
     result = {
         "country": country,
-        "dining_etiquette": etiquette_map.get(country_lower, [
-            "Observe local dining customs",
-            "Wait for host or elders to start eating",
-            "Use utensils appropriately",
-            "Don't talk with mouth full",
-        ]),
+        "dining_etiquette": etiquette_map.get(
+            country_lower,
+            [
+                "Observe local dining customs",
+                "Wait for host or elders to start eating",
+                "Use utensils appropriately",
+                "Don't talk with mouth full",
+            ],
+        ),
     }
 
     logger.info(f"Dining etiquette for {country}: {len(result['dining_etiquette'])} rules")

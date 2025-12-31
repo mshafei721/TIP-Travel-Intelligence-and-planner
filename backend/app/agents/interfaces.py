@@ -25,8 +25,7 @@ class SourceReference(BaseModel):
     verified_at: datetime = Field(description="Timestamp when this source was last verified")
 
     source_type: str = Field(
-        default="third-party",
-        description="Type of source: government, embassy, or third-party"
+        default="third-party", description="Type of source: government, embassy, or third-party"
     )
 
     def to_frontend_dict(self) -> dict:

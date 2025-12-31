@@ -83,7 +83,9 @@ class TravelerProfileUpdate(BaseModel):
     model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
 
     nationality: str | None = Field(None, min_length=2, max_length=2)
-    residency_country: str | None = Field(None, min_length=2, max_length=2, alias="residencyCountry")
+    residency_country: str | None = Field(
+        None, min_length=2, max_length=2, alias="residencyCountry"
+    )
     residency_status: str | None = Field(None, min_length=1, max_length=50, alias="residencyStatus")
     date_of_birth: date | None = Field(None, alias="dateOfBirth")
     travel_style: TravelStyle | None = Field(None, alias="travelStyle")
@@ -195,9 +197,7 @@ class ConsentUpdate(BaseModel):
 class UserProfileResponse(BaseModel):
     """Response model for user profile"""
 
-    model_config = ConfigDict(
-        populate_by_name=True, serialize_by_alias=True, from_attributes=True
-    )
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True, from_attributes=True)
 
     id: str
     display_name: str | None = Field(None, alias="displayName")
@@ -210,9 +210,7 @@ class UserProfileResponse(BaseModel):
 class TravelerProfileResponse(BaseModel):
     """Response model for traveler profile"""
 
-    model_config = ConfigDict(
-        populate_by_name=True, serialize_by_alias=True, from_attributes=True
-    )
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True, from_attributes=True)
 
     id: str
     user_id: str = Field(..., alias="userId")

@@ -272,9 +272,7 @@ class AttractionsAgent(BaseAgent):
                 historical_sites=parsed_result.get("historical_sites", []),
                 natural_attractions=parsed_result.get("natural_attractions", []),
                 religious_sites=parsed_result.get("religious_sites", []),
-                viewpoints_and_landmarks=parsed_result.get(
-                    "viewpoints_and_landmarks", []
-                ),
+                viewpoints_and_landmarks=parsed_result.get("viewpoints_and_landmarks", []),
                 # Estimated costs
                 estimated_costs=parsed_result.get(
                     "estimated_costs",
@@ -311,9 +309,7 @@ class AttractionsAgent(BaseAgent):
         Returns:
             Dictionary with minimal attractions information
         """
-        destination = (
-            input_data.destination_city or input_data.destination_country
-        )
+        destination = input_data.destination_city or input_data.destination_country
 
         return {
             "top_attractions": [

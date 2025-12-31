@@ -49,9 +49,7 @@ class ShareSettingsBase(BaseModel):
     allow_copy: bool = Field(
         default=False, description="Whether viewers can copy the trip", alias="allowCopy"
     )
-    expiry: ShareLinkExpiry = Field(
-        default=ShareLinkExpiry.NEVER, description="Link expiry period"
-    )
+    expiry: ShareLinkExpiry = Field(default=ShareLinkExpiry.NEVER, description="Link expiry period")
 
 
 class ShareSettingsCreate(ShareSettingsBase):
@@ -63,9 +61,7 @@ class ShareSettingsCreate(ShareSettingsBase):
 class ShareSettings(ShareSettingsBase):
     """Share settings response model."""
 
-    model_config = ConfigDict(
-        populate_by_name=True, serialize_by_alias=True, from_attributes=True
-    )
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True, from_attributes=True)
 
     trip_id: str = Field(..., alias="tripId")
     share_token: Optional[str] = Field(None, alias="shareToken")
@@ -150,9 +146,7 @@ class CollaboratorUpdate(BaseModel):
 class Collaborator(CollaboratorBase):
     """Collaborator response model."""
 
-    model_config = ConfigDict(
-        populate_by_name=True, serialize_by_alias=True, from_attributes=True
-    )
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True, from_attributes=True)
 
     id: str
     trip_id: str = Field(..., alias="tripId")
@@ -252,9 +246,7 @@ class CommentAuthor(BaseModel):
 class Comment(CommentBase):
     """Comment response model."""
 
-    model_config = ConfigDict(
-        populate_by_name=True, serialize_by_alias=True, from_attributes=True
-    )
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True, from_attributes=True)
 
     id: str
     trip_id: str = Field(..., alias="tripId")

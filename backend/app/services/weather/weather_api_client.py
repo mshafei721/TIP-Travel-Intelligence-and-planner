@@ -326,6 +326,4 @@ class WeatherAPIClient:
             ForecastWeatherResponse object with forecast data
         """
         location = f"{latitude},{longitude}"
-        return await self.get_forecast_async(
-            location=location, days=days, aqi=aqi, alerts=alerts
-        )
+        return await self.get_forecast_async(location=location, days=days, aqi=aqi, alerts=alerts)

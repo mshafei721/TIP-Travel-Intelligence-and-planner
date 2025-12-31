@@ -19,6 +19,7 @@ from fastapi import FastAPI, Request
 # Try to import structlog for advanced structured logging
 try:
     import structlog
+
     STRUCTLOG_AVAILABLE = True
 except ImportError:
     STRUCTLOG_AVAILABLE = False
@@ -29,6 +30,7 @@ try:
 
     def json_serializer(obj: Any) -> str:
         return orjson.dumps(obj).decode()
+
 except ImportError:
     import json
 
@@ -67,12 +69,28 @@ class JSONFormatter(logging.Formatter):
         extra_fields = {}
         for key, value in record.__dict__.items():
             if key not in {
-                "name", "msg", "args", "created", "filename",
-                "funcName", "levelname", "levelno", "lineno",
-                "module", "msecs", "pathname", "process",
-                "processName", "relativeCreated", "stack_info",
-                "exc_info", "exc_text", "message", "thread",
-                "threadName", "taskName",
+                "name",
+                "msg",
+                "args",
+                "created",
+                "filename",
+                "funcName",
+                "levelname",
+                "levelno",
+                "lineno",
+                "module",
+                "msecs",
+                "pathname",
+                "process",
+                "processName",
+                "relativeCreated",
+                "stack_info",
+                "exc_info",
+                "exc_text",
+                "message",
+                "thread",
+                "threadName",
+                "taskName",
             }:
                 extra_fields[key] = value
 
@@ -88,10 +106,10 @@ class ConsoleFormatter(logging.Formatter):
     """
 
     COLORS = {
-        "DEBUG": "\033[36m",     # Cyan
-        "INFO": "\033[32m",      # Green
-        "WARNING": "\033[33m",   # Yellow
-        "ERROR": "\033[31m",     # Red
+        "DEBUG": "\033[36m",  # Cyan
+        "INFO": "\033[32m",  # Green
+        "WARNING": "\033[33m",  # Yellow
+        "ERROR": "\033[31m",  # Red
         "CRITICAL": "\033[35m",  # Magenta
     }
     RESET = "\033[0m"
@@ -104,12 +122,28 @@ class ConsoleFormatter(logging.Formatter):
         extra = ""
         for key, value in record.__dict__.items():
             if key.startswith("_") or key in {
-                "name", "msg", "args", "created", "filename",
-                "funcName", "levelname", "levelno", "lineno",
-                "module", "msecs", "pathname", "process",
-                "processName", "relativeCreated", "stack_info",
-                "exc_info", "exc_text", "message", "thread",
-                "threadName", "taskName",
+                "name",
+                "msg",
+                "args",
+                "created",
+                "filename",
+                "funcName",
+                "levelname",
+                "levelno",
+                "lineno",
+                "module",
+                "msecs",
+                "pathname",
+                "process",
+                "processName",
+                "relativeCreated",
+                "stack_info",
+                "exc_info",
+                "exc_text",
+                "message",
+                "thread",
+                "threadName",
+                "taskName",
             }:
                 continue
             extra += f" | {key}={value}"
@@ -131,8 +165,8 @@ def configure_logging(
         enable_json: Force JSON format (auto-detected based on environment if None)
     """
     # Determine if we should use JSON format
-    use_json = enable_json if enable_json is not None else (
-        environment in ("production", "staging")
+    use_json = (
+        enable_json if enable_json is not None else (environment in ("production", "staging"))
     )
 
     # Get root logger
@@ -171,7 +205,7 @@ def configure_logging(
             "environment": environment,
             "log_level": log_level,
             "format": "json" if use_json else "console",
-        }
+        },
     )
 
 
@@ -207,7 +241,7 @@ class RequestLogger:
                 "query": str(request.query_params),
                 "client_ip": request.client.host if request.client else None,
                 "user_agent": request.headers.get("user-agent"),
-            }
+            },
         )
 
         # Process request
@@ -225,7 +259,7 @@ class RequestLogger:
                     "duration_ms": round(duration_ms, 2),
                     "error": str(e),
                     "error_type": type(e).__name__,
-                }
+                },
             )
             raise
 
@@ -243,7 +277,7 @@ class RequestLogger:
                 "path": str(request.url.path),
                 "status_code": response.status_code,
                 "duration_ms": round(duration_ms, 2),
-            }
+            },
         )
 
         # Add request ID to response headers
@@ -261,6 +295,7 @@ def log_execution_time(logger_name: str = "app.performance"):
         async def my_function():
             ...
     """
+
     def decorator(func: Callable):
         logger = logging.getLogger(logger_name)
 
@@ -275,7 +310,7 @@ def log_execution_time(logger_name: str = "app.performance"):
                     extra={
                         "function": func.__name__,
                         "duration_ms": round(duration_ms, 2),
-                    }
+                    },
                 )
                 return result
             except Exception as e:
@@ -286,7 +321,7 @@ def log_execution_time(logger_name: str = "app.performance"):
                         "function": func.__name__,
                         "duration_ms": round(duration_ms, 2),
                         "error": str(e),
-                    }
+                    },
                 )
                 raise
 
@@ -301,7 +336,7 @@ def log_execution_time(logger_name: str = "app.performance"):
                     extra={
                         "function": func.__name__,
                         "duration_ms": round(duration_ms, 2),
-                    }
+                    },
                 )
                 return result
             except Exception as e:
@@ -312,7 +347,7 @@ def log_execution_time(logger_name: str = "app.performance"):
                         "function": func.__name__,
                         "duration_ms": round(duration_ms, 2),
                         "error": str(e),
-                    }
+                    },
                 )
                 raise
 
@@ -326,6 +361,7 @@ def log_execution_time(logger_name: str = "app.performance"):
 def asyncio_iscoroutinefunction(func: Callable) -> bool:
     """Check if function is async."""
     import asyncio
+
     return asyncio.iscoroutinefunction(func)
 
 
@@ -350,7 +386,7 @@ class AgentLogger:
                 "agent_type": self.agent_type,
                 "trip_id": self.trip_id,
                 "phase": "start",
-            }
+            },
         )
 
     def progress(self, message: str, step: int | None = None, total: int | None = None):

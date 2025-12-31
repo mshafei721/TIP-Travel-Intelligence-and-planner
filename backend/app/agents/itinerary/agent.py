@@ -185,9 +185,10 @@ class ItineraryAgent(BaseAgent):
                 score += 0.2 * completeness
 
         # Check for accommodation suggestions (0.1)
-        if result.get("accommodation_suggestions") and len(
-            result.get("accommodation_suggestions", [])
-        ) >= 2:
+        if (
+            result.get("accommodation_suggestions")
+            and len(result.get("accommodation_suggestions", [])) >= 2
+        ):
             score += 0.1
 
         # Check for optimization notes (0.1)
@@ -216,7 +217,9 @@ class ItineraryAgent(BaseAgent):
         logger.info(
             f"Running Itinerary Agent for {input_data.destination_city or input_data.destination_country}"
         )
-        logger.info(f"Trip duration: {(input_data.return_date - input_data.departure_date).days} days")
+        logger.info(
+            f"Trip duration: {(input_data.return_date - input_data.departure_date).days} days"
+        )
         logger.info(f"Budget level: {input_data.budget_level}, Pace: {input_data.pace}")
 
         try:
@@ -303,22 +306,24 @@ class ItineraryAgent(BaseAgent):
         # Generate basic daily plans
         daily_plans = []
         for day_num in range(1, duration + 1):
-            daily_plans.append({
-                "day_number": day_num,
-                "date": (
-                    input_data.departure_date.isoformat()
-                    if day_num == 1
-                    else input_data.return_date.isoformat()
-                ),
-                "theme": f"Explore {destination}" if day_num == 1 else f"Day {day_num}",
-                "morning_activities": [],
-                "afternoon_activities": [],
-                "evening_activities": [],
-                "meals": [],
-                "transportation": [],
-                "daily_cost_estimate": "$50-$150",
-                "notes": ["Custom itinerary to be planned"],
-            })
+            daily_plans.append(
+                {
+                    "day_number": day_num,
+                    "date": (
+                        input_data.departure_date.isoformat()
+                        if day_num == 1
+                        else input_data.return_date.isoformat()
+                    ),
+                    "theme": f"Explore {destination}" if day_num == 1 else f"Day {day_num}",
+                    "morning_activities": [],
+                    "afternoon_activities": [],
+                    "evening_activities": [],
+                    "meals": [],
+                    "transportation": [],
+                    "daily_cost_estimate": "$50-$150",
+                    "notes": ["Custom itinerary to be planned"],
+                }
+            )
 
         return {
             "daily_plans": daily_plans,

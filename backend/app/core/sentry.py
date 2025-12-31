@@ -56,6 +56,7 @@ def configure_sentry(
 
     if not dsn:
         import os
+
         dsn = os.getenv("SENTRY_DSN")
 
     if not dsn:
@@ -87,8 +88,8 @@ def configure_sentry(
                 HttpxIntegration(),
                 # Logging integration - capture logs as breadcrumbs
                 LoggingIntegration(
-                    level=logging.INFO,        # Capture INFO+ as breadcrumbs
-                    event_level=logging.ERROR, # Capture ERROR+ as events
+                    level=logging.INFO,  # Capture INFO+ as breadcrumbs
+                    event_level=logging.ERROR,  # Capture ERROR+ as events
                 ),
             ],
             # Data scrubbing
@@ -105,7 +106,7 @@ def configure_sentry(
             extra={
                 "environment": environment,
                 "traces_sample_rate": traces_sample_rate,
-            }
+            },
         )
         return True
 
@@ -129,12 +130,14 @@ def before_send_filter(event: dict, hint: dict) -> dict | None:
 
         # Skip 404 and 401 errors (expected behavior)
         from fastapi import HTTPException
+
         if isinstance(exc_value, HTTPException):
             if exc_value.status_code in (404, 401):
                 return None
 
         # Skip validation errors (user input issues)
         from fastapi.exceptions import RequestValidationError
+
         if isinstance(exc_value, RequestValidationError):
             return None
 
@@ -175,10 +178,12 @@ def set_user_context(user_id: str, email: str | None = None) -> None:
     if not SENTRY_AVAILABLE:
         return
 
-    sentry_sdk.set_user({
-        "id": user_id,
-        "email": email,
-    })
+    sentry_sdk.set_user(
+        {
+            "id": user_id,
+            "email": email,
+        }
+    )
 
 
 def clear_user_context() -> None:
@@ -253,6 +258,7 @@ def start_transaction(
     """
     if not SENTRY_AVAILABLE:
         from contextlib import nullcontext
+
         return nullcontext()
 
     return sentry_sdk.start_transaction(

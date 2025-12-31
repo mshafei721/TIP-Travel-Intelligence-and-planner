@@ -30,18 +30,12 @@ class FlightAgentInput(BaseModel):
     departure_date: DateType = Field(..., description="Departure date")
     return_date: Optional[DateType] = Field(None, description="Return date (None for one-way)")
     passengers: int = Field(default=1, ge=1, le=9, description="Number of passengers")
-    cabin_class: CabinClass = Field(
-        default=CabinClass.ECONOMY, description="Preferred cabin class"
-    )
-    budget_usd: Optional[float] = Field(
-        None, ge=0, description="Maximum budget per person in USD"
-    )
+    cabin_class: CabinClass = Field(default=CabinClass.ECONOMY, description="Preferred cabin class")
+    budget_usd: Optional[float] = Field(None, ge=0, description="Maximum budget per person in USD")
     direct_flights_only: bool = Field(
         default=False, description="Whether to search only direct flights"
     )
-    flexible_dates: bool = Field(
-        default=True, description="Whether to consider nearby dates"
-    )
+    flexible_dates: bool = Field(default=True, description="Whether to consider nearby dates")
 
     @field_validator("return_date")
     @classmethod
@@ -142,9 +136,7 @@ class FlightAgentOutput(BaseModel):
     best_time_to_book: Optional[str] = Field(
         None, description="Optimal booking timing recommendation"
     )
-    booking_tips: list[str] = Field(
-        default_factory=list, description="General flight booking tips"
-    )
+    booking_tips: list[str] = Field(default_factory=list, description="General flight booking tips")
     airport_info: AirportInfo = Field(..., description="Airport and transport info")
     layover_suggestions: Optional[list[str]] = Field(
         None, description="Tips for layover airports if applicable"
@@ -155,9 +147,7 @@ class FlightAgentOutput(BaseModel):
     seasonal_notes: Optional[list[str]] = Field(
         None, description="Seasonal flight availability notes"
     )
-    baggage_tips: list[str] = Field(
-        default_factory=list, description="Baggage allowance and tips"
-    )
+    baggage_tips: list[str] = Field(default_factory=list, description="Baggage allowance and tips")
     generated_at: datetime = Field(
         default_factory=datetime.utcnow, description="Generation timestamp"
     )
@@ -167,9 +157,7 @@ class FlightAgentOutput(BaseModel):
     sources: list[str] = Field(
         default_factory=list, description="Data sources for flight information"
     )
-    warnings: list[str] = Field(
-        default_factory=list, description="Important warnings or notices"
-    )
+    warnings: list[str] = Field(default_factory=list, description="Important warnings or notices")
 
     class Config:
         """Pydantic config."""

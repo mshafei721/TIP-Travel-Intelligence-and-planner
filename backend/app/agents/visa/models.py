@@ -171,7 +171,9 @@ def classify_visa_type(category_string: str) -> VisaCategory:
     if any(term in category_lower for term in ["on arrival", "on-arrival", "voa", "at airport"]):
         return VisaCategory.VISA_ON_ARRIVAL
 
-    if any(term in category_lower for term in ["evisa", "e-visa", "electronic visa", "online visa"]):
+    if any(
+        term in category_lower for term in ["evisa", "e-visa", "electronic visa", "online visa"]
+    ):
         return VisaCategory.EVISA
 
     if any(term in category_lower for term in ["eta", "electronic travel", "esta", "etas"]):

@@ -7,7 +7,18 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.api import feedback, healthcheck, history, itinerary, places, profile, recommendations, sharing, templates, trips
+from app.api import (
+    feedback,
+    healthcheck,
+    history,
+    itinerary,
+    places,
+    profile,
+    recommendations,
+    sharing,
+    templates,
+    trips,
+)
 from app.api import settings as settings_router
 from app.core.api_validation import startup_api_check
 from app.core.config import settings
@@ -105,6 +116,7 @@ async def root():
 async def startup_event():
     """Application startup tasks"""
     import logging
+
     logger = logging.getLogger("app.startup")
 
     # Validate API key configuration
@@ -122,7 +134,7 @@ async def startup_event():
             "cors_origins": settings.cors_origins_list,
             "sentry_enabled": bool(settings.SENTRY_DSN),
             "rate_limit": settings.RATE_LIMIT_PER_MINUTE,
-        }
+        },
     )
 
 
@@ -131,5 +143,6 @@ async def startup_event():
 async def shutdown_event():
     """Application shutdown tasks"""
     import logging
+
     logger = logging.getLogger("app.startup")
     logger.info("Application shutting down")

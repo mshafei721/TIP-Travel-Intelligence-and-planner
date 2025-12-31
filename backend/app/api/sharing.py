@@ -299,9 +299,7 @@ async def view_shared_trip(token: str) -> PublicTripView:
             raise HTTPException(status_code=410, detail="Share link has expired")
 
     # Get trip data
-    trip_result = (
-        supabase.table("trips").select("*").eq("id", link["trip_id"]).single().execute()
-    )
+    trip_result = supabase.table("trips").select("*").eq("id", link["trip_id"]).single().execute()
 
     if not trip_result.data:
         raise HTTPException(status_code=404, detail="Trip not found")
@@ -310,7 +308,10 @@ async def view_shared_trip(token: str) -> PublicTripView:
 
     # Increment view count
     supabase.table("share_links").update(
-        {"view_count": link.get("view_count", 0) + 1, "last_viewed_at": datetime.utcnow().isoformat()}
+        {
+            "view_count": link.get("view_count", 0) + 1,
+            "last_viewed_at": datetime.utcnow().isoformat(),
+        }
     ).eq("id", link["id"]).execute()
 
     return PublicTripView(
@@ -401,7 +402,13 @@ async def list_collaborators(
     supabase = get_supabase_client()
 
     # Get trip for owner info
-    trip = supabase.table("trips").select("user_id, traveler_details").eq("id", trip_id).single().execute()
+    trip = (
+        supabase.table("trips")
+        .select("user_id, traveler_details")
+        .eq("id", trip_id)
+        .single()
+        .execute()
+    )
 
     # Get collaborators
     result = supabase.table("trip_collaborators").select("*").eq("trip_id", trip_id).execute()
@@ -418,7 +425,9 @@ async def list_collaborators(
                 invited_by=collab["invited_by"],
                 invited_at=datetime.fromisoformat(collab["created_at"]),
                 accepted_at=(
-                    datetime.fromisoformat(collab["accepted_at"]) if collab.get("accepted_at") else None
+                    datetime.fromisoformat(collab["accepted_at"])
+                    if collab.get("accepted_at")
+                    else None
                 ),
                 is_pending=collab.get("accepted_at") is None,
             )
@@ -553,7 +562,9 @@ async def accept_invitation(
     )
 
     # Get trip title
-    trip = supabase.table("trips").select("title").eq("id", invitation["trip_id"]).single().execute()
+    trip = (
+        supabase.table("trips").select("title").eq("id", invitation["trip_id"]).single().execute()
+    )
 
     return InvitationAcceptResponse(
         trip_id=invitation["trip_id"],
@@ -610,7 +621,13 @@ async def create_comment(
         raise HTTPException(status_code=500, detail="Failed to create comment")
 
     # Get user info for author
-    user_profile = supabase.table("user_profiles").select("display_name, avatar_url").eq("id", user_id).single().execute()
+    user_profile = (
+        supabase.table("user_profiles")
+        .select("display_name, avatar_url")
+        .eq("id", user_id)
+        .single()
+        .execute()
+    )
 
     return Comment(
         id=result.data["id"],
@@ -691,7 +708,9 @@ async def list_comments(
                         if author_profile.data
                         else "User"
                     ),
-                    avatar_url=author_profile.data.get("avatar_url") if author_profile.data else None,
+                    avatar_url=(
+                        author_profile.data.get("avatar_url") if author_profile.data else None
+                    ),
                     is_owner=c["user_id"] == trip_owner_id,
                 ),
                 is_edited=c.get("is_edited", False),
@@ -790,7 +809,9 @@ async def delete_comment(
     trip = supabase.table("trips").select("user_id").eq("id", trip_id).single().execute()
 
     # Get comment
-    comment = supabase.table("trip_comments").select("user_id").eq("id", comment_id).single().execute()
+    comment = (
+        supabase.table("trip_comments").select("user_id").eq("id", comment_id).single().execute()
+    )
 
     if not comment.data:
         raise HTTPException(status_code=404, detail="Comment not found")

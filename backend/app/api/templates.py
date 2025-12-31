@@ -80,7 +80,9 @@ async def list_public_templates(
         return results
 
     except Exception as e:
-        log_and_raise_http_error("fetch public templates", e, "Failed to fetch public templates. Please try again.")
+        log_and_raise_http_error(
+            "fetch public templates", e, "Failed to fetch public templates. Please try again."
+        )
 
 
 @router.get("/public/featured", response_model=list[PublicTemplateResponse])
@@ -106,7 +108,9 @@ async def get_featured_templates(
         return response.data if response.data else []
 
     except Exception as e:
-        log_and_raise_http_error("fetch featured templates", e, "Failed to fetch featured templates. Please try again.")
+        log_and_raise_http_error(
+            "fetch featured templates", e, "Failed to fetch featured templates. Please try again."
+        )
 
 
 @router.post("/{template_id}/clone", response_model=TripTemplateResponse)
@@ -127,12 +131,7 @@ async def clone_template(
 
     try:
         # Fetch the template (must be public or owned by user)
-        existing = (
-            supabase.table("trip_templates")
-            .select("*")
-            .eq("id", template_id)
-            .execute()
-        )
+        existing = supabase.table("trip_templates").select("*").eq("id", template_id).execute()
 
         if not existing.data:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Template not found")
@@ -203,7 +202,9 @@ async def list_templates(token_payload: dict = Depends(verify_jwt_token)):
         return {"templates": response.data if response.data else []}
 
     except Exception as e:
-        log_and_raise_http_error("fetch templates", e, "Failed to fetch templates. Please try again.")
+        log_and_raise_http_error(
+            "fetch templates", e, "Failed to fetch templates. Please try again."
+        )
 
 
 @router.get("/{template_id}", response_model=TripTemplateResponse)
@@ -268,7 +269,9 @@ async def create_template(
             "destinations": template.destinations,
             "preferences": template.preferences,
             "typical_duration": template.typical_duration,
-            "estimated_budget": float(template.estimated_budget) if template.estimated_budget else None,
+            "estimated_budget": (
+                float(template.estimated_budget) if template.estimated_budget else None
+            ),
             "currency": template.currency,
         }
 
@@ -285,7 +288,9 @@ async def create_template(
     except HTTPException:
         raise
     except Exception as e:
-        log_and_raise_http_error("create template", e, "Failed to create template. Please try again.")
+        log_and_raise_http_error(
+            "create template", e, "Failed to create template. Please try again."
+        )
 
 
 @router.put("/{template_id}", response_model=TripTemplateResponse)
@@ -370,7 +375,9 @@ async def update_template(
     except HTTPException:
         raise
     except Exception as e:
-        log_and_raise_http_error("update template", e, "Failed to update template. Please try again.")
+        log_and_raise_http_error(
+            "update template", e, "Failed to update template. Please try again."
+        )
 
 
 @router.delete("/{template_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -419,4 +426,6 @@ async def delete_template(template_id: str, token_payload: dict = Depends(verify
     except HTTPException:
         raise
     except Exception as e:
-        log_and_raise_http_error("delete template", e, "Failed to delete template. Please try again.")
+        log_and_raise_http_error(
+            "delete template", e, "Failed to delete template. Please try again."
+        )

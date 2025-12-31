@@ -68,13 +68,10 @@ def cleanup_expired_tasks(self) -> dict:
 
         # Clean up orphaned report sections (no associated trip)
         # This handles edge cases where trips were deleted but sections remain
-        orphan_response = (
-            supabase.rpc(
-                "cleanup_orphaned_sections",
-                {},
-            )
-            .execute()
-        )
+        orphan_response = supabase.rpc(
+            "cleanup_orphaned_sections",
+            {},
+        ).execute()
 
         # Estimate memory freed (rough estimate based on record count)
         # Average agent_job record ~5KB, report_section ~10KB
@@ -150,9 +147,9 @@ def process_deletion_queue(self) -> dict:
 
             try:
                 # Mark as executing
-                supabase.table("deletion_schedule").update(
-                    {"status": "executing"}
-                ).eq("id", deletion_id).execute()
+                supabase.table("deletion_schedule").update({"status": "executing"}).eq(
+                    "id", deletion_id
+                ).execute()
 
                 # Get trip info for logging
                 trip_response = (
@@ -180,12 +177,7 @@ def process_deletion_queue(self) -> dict:
                     logger.warning(f"Could not clean storage for trip {trip_id}: {storage_error}")
 
                 # Delete the trip (cascade will delete report_sections, agent_jobs, etc.)
-                delete_response = (
-                    supabase.table("trips")
-                    .delete()
-                    .eq("id", trip_id)
-                    .execute()
-                )
+                delete_response = supabase.table("trips").delete().eq("id", trip_id).execute()
 
                 # Mark deletion as completed
                 supabase.table("deletion_schedule").update(
@@ -271,19 +263,12 @@ def cleanup_expired_pdfs(self) -> dict:
                     continue
 
                 # Check if trip exists
-                trip_response = (
-                    supabase.table("trips")
-                    .select("id")
-                    .eq("id", trip_id)
-                    .execute()
-                )
+                trip_response = supabase.table("trips").select("id").eq("id", trip_id).execute()
 
                 if not trip_response.data:
                     # Trip doesn't exist, delete all PDFs in this folder
                     try:
-                        files = supabase.storage.from_("trip-reports").list(
-                            path=f"{trip_id}/"
-                        )
+                        files = supabase.storage.from_("trip-reports").list(path=f"{trip_id}/")
                         for file in files:
                             file_path = f"{trip_id}/{file['name']}"
                             file_size = file.get("metadata", {}).get("size", 0)

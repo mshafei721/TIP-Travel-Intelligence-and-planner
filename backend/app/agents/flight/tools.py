@@ -79,11 +79,7 @@ def search_flight_routes(
         try:
             # Parse dates
             dep_date = datetime.strptime(departure_date, "%Y-%m-%d").date()
-            ret_date = (
-                datetime.strptime(return_date, "%Y-%m-%d").date()
-                if return_date
-                else None
-            )
+            ret_date = datetime.strptime(return_date, "%Y-%m-%d").date() if return_date else None
 
             # Map cabin class to API format
             cabin_map = {

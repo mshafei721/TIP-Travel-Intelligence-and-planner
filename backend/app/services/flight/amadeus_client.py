@@ -208,9 +208,7 @@ class AmadeusFlightClient:
             ValueError: If code is invalid
         """
         if not code or len(code) != 3 or not code.isalpha():
-            raise ValueError(
-                f"Invalid {code_type} code: {code}. Must be 3-letter IATA code"
-            )
+            raise ValueError(f"Invalid {code_type} code: {code}. Must be 3-letter IATA code")
 
     def _get_access_token(self) -> str:
         """
@@ -300,9 +298,7 @@ class AmadeusFlightClient:
         adults: int = 1,
         children: int = 0,
         infants: int = 0,
-        travel_class: Literal[
-            "ECONOMY", "PREMIUM_ECONOMY", "BUSINESS", "FIRST"
-        ] = "ECONOMY",
+        travel_class: Literal["ECONOMY", "PREMIUM_ECONOMY", "BUSINESS", "FIRST"] = "ECONOMY",
         non_stop: bool = False,
         max_offers: int = 10,
         currency: str = "USD",
@@ -386,9 +382,7 @@ class AmadeusFlightClient:
         adults: int = 1,
         children: int = 0,
         infants: int = 0,
-        travel_class: Literal[
-            "ECONOMY", "PREMIUM_ECONOMY", "BUSINESS", "FIRST"
-        ] = "ECONOMY",
+        travel_class: Literal["ECONOMY", "PREMIUM_ECONOMY", "BUSINESS", "FIRST"] = "ECONOMY",
         non_stop: bool = False,
         max_offers: int = 10,
         currency: str = "USD",
@@ -508,9 +502,7 @@ class AmadeusFlightClient:
                         carrier_code=seg.get("carrierCode", ""),
                         carrier_name=carriers.get(seg.get("carrierCode", ""), None),
                         flight_number=seg.get("number", ""),
-                        aircraft=aircraft_dict.get(
-                            seg.get("aircraft", {}).get("code", ""), None
-                        ),
+                        aircraft=aircraft_dict.get(seg.get("aircraft", {}).get("code", ""), None),
                         duration=seg.get("duration", ""),
                         stops=seg.get("numberOfStops", 0),
                     )
@@ -531,11 +523,7 @@ class AmadeusFlightClient:
             price_per_adult = total_price / adults if adults > 0 else total_price
             if traveler_pricings:
                 adult_pricing = next(
-                    (
-                        tp
-                        for tp in traveler_pricings
-                        if tp.get("travelerType") == "ADULT"
-                    ),
+                    (tp for tp in traveler_pricings if tp.get("travelerType") == "ADULT"),
                     None,
                 )
                 if adult_pricing:
@@ -548,9 +536,7 @@ class AmadeusFlightClient:
             included_baggage = None
             booking_class = None
             if traveler_pricings:
-                fare_details = (
-                    traveler_pricings[0].get("fareDetailsBySegment", [{}])[0]
-                )
+                fare_details = traveler_pricings[0].get("fareDetailsBySegment", [{}])[0]
                 cabin_class = fare_details.get("cabin", "ECONOMY")
                 booking_class = fare_details.get("class")
                 baggage = fare_details.get("includedCheckedBags", {})
@@ -565,9 +551,7 @@ class AmadeusFlightClient:
             offer = FlightOffer(
                 offer_id=offer_data.get("id", ""),
                 source=offer_data.get("source", "GDS"),
-                instant_ticketing_required=offer_data.get(
-                    "instantTicketingRequired", False
-                ),
+                instant_ticketing_required=offer_data.get("instantTicketingRequired", False),
                 non_homogeneous=offer_data.get("nonHomogeneous", False),
                 one_way=len(itineraries) == 1,
                 last_ticketing_date=offer_data.get("lastTicketingDate"),

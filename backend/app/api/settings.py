@@ -167,7 +167,9 @@ async def update_all_settings(
     except HTTPException:
         raise
     except Exception as e:
-        log_and_raise_http_error("update settings", e, "Failed to update settings. Please try again.")
+        log_and_raise_http_error(
+            "update settings", e, "Failed to update settings. Please try again."
+        )
 
 
 # =============================================================================
@@ -216,7 +218,9 @@ async def get_appearance_settings(token_payload: dict = Depends(verify_jwt_token
     except HTTPException:
         raise
     except Exception as e:
-        log_and_raise_http_error("fetch appearance settings", e, "Failed to fetch appearance settings. Please try again.")
+        log_and_raise_http_error(
+            "fetch appearance settings", e, "Failed to fetch appearance settings. Please try again."
+        )
 
 
 @router.put("/appearance", response_model=AppearanceSettingsResponse)
@@ -275,7 +279,11 @@ async def update_appearance_settings(
     except HTTPException:
         raise
     except Exception as e:
-        log_and_raise_http_error("update appearance settings", e, "Failed to update appearance settings. Please try again.")
+        log_and_raise_http_error(
+            "update appearance settings",
+            e,
+            "Failed to update appearance settings. Please try again.",
+        )
 
 
 # =============================================================================
@@ -320,7 +328,11 @@ async def get_notification_settings(token_payload: dict = Depends(verify_jwt_tok
     except HTTPException:
         raise
     except Exception as e:
-        log_and_raise_http_error("fetch notification settings", e, "Failed to fetch notification settings. Please try again.")
+        log_and_raise_http_error(
+            "fetch notification settings",
+            e,
+            "Failed to fetch notification settings. Please try again.",
+        )
 
 
 @router.put("/notifications", response_model=NotificationSettingsResponse)
@@ -379,7 +391,11 @@ async def update_notification_settings(
     except HTTPException:
         raise
     except Exception as e:
-        log_and_raise_http_error("update notification settings", e, "Failed to update notification settings. Please try again.")
+        log_and_raise_http_error(
+            "update notification settings",
+            e,
+            "Failed to update notification settings. Please try again.",
+        )
 
 
 # =============================================================================
@@ -426,7 +442,9 @@ async def get_privacy_settings(token_payload: dict = Depends(verify_jwt_token)):
     except HTTPException:
         raise
     except Exception as e:
-        log_and_raise_http_error("fetch privacy settings", e, "Failed to fetch privacy settings. Please try again.")
+        log_and_raise_http_error(
+            "fetch privacy settings", e, "Failed to fetch privacy settings. Please try again."
+        )
 
 
 @router.put("/privacy", response_model=PrivacySettingsResponse)
@@ -485,7 +503,9 @@ async def update_privacy_settings(
     except HTTPException:
         raise
     except Exception as e:
-        log_and_raise_http_error("update privacy settings", e, "Failed to update privacy settings. Please try again.")
+        log_and_raise_http_error(
+            "update privacy settings", e, "Failed to update privacy settings. Please try again."
+        )
 
 
 # =============================================================================
@@ -532,7 +552,9 @@ async def get_ai_preferences(token_payload: dict = Depends(verify_jwt_token)):
     except HTTPException:
         raise
     except Exception as e:
-        log_and_raise_http_error("fetch AI preferences", e, "Failed to fetch AI preferences. Please try again.")
+        log_and_raise_http_error(
+            "fetch AI preferences", e, "Failed to fetch AI preferences. Please try again."
+        )
 
 
 @router.put("/ai", response_model=AIPreferencesResponse)
@@ -591,7 +613,9 @@ async def update_ai_preferences(
     except HTTPException:
         raise
     except Exception as e:
-        log_and_raise_http_error("update AI preferences", e, "Failed to update AI preferences. Please try again.")
+        log_and_raise_http_error(
+            "update AI preferences", e, "Failed to update AI preferences. Please try again."
+        )
 
 
 # =============================================================================
@@ -638,29 +662,18 @@ async def request_data_export(
         data_to_export = {}
 
         if export_request.include_trips:
-            trips_response = (
-                supabase.table("trips")
-                .select("*")
-                .eq("user_id", user_id)
-                .execute()
-            )
+            trips_response = supabase.table("trips").select("*").eq("user_id", user_id).execute()
             data_to_export["trips"] = trips_response.data or []
 
         if export_request.include_reports:
             reports_response = (
-                supabase.table("report_sections")
-                .select("*")
-                .eq("user_id", user_id)
-                .execute()
+                supabase.table("report_sections").select("*").eq("user_id", user_id).execute()
             )
             data_to_export["reports"] = reports_response.data or []
 
         if export_request.include_templates:
             templates_response = (
-                supabase.table("trip_templates")
-                .select("*")
-                .eq("user_id", user_id)
-                .execute()
+                supabase.table("trip_templates").select("*").eq("user_id", user_id).execute()
             )
             data_to_export["templates"] = templates_response.data or []
 
@@ -673,9 +686,7 @@ async def request_data_export(
                 .execute()
             )
             data_to_export["settings"] = (
-                profile_response.data.get("preferences", {})
-                if profile_response.data
-                else {}
+                profile_response.data.get("preferences", {}) if profile_response.data else {}
             )
 
         # For now, return the data directly in JSON format
@@ -696,7 +707,9 @@ async def request_data_export(
         )
 
     except Exception as e:
-        log_and_raise_http_error("create data export", e, "Failed to create data export. Please try again.")
+        log_and_raise_http_error(
+            "create data export", e, "Failed to create data export. Please try again."
+        )
 
 
 @router.get("/data/export/{export_id}")

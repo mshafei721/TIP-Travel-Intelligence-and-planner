@@ -164,7 +164,9 @@ class DayPlan(DayPlanBase):
 
     id: str = Field(default_factory=lambda: str(uuid4()), description="Unique day ID")
     activities: list[Activity] = Field(default_factory=list, description="Activities for the day")
-    total_cost: float = Field(default=0.0, ge=0, description="Total cost for the day", alias="totalCost")
+    total_cost: float = Field(
+        default=0.0, ge=0, description="Total cost for the day", alias="totalCost"
+    )
 
     def calculate_total_cost(self) -> float:
         """Calculate total cost from activities."""
@@ -174,9 +176,7 @@ class DayPlan(DayPlanBase):
 class DayPlanCreate(DayPlanBase):
     """Model for creating a new day plan."""
 
-    activities: list[ActivityCreate] = Field(
-        default_factory=list, description="Initial activities"
-    )
+    activities: list[ActivityCreate] = Field(default_factory=list, description="Initial activities")
 
 
 class DayPlanUpdate(BaseModel):

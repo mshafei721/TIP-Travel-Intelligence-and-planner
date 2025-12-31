@@ -284,9 +284,7 @@ class UserSettingsUpdate(BaseModel):
 class UserSettingsResponse(BaseModel):
     """Response model for user settings"""
 
-    model_config = ConfigDict(
-        populate_by_name=True, serialize_by_alias=True, from_attributes=True
-    )
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True, from_attributes=True)
 
     success: bool = True
     data: UserSettings
@@ -295,9 +293,7 @@ class UserSettingsResponse(BaseModel):
 class AppearanceSettingsResponse(BaseModel):
     """Response model for appearance settings"""
 
-    model_config = ConfigDict(
-        populate_by_name=True, serialize_by_alias=True, from_attributes=True
-    )
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True, from_attributes=True)
 
     success: bool = True
     data: AppearanceSettings
@@ -306,9 +302,7 @@ class AppearanceSettingsResponse(BaseModel):
 class NotificationSettingsResponse(BaseModel):
     """Response model for notification settings"""
 
-    model_config = ConfigDict(
-        populate_by_name=True, serialize_by_alias=True, from_attributes=True
-    )
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True, from_attributes=True)
 
     success: bool = True
     data: NotificationSettings
@@ -317,9 +311,7 @@ class NotificationSettingsResponse(BaseModel):
 class PrivacySettingsResponse(BaseModel):
     """Response model for privacy settings"""
 
-    model_config = ConfigDict(
-        populate_by_name=True, serialize_by_alias=True, from_attributes=True
-    )
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True, from_attributes=True)
 
     success: bool = True
     data: PrivacySettings
@@ -328,9 +320,7 @@ class PrivacySettingsResponse(BaseModel):
 class AIPreferencesResponse(BaseModel):
     """Response model for AI preferences"""
 
-    model_config = ConfigDict(
-        populate_by_name=True, serialize_by_alias=True, from_attributes=True
-    )
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True, from_attributes=True)
 
     success: bool = True
     data: AIPreferences

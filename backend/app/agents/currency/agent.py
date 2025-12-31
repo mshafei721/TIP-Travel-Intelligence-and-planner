@@ -189,13 +189,15 @@ class CurrencyAgent(BaseAgent):
                 estimates.append(item)
             elif isinstance(item, dict):
                 try:
-                    estimates.append(CostEstimate(
-                        category=item.get("category", "Unknown"),
-                        cost_min=float(item.get("cost_min", 0)),
-                        cost_max=float(item.get("cost_max", 0)),
-                        currency=item.get("currency", "USD"),
-                        notes=item.get("notes"),
-                    ))
+                    estimates.append(
+                        CostEstimate(
+                            category=item.get("category", "Unknown"),
+                            cost_min=float(item.get("cost_min", 0)),
+                            cost_max=float(item.get("cost_max", 0)),
+                            currency=item.get("currency", "USD"),
+                            notes=item.get("notes"),
+                        )
+                    )
                 except (ValueError, TypeError):
                     # Skip invalid cost estimate entries
                     pass

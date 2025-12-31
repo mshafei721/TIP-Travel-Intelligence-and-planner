@@ -181,10 +181,10 @@ class VisaAgent(BaseAgent):
         try:
             # Handle CrewOutput object - extract the actual data
             # CrewOutput has .raw (string), .json_dict (dict), and other properties
-            if hasattr(crew_result, 'json_dict') and crew_result.json_dict:
+            if hasattr(crew_result, "json_dict") and crew_result.json_dict:
                 # Use pre-parsed JSON dict if available
                 result_data = crew_result.json_dict
-            elif hasattr(crew_result, 'raw'):
+            elif hasattr(crew_result, "raw"):
                 # Extract raw string and parse it
                 raw_result = crew_result.raw
                 # Extract JSON from markdown code blocks if present
@@ -262,16 +262,18 @@ class VisaAgent(BaseAgent):
                 else:
                     source_type = "third-party"
 
-                sources.append(SourceReference(
-                    url=s.get("url", ""),
-                    title=s.get("description", s.get("title", s.get("name", "Visa Source"))),
-                    verified_at=(
-                        datetime.fromisoformat(s["last_accessed"])
-                        if "last_accessed" in s
-                        else now
-                    ),
-                    source_type=source_type,
-                ))
+                sources.append(
+                    SourceReference(
+                        url=s.get("url", ""),
+                        title=s.get("description", s.get("title", s.get("name", "Visa Source"))),
+                        verified_at=(
+                            datetime.fromisoformat(s["last_accessed"])
+                            if "last_accessed" in s
+                            else now
+                        ),
+                        source_type=source_type,
+                    )
+                )
 
             # Create output
             return VisaAgentOutput(

@@ -184,9 +184,12 @@ class FoodAgent(BaseAgent):
                     normalized = {
                         "name": item.get("name", "Unknown"),
                         "description": item.get("description", "Street food item"),
-                        "where_to_find": item.get("where_to_find", item.get("location", "Various locations")),
+                        "where_to_find": item.get(
+                            "where_to_find", item.get("location", "Various locations")
+                        ),
                         "safety_rating": item.get("safety_rating", "generally-safe"),
-                        "price_range": item.get("price_range") or item.get("typical_prices", "$1-5"),
+                        "price_range": item.get("price_range")
+                        or item.get("typical_prices", "$1-5"),
                     }
                     try:
                         result.append(StreetFood(**normalized))
@@ -196,13 +199,15 @@ class FoodAgent(BaseAgent):
                 elif isinstance(item, str):
                     # Simple string item - create minimal StreetFood
                     try:
-                        result.append(StreetFood(
-                            name=item,
-                            description=f"{item} - local street food",
-                            where_to_find="Street vendors",
-                            safety_rating="generally-safe",
-                            price_range="$1-5",
-                        ))
+                        result.append(
+                            StreetFood(
+                                name=item,
+                                description=f"{item} - local street food",
+                                where_to_find="Street vendors",
+                                safety_rating="generally-safe",
+                                price_range="$1-5",
+                            )
+                        )
                     except Exception:
                         pass
             return result
@@ -273,7 +278,9 @@ class FoodAgent(BaseAgent):
 
         return ["Observe local dining customs"]
 
-    def _normalize_dietary_availability(self, data: dict | DietaryAvailability | None) -> DietaryAvailability:
+    def _normalize_dietary_availability(
+        self, data: dict | DietaryAvailability | None
+    ) -> DietaryAvailability:
         """
         Normalize dietary availability from LLM output.
 
@@ -377,7 +384,9 @@ class FoodAgent(BaseAgent):
                     "spicy_level": item.get("spicy_level"),
                     "is_vegetarian": item.get("is_vegetarian", False),
                     "is_vegan": item.get("is_vegan", False),
-                    "typical_price_range": item.get("typical_price_range", item.get("price_range", "$$")),
+                    "typical_price_range": item.get(
+                        "typical_price_range", item.get("price_range", "$$")
+                    ),
                 }
                 try:
                     result.append(Dish(**normalized))
@@ -385,11 +394,13 @@ class FoodAgent(BaseAgent):
                     pass
             elif isinstance(item, str):
                 try:
-                    result.append(Dish(
-                        name=item,
-                        description=f"{item} - must-try local dish",
-                        category="main",
-                    ))
+                    result.append(
+                        Dish(
+                            name=item,
+                            description=f"{item} - must-try local dish",
+                            category="main",
+                        )
+                    )
                 except Exception:
                     pass
         return result
@@ -424,7 +435,10 @@ class FoodAgent(BaseAgent):
             score += 0.2
 
         # Check for restaurant recommendations (0.1)
-        if result.get("restaurant_recommendations") and len(result.get("restaurant_recommendations", [])) >= 3:
+        if (
+            result.get("restaurant_recommendations")
+            and len(result.get("restaurant_recommendations", [])) >= 3
+        ):
             score += 0.1
 
         # Check for food safety tips (0.1)
@@ -481,9 +495,15 @@ class FoodAgent(BaseAgent):
 
             # Normalize complex fields from LLM output
             street_food = self._normalize_street_food(parsed_result.get("street_food"))
-            dining_etiquette = self._normalize_dining_etiquette(parsed_result.get("dining_etiquette"))
-            dietary_availability = self._normalize_dietary_availability(parsed_result.get("dietary_availability"))
-            restaurant_recommendations = self._normalize_restaurant_recommendations(parsed_result.get("restaurant_recommendations"))
+            dining_etiquette = self._normalize_dining_etiquette(
+                parsed_result.get("dining_etiquette")
+            )
+            dietary_availability = self._normalize_dietary_availability(
+                parsed_result.get("dietary_availability")
+            )
+            restaurant_recommendations = self._normalize_restaurant_recommendations(
+                parsed_result.get("restaurant_recommendations")
+            )
             must_try_dishes = self._normalize_must_try_dishes(parsed_result.get("must_try_dishes"))
 
             # Build output model

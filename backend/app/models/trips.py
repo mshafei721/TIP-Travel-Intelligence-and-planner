@@ -300,9 +300,7 @@ class TripUpdateRequest(BaseModel):
 class TripResponse(BaseModel):
     """Response model for trip data"""
 
-    model_config = ConfigDict(
-        populate_by_name=True, serialize_by_alias=True, from_attributes=True
-    )
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True, from_attributes=True)
 
     id: str
     user_id: str = Field(..., alias="userId")
@@ -340,9 +338,7 @@ class DraftSaveRequest(BaseModel):
 class DraftResponse(BaseModel):
     """Response model for draft data"""
 
-    model_config = ConfigDict(
-        populate_by_name=True, serialize_by_alias=True, from_attributes=True
-    )
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True, from_attributes=True)
 
     id: str
     user_id: str = Field(..., alias="userId")

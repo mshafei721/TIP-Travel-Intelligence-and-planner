@@ -123,6 +123,7 @@ ignore = [
     "G003",    # logging statement uses +
     "N818",    # exception name should end with Error
     "G101",    # extra field clashes with LogRecord
+    "ISC001",  # implicitly concatenated strings (conflicts with Black)
 ]
 
 # Allow autofix for all enabled rules

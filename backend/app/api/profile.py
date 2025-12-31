@@ -85,7 +85,9 @@ async def get_statistics(token_payload: dict = Depends(verify_jwt_token)):
         return {"statistics": statistics}
 
     except Exception as e:
-        log_and_raise_http_error("calculate statistics", e, "Failed to calculate statistics. Please try again.")
+        log_and_raise_http_error(
+            "calculate statistics", e, "Failed to calculate statistics. Please try again."
+        )
 
 
 @router.get("")
@@ -213,7 +215,9 @@ async def get_traveler_profile(token_payload: dict = Depends(verify_jwt_token)):
         return response.data if response.data else None
 
     except Exception as e:
-        log_and_raise_http_error("fetch traveler profile", e, "Failed to fetch traveler profile. Please try again.")
+        log_and_raise_http_error(
+            "fetch traveler profile", e, "Failed to fetch traveler profile. Please try again."
+        )
 
 
 @router.put("/traveler")
@@ -306,7 +310,9 @@ async def update_traveler_profile(
     except HTTPException:
         raise
     except Exception as e:
-        log_and_raise_http_error("update traveler profile", e, "Failed to update traveler profile. Please try again.")
+        log_and_raise_http_error(
+            "update traveler profile", e, "Failed to update traveler profile. Please try again."
+        )
 
 
 @router.put("/preferences")
@@ -347,7 +353,9 @@ async def update_preferences(
     except HTTPException:
         raise
     except Exception as e:
-        log_and_raise_http_error("update preferences", e, "Failed to update preferences. Please try again.")
+        log_and_raise_http_error(
+            "update preferences", e, "Failed to update preferences. Please try again."
+        )
 
 
 @router.delete("")
@@ -498,7 +506,9 @@ async def get_user_consent(token_payload: dict = Depends(verify_jwt_token)):
         }
 
     except Exception as e:
-        log_and_raise_http_error("get consent records", e, "Failed to get consent records. Please try again.")
+        log_and_raise_http_error(
+            "get consent records", e, "Failed to get consent records. Please try again."
+        )
 
 
 @router.put("/consent")
@@ -603,4 +613,6 @@ async def get_scheduled_deletions(token_payload: dict = Depends(verify_jwt_token
         }
 
     except Exception as e:
-        log_and_raise_http_error("get scheduled deletions", e, "Failed to get scheduled deletions. Please try again.")
+        log_and_raise_http_error(
+            "get scheduled deletions", e, "Failed to get scheduled deletions. Please try again."
+        )

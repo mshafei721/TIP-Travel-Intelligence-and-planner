@@ -22,41 +22,146 @@ from pydantic import BaseModel, ValidationError
 # Common country name to ISO 3166-1 alpha-2 code mapping
 COUNTRY_NAME_TO_CODE: dict[str, str] = {
     # Common countries - add more as needed
-    "afghanistan": "AF", "albania": "AL", "algeria": "DZ", "argentina": "AR",
-    "armenia": "AM", "australia": "AU", "austria": "AT", "azerbaijan": "AZ",
-    "bahrain": "BH", "bangladesh": "BD", "belarus": "BY", "belgium": "BE",
-    "bolivia": "BO", "bosnia and herzegovina": "BA", "brazil": "BR", "bulgaria": "BG",
-    "cambodia": "KH", "cameroon": "CM", "canada": "CA", "chile": "CL",
-    "china": "CN", "colombia": "CO", "costa rica": "CR", "croatia": "HR",
-    "cuba": "CU", "cyprus": "CY", "czech republic": "CZ", "czechia": "CZ",
-    "denmark": "DK", "dominican republic": "DO", "ecuador": "EC", "egypt": "EG",
-    "el salvador": "SV", "estonia": "EE", "ethiopia": "ET", "fiji": "FJ",
-    "finland": "FI", "france": "FR", "georgia": "GE", "germany": "DE",
-    "ghana": "GH", "greece": "GR", "guatemala": "GT", "honduras": "HN",
-    "hong kong": "HK", "hungary": "HU", "iceland": "IS", "india": "IN",
-    "indonesia": "ID", "iran": "IR", "iraq": "IQ", "ireland": "IE",
-    "israel": "IL", "italy": "IT", "jamaica": "JM", "japan": "JP",
-    "jordan": "JO", "kazakhstan": "KZ", "kenya": "KE", "kuwait": "KW",
-    "kyrgyzstan": "KG", "laos": "LA", "latvia": "LV", "lebanon": "LB",
-    "libya": "LY", "lithuania": "LT", "luxembourg": "LU", "macau": "MO",
-    "malaysia": "MY", "maldives": "MV", "malta": "MT", "mexico": "MX",
-    "moldova": "MD", "mongolia": "MN", "montenegro": "ME", "morocco": "MA",
-    "myanmar": "MM", "nepal": "NP", "netherlands": "NL", "new zealand": "NZ",
-    "nicaragua": "NI", "nigeria": "NG", "north korea": "KP", "north macedonia": "MK",
-    "norway": "NO", "oman": "OM", "pakistan": "PK", "panama": "PA",
-    "paraguay": "PY", "peru": "PE", "philippines": "PH", "poland": "PL",
-    "portugal": "PT", "qatar": "QA", "romania": "RO", "russia": "RU",
-    "russian federation": "RU", "rwanda": "RW", "saudi arabia": "SA", "senegal": "SN",
-    "serbia": "RS", "singapore": "SG", "slovakia": "SK", "slovenia": "SI",
-    "south africa": "ZA", "south korea": "KR", "korea": "KR", "spain": "ES",
-    "sri lanka": "LK", "sudan": "SD", "sweden": "SE", "switzerland": "CH",
-    "syria": "SY", "taiwan": "TW", "tajikistan": "TJ", "tanzania": "TZ",
-    "thailand": "TH", "tunisia": "TN", "turkey": "TR", "turkmenistan": "TM",
-    "uganda": "UG", "ukraine": "UA", "united arab emirates": "AE", "uae": "AE",
-    "united kingdom": "GB", "uk": "GB", "england": "GB", "scotland": "GB", "wales": "GB",
-    "united states": "US", "usa": "US", "america": "US", "united states of america": "US",
-    "uruguay": "UY", "uzbekistan": "UZ", "venezuela": "VE", "vietnam": "VN",
-    "yemen": "YE", "zambia": "ZM", "zimbabwe": "ZW",
+    "afghanistan": "AF",
+    "albania": "AL",
+    "algeria": "DZ",
+    "argentina": "AR",
+    "armenia": "AM",
+    "australia": "AU",
+    "austria": "AT",
+    "azerbaijan": "AZ",
+    "bahrain": "BH",
+    "bangladesh": "BD",
+    "belarus": "BY",
+    "belgium": "BE",
+    "bolivia": "BO",
+    "bosnia and herzegovina": "BA",
+    "brazil": "BR",
+    "bulgaria": "BG",
+    "cambodia": "KH",
+    "cameroon": "CM",
+    "canada": "CA",
+    "chile": "CL",
+    "china": "CN",
+    "colombia": "CO",
+    "costa rica": "CR",
+    "croatia": "HR",
+    "cuba": "CU",
+    "cyprus": "CY",
+    "czech republic": "CZ",
+    "czechia": "CZ",
+    "denmark": "DK",
+    "dominican republic": "DO",
+    "ecuador": "EC",
+    "egypt": "EG",
+    "el salvador": "SV",
+    "estonia": "EE",
+    "ethiopia": "ET",
+    "fiji": "FJ",
+    "finland": "FI",
+    "france": "FR",
+    "georgia": "GE",
+    "germany": "DE",
+    "ghana": "GH",
+    "greece": "GR",
+    "guatemala": "GT",
+    "honduras": "HN",
+    "hong kong": "HK",
+    "hungary": "HU",
+    "iceland": "IS",
+    "india": "IN",
+    "indonesia": "ID",
+    "iran": "IR",
+    "iraq": "IQ",
+    "ireland": "IE",
+    "israel": "IL",
+    "italy": "IT",
+    "jamaica": "JM",
+    "japan": "JP",
+    "jordan": "JO",
+    "kazakhstan": "KZ",
+    "kenya": "KE",
+    "kuwait": "KW",
+    "kyrgyzstan": "KG",
+    "laos": "LA",
+    "latvia": "LV",
+    "lebanon": "LB",
+    "libya": "LY",
+    "lithuania": "LT",
+    "luxembourg": "LU",
+    "macau": "MO",
+    "malaysia": "MY",
+    "maldives": "MV",
+    "malta": "MT",
+    "mexico": "MX",
+    "moldova": "MD",
+    "mongolia": "MN",
+    "montenegro": "ME",
+    "morocco": "MA",
+    "myanmar": "MM",
+    "nepal": "NP",
+    "netherlands": "NL",
+    "new zealand": "NZ",
+    "nicaragua": "NI",
+    "nigeria": "NG",
+    "north korea": "KP",
+    "north macedonia": "MK",
+    "norway": "NO",
+    "oman": "OM",
+    "pakistan": "PK",
+    "panama": "PA",
+    "paraguay": "PY",
+    "peru": "PE",
+    "philippines": "PH",
+    "poland": "PL",
+    "portugal": "PT",
+    "qatar": "QA",
+    "romania": "RO",
+    "russia": "RU",
+    "russian federation": "RU",
+    "rwanda": "RW",
+    "saudi arabia": "SA",
+    "senegal": "SN",
+    "serbia": "RS",
+    "singapore": "SG",
+    "slovakia": "SK",
+    "slovenia": "SI",
+    "south africa": "ZA",
+    "south korea": "KR",
+    "korea": "KR",
+    "spain": "ES",
+    "sri lanka": "LK",
+    "sudan": "SD",
+    "sweden": "SE",
+    "switzerland": "CH",
+    "syria": "SY",
+    "taiwan": "TW",
+    "tajikistan": "TJ",
+    "tanzania": "TZ",
+    "thailand": "TH",
+    "tunisia": "TN",
+    "turkey": "TR",
+    "turkmenistan": "TM",
+    "uganda": "UG",
+    "ukraine": "UA",
+    "united arab emirates": "AE",
+    "uae": "AE",
+    "united kingdom": "GB",
+    "uk": "GB",
+    "england": "GB",
+    "scotland": "GB",
+    "wales": "GB",
+    "united states": "US",
+    "usa": "US",
+    "america": "US",
+    "united states of america": "US",
+    "uruguay": "UY",
+    "uzbekistan": "UZ",
+    "venezuela": "VE",
+    "vietnam": "VN",
+    "yemen": "YE",
+    "zambia": "ZM",
+    "zimbabwe": "ZW",
 }
 
 
@@ -89,6 +194,7 @@ def get_country_code(country_name: str) -> str:
 
     # Last resort: return first 2 chars uppercase (may be wrong but won't crash)
     return country_name[:2].upper() if len(country_name) >= 2 else "XX"
+
 
 from app.core.supabase import supabase
 
@@ -204,9 +310,7 @@ class TripData(BaseModel):
                 "Please set departure and return dates."
             )
         if self.return_date < self.departure_date:
-            raise ValueError(
-                "Return date must be after departure date."
-            )
+            raise ValueError("Return date must be after departure date.")
 
 
 class OrchestratorResult(BaseModel):
@@ -294,21 +398,27 @@ class OrchestratorAgent:
             phase1_agents = ["visa", "country", "weather", "currency", "culture"]
             print(f"[Orchestrator] Starting Phase 1 with agents: {phase1_agents}")
             phase1_results = await self._run_phase(validated_data, phase1_agents)
-            print(f"[Orchestrator] Phase 1 completed. Results: {list(phase1_results.keys())}, Errors: {len(self.errors)}")
+            print(
+                f"[Orchestrator] Phase 1 completed. Results: {list(phase1_results.keys())}, Errors: {len(self.errors)}"
+            )
             sections.update(phase1_results)
 
             # Phase 2: Dependent agents (depend on culture/country)
             phase2_agents = ["food", "attractions"]
             print(f"[Orchestrator] Starting Phase 2 with agents: {phase2_agents}")
             phase2_results = await self._run_phase(validated_data, phase2_agents)
-            print(f"[Orchestrator] Phase 2 completed. Results: {list(phase2_results.keys())}, Errors: {len(self.errors)}")
+            print(
+                f"[Orchestrator] Phase 2 completed. Results: {list(phase2_results.keys())}, Errors: {len(self.errors)}"
+            )
             sections.update(phase2_results)
 
             # Phase 3: Synthesis agents (itinerary depends on Phase 1-2 results)
             phase3_agents = ["itinerary"]
             print(f"[Orchestrator] Starting Phase 3 with agents: {phase3_agents}")
             phase3_results = await self._run_phase(validated_data, phase3_agents)
-            print(f"[Orchestrator] Phase 3 completed. Results: {list(phase3_results.keys())}, Errors: {len(self.errors)}")
+            print(
+                f"[Orchestrator] Phase 3 completed. Results: {list(phase3_results.keys())}, Errors: {len(self.errors)}"
+            )
             sections.update(phase3_results)
 
             # Phase 4: Flight agent (requires origin city from trip data)
@@ -316,7 +426,9 @@ class OrchestratorAgent:
                 phase4_agents = ["flight"]
                 print(f"[Orchestrator] Starting Phase 4 with agents: {phase4_agents}")
                 phase4_results = await self._run_phase(validated_data, phase4_agents)
-                print(f"[Orchestrator] Phase 4 completed. Results: {list(phase4_results.keys())}, Errors: {len(self.errors)}")
+                print(
+                    f"[Orchestrator] Phase 4 completed. Results: {list(phase4_results.keys())}, Errors: {len(self.errors)}"
+                )
                 sections.update(phase4_results)
             else:
                 print("[Orchestrator] Skipping Phase 4 (flight): no origin_city provided")
@@ -342,7 +454,9 @@ class OrchestratorAgent:
                     "errors": self.errors,
                 }
             )
-            print(f"[Orchestrator] Returning result with {len(sections)} sections and {len(self.errors)} errors")
+            print(
+                f"[Orchestrator] Returning result with {len(sections)} sections and {len(self.errors)} errors"
+            )
             return result
 
         except Exception as e:
@@ -615,7 +729,9 @@ class OrchestratorAgent:
             return self._serialize_for_json(obj.model_dump())
         return obj
 
-    async def _save_section_incremental(self, trip_id: str, section_type: str, content: Any) -> None:
+    async def _save_section_incremental(
+        self, trip_id: str, section_type: str, content: Any
+    ) -> None:
         """
         Save a single section to database immediately after agent completes.
         Uses upsert to handle re-runs and partial failures.
@@ -642,7 +758,7 @@ class OrchestratorAgent:
                     "content": serialized_content,
                     "generated_at": datetime.utcnow().isoformat(),
                 },
-                on_conflict="trip_id,section_type"
+                on_conflict="trip_id,section_type",
             ).execute()
         except Exception as e:
             # Log error but don't fail the agent - section will be saved at end
@@ -677,7 +793,7 @@ class OrchestratorAgent:
                         "content": serialized_content,
                         "generated_at": datetime.utcnow().isoformat(),
                     },
-                    on_conflict="trip_id,section_type"
+                    on_conflict="trip_id,section_type",
                 ).execute()
             except Exception as e:
                 self.errors.append(

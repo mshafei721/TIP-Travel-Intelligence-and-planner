@@ -32,18 +32,24 @@ class FeedbackCreate(BaseModel):
     description: str = Field(
         ..., min_length=10, max_length=5000, description="Detailed description"
     )
-    email: Optional[EmailStr] = Field(
-        None, description="Email for follow-up (optional)"
-    )
+    email: Optional[EmailStr] = Field(None, description="Email for follow-up (optional)")
     route: Optional[str] = Field(None, description="Current route when submitted")
     app_release: Optional[str] = Field(None, description="Application version/release")
     browser: Optional[str] = Field(None, description="Browser user agent")
     posthog_id: Optional[str] = Field(None, description="PostHog distinct ID")
-    sentry_event_id: Optional[str] = Field(
-        None, description="Sentry event ID if error-related"
-    )
+    sentry_event_id: Optional[str] = Field(None, description="Sentry event ID if error-related")
 
-    model_config = {"json_schema_extra": {"example": {"type": "bug", "title": "Trip creation fails on step 2", "description": "After selecting dates, the Next button spins forever.", "route": "/trip/create", "app_release": "1.0.0"}}}
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "type": "bug",
+                "title": "Trip creation fails on step 2",
+                "description": "After selecting dates, the Next button spins forever.",
+                "route": "/trip/create",
+                "app_release": "1.0.0",
+            }
+        }
+    }
 
 
 class FeedbackResponse(BaseModel):
@@ -94,9 +100,7 @@ async def create_feedback(
             "email": feedback.email,
             "route": feedback.route,
             "app_release": feedback.app_release,
-            "browser": (
-                feedback.browser[:500] if feedback.browser else None
-            ),  # Truncate UA
+            "browser": (feedback.browser[:500] if feedback.browser else None),  # Truncate UA
             "posthog_id": feedback.posthog_id,
             "sentry_event_id": feedback.sentry_event_id,
             "user_id": user_id,
@@ -183,18 +187,17 @@ async def list_feedback(
             query = query.eq("type", type_filter.value)
 
         # Order by newest first and paginate
-        response = (
-            query.order("created_at", desc=True)
-            .range(offset, offset + limit - 1)
-            .execute()
-        )
+        response = query.order("created_at", desc=True).range(offset, offset + limit - 1).execute()
 
-        return {"feedback": response.data if response.data else [], "count": len(response.data) if response.data else 0, "offset": offset, "limit": limit}
+        return {
+            "feedback": response.data if response.data else [],
+            "count": len(response.data) if response.data else 0,
+            "offset": offset,
+            "limit": limit,
+        }
 
     except Exception as e:
-        log_and_raise_http_error(
-            "list feedback", e, "Failed to list feedback. Please try again."
-        )
+        log_and_raise_http_error("list feedback", e, "Failed to list feedback. Please try again.")
 
 
 @router.get("/{feedback_id}")
@@ -231,9 +234,7 @@ async def get_feedback(
     except HTTPException:
         raise
     except Exception as e:
-        log_and_raise_http_error(
-            "get feedback", e, "Failed to get feedback. Please try again."
-        )
+        log_and_raise_http_error("get feedback", e, "Failed to get feedback. Please try again.")
 
 
 @router.patch("/{feedback_id}/status")

@@ -124,6 +124,7 @@ class BaseTipTask(celery_app.Task):
         # Try Sentry integration
         try:
             import sentry_sdk
+
             sentry_sdk.capture_exception(exc)
         except ImportError:
             pass
@@ -270,12 +271,7 @@ def upsert_report_section(
     if existing.data and len(existing.data) > 0:
         # Update existing record
         existing_id = existing.data[0]["id"]
-        response = (
-            supabase.table("report_sections")
-            .update(record)
-            .eq("id", existing_id)
-            .execute()
-        )
+        response = supabase.table("report_sections").update(record).eq("id", existing_id).execute()
         logger.info(
             f"Updated existing {section_type} report for trip {trip_id}",
             extra={"report_id": existing_id},

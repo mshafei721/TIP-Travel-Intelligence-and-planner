@@ -39,4 +39,6 @@ async def list_recommendations(
         return {"recommendations": recommendations}
 
     except Exception as e:
-        log_and_raise_http_error("generate recommendations", e, "Failed to generate recommendations. Please try again.")
+        log_and_raise_http_error(
+            "generate recommendations", e, "Failed to generate recommendations. Please try again."
+        )

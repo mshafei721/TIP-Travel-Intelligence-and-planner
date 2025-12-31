@@ -34,22 +34,24 @@ def _try_visual_crossing_forecast(
         # Transform to common format
         formatted_days = []
         for day in weather_data.days:
-            formatted_days.append({
-                "date": day.datetime,
-                "tempmax": day.tempmax,
-                "tempmin": day.tempmin,
-                "temp": day.temp,
-                "conditions": day.conditions,
-                "icon": day.icon,
-                "precip": day.precip,
-                "precipprob": day.precipprob,
-                "humidity": day.humidity,
-                "windspeed": day.windspeed,
-                "uvindex": day.uvindex,
-                "sunrise": day.sunrise,
-                "sunset": day.sunset,
-                "description": day.description,
-            })
+            formatted_days.append(
+                {
+                    "date": day.datetime,
+                    "tempmax": day.tempmax,
+                    "tempmin": day.tempmin,
+                    "temp": day.temp,
+                    "conditions": day.conditions,
+                    "icon": day.icon,
+                    "precip": day.precip,
+                    "precipprob": day.precipprob,
+                    "humidity": day.humidity,
+                    "windspeed": day.windspeed,
+                    "uvindex": day.uvindex,
+                    "sunrise": day.sunrise,
+                    "sunset": day.sunset,
+                    "description": day.description,
+                }
+            )
 
         return {
             "source": "visual_crossing",

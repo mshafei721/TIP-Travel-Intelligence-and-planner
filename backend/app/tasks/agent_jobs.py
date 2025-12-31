@@ -56,12 +56,16 @@ def _normalize_trip_data(trip: dict) -> dict:
         "email": traveler.get("email", ""),
         "age": traveler.get("age"),
         "nationality": traveler.get("nationality", "US"),
-        "residence_country": _get_field(traveler, "residence_country", "residenceCountry", default="US"),
+        "residence_country": _get_field(
+            traveler, "residence_country", "residenceCountry", default="US"
+        ),
         "origin_city": _get_field(traveler, "origin_city", "originCity", default=""),
         "residency_status": _get_field(traveler, "residency_status", "residencyStatus", default=""),
         "party_size": _get_field(traveler, "party_size", "partySize", default=1),
         "party_ages": _get_field(traveler, "party_ages", "partyAges", default=[]),
-        "contact_preferences": _get_field(traveler, "contact_preferences", "contactPreferences", default=[]),
+        "contact_preferences": _get_field(
+            traveler, "contact_preferences", "contactPreferences", default=[]
+        ),
     }
 
     # Normalize trip details
@@ -88,10 +92,18 @@ def _normalize_trip_data(trip: dict) -> dict:
     normalized_preferences = {
         "travel_style": _get_field(preferences, "travel_style", "travelStyle", default="balanced"),
         "interests": preferences.get("interests", []),
-        "dietary_restrictions": _get_field(preferences, "dietary_restrictions", "dietaryRestrictions", default=[]),
-        "accessibility_needs": _get_field(preferences, "accessibility_needs", "accessibilityNeeds", default=""),
-        "accommodation_type": _get_field(preferences, "accommodation_type", "accommodationType", default="hotel"),
-        "transportation_preference": _get_field(preferences, "transportation_preference", "transportationPreference", default="any"),
+        "dietary_restrictions": _get_field(
+            preferences, "dietary_restrictions", "dietaryRestrictions", default=[]
+        ),
+        "accessibility_needs": _get_field(
+            preferences, "accessibility_needs", "accessibilityNeeds", default=""
+        ),
+        "accommodation_type": _get_field(
+            preferences, "accommodation_type", "accommodationType", default="hotel"
+        ),
+        "transportation_preference": _get_field(
+            preferences, "transportation_preference", "transportationPreference", default="any"
+        ),
     }
 
     return {
@@ -171,11 +183,13 @@ def execute_agent_job(
 
     # Step 1: Update job status to 'running'
     try:
-        supabase.table("agent_jobs").update({
-            "status": "running",
-            "started_at": datetime.utcnow().isoformat(),
-            "error_message": None,
-        }).eq("id", job_id).execute()
+        supabase.table("agent_jobs").update(
+            {
+                "status": "running",
+                "started_at": datetime.utcnow().isoformat(),
+                "error_message": None,
+            }
+        ).eq("id", job_id).execute()
     except Exception as e:
         print(f"[Task {self.request.id}] Warning: Failed to update job status: {e}")
 
@@ -292,19 +306,23 @@ def execute_agent_job(
 
         # Step 3: Update job status based on result
         if result and result.get("status") == "completed":
-            supabase.table("agent_jobs").update({
-                "status": "completed",
-                "completed_at": datetime.utcnow().isoformat(),
-                "result_data": result,
-                "error_message": None,
-            }).eq("id", job_id).execute()
+            supabase.table("agent_jobs").update(
+                {
+                    "status": "completed",
+                    "completed_at": datetime.utcnow().isoformat(),
+                    "result_data": result,
+                    "error_message": None,
+                }
+            ).eq("id", job_id).execute()
         else:
             error_msg = result.get("error", "Unknown error") if result else "No result returned"
-            supabase.table("agent_jobs").update({
-                "status": "failed",
-                "completed_at": datetime.utcnow().isoformat(),
-                "error_message": error_msg,
-            }).eq("id", job_id).execute()
+            supabase.table("agent_jobs").update(
+                {
+                    "status": "failed",
+                    "completed_at": datetime.utcnow().isoformat(),
+                    "error_message": error_msg,
+                }
+            ).eq("id", job_id).execute()
 
         print(f"[Task {self.request.id}] Completed {agent_type} agent for job {job_id}")
         return result or {
@@ -320,11 +338,13 @@ def execute_agent_job(
 
         # Update job status to failed
         try:
-            supabase.table("agent_jobs").update({
-                "status": "failed",
-                "completed_at": datetime.utcnow().isoformat(),
-                "error_message": error_msg,
-            }).eq("id", job_id).execute()
+            supabase.table("agent_jobs").update(
+                {
+                    "status": "failed",
+                    "completed_at": datetime.utcnow().isoformat(),
+                    "error_message": error_msg,
+                }
+            ).eq("id", job_id).execute()
         except Exception:
             pass
 
@@ -764,12 +784,7 @@ def execute_orchestrator(self, trip_id: str) -> dict[str, Any]:
 
     try:
         # Step 1: Load trip data from database
-        trip_response = (
-            supabase.table("trips")
-            .select("*")
-            .eq("id", trip_id)
-            .execute()
-        )
+        trip_response = supabase.table("trips").select("*").eq("id", trip_id).execute()
 
         if not trip_response.data or len(trip_response.data) == 0:
             raise ValueError(f"Trip {trip_id} not found")
@@ -790,10 +805,12 @@ def execute_orchestrator(self, trip_id: str) -> dict[str, Any]:
             print(f"[Task {self.request.id}] Validation failed: {error_msg}")
 
             # Update trip status to failed with clear error
-            supabase.table("trips").update({
-                "status": "failed",
-                "updated_at": datetime.utcnow().isoformat(),
-            }).eq("id", trip_id).execute()
+            supabase.table("trips").update(
+                {
+                    "status": "failed",
+                    "updated_at": datetime.utcnow().isoformat(),
+                }
+            ).eq("id", trip_id).execute()
 
             return {
                 "trip_id": trip_id,
@@ -824,20 +841,28 @@ def execute_orchestrator(self, trip_id: str) -> dict[str, Any]:
         print(f"[Task {self.request.id}] Prepared orchestrator input: {orchestrator_input}")
 
         # Step 3: Update trip status to processing
-        supabase.table("trips").update({
-            "status": "processing",
-            "updated_at": datetime.utcnow().isoformat(),
-        }).eq("id", trip_id).execute()
+        supabase.table("trips").update(
+            {
+                "status": "processing",
+                "updated_at": datetime.utcnow().isoformat(),
+            }
+        ).eq("id", trip_id).execute()
 
         # Step 4: Create orchestrator job record
-        job_response = supabase.table("agent_jobs").insert({
-            "trip_id": trip_id,
-            "agent_type": "orchestrator",
-            "status": "running",
-            "input_data": orchestrator_input,
-            "celery_task_id": str(self.request.id),
-            "started_at": datetime.utcnow().isoformat(),
-        }).execute()
+        job_response = (
+            supabase.table("agent_jobs")
+            .insert(
+                {
+                    "trip_id": trip_id,
+                    "agent_type": "orchestrator",
+                    "status": "running",
+                    "input_data": orchestrator_input,
+                    "celery_task_id": str(self.request.id),
+                    "started_at": datetime.utcnow().isoformat(),
+                }
+            )
+            .execute()
+        )
 
         job_id = job_response.data[0]["id"] if job_response.data else None
         print(f"[Task {self.request.id}] Created agent job: {job_id}")
@@ -852,22 +877,28 @@ def execute_orchestrator(self, trip_id: str) -> dict[str, Any]:
 
         # Step 6: Update trip status to completed
         execution_time = time.time() - start_time
-        supabase.table("trips").update({
-            "status": "completed",
-            "updated_at": datetime.utcnow().isoformat(),
-        }).eq("id", trip_id).execute()
+        supabase.table("trips").update(
+            {
+                "status": "completed",
+                "updated_at": datetime.utcnow().isoformat(),
+            }
+        ).eq("id", trip_id).execute()
 
         # Update agent job to completed
         if job_id:
-            supabase.table("agent_jobs").update({
-                "status": "completed",
-                "result_data": result,
-                "completed_at": datetime.utcnow().isoformat(),
-            }).eq("id", job_id).execute()
+            supabase.table("agent_jobs").update(
+                {
+                    "status": "completed",
+                    "result_data": result,
+                    "completed_at": datetime.utcnow().isoformat(),
+                }
+            ).eq("id", job_id).execute()
 
         print(f"[Task {self.request.id}] Completed Orchestrator for trip {trip_id}")
         print(f"[Task {self.request.id}] Execution time: {execution_time:.2f}s")
-        print(f"[Task {self.request.id}] Sections generated: {list(result.get('sections', {}).keys())}")
+        print(
+            f"[Task {self.request.id}] Sections generated: {list(result.get('sections', {}).keys())}"
+        )
 
         return {
             "trip_id": trip_id,
@@ -886,10 +917,12 @@ def execute_orchestrator(self, trip_id: str) -> dict[str, Any]:
 
         # Update trip status to failed
         try:
-            supabase.table("trips").update({
-                "status": "failed",
-                "updated_at": datetime.utcnow().isoformat(),
-            }).eq("id", trip_id).execute()
+            supabase.table("trips").update(
+                {
+                    "status": "failed",
+                    "updated_at": datetime.utcnow().isoformat(),
+                }
+            ).eq("id", trip_id).execute()
         except Exception:
             pass
 
@@ -1387,7 +1420,9 @@ def execute_attractions_agent(self, trip_id: str, trip_data: dict[str, Any]) -> 
         )
 
         print(f"[Task {self.request.id}] Completed Attractions Agent for trip {trip_id}")
-        print(f"[Task {self.request.id}] Destination: {trip_data.get('destination_city') or trip_data['destination_country']}")
+        print(
+            f"[Task {self.request.id}] Destination: {trip_data.get('destination_city') or trip_data['destination_country']}"
+        )
         print(f"[Task {self.request.id}] Attractions found: {len(result.top_attractions)}")
         print(f"[Task {self.request.id}] Confidence: {result.confidence_score}")
         print(f"[Task {self.request.id}] Stored report ID: {report_response.get('id', 'N/A')}")
@@ -1538,7 +1573,9 @@ def execute_itinerary_agent(self, trip_id: str, trip_data: dict[str, Any]) -> di
 
         trip_duration = (return_date - departure_date).days
         print(f"[Task {self.request.id}] Completed Itinerary Agent for trip {trip_id}")
-        print(f"[Task {self.request.id}] Destination: {trip_data.get('destination_city') or trip_data['destination_country']}")
+        print(
+            f"[Task {self.request.id}] Destination: {trip_data.get('destination_city') or trip_data['destination_country']}"
+        )
         print(f"[Task {self.request.id}] Duration: {trip_duration} days")
         print(f"[Task {self.request.id}] Daily plans: {len(result.daily_plans)}")
         print(f"[Task {self.request.id}] Confidence: {result.confidence_score}")
@@ -1728,9 +1765,7 @@ def execute_flight_agent(self, trip_id: str, trip_data: dict[str, Any]) -> dict[
     name="app.tasks.agent_jobs.execute_selective_recalc",
     time_limit=3600,  # 60 minutes for full recalc
 )
-def execute_selective_recalc(
-    self, trip_id: str, agents_to_recalc: list[str]
-) -> dict[str, Any]:
+def execute_selective_recalc(self, trip_id: str, agents_to_recalc: list[str]) -> dict[str, Any]:
     """
     Execute selective recalculation for specified agents.
 
@@ -1776,12 +1811,7 @@ def execute_selective_recalc(
 
     try:
         # Fetch trip data
-        trip_response = (
-            supabase.table("trips")
-            .select("*")
-            .eq("id", trip_id)
-            .execute()
-        )
+        trip_response = supabase.table("trips").select("*").eq("id", trip_id).execute()
 
         if not trip_response.data or len(trip_response.data) == 0:
             raise ValueError(f"Trip {trip_id} not found")
@@ -1792,13 +1822,15 @@ def execute_selective_recalc(
         try:
             job_response = (
                 supabase.table("recalculation_jobs")
-                .insert({
-                    "trip_id": trip_id,
-                    "celery_task_id": str(self.request.id),
-                    "agents_to_recalculate": agents_to_recalc,
-                    "status": "in_progress",
-                    "started_at": "now()",
-                })
+                .insert(
+                    {
+                        "trip_id": trip_id,
+                        "celery_task_id": str(self.request.id),
+                        "agents_to_recalculate": agents_to_recalc,
+                        "status": "in_progress",
+                        "started_at": "now()",
+                    }
+                )
                 .execute()
             )
             job_id = job_response.data[0]["id"] if job_response.data else None
@@ -1814,9 +1846,9 @@ def execute_selective_recalc(
                 print(f"[Task {self.request.id}] Recalculating {agent_type} agent...")
 
                 # Delete existing report section
-                supabase.table("report_sections").delete().eq(
-                    "trip_id", trip_id
-                ).eq("section_type", agent_type).execute()
+                supabase.table("report_sections").delete().eq("trip_id", trip_id).eq(
+                    "section_type", agent_type
+                ).execute()
 
                 # Execute the appropriate agent task
                 agent_result = _execute_single_agent(
@@ -1859,18 +1891,24 @@ def execute_selective_recalc(
             trip_status = "failed"
 
         # Update trip status
-        supabase.table("trips").update({
-            "status": trip_status,
-        }).eq("id", trip_id).execute()
+        supabase.table("trips").update(
+            {
+                "status": trip_status,
+            }
+        ).eq("id", trip_id).execute()
 
         # Update recalculation job if we have one
         if job_id:
             try:
-                supabase.table("recalculation_jobs").update({
-                    "status": results["overall_status"],
-                    "completed_at": "now()",
-                    "error_message": "; ".join(results["errors"]) if results["errors"] else None,
-                }).eq("id", job_id).execute()
+                supabase.table("recalculation_jobs").update(
+                    {
+                        "status": results["overall_status"],
+                        "completed_at": "now()",
+                        "error_message": (
+                            "; ".join(results["errors"]) if results["errors"] else None
+                        ),
+                    }
+                ).eq("id", job_id).execute()
             except Exception:
                 pass
 
@@ -1885,9 +1923,11 @@ def execute_selective_recalc(
 
         # Try to update trip status
         try:
-            supabase.table("trips").update({
-                "status": "failed",
-            }).eq("id", trip_id).execute()
+            supabase.table("trips").update(
+                {
+                    "status": "failed",
+                }
+            ).eq("id", trip_id).execute()
         except Exception:
             pass
 
@@ -1934,16 +1974,18 @@ def _execute_single_agent(
                 from app.agents.visa.models import VisaAgentInput
 
                 agent = VisaAgent()
-                result = agent.run(VisaAgentInput(
-                    user_nationality=base_input["nationality"],
-                    destination_country=base_input["destination_country"],
-                    destination_city=base_input["destination_city"],
-                    trip_purpose=base_input["trip_purpose"],
-                    duration_days=_calculate_duration(
-                        base_input.get("departure_date"),
-                        base_input.get("return_date"),
-                    ),
-                ))
+                result = agent.run(
+                    VisaAgentInput(
+                        user_nationality=base_input["nationality"],
+                        destination_country=base_input["destination_country"],
+                        destination_city=base_input["destination_city"],
+                        trip_purpose=base_input["trip_purpose"],
+                        duration_days=_calculate_duration(
+                            base_input.get("departure_date"),
+                            base_input.get("return_date"),
+                        ),
+                    )
+                )
                 return {"status": "completed", "data": result.model_dump(mode="json")}
             except Exception as e:
                 return {"status": "failed", "error": str(e)}
@@ -1954,12 +1996,14 @@ def _execute_single_agent(
                 from app.agents.weather.models import WeatherAgentInput
 
                 agent = WeatherAgent()
-                result = agent.run(WeatherAgentInput(
-                    city=base_input["destination_city"],
-                    country=base_input["destination_country"],
-                    start_date=base_input.get("departure_date"),
-                    end_date=base_input.get("return_date"),
-                ))
+                result = agent.run(
+                    WeatherAgentInput(
+                        city=base_input["destination_city"],
+                        country=base_input["destination_country"],
+                        start_date=base_input.get("departure_date"),
+                        end_date=base_input.get("return_date"),
+                    )
+                )
                 return {"status": "completed", "data": result.model_dump(mode="json")}
             except Exception as e:
                 return {"status": "failed", "error": str(e)}
@@ -1970,11 +2014,13 @@ def _execute_single_agent(
                 from app.agents.currency.models import CurrencyAgentInput
 
                 agent = CurrencyAgent()
-                result = agent.run(CurrencyAgentInput(
-                    home_currency=base_input["currency"],
-                    destination_country=base_input["destination_country"],
-                    budget=base_input["budget"],
-                ))
+                result = agent.run(
+                    CurrencyAgentInput(
+                        home_currency=base_input["currency"],
+                        destination_country=base_input["destination_country"],
+                        budget=base_input["budget"],
+                    )
+                )
                 return {"status": "completed", "data": result.model_dump(mode="json")}
             except Exception as e:
                 return {"status": "failed", "error": str(e)}
@@ -1985,10 +2031,12 @@ def _execute_single_agent(
                 from app.agents.culture.models import CultureAgentInput
 
                 agent = CultureAgent()
-                result = agent.run(CultureAgentInput(
-                    destination_country=base_input["destination_country"],
-                    destination_city=base_input["destination_city"],
-                ))
+                result = agent.run(
+                    CultureAgentInput(
+                        destination_country=base_input["destination_country"],
+                        destination_city=base_input["destination_city"],
+                    )
+                )
                 return {"status": "completed", "data": result.model_dump(mode="json")}
             except Exception as e:
                 return {"status": "failed", "error": str(e)}
@@ -1999,11 +2047,13 @@ def _execute_single_agent(
                 from app.agents.food.models import FoodAgentInput
 
                 agent = FoodAgent()
-                result = agent.run(FoodAgentInput(
-                    destination_country=base_input["destination_country"],
-                    destination_city=base_input["destination_city"],
-                    dietary_restrictions=base_input.get("dietary_restrictions", []),
-                ))
+                result = agent.run(
+                    FoodAgentInput(
+                        destination_country=base_input["destination_country"],
+                        destination_city=base_input["destination_city"],
+                        dietary_restrictions=base_input.get("dietary_restrictions", []),
+                    )
+                )
                 return {"status": "completed", "data": result.model_dump(mode="json")}
             except Exception as e:
                 return {"status": "failed", "error": str(e)}
@@ -2014,12 +2064,14 @@ def _execute_single_agent(
                 from app.agents.attractions.models import AttractionsAgentInput
 
                 agent = AttractionsAgent()
-                result = agent.run(AttractionsAgentInput(
-                    destination_city=base_input["destination_city"],
-                    destination_country=base_input["destination_country"],
-                    interests=base_input.get("interests", []),
-                    budget_level=_budget_to_level(base_input["budget"]),
-                ))
+                result = agent.run(
+                    AttractionsAgentInput(
+                        destination_city=base_input["destination_city"],
+                        destination_country=base_input["destination_country"],
+                        interests=base_input.get("interests", []),
+                        budget_level=_budget_to_level(base_input["budget"]),
+                    )
+                )
                 return {"status": "completed", "data": result.model_dump(mode="json")}
             except Exception as e:
                 return {"status": "failed", "error": str(e)}
@@ -2030,9 +2082,11 @@ def _execute_single_agent(
                 from app.agents.country.models import CountryAgentInput
 
                 agent = CountryAgent()
-                result = agent.run(CountryAgentInput(
-                    country_name=base_input["destination_country"],
-                ))
+                result = agent.run(
+                    CountryAgentInput(
+                        country_name=base_input["destination_country"],
+                    )
+                )
                 return {"status": "completed", "data": result.model_dump(mode="json")}
             except Exception as e:
                 return {"status": "failed", "error": str(e)}
@@ -2043,15 +2097,17 @@ def _execute_single_agent(
                 from app.agents.itinerary.models import ItineraryAgentInput
 
                 agent = ItineraryAgent()
-                result = agent.run(ItineraryAgentInput(
-                    destination_city=base_input["destination_city"],
-                    destination_country=base_input["destination_country"],
-                    start_date=base_input.get("departure_date"),
-                    end_date=base_input.get("return_date"),
-                    interests=base_input.get("interests", []),
-                    travel_style=base_input.get("travel_style", "balanced"),
-                    budget=base_input["budget"],
-                ))
+                result = agent.run(
+                    ItineraryAgentInput(
+                        destination_city=base_input["destination_city"],
+                        destination_country=base_input["destination_country"],
+                        start_date=base_input.get("departure_date"),
+                        end_date=base_input.get("return_date"),
+                        interests=base_input.get("interests", []),
+                        travel_style=base_input.get("travel_style", "balanced"),
+                        budget=base_input["budget"],
+                    )
+                )
                 return {"status": "completed", "data": result.model_dump(mode="json")}
             except Exception as e:
                 return {"status": "failed", "error": str(e)}
@@ -2062,12 +2118,14 @@ def _execute_single_agent(
                 from app.agents.flight.models import FlightAgentInput
 
                 agent = FlightAgent()
-                result = agent.run(FlightAgentInput(
-                    origin_city=base_input["origin_city"],
-                    destination_city=base_input["destination_city"],
-                    departure_date=base_input.get("departure_date"),
-                    return_date=base_input.get("return_date"),
-                ))
+                result = agent.run(
+                    FlightAgentInput(
+                        origin_city=base_input["origin_city"],
+                        destination_city=base_input["destination_city"],
+                        departure_date=base_input.get("departure_date"),
+                        return_date=base_input.get("return_date"),
+                    )
+                )
                 return {"status": "completed", "data": result.model_dump(mode="json")}
             except Exception as e:
                 return {"status": "failed", "error": str(e)}
@@ -2132,13 +2190,7 @@ def run_single_agent(self, trip_id: str, agent_type: str) -> dict[str, Any]:
 
     try:
         # Step 1: Fetch trip data
-        trip_response = (
-            supabase.table("trips")
-            .select("*")
-            .eq("id", trip_id)
-            .single()
-            .execute()
-        )
+        trip_response = supabase.table("trips").select("*").eq("id", trip_id).single().execute()
 
         if not trip_response.data:
             raise ValueError(f"Trip not found: {trip_id}")
@@ -2146,11 +2198,13 @@ def run_single_agent(self, trip_id: str, agent_type: str) -> dict[str, Any]:
         trip = trip_response.data
 
         # Step 2: Update agent job status to running
-        supabase.table("agent_jobs").update({
-            "status": "running",
-            "started_at": datetime.utcnow().isoformat(),
-            "error_message": None,
-        }).eq("trip_id", trip_id).eq("agent_type", agent_type).execute()
+        supabase.table("agent_jobs").update(
+            {
+                "status": "running",
+                "started_at": datetime.utcnow().isoformat(),
+                "error_message": None,
+            }
+        ).eq("trip_id", trip_id).eq("agent_type", agent_type).execute()
 
         # Step 3: Normalize trip data
         normalized = _normalize_trip_data(trip)
@@ -2181,28 +2235,37 @@ def run_single_agent(self, trip_id: str, agent_type: str) -> dict[str, Any]:
             # Store result in report_sections if successful
             section_data = result.get("data", {})
             if section_data:
-                supabase.table("report_sections").upsert({
-                    "trip_id": trip_id,
-                    "section_type": agent_type,
-                    "content": section_data,
-                    "confidence_score": section_data.get("confidence_score", 0.7),
-                    "last_updated": datetime.utcnow().isoformat(),
-                }, on_conflict="trip_id,section_type").execute()
+                supabase.table("report_sections").upsert(
+                    {
+                        "trip_id": trip_id,
+                        "section_type": agent_type,
+                        "content": section_data,
+                        "confidence_score": section_data.get("confidence_score", 0.7),
+                        "last_updated": datetime.utcnow().isoformat(),
+                    },
+                    on_conflict="trip_id,section_type",
+                ).execute()
 
-            supabase.table("agent_jobs").update({
-                "status": "completed",
-                "completed_at": datetime.utcnow().isoformat(),
-                "result_data": result,
-                "error_message": None,
-            }).eq("trip_id", trip_id).eq("agent_type", agent_type).execute()
+            supabase.table("agent_jobs").update(
+                {
+                    "status": "completed",
+                    "completed_at": datetime.utcnow().isoformat(),
+                    "result_data": result,
+                    "error_message": None,
+                }
+            ).eq("trip_id", trip_id).eq("agent_type", agent_type).execute()
         else:
-            supabase.table("agent_jobs").update({
-                "status": "failed",
-                "completed_at": datetime.utcnow().isoformat(),
-                "error_message": result.get("error", "Unknown error"),
-            }).eq("trip_id", trip_id).eq("agent_type", agent_type).execute()
+            supabase.table("agent_jobs").update(
+                {
+                    "status": "failed",
+                    "completed_at": datetime.utcnow().isoformat(),
+                    "error_message": result.get("error", "Unknown error"),
+                }
+            ).eq("trip_id", trip_id).eq("agent_type", agent_type).execute()
 
-        print(f"[Task {self.request.id}] Completed single agent: {agent_type} with status {result.get('status')}")
+        print(
+            f"[Task {self.request.id}] Completed single agent: {agent_type} with status {result.get('status')}"
+        )
         return result
 
     except Exception as e:
@@ -2215,11 +2278,13 @@ def run_single_agent(self, trip_id: str, agent_type: str) -> dict[str, Any]:
 
             from app.core.supabase import supabase
 
-            supabase.table("agent_jobs").update({
-                "status": "failed",
-                "completed_at": datetime.utcnow().isoformat(),
-                "error_message": error_msg,
-            }).eq("trip_id", trip_id).eq("agent_type", agent_type).execute()
+            supabase.table("agent_jobs").update(
+                {
+                    "status": "failed",
+                    "completed_at": datetime.utcnow().isoformat(),
+                    "error_message": error_msg,
+                }
+            ).eq("trip_id", trip_id).eq("agent_type", agent_type).execute()
         except Exception:
             pass
 

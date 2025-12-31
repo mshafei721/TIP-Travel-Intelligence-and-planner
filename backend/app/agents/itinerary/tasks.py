@@ -42,13 +42,9 @@ def create_itinerary_task(
     # Format constraints
     constraints_list = []
     if input_data.mobility_constraints:
-        constraints_list.append(
-            f"Mobility: {', '.join(input_data.mobility_constraints)}"
-        )
+        constraints_list.append(f"Mobility: {', '.join(input_data.mobility_constraints)}")
     if input_data.dietary_restrictions:
-        constraints_list.append(
-            f"Dietary: {', '.join(input_data.dietary_restrictions)}"
-        )
+        constraints_list.append(f"Dietary: {', '.join(input_data.dietary_restrictions)}")
     constraints_str = "\n".join(constraints_list) if constraints_list else "None specified"
 
     # Format available agent data

@@ -39,10 +39,7 @@ def verify_jwt_token(
         HTTPException: If token is missing or invalid
     """
     if not authorization:
-        logger.warning(
-            "Missing authorization header",
-            extra={"path": request.url.path}
-        )
+        logger.warning("Missing authorization header", extra={"path": request.url.path})
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Authentication required",
@@ -71,7 +68,7 @@ def verify_jwt_token(
             algorithms=["HS256"],
             options={
                 "verify_aud": False,  # Supabase doesn't use aud claim
-                "verify_exp": True,   # Explicitly verify expiration
+                "verify_exp": True,  # Explicitly verify expiration
                 "require": ["sub", "exp"],  # Require these claims
             },
         )
@@ -159,7 +156,7 @@ def optional_jwt_token(
             algorithms=["HS256"],
             options={
                 "verify_aud": False,  # Supabase doesn't use aud claim
-                "verify_exp": True,   # Explicitly verify expiration
+                "verify_exp": True,  # Explicitly verify expiration
                 "require": ["sub", "exp"],  # Require these claims
             },
         )

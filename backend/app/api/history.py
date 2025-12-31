@@ -109,7 +109,9 @@ async def get_travel_history(
             entries.append(
                 TravelHistoryEntry(
                     trip_id=trip["id"],
-                    destination=f"{first_dest.get('city', '')}, {first_dest.get('country', '')}".strip(", "),
+                    destination=f"{first_dest.get('city', '')}, {first_dest.get('country', '')}".strip(
+                        ", "
+                    ),
                     country=first_dest.get("country", "Unknown"),
                     start_date=trip_details.get("departureDate", ""),
                     end_date=trip_details.get("returnDate", ""),
@@ -138,7 +140,9 @@ async def get_travel_history(
         return TravelHistoryResponse(entries=entries, total_count=total_count)
 
     except Exception as e:
-        log_and_raise_http_error("fetch travel history", e, "Failed to fetch travel history. Please try again.")
+        log_and_raise_http_error(
+            "fetch travel history", e, "Failed to fetch travel history. Please try again."
+        )
 
 
 @router.get("/stats", response_model=TravelStatsResponse)
@@ -227,7 +231,9 @@ async def get_travel_stats(token_payload: dict = Depends(verify_jwt_token)):
                         countries[country]["last_visited"] = end_date_str
 
         # Find most visited and favorite
-        most_visited_country = max(countries.keys(), key=lambda c: countries[c]["visit_count"]) if countries else None
+        most_visited_country = (
+            max(countries.keys(), key=lambda c: countries[c]["visit_count"]) if countries else None
+        )
         favorite_destination = most_visited_country  # Could be enhanced with user ratings
 
         # Calculate travel streak (consecutive months with travel)
@@ -284,7 +290,9 @@ async def get_travel_stats(token_payload: dict = Depends(verify_jwt_token)):
         )
 
     except Exception as e:
-        log_and_raise_http_error("fetch travel stats", e, "Failed to fetch travel stats. Please try again.")
+        log_and_raise_http_error(
+            "fetch travel stats", e, "Failed to fetch travel stats. Please try again."
+        )
 
 
 @router.get("/countries", response_model=list[CountryVisit])
@@ -349,7 +357,9 @@ async def get_countries_visited(token_payload: dict = Depends(verify_jwt_token))
         ]
 
     except Exception as e:
-        log_and_raise_http_error("fetch countries visited", e, "Failed to fetch countries visited. Please try again.")
+        log_and_raise_http_error(
+            "fetch countries visited", e, "Failed to fetch countries visited. Please try again."
+        )
 
 
 @router.get("/timeline", response_model=TravelTimelineResponse)
@@ -414,7 +424,9 @@ async def get_travel_timeline(
                 except (ValueError, TypeError):
                     duration_days = 1
 
-            destination = f"{first_dest.get('city', '')}, {first_dest.get('country', '')}".strip(", ")
+            destination = f"{first_dest.get('city', '')}, {first_dest.get('country', '')}".strip(
+                ", "
+            )
 
             entries.append(
                 TravelTimelineEntry(
@@ -435,7 +447,9 @@ async def get_travel_timeline(
         )
 
     except Exception as e:
-        log_and_raise_http_error("fetch travel timeline", e, "Failed to fetch travel timeline. Please try again.")
+        log_and_raise_http_error(
+            "fetch travel timeline", e, "Failed to fetch travel timeline. Please try again."
+        )
 
 
 # ============================================
@@ -491,10 +505,12 @@ async def archive_trip(
 
         # Archive the trip
         archived_at = datetime.utcnow().isoformat()
-        supabase.table("trips").update({
-            "is_archived": True,
-            "archived_at": archived_at,
-        }).eq("id", trip_id).execute()
+        supabase.table("trips").update(
+            {
+                "is_archived": True,
+                "archived_at": archived_at,
+            }
+        ).eq("id", trip_id).execute()
 
         return ArchiveResponse(
             trip_id=trip_id,
@@ -547,10 +563,12 @@ async def unarchive_trip(
             )
 
         # Unarchive the trip
-        supabase.table("trips").update({
-            "is_archived": False,
-            "archived_at": None,
-        }).eq("id", trip_id).execute()
+        supabase.table("trips").update(
+            {
+                "is_archived": False,
+                "archived_at": None,
+            }
+        ).eq("id", trip_id).execute()
 
         return ArchiveResponse(
             trip_id=trip_id,

@@ -57,17 +57,13 @@ class ItineraryAgentInput(BaseModel):
     mobility_constraints: Optional[list[str]] = Field(
         None, description="Mobility limitations or accessibility needs"
     )
-    dietary_restrictions: Optional[list[str]] = Field(
-        None, description="Dietary restrictions"
-    )
+    dietary_restrictions: Optional[list[str]] = Field(None, description="Dietary restrictions")
 
     # Optional agent data to incorporate
     visa_info: Optional[dict] = Field(None, description="Visa requirements from VisaAgent")
     country_info: Optional[dict] = Field(None, description="Country data from CountryAgent")
     weather_info: Optional[dict] = Field(None, description="Weather forecast from WeatherAgent")
-    attractions_info: Optional[dict] = Field(
-        None, description="Attractions from AttractionsAgent"
-    )
+    attractions_info: Optional[dict] = Field(None, description="Attractions from AttractionsAgent")
 
     @field_validator("destination_country")
     @classmethod
@@ -143,9 +139,7 @@ class Transportation(BaseModel):
 
     from_location: str = Field(..., description="Starting location")
     to_location: str = Field(..., description="Destination location")
-    mode: str = Field(
-        ..., description="Mode: walk, taxi, metro, bus, train, car, bike"
-    )
+    mode: str = Field(..., description="Mode: walk, taxi, metro, bus, train, car, bike")
     duration_minutes: int = Field(..., ge=1, description="Travel time in minutes")
     cost_estimate: Optional[str] = Field(None, description="Estimated cost")
     notes: Optional[str] = Field(None, description="Additional notes")
@@ -178,9 +172,7 @@ class Accommodation(BaseModel):
     """Accommodation suggestion"""
 
     name: str = Field(..., description="Hotel/accommodation name")
-    type: str = Field(
-        ..., description="Type: hotel, hostel, apartment, guesthouse, resort"
-    )
+    type: str = Field(..., description="Type: hotel, hostel, apartment, guesthouse, resort")
     neighborhood: str = Field(..., description="Neighborhood/area")
     price_range: str = Field(..., description="Price range per night")
     rating: Optional[float] = Field(None, ge=1.0, le=5.0, description="Rating out of 5")
@@ -200,23 +192,17 @@ class ItineraryAgentOutput(AgentResult):
     """
 
     # Daily plans (core output)
-    daily_plans: list[DayPlan] = Field(
-        ..., description="Day-by-day itinerary plans"
-    )
+    daily_plans: list[DayPlan] = Field(..., description="Day-by-day itinerary plans")
 
     # Cost estimates
-    total_estimated_cost: Optional[str] = Field(
-        None, description="Total trip cost estimate range"
-    )
+    total_estimated_cost: Optional[str] = Field(None, description="Total trip cost estimate range")
     cost_breakdown: Optional[dict[str, str]] = Field(
         None,
         description="Cost breakdown: activities, meals, transportation, accommodation",
     )
 
     # Transportation planning
-    transportation_plan: Optional[str] = Field(
-        None, description="Overall transportation strategy"
-    )
+    transportation_plan: Optional[str] = Field(None, description="Overall transportation strategy")
     getting_around_tips: Optional[list[str]] = Field(
         None, description="Tips for getting around the destination"
     )
@@ -233,9 +219,7 @@ class ItineraryAgentOutput(AgentResult):
     packing_checklist: Optional[list[str]] = Field(
         None, description="What to pack for this itinerary"
     )
-    pro_tips: Optional[list[str]] = Field(
-        None, description="Pro tips for this destination"
-    )
+    pro_tips: Optional[list[str]] = Field(None, description="Pro tips for this destination")
 
     # Alternative suggestions
     flexible_alternatives: Optional[dict[str, list[str]]] = Field(

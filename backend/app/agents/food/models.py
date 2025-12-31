@@ -46,9 +46,7 @@ class Dish(BaseModel):
 
     name: str = Field(..., description="Dish name")
     description: str = Field(..., description="Description of the dish")
-    category: str = Field(
-        ..., description="Category (main/appetizer/dessert/beverage/snack)"
-    )
+    category: str = Field(..., description="Category (main/appetizer/dessert/beverage/snack)")
     spicy_level: int | None = Field(
         None, description="Spicy level (0=not spicy, 4=very spicy)", ge=0, le=4
     )
@@ -61,15 +59,11 @@ class Restaurant(BaseModel):
     """Restaurant or food venue recommendation."""
 
     name: str = Field(..., description="Restaurant/venue name")
-    type: str = Field(
-        ..., description="Type (restaurant/street-food/market/cafe/food-hall)"
-    )
+    type: str = Field(..., description="Type (restaurant/street-food/market/cafe/food-hall)")
     cuisine: str = Field(..., description="Cuisine type")
     price_level: str = Field(..., description="Price level ($-$$$$)")
     location: str | None = Field(None, description="Location/neighborhood")
-    specialties: list[str] = Field(
-        default_factory=list, description="Specialty dishes"
-    )
+    specialties: list[str] = Field(default_factory=list, description="Specialty dishes")
     notes: str | None = Field(None, description="Additional notes")
 
 
@@ -79,9 +73,7 @@ class StreetFood(BaseModel):
     name: str = Field(..., description="Street food name")
     description: str = Field(..., description="What it is")
     where_to_find: str = Field(..., description="Where to find it")
-    safety_rating: str = Field(
-        ..., description="Safety rating (safe/generally-safe/use-caution)"
-    )
+    safety_rating: str = Field(..., description="Safety rating (safe/generally-safe/use-caution)")
     price_range: str = Field(..., description="Typical price range")
 
 
@@ -91,15 +83,9 @@ class DietaryAvailability(BaseModel):
     vegetarian: str = Field(
         ..., description="Vegetarian availability (widespread/common/limited/rare)"
     )
-    vegan: str = Field(
-        ..., description="Vegan availability (widespread/common/limited/rare)"
-    )
-    halal: str = Field(
-        ..., description="Halal availability (widespread/common/limited/rare)"
-    )
-    kosher: str = Field(
-        ..., description="Kosher availability (widespread/common/limited/rare)"
-    )
+    vegan: str = Field(..., description="Vegan availability (widespread/common/limited/rare)")
+    halal: str = Field(..., description="Halal availability (widespread/common/limited/rare)")
+    kosher: str = Field(..., description="Kosher availability (widespread/common/limited/rare)")
     gluten_free: str = Field(
         ..., description="Gluten-free availability (widespread/common/limited/rare)"
     )
@@ -112,9 +98,7 @@ class FoodAgentOutput(AgentResult):
     data: dict = Field(default_factory=dict, description="Legacy field for compatibility")
 
     # Must-Try Dishes
-    must_try_dishes: list[Dish] = Field(
-        ..., description="Essential local dishes to try"
-    )
+    must_try_dishes: list[Dish] = Field(..., description="Essential local dishes to try")
 
     # Street Food
     street_food: list[StreetFood] = Field(
@@ -127,9 +111,7 @@ class FoodAgentOutput(AgentResult):
     )
 
     # Dining Etiquette
-    dining_etiquette: list[str] = Field(
-        ..., description="Important dining customs and etiquette"
-    )
+    dining_etiquette: list[str] = Field(..., description="Important dining customs and etiquette")
 
     # Dietary Options
     dietary_availability: DietaryAvailability = Field(
@@ -146,21 +128,13 @@ class FoodAgentOutput(AgentResult):
     )
 
     # Food Safety
-    food_safety_tips: list[str] = Field(
-        ..., description="Food safety and hygiene tips"
-    )
+    food_safety_tips: list[str] = Field(..., description="Food safety and hygiene tips")
     water_safety: str = Field(..., description="Tap water safety information")
 
     # Additional Information
     local_ingredients: list[str] = Field(
         default_factory=list, description="Notable local ingredients"
     )
-    food_markets: list[str] = Field(
-        default_factory=list, description="Recommended food markets"
-    )
-    cooking_classes: list[str] | None = Field(
-        None, description="Cooking class recommendations"
-    )
-    food_tours: list[str] | None = Field(
-        None, description="Food tour recommendations"
-    )
+    food_markets: list[str] = Field(default_factory=list, description="Recommended food markets")
+    cooking_classes: list[str] | None = Field(None, description="Cooking class recommendations")
+    food_tours: list[str] | None = Field(None, description="Food tour recommendations")

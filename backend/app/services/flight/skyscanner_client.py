@@ -22,6 +22,7 @@ RAPIDAPI_BASE_URL = f"https://{RAPIDAPI_HOST}/search"
 @dataclass
 class FlightSegment:
     """Flight segment information."""
+
     departure_airport: str
     arrival_airport: str
     departure_time: str
@@ -36,6 +37,7 @@ class FlightSegment:
 @dataclass
 class FlightOffer:
     """Flight offer details."""
+
     total_price: float
     currency: str
     cabin_class: str
@@ -51,6 +53,7 @@ class FlightOffer:
 @dataclass
 class FlightSearchResult:
     """Flight search result."""
+
     origin: str
     destination: str
     departure_date: str
@@ -191,12 +194,7 @@ class SkyscannerClient:
                 dictionaries={},
             )
 
-    def _parse_offers(
-        self,
-        data: dict,
-        cabin_class: str,
-        max_offers: int
-    ) -> list[FlightOffer]:
+    def _parse_offers(self, data: dict, cabin_class: str, max_offers: int) -> list[FlightOffer]:
         """Parse Skyscanner API response into FlightOffer objects."""
         offers = []
 
@@ -216,35 +214,41 @@ class SkyscannerClient:
                 for i, leg in enumerate(legs):
                     segments = []
                     for seg in leg.get("segments", []):
-                        segments.append(FlightSegment(
-                            departure_airport=seg.get("origin", {}).get("displayCode", ""),
-                            arrival_airport=seg.get("destination", {}).get("displayCode", ""),
-                            departure_time=seg.get("departure", ""),
-                            arrival_time=seg.get("arrival", ""),
-                            carrier_code=seg.get("operatingCarrier", {}).get("id", ""),
-                            carrier_name=seg.get("operatingCarrier", {}).get("name"),
-                            flight_number=str(seg.get("flightNumber", "")),
-                            duration=str(seg.get("durationInMinutes", "")) + " min",
-                            stops=0,
-                        ))
+                        segments.append(
+                            FlightSegment(
+                                departure_airport=seg.get("origin", {}).get("displayCode", ""),
+                                arrival_airport=seg.get("destination", {}).get("displayCode", ""),
+                                departure_time=seg.get("departure", ""),
+                                arrival_time=seg.get("arrival", ""),
+                                carrier_code=seg.get("operatingCarrier", {}).get("id", ""),
+                                carrier_name=seg.get("operatingCarrier", {}).get("name"),
+                                flight_number=str(seg.get("flightNumber", "")),
+                                duration=str(seg.get("durationInMinutes", "")) + " min",
+                                stops=0,
+                            )
+                        )
 
                     if i == 0:
                         outbound_segments = segments
                     else:
                         return_segments = segments
 
-                offers.append(FlightOffer(
-                    total_price=float(price_info.get("amount", 0)),
-                    currency=price_info.get("currency", "USD"),
-                    cabin_class=cabin_class,
-                    validating_airline=outbound_segments[0].carrier_name if outbound_segments else None,
-                    outbound_segments=outbound_segments,
-                    return_segments=return_segments,
-                    included_baggage=None,
-                    number_of_bookable_seats=None,
-                    last_ticketing_date=None,
-                    deep_link=pricing.get("items", [{}])[0].get("deepLink"),
-                ))
+                offers.append(
+                    FlightOffer(
+                        total_price=float(price_info.get("amount", 0)),
+                        currency=price_info.get("currency", "USD"),
+                        cabin_class=cabin_class,
+                        validating_airline=(
+                            outbound_segments[0].carrier_name if outbound_segments else None
+                        ),
+                        outbound_segments=outbound_segments,
+                        return_segments=return_segments,
+                        included_baggage=None,
+                        number_of_bookable_seats=None,
+                        last_ticketing_date=None,
+                        deep_link=pricing.get("items", [{}])[0].get("deepLink"),
+                    )
+                )
 
             except Exception as e:
                 logger.warning(f"Error parsing offer: {e}")

@@ -10,7 +10,9 @@ class TemplateDestination(BaseModel):
 
     country: str = Field(..., description="Country name")
     city: str | None = Field(None, description="City name")
-    suggested_days: int | None = Field(None, ge=1, description="Suggested days to spend", alias="suggestedDays")
+    suggested_days: int | None = Field(
+        None, ge=1, description="Suggested days to spend", alias="suggestedDays"
+    )
     highlights: list[str] = Field(default_factory=list, description="Key highlights")
 
 
@@ -109,9 +111,7 @@ class TripTemplateUpdate(BaseModel):
 class TripTemplateResponse(BaseModel):
     """Response model for trip template"""
 
-    model_config = ConfigDict(
-        populate_by_name=True, serialize_by_alias=True, from_attributes=True
-    )
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True, from_attributes=True)
 
     id: str
     user_id: str = Field(..., alias="userId")
@@ -134,9 +134,7 @@ class TripTemplateResponse(BaseModel):
 class PublicTemplateResponse(BaseModel):
     """Response model for public template (excludes user_id for privacy)"""
 
-    model_config = ConfigDict(
-        populate_by_name=True, serialize_by_alias=True, from_attributes=True
-    )
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True, from_attributes=True)
 
     id: str
     name: str
@@ -165,7 +163,9 @@ class CreateTripFromTemplateRequest(BaseModel):
     model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
 
     title: str | None = Field(None, description="Custom trip title (optional)")
-    start_date: str | None = Field(None, description="Trip start date (ISO format)", alias="startDate")
+    start_date: str | None = Field(
+        None, description="Trip start date (ISO format)", alias="startDate"
+    )
     end_date: str | None = Field(None, description="Trip end date (ISO format)", alias="endDate")
     override_traveler_details: dict | None = Field(
         None, description="Override template traveler details", alias="overrideTravelerDetails"

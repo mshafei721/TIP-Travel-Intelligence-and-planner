@@ -62,9 +62,7 @@ class ReligiousConsideration(BaseModel):
 
     topic: str = Field(..., description="Topic area (e.g., 'Prayer times', 'Alcohol')")
     guideline: str = Field(..., description="What travelers should know")
-    severity: str = Field(
-        ..., description="Importance level (info/advisory/critical)"
-    )
+    severity: str = Field(..., description="Importance level (info/advisory/critical)")
 
 
 class CulturalTaboo(BaseModel):
@@ -73,9 +71,7 @@ class CulturalTaboo(BaseModel):
     behavior: str = Field(..., description="The behavior or topic")
     explanation: str = Field(..., description="Why it's taboo")
     alternative: str | None = Field(None, description="What to do instead")
-    severity: str = Field(
-        ..., description="Severity level (minor/moderate/major)"
-    )
+    severity: str = Field(..., description="Severity level (minor/moderate/major)")
 
 
 class EtiquetteRule(BaseModel):
@@ -96,9 +92,7 @@ class CultureAgentOutput(AgentResult):
     data: dict = Field(default_factory=dict, description="Legacy field for compatibility")
 
     # Greetings & Communication
-    greeting_customs: list[str] = Field(
-        ..., description="How people greet each other"
-    )
+    greeting_customs: list[str] = Field(..., description="How people greet each other")
     communication_style: str = Field(
         ..., description="Communication norms (direct/indirect, formal/informal)"
     )
@@ -133,17 +127,13 @@ class CultureAgentOutput(AgentResult):
 
     # Language & Phrases
     official_languages: list[str] = Field(..., description="Official language(s)")
-    common_phrases: list[CommonPhrase] = Field(
-        ..., description="Essential phrases for travelers"
-    )
+    common_phrases: list[CommonPhrase] = Field(..., description="Essential phrases for travelers")
     language_tips: list[str] = Field(
         default_factory=list, description="Tips for communicating with locals"
     )
 
     # Gift Giving
-    gift_giving_customs: list[str] | None = Field(
-        None, description="Gift giving etiquette"
-    )
+    gift_giving_customs: list[str] | None = Field(None, description="Gift giving etiquette")
 
     # Photography & Privacy
     photography_etiquette: list[str] = Field(
@@ -151,9 +141,7 @@ class CultureAgentOutput(AgentResult):
     )
 
     # Time & Punctuality
-    time_culture: str | None = Field(
-        None, description="Attitudes toward time and punctuality"
-    )
+    time_culture: str | None = Field(None, description="Attitudes toward time and punctuality")
 
     # Additional Tips
     cultural_sensitivity_tips: list[str] = Field(

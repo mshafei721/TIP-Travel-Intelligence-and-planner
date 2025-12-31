@@ -160,11 +160,13 @@ async def get_itinerary(trip_id: str, token_payload: dict = Depends(verify_jwt_t
                 days=[DayPlan(**day) for day in existing_itinerary.get("days", [])],
                 total_cost=existing_itinerary.get("total_cost", 0),
                 currency=existing_itinerary.get("currency", "USD"),
-                last_modified=datetime.fromisoformat(
-                    existing_itinerary["last_modified"].replace("Z", "+00:00")
-                )
-                if existing_itinerary.get("last_modified")
-                else datetime.utcnow(),
+                last_modified=(
+                    datetime.fromisoformat(
+                        existing_itinerary["last_modified"].replace("Z", "+00:00")
+                    )
+                    if existing_itinerary.get("last_modified")
+                    else datetime.utcnow()
+                ),
             )
         else:
             # Return empty itinerary
@@ -180,15 +182,19 @@ async def get_itinerary(trip_id: str, token_payload: dict = Depends(verify_jwt_t
             trip_id=trip_id,
             itinerary=itinerary,
             has_ai_generated=has_ai_generated,
-            last_synced_at=datetime.fromisoformat(last_synced_at.replace("Z", "+00:00"))
-            if last_synced_at
-            else None,
+            last_synced_at=(
+                datetime.fromisoformat(last_synced_at.replace("Z", "+00:00"))
+                if last_synced_at
+                else None
+            ),
         )
 
     except HTTPException:
         raise
     except Exception as e:
-        log_and_raise_http_error("retrieve itinerary", e, "Failed to retrieve itinerary. Please try again.")
+        log_and_raise_http_error(
+            "retrieve itinerary", e, "Failed to retrieve itinerary. Please try again."
+        )
 
 
 # ============================================================================
@@ -217,11 +223,7 @@ async def update_itinerary(
     try:
         # Verify trip exists and user owns it
         trip_response = (
-            supabase.table("trips")
-            .select("id, user_id")
-            .eq("id", trip_id)
-            .single()
-            .execute()
+            supabase.table("trips").select("id, user_id").eq("id", trip_id).single().execute()
         )
 
         if not trip_response.data:
@@ -265,7 +267,9 @@ async def update_itinerary(
     except HTTPException:
         raise
     except Exception as e:
-        log_and_raise_http_error("update itinerary", e, "Failed to update itinerary. Please try again.")
+        log_and_raise_http_error(
+            "update itinerary", e, "Failed to update itinerary. Please try again."
+        )
 
 
 # ============================================================================
@@ -378,9 +382,7 @@ async def update_day(
 
         existing_itinerary = get_trip_itinerary(trip_response.data)
         if not existing_itinerary:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Itinerary not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Itinerary not found")
 
         # Find and update day
         day_found = False
@@ -453,9 +455,7 @@ async def remove_day(
 
         existing_itinerary = get_trip_itinerary(trip_response.data)
         if not existing_itinerary:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Itinerary not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Itinerary not found")
 
         # Find and remove day
         original_length = len(existing_itinerary["days"])
@@ -518,9 +518,7 @@ async def add_activity(
 
         existing_itinerary = get_trip_itinerary(trip_response.data)
         if not existing_itinerary:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Itinerary not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Itinerary not found")
 
         # Find day
         day = next((d for d in existing_itinerary["days"] if d["id"] == day_id), None)
@@ -592,9 +590,7 @@ async def update_activity(
 
         existing_itinerary = get_trip_itinerary(trip_response.data)
         if not existing_itinerary:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Itinerary not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Itinerary not found")
 
         # Find and update activity across all days
         activity_found = False
@@ -615,9 +611,7 @@ async def update_activity(
                 break
 
         if not activity_found:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Activity not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Activity not found")
 
         # Recalculate total cost and update timestamp
         existing_itinerary["total_cost"] = calculate_itinerary_cost(existing_itinerary)
@@ -635,7 +629,9 @@ async def update_activity(
     except HTTPException:
         raise
     except Exception as e:
-        log_and_raise_http_error("update activity", e, "Failed to update activity. Please try again.")
+        log_and_raise_http_error(
+            "update activity", e, "Failed to update activity. Please try again."
+        )
 
 
 @router.delete(
@@ -670,27 +666,21 @@ async def remove_activity(
 
         existing_itinerary = get_trip_itinerary(trip_response.data)
         if not existing_itinerary:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Itinerary not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Itinerary not found")
 
         # Find and remove activity across all days
         activity_found = False
 
         for day in existing_itinerary["days"]:
             original_length = len(day.get("activities", []))
-            day["activities"] = [
-                a for a in day.get("activities", []) if a["id"] != activity_id
-            ]
+            day["activities"] = [a for a in day.get("activities", []) if a["id"] != activity_id]
             if len(day["activities"]) < original_length:
                 activity_found = True
                 day["total_cost"] = calculate_day_cost(day)
                 break
 
         if not activity_found:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Activity not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Activity not found")
 
         # Recalculate total cost and update timestamp
         existing_itinerary["total_cost"] = calculate_itinerary_cost(existing_itinerary)
@@ -704,7 +694,9 @@ async def remove_activity(
     except HTTPException:
         raise
     except Exception as e:
-        log_and_raise_http_error("remove activity", e, "Failed to remove activity. Please try again.")
+        log_and_raise_http_error(
+            "remove activity", e, "Failed to remove activity. Please try again."
+        )
 
 
 # ============================================================================
@@ -748,9 +740,7 @@ async def reorder_activities(
 
         existing_itinerary = get_trip_itinerary(trip_response.data)
         if not existing_itinerary:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Itinerary not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Itinerary not found")
 
         days_by_id = {d["id"]: d for d in existing_itinerary["days"]}
 
@@ -816,7 +806,9 @@ async def reorder_activities(
     except HTTPException:
         raise
     except Exception as e:
-        log_and_raise_http_error("reorder activities", e, "Failed to reorder activities. Please try again.")
+        log_and_raise_http_error(
+            "reorder activities", e, "Failed to reorder activities. Please try again."
+        )
 
 
 # ============================================================================
@@ -946,4 +938,6 @@ async def sync_from_ai_itinerary(
     except HTTPException:
         raise
     except Exception as e:
-        log_and_raise_http_error("sync from AI itinerary", e, "Failed to sync from AI itinerary. Please try again.")
+        log_and_raise_http_error(
+            "sync from AI itinerary", e, "Failed to sync from AI itinerary. Please try again."
+        )

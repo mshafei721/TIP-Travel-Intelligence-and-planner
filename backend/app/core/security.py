@@ -67,6 +67,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 # Rate Limiting
 # =============================================================================
 
+
 class RateLimiter:
     """
     Simple in-memory rate limiter using sliding window.
@@ -103,9 +104,7 @@ class RateLimiter:
     def _clean_old_requests(self, client_id: str, current_time: float) -> None:
         """Remove requests outside the current window."""
         cutoff = current_time - self.window_size
-        self.requests[client_id] = [
-            t for t in self.requests[client_id] if t > cutoff
-        ]
+        self.requests[client_id] = [t for t in self.requests[client_id] if t > cutoff]
 
     def is_rate_limited(self, request: Request) -> tuple[bool, dict]:
         """
@@ -153,9 +152,7 @@ def get_rate_limiter() -> RateLimiter:
     """Get or create the global rate limiter."""
     global _rate_limiter
     if _rate_limiter is None:
-        _rate_limiter = RateLimiter(
-            requests_per_minute=settings.RATE_LIMIT_PER_MINUTE
-        )
+        _rate_limiter = RateLimiter(requests_per_minute=settings.RATE_LIMIT_PER_MINUTE)
     return _rate_limiter
 
 
@@ -185,7 +182,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                 extra={
                     "path": str(request.url.path),
                     "client": headers.get("X-RateLimit-Limit"),
-                }
+                },
             )
 
             return JSONResponse(
@@ -213,6 +210,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 # =============================================================================
 # Production Environment Validation
 # =============================================================================
+
 
 class SecurityValidationError(Exception):
     """Raised when security validation fails."""
@@ -314,6 +312,7 @@ def check_security_on_startup(app: FastAPI, fail_on_critical: bool = True) -> No
 # UUID Validation
 # =============================================================================
 
+
 def validate_uuid(value: str) -> UUID | None:
     """
     Validate and parse UUID string.
@@ -335,6 +334,7 @@ def is_valid_uuid(value: str) -> bool:
 # =============================================================================
 # Input Sanitization
 # =============================================================================
+
 
 def sanitize_log_input(value: str, max_length: int = 200) -> str:
     """
@@ -363,6 +363,7 @@ def sanitize_log_input(value: str, max_length: int = 200) -> str:
 # =============================================================================
 # Secure Error Messages
 # =============================================================================
+
 
 def get_safe_error_message(exception: Exception, include_details: bool = False) -> str:
     """
@@ -401,6 +402,7 @@ def get_safe_error_message(exception: Exception, include_details: bool = False) 
 # Security Middleware Registration
 # =============================================================================
 
+
 def register_security_middleware(app: FastAPI) -> None:
     """Register all security middleware with the FastAPI app."""
     # Add security headers (must be first to ensure headers on all responses)
@@ -414,5 +416,5 @@ def register_security_middleware(app: FastAPI) -> None:
         extra={
             "rate_limit": settings.RATE_LIMIT_PER_MINUTE,
             "environment": settings.ENVIRONMENT,
-        }
+        },
     )

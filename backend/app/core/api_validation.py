@@ -66,14 +66,10 @@ def validate_api_keys() -> dict:
                 message="CRITICAL: All AI agents will fail without this key",
             )
         )
-        logger.critical(
-            "ANTHROPIC_API_KEY not configured - AI agents will fail!"
-        )
+        logger.critical("ANTHROPIC_API_KEY not configured - AI agents will fail!")
 
     # Weather APIs (either one works)
-    weather_configured = bool(
-        settings.WEATHERAPI_KEY or settings.VISUAL_CROSSING_API_KEY
-    )
+    weather_configured = bool(settings.WEATHERAPI_KEY or settings.VISUAL_CROSSING_API_KEY)
     if weather_configured:
         results.append(
             ApiKeyStatus(
@@ -94,9 +90,7 @@ def validate_api_keys() -> dict:
                 message="Using AI knowledge base for weather estimates",
             )
         )
-        logger.warning(
-            "No weather API keys configured - using AI fallback"
-        )
+        logger.warning("No weather API keys configured - using AI fallback")
 
     # Amadeus Flight API (optional, has AI fallback)
     if settings.AMADEUS_API_KEY and settings.AMADEUS_API_SECRET:
@@ -119,9 +113,7 @@ def validate_api_keys() -> dict:
                 message="Using AI knowledge base for flight estimates",
             )
         )
-        logger.info(
-            "Amadeus API not configured - using AI flight estimates"
-        )
+        logger.info("Amadeus API not configured - using AI flight estimates")
 
     # Currency API (free, no key needed)
     results.append(
@@ -193,15 +185,9 @@ def get_api_health_summary() -> dict:
     """
     status = validate_api_keys()
 
-    configured = sum(
-        1 for api in status["apis"] if api["status"] == "configured"
-    )
-    degraded = sum(
-        1 for api in status["apis"] if api["status"] == "degraded"
-    )
-    missing = sum(
-        1 for api in status["apis"] if api["status"] == "missing"
-    )
+    configured = sum(1 for api in status["apis"] if api["status"] == "configured")
+    degraded = sum(1 for api in status["apis"] if api["status"] == "degraded")
+    missing = sum(1 for api in status["apis"] if api["status"] == "missing")
 
     return {
         "apis_healthy": status["healthy"],
@@ -209,9 +195,7 @@ def get_api_health_summary() -> dict:
         "degraded": degraded,
         "missing": missing,
         "message": (
-            "All critical APIs configured"
-            if status["healthy"]
-            else "Critical API keys missing"
+            "All critical APIs configured" if status["healthy"] else "Critical API keys missing"
         ),
     }
 
@@ -227,27 +211,18 @@ def startup_api_check() -> None:
     status = validate_api_keys()
 
     # Log summary
-    configured = sum(
-        1 for api in status["apis"] if api["status"] == "configured"
-    )
-    degraded = sum(
-        1 for api in status["apis"] if api["status"] == "degraded"
-    )
-    missing = sum(
-        1 for api in status["apis"] if api["status"] == "missing"
-    )
+    configured = sum(1 for api in status["apis"] if api["status"] == "configured")
+    degraded = sum(1 for api in status["apis"] if api["status"] == "degraded")
+    missing = sum(1 for api in status["apis"] if api["status"] == "missing")
 
-    logger.info(
-        f"API Status: {configured} configured, {degraded} degraded, {missing} missing"
-    )
+    logger.info(f"API Status: {configured} configured, {degraded} degraded, {missing} missing")
 
     if status["critical_missing"]:
         logger.critical(
             "=" * 60 + "\n"
             "CRITICAL: Required API keys are missing!\n"
             "AI agents will fail without ANTHROPIC_API_KEY.\n"
-            "Please set this environment variable.\n"
-            + "=" * 60
+            "Please set this environment variable.\n" + "=" * 60
         )
         # In production, you might want to prevent startup
         if settings.ENVIRONMENT == "production":

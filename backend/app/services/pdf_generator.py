@@ -496,7 +496,10 @@ class PDFGenerator:
         # Packing suggestions
         packing = content.get("packing_suggestions", [])
         if packing:
-            items = "".join(f'<div class="list-item">{p.get("item", p) if isinstance(p, dict) else p}</div>' for p in packing[:5])
+            items = "".join(
+                f'<div class="list-item">{p.get("item", p) if isinstance(p, dict) else p}</div>'
+                for p in packing[:5]
+            )
             html += f"""
             <div class="content-item">
                 <div class="content-label">Packing Suggestions</div>
@@ -645,9 +648,7 @@ class PDFGenerator:
         logger.warning("Using fallback PDF generation (HTML only)")
         return html.encode("utf-8")
 
-    async def save_pdf_to_storage(
-        self, trip_id: str, pdf_bytes: bytes, user_id: str
-    ) -> str | None:
+    async def save_pdf_to_storage(self, trip_id: str, pdf_bytes: bytes, user_id: str) -> str | None:
         """
         Save PDF to Supabase Storage.
 
@@ -662,7 +663,9 @@ class PDFGenerator:
         try:
             from app.core.supabase import supabase
 
-            filename = f"{user_id}/{trip_id}/report_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.pdf"
+            filename = (
+                f"{user_id}/{trip_id}/report_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.pdf"
+            )
 
             # Upload to storage
             response = supabase.storage.from_("trip-reports").upload(

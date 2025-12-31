@@ -168,14 +168,10 @@ class ScrapingStrategy:
 
         return await scrapers[method](url)
 
-    async def _try_api(
-        self, url: str, handler: Callable[[str], Any]
-    ) -> ScrapeResult:
+    async def _try_api(self, url: str, handler: Callable[[str], Any]) -> ScrapeResult:
         """Try using a custom API handler."""
         try:
-            result = await asyncio.get_event_loop().run_in_executor(
-                None, handler, url
-            )
+            result = await asyncio.get_event_loop().run_in_executor(None, handler, url)
             return ScrapeResult(
                 url=url,
                 content=str(result),
@@ -208,14 +204,16 @@ class ScrapingStrategy:
                     title = await page.title()
 
                     # Extract main text content
-                    text_content = await page.evaluate("""
+                    text_content = await page.evaluate(
+                        """
                         () => {
                             // Remove scripts and styles
                             const scripts = document.querySelectorAll('script, style, noscript');
                             scripts.forEach(s => s.remove());
                             return document.body.innerText || document.body.textContent || '';
                         }
-                    """)
+                    """
+                    )
 
                     return ScrapeResult(
                         url=url,

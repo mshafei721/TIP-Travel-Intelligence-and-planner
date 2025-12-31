@@ -82,7 +82,7 @@ async def tip_exception_handler(request: Request, exc: TIPException) -> JSONResp
             "status_code": exc.status_code,
             "path": str(request.url.path),
             "method": request.method,
-        }
+        },
     )
 
     return create_error_response(
@@ -95,8 +95,7 @@ async def tip_exception_handler(request: Request, exc: TIPException) -> JSONResp
 
 
 async def validation_exception_handler(
-    request: Request,
-    exc: RequestValidationError
+    request: Request, exc: RequestValidationError
 ) -> JSONResponse:
     """Handle Pydantic/FastAPI validation errors."""
     details = []
@@ -117,7 +116,7 @@ async def validation_exception_handler(
             "path": str(request.url.path),
             "method": request.method,
             "errors": [d.model_dump() for d in details],
-        }
+        },
     )
 
     return create_error_response(
@@ -130,8 +129,7 @@ async def validation_exception_handler(
 
 
 async def pydantic_validation_handler(
-    request: Request,
-    exc: PydanticValidationError
+    request: Request, exc: PydanticValidationError
 ) -> JSONResponse:
     """Handle Pydantic model validation errors."""
     details = []
@@ -154,10 +152,7 @@ async def pydantic_validation_handler(
     )
 
 
-async def http_exception_handler(
-    request: Request,
-    exc: StarletteHTTPException
-) -> JSONResponse:
+async def http_exception_handler(request: Request, exc: StarletteHTTPException) -> JSONResponse:
     """Handle FastAPI/Starlette HTTP exceptions."""
     # Map HTTP status codes to error codes
     status_code_mapping = {
@@ -172,10 +167,7 @@ async def http_exception_handler(
         503: ErrorCode.EXTERNAL_API_UNAVAILABLE,
     }
 
-    error_code = status_code_mapping.get(
-        exc.status_code,
-        ErrorCode.INTERNAL_ERROR
-    )
+    error_code = status_code_mapping.get(exc.status_code, ErrorCode.INTERNAL_ERROR)
 
     # Log based on status code
     if exc.status_code >= 500:
@@ -185,7 +177,7 @@ async def http_exception_handler(
                 "status_code": exc.status_code,
                 "detail": exc.detail,
                 "path": str(request.url.path),
-            }
+            },
         )
     else:
         logger.warning(
@@ -194,7 +186,7 @@ async def http_exception_handler(
                 "status_code": exc.status_code,
                 "detail": exc.detail,
                 "path": str(request.url.path),
-            }
+            },
         )
 
     return create_error_response(
@@ -205,10 +197,7 @@ async def http_exception_handler(
     )
 
 
-async def unhandled_exception_handler(
-    request: Request,
-    exc: Exception
-) -> JSONResponse:
+async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     """Handle any unhandled exceptions."""
     # Log full traceback for debugging
     logger.exception(
@@ -217,7 +206,7 @@ async def unhandled_exception_handler(
             "path": str(request.url.path),
             "method": request.method,
             "exception_type": type(exc).__name__,
-        }
+        },
     )
 
     # In production, don't expose internal error details
@@ -226,6 +215,7 @@ async def unhandled_exception_handler(
     # Capture in Sentry if configured
     try:
         import sentry_sdk
+
         sentry_sdk.capture_exception(exc)
     except ImportError:
         pass  # Sentry not configured

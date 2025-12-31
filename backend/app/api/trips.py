@@ -219,31 +219,25 @@ async def get_trip(trip_id: str, token_payload: dict = Depends(verify_jwt_token)
             "status": trip.get("status", "draft"),
             "created_at": trip.get("created_at"),
             "updated_at": trip.get("updated_at"),
-
             # Destination fields (from destinations JSONB array)
             "destination_city": first_dest.get("city", ""),
             "destination_country": first_dest.get("country", ""),
-
             # Traveler fields (from traveler_details JSONB)
             "origin_city": traveler_details.get("originCity", ""),
             "party_size": traveler_details.get("partySize", 1),
-
             # Trip details (from trip_details JSONB)
             "departure_date": trip_details.get("departureDate", ""),
             "return_date": trip_details.get("returnDate", ""),
             "budget": trip_details.get("budget", 0),
             "currency": trip_details.get("currency", "USD"),
             "trip_purpose": trip_purpose,
-
             # Preferences (from preferences JSONB)
             "travel_style": preferences.get("travelStyle", "Balanced"),
             "interests": preferences.get("interests", []),
             "dietary_restrictions": preferences.get("dietaryRestrictions", []),
             "accessibility_needs": preferences.get("accessibilityNeeds"),
-
             # Generation status
             "generation_status": trip.get("status"),
-
             # Also include raw JSONB data for components that need it
             "traveler_details": traveler_details,
             "destinations": destinations,
@@ -335,7 +329,9 @@ async def create_trip(
         log_and_raise_http_error("create trip", e, "Failed to create trip. Please try again.")
 
 
-@router.post("/from-template/{template_id}", status_code=status.HTTP_201_CREATED, response_model=TripResponse)
+@router.post(
+    "/from-template/{template_id}", status_code=status.HTTP_201_CREATED, response_model=TripResponse
+)
 async def create_trip_from_template(
     template_id: str,
     template_data: CreateTripFromTemplateRequest | None = None,
@@ -366,10 +362,7 @@ async def create_trip_from_template(
     try:
         # Fetch the template
         template_response = (
-            supabase.table("trip_templates")
-            .select("*")
-            .eq("id", template_id)
-            .execute()
+            supabase.table("trip_templates").select("*").eq("id", template_id).execute()
         )
 
         if not template_response.data or len(template_response.data) == 0:
@@ -379,7 +372,9 @@ async def create_trip_from_template(
 
         # Check if user can access this template
         if not template.get("is_public") and template.get("user_id") != user_id:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied to this template")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="Access denied to this template"
+            )
 
         # Prepare trip data from template
         request_data = template_data or CreateTripFromTemplateRequest()
@@ -434,16 +429,18 @@ async def create_trip_from_template(
 
         # Increment template use_count
         current_use_count = template.get("use_count", 0)
-        supabase.table("trip_templates").update(
-            {"use_count": current_use_count + 1}
-        ).eq("id", template_id).execute()
+        supabase.table("trip_templates").update({"use_count": current_use_count + 1}).eq(
+            "id", template_id
+        ).execute()
 
         return response.data[0]
 
     except HTTPException:
         raise
     except Exception as e:
-        log_and_raise_http_error("create trip from template", e, "Failed to create trip from template. Please try again.")
+        log_and_raise_http_error(
+            "create trip from template", e, "Failed to create trip from template. Please try again."
+        )
 
 
 @router.put("/{trip_id}", response_model=TripResponse)
@@ -658,7 +655,9 @@ async def generate_trip_report(trip_id: str, token_payload: dict = Depends(verif
                     detail="Report already generated for this trip",
                 )
             # No sections exist - allow regeneration (previous run failed silently)
-            logger.warning(f"Trip {trip_id} marked completed but has no report sections. Allowing regeneration.")
+            logger.warning(
+                f"Trip {trip_id} marked completed but has no report sections. Allowing regeneration."
+            )
 
         if existing_trip["status"] == TripStatus.FAILED.value:
             # Allow retry for failed trips
@@ -695,7 +694,9 @@ async def generate_trip_report(trip_id: str, token_payload: dict = Depends(verif
         except:
             pass
 
-        log_and_raise_http_error("start report generation", e, "Failed to start report generation. Please try again.")
+        log_and_raise_http_error(
+            "start report generation", e, "Failed to start report generation. Please try again."
+        )
 
 
 @router.get("/{trip_id}/status")
@@ -771,7 +772,17 @@ async def get_generation_status(trip_id: str, token_payload: dict = Depends(veri
 
         # Determine current agent based on what's completed
         # Agents run in order: visa, country, weather, currency, culture, food, attractions, itinerary, flight
-        agent_order = ["visa", "country", "weather", "currency", "culture", "food", "attractions", "itinerary", "flight"]
+        agent_order = [
+            "visa",
+            "country",
+            "weather",
+            "currency",
+            "culture",
+            "food",
+            "attractions",
+            "itinerary",
+            "flight",
+        ]
         current_agent = None
 
         if trip["status"] == "processing":
@@ -799,7 +810,9 @@ async def get_generation_status(trip_id: str, token_payload: dict = Depends(veri
     except HTTPException:
         raise
     except Exception as e:
-        log_and_raise_http_error("get generation status", e, "Failed to get generation status. Please try again.")
+        log_and_raise_http_error(
+            "get generation status", e, "Failed to get generation status. Please try again."
+        )
 
 
 # Agent Job Endpoints
@@ -839,7 +852,9 @@ async def list_agent_jobs(trip_id: str, token_payload: dict = Depends(verify_jwt
         # Get all agent jobs for this trip
         jobs_response = (
             supabase.table("agent_jobs")
-            .select("id, trip_id, agent_type, status, started_at, completed_at, retry_count, error_message")
+            .select(
+                "id, trip_id, agent_type, status, started_at, completed_at, retry_count, error_message"
+            )
             .eq("trip_id", trip_id)
             .order("created_at")
             .execute()
@@ -867,11 +882,19 @@ async def list_agent_jobs(trip_id: str, token_payload: dict = Depends(verify_jwt
     except HTTPException:
         raise
     except Exception as e:
-        log_and_raise_http_error("list agent jobs", e, "Failed to list agent jobs. Please try again.")
+        log_and_raise_http_error(
+            "list agent jobs", e, "Failed to list agent jobs. Please try again."
+        )
 
 
-@router.post("/{trip_id}/jobs/{agent_type}/retry", status_code=status.HTTP_202_ACCEPTED, response_model=AgentJobResponse)
-async def retry_agent_job(trip_id: str, agent_type: AgentType, token_payload: dict = Depends(verify_jwt_token)):
+@router.post(
+    "/{trip_id}/jobs/{agent_type}/retry",
+    status_code=status.HTTP_202_ACCEPTED,
+    response_model=AgentJobResponse,
+)
+async def retry_agent_job(
+    trip_id: str, agent_type: AgentType, token_payload: dict = Depends(verify_jwt_token)
+):
     """
     Retry a failed agent job
 
@@ -916,7 +939,9 @@ async def retry_agent_job(trip_id: str, agent_type: AgentType, token_payload: di
         )
 
         if not job_response.data:
-            raise HTTPException(status_code=404, detail=f"Agent job not found for type: {agent_type.value}")
+            raise HTTPException(
+                status_code=404, detail=f"Agent job not found for type: {agent_type.value}"
+            )
 
         job = job_response.data
 
@@ -924,18 +949,20 @@ async def retry_agent_job(trip_id: str, agent_type: AgentType, token_payload: di
         if job["status"] != "failed":
             raise HTTPException(
                 status_code=400,
-                detail=f"Cannot retry job with status '{job['status']}'. Only failed jobs can be retried."
+                detail=f"Cannot retry job with status '{job['status']}'. Only failed jobs can be retried.",
             )
 
         # Update job status to retrying and increment retry count
         new_retry_count = (job.get("retry_count") or 0) + 1
         update_response = (
             supabase.table("agent_jobs")
-            .update({
-                "status": "retrying",
-                "retry_count": new_retry_count,
-                "error_message": None,
-            })
+            .update(
+                {
+                    "status": "retrying",
+                    "retry_count": new_retry_count,
+                    "error_message": None,
+                }
+            )
             .eq("id", job["id"])
             .execute()
         )
@@ -948,15 +975,15 @@ async def retry_agent_job(trip_id: str, agent_type: AgentType, token_payload: di
         # Queue the agent for re-execution via Celery
         try:
             from app.tasks.agent_jobs import run_single_agent
+
             run_single_agent.delay(trip_id, agent_type.value)
             logger.info(f"Queued retry for agent {agent_type.value} on trip {trip_id}")
         except Exception as task_error:
             logger.warning(f"Failed to queue agent retry task: {task_error}")
             # Update status back to failed if we couldn't queue
-            supabase.table("agent_jobs").update({
-                "status": "failed",
-                "error_message": f"Failed to queue retry: {str(task_error)}"
-            }).eq("id", job["id"]).execute()
+            supabase.table("agent_jobs").update(
+                {"status": "failed", "error_message": f"Failed to queue retry: {str(task_error)}"}
+            ).eq("id", job["id"]).execute()
             raise HTTPException(status_code=500, detail="Failed to queue agent retry")
 
         return AgentJobResponse(
@@ -973,7 +1000,9 @@ async def retry_agent_job(trip_id: str, agent_type: AgentType, token_payload: di
     except HTTPException:
         raise
     except Exception as e:
-        log_and_raise_http_error("retry agent job", e, "Failed to retry agent job. Please try again.")
+        log_and_raise_http_error(
+            "retry agent job", e, "Failed to retry agent job. Please try again."
+        )
 
 
 # Draft Management Endpoints
@@ -1360,10 +1389,12 @@ async def get_visa_report(trip_id: str, token_payload: dict = Depends(verify_jwt
                 sources.append(SourceReferenceResponse(**source))
             except Exception:
                 # If parsing fails, create minimal source
-                sources.append(SourceReferenceResponse(
-                    url=source.get("url", ""),
-                    title=source.get("title"),
-                ))
+                sources.append(
+                    SourceReferenceResponse(
+                        url=source.get("url", ""),
+                        title=source.get("title"),
+                    )
+                )
 
         # 5. Build response with context from trip data
         return VisaReportResponse(
@@ -1380,7 +1411,9 @@ async def get_visa_report(trip_id: str, token_payload: dict = Depends(verify_jwt
             duration_days=duration_days,
             # Core visa information
             visa_requirement=VisaRequirementResponse(**content.get("visa_requirement", {})),
-            application_process=ApplicationProcessResponse(**content.get("application_process", {})),
+            application_process=ApplicationProcessResponse(
+                **content.get("application_process", {})
+            ),
             entry_requirements=EntryRequirementResponse(**content.get("entry_requirements", {})),
             tips=content.get("tips", []),
             warnings=content.get("warnings", []),
@@ -1392,7 +1425,9 @@ async def get_visa_report(trip_id: str, token_payload: dict = Depends(verify_jwt
     except HTTPException:
         raise
     except Exception as e:
-        log_and_raise_http_error("retrieve visa report", e, "Failed to retrieve visa report. Please try again.")
+        log_and_raise_http_error(
+            "retrieve visa report", e, "Failed to retrieve visa report. Please try again."
+        )
 
 
 @router.get(
@@ -1501,10 +1536,12 @@ async def get_destination_report(trip_id: str, token_payload: dict = Depends(ver
             try:
                 sources.append(SourceReferenceResponse(**source))
             except Exception:
-                sources.append(SourceReferenceResponse(
-                    url=source.get("url", ""),
-                    title=source.get("title"),
-                ))
+                sources.append(
+                    SourceReferenceResponse(
+                        url=source.get("url", ""),
+                        title=source.get("title"),
+                    )
+                )
 
         # Parse emergency numbers safely
         emergency_numbers = []
@@ -1512,11 +1549,13 @@ async def get_destination_report(trip_id: str, token_payload: dict = Depends(ver
             try:
                 emergency_numbers.append(EmergencyContactResponse(**contact))
             except Exception:
-                emergency_numbers.append(EmergencyContactResponse(
-                    service=contact.get("service", "Unknown"),
-                    number=contact.get("number", ""),
-                    notes=contact.get("notes"),
-                ))
+                emergency_numbers.append(
+                    EmergencyContactResponse(
+                        service=contact.get("service", "Unknown"),
+                        number=contact.get("number", ""),
+                        notes=contact.get("notes"),
+                    )
+                )
 
         # Parse power outlet safely
         power_outlet_data = content.get("power_outlet", {})
@@ -1532,13 +1571,15 @@ async def get_destination_report(trip_id: str, token_payload: dict = Depends(ver
             try:
                 travel_advisories.append(TravelAdvisoryResponse(**advisory))
             except Exception:
-                travel_advisories.append(TravelAdvisoryResponse(
-                    level=advisory.get("level", "Unknown"),
-                    title=advisory.get("title", ""),
-                    summary=advisory.get("summary", ""),
-                    updated_at=advisory.get("updated_at"),
-                    source=advisory.get("source", "Unknown"),
-                ))
+                travel_advisories.append(
+                    TravelAdvisoryResponse(
+                        level=advisory.get("level", "Unknown"),
+                        title=advisory.get("title", ""),
+                        summary=advisory.get("summary", ""),
+                        updated_at=advisory.get("updated_at"),
+                        source=advisory.get("source", "Unknown"),
+                    )
+                )
 
         # 5. Build response with safe field access
         return CountryReportResponse(
@@ -1575,7 +1616,11 @@ async def get_destination_report(trip_id: str, token_payload: dict = Depends(ver
     except HTTPException:
         raise
     except Exception as e:
-        log_and_raise_http_error("retrieve destination report", e, "Failed to retrieve destination report. Please try again.")
+        log_and_raise_http_error(
+            "retrieve destination report",
+            e,
+            "Failed to retrieve destination report. Please try again.",
+        )
 
 
 @router.get(
@@ -1687,10 +1732,12 @@ async def get_itinerary_report(trip_id: str, token_payload: dict = Depends(verif
             try:
                 sources.append(SourceReferenceResponse(**source))
             except Exception:
-                sources.append(SourceReferenceResponse(
-                    url=source.get("url", ""),
-                    title=source.get("title"),
-                ))
+                sources.append(
+                    SourceReferenceResponse(
+                        url=source.get("url", ""),
+                        title=source.get("title"),
+                    )
+                )
 
         # 5. Build response
         return ItineraryReportResponse(
@@ -1706,7 +1753,9 @@ async def get_itinerary_report(trip_id: str, token_payload: dict = Depends(verif
     except HTTPException:
         raise
     except Exception as e:
-        log_and_raise_http_error("retrieve itinerary report", e, "Failed to retrieve itinerary report. Please try again.")
+        log_and_raise_http_error(
+            "retrieve itinerary report", e, "Failed to retrieve itinerary report. Please try again."
+        )
 
 
 @router.get(
@@ -1818,10 +1867,12 @@ async def get_flight_report(trip_id: str, token_payload: dict = Depends(verify_j
             try:
                 sources.append(SourceReferenceResponse(**source))
             except Exception:
-                sources.append(SourceReferenceResponse(
-                    url=source.get("url", ""),
-                    title=source.get("title"),
-                ))
+                sources.append(
+                    SourceReferenceResponse(
+                        url=source.get("url", ""),
+                        title=source.get("title"),
+                    )
+                )
 
         # 5. Build response
         return FlightReportResponse(
@@ -1837,7 +1888,9 @@ async def get_flight_report(trip_id: str, token_payload: dict = Depends(verify_j
     except HTTPException:
         raise
     except Exception as e:
-        log_and_raise_http_error("retrieve flight report", e, "Failed to retrieve flight report. Please try again.")
+        log_and_raise_http_error(
+            "retrieve flight report", e, "Failed to retrieve flight report. Please try again."
+        )
 
 
 @router.get(
@@ -1952,7 +2005,9 @@ async def get_full_report(trip_id: str, token_payload: dict = Depends(verify_jwt
     except HTTPException:
         raise
     except Exception as e:
-        log_and_raise_http_error("retrieve report", e, "Failed to retrieve report. Please try again.")
+        log_and_raise_http_error(
+            "retrieve report", e, "Failed to retrieve report. Please try again."
+        )
 
 
 @router.post(
@@ -2092,11 +2147,7 @@ async def preview_changes(
     try:
         # Fetch existing trip
         existing_response = (
-            supabase.table("trips")
-            .select("*")
-            .eq("id", trip_id)
-            .eq("user_id", user_id)
-            .execute()
+            supabase.table("trips").select("*").eq("id", trip_id).eq("user_id", user_id).execute()
         )
 
         if not existing_response.data or len(existing_response.data) == 0:
@@ -2156,7 +2207,9 @@ async def preview_changes(
     except HTTPException:
         raise
     except Exception as e:
-        log_and_raise_http_error("preview changes", e, "Failed to preview changes. Please try again.")
+        log_and_raise_http_error(
+            "preview changes", e, "Failed to preview changes. Please try again."
+        )
 
 
 @router.post("/{trip_id}/recalculate", response_model=RecalculationResponse)
@@ -2191,11 +2244,7 @@ async def recalculate_trip(
     try:
         # Verify trip exists and belongs to user
         existing_response = (
-            supabase.table("trips")
-            .select("*")
-            .eq("id", trip_id)
-            .eq("user_id", user_id)
-            .execute()
+            supabase.table("trips").select("*").eq("id", trip_id).eq("user_id", user_id).execute()
         )
 
         if not existing_response.data or len(existing_response.data) == 0:
@@ -2231,8 +2280,14 @@ async def recalculate_trip(
             else:
                 # No existing reports - use all default agents
                 agents_to_recalc = [
-                    "visa", "country", "weather", "currency",
-                    "culture", "food", "attractions", "itinerary"
+                    "visa",
+                    "country",
+                    "weather",
+                    "currency",
+                    "culture",
+                    "food",
+                    "attractions",
+                    "itinerary",
                 ]
 
         # Calculate estimated time
@@ -2248,12 +2303,15 @@ async def recalculate_trip(
         except Exception as celery_error:
             # If Celery is not available, return a mock response
             import uuid
+
             task_id = str(uuid.uuid4())
 
         # Update trip status to processing
-        supabase.table("trips").update({
-            "status": TripStatus.PROCESSING.value,
-        }).eq("id", trip_id).execute()
+        supabase.table("trips").update(
+            {
+                "status": TripStatus.PROCESSING.value,
+            }
+        ).eq("id", trip_id).execute()
 
         return RecalculationResponse(
             task_id=task_id,
@@ -2266,7 +2324,9 @@ async def recalculate_trip(
     except HTTPException:
         raise
     except Exception as e:
-        log_and_raise_http_error("trigger recalculation", e, "Failed to trigger recalculation. Please try again.")
+        log_and_raise_http_error(
+            "trigger recalculation", e, "Failed to trigger recalculation. Please try again."
+        )
 
 
 @router.get("/{trip_id}/recalculation/status", response_model=RecalculationStatusResponse)
@@ -2363,7 +2423,9 @@ async def get_recalculation_status(
                     task_id=task_id,
                     status=RecalculationStatusEnum.COMPLETED,
                     progress=100.0,
-                    completed_agents=result.result.get("completed_agents", []) if result.result else [],
+                    completed_agents=(
+                        result.result.get("completed_agents", []) if result.result else []
+                    ),
                     pending_agents=[],
                     current_agent=None,
                     started_at=trip.get("recalc_started_at"),
@@ -2389,7 +2451,11 @@ async def get_recalculation_status(
         # Default response based on trip status
         return RecalculationStatusResponse(
             task_id=task_id or "",
-            status=RecalculationStatusEnum.IN_PROGRESS if trip.get("status") == TripStatus.PROCESSING.value else RecalculationStatusEnum.COMPLETED,
+            status=(
+                RecalculationStatusEnum.IN_PROGRESS
+                if trip.get("status") == TripStatus.PROCESSING.value
+                else RecalculationStatusEnum.COMPLETED
+            ),
             progress=50.0 if trip.get("status") == TripStatus.PROCESSING.value else 100.0,
             completed_agents=[],
             pending_agents=[],
@@ -2402,7 +2468,9 @@ async def get_recalculation_status(
     except HTTPException:
         raise
     except Exception as e:
-        log_and_raise_http_error("get recalculation status", e, "Failed to get recalculation status.")
+        log_and_raise_http_error(
+            "get recalculation status", e, "Failed to get recalculation status."
+        )
 
 
 @router.post("/{trip_id}/recalculation/cancel", response_model=RecalculationCancelResponse)
@@ -2474,10 +2542,12 @@ async def cancel_recalculation(
                 pass
 
         # Update trip status back to completed (or previous state)
-        supabase.table("trips").update({
-            "status": TripStatus.COMPLETED.value,
-            "recalc_task_id": None,
-        }).eq("id", trip_id).execute()
+        supabase.table("trips").update(
+            {
+                "status": TripStatus.COMPLETED.value,
+                "recalc_task_id": None,
+            }
+        ).eq("id", trip_id).execute()
 
         return RecalculationCancelResponse(
             task_id=task_id or "",
@@ -2527,11 +2597,7 @@ async def update_trip_with_recalc(
     try:
         # Fetch existing trip
         existing_response = (
-            supabase.table("trips")
-            .select("*")
-            .eq("id", trip_id)
-            .eq("user_id", user_id)
-            .execute()
+            supabase.table("trips").select("*").eq("id", trip_id).eq("user_id", user_id).execute()
         )
 
         if not existing_response.data or len(existing_response.data) == 0:
@@ -2590,25 +2656,22 @@ async def update_trip_with_recalc(
         # Create version history entry before updating
         version_number = existing_trip.get("version", 0) + 1
         try:
-            supabase.table("trip_versions").insert({
-                "trip_id": trip_id,
-                "version_number": version_number - 1,  # Store the old version
-                "trip_data": old_trip,
-                "change_summary": f"Update before version {version_number}",
-                "fields_changed": list(change_result.changes.keys()),
-            }).execute()
+            supabase.table("trip_versions").insert(
+                {
+                    "trip_id": trip_id,
+                    "version_number": version_number - 1,  # Store the old version
+                    "trip_data": old_trip,
+                    "change_summary": f"Update before version {version_number}",
+                    "fields_changed": list(change_result.changes.keys()),
+                }
+            ).execute()
         except Exception:
             # Version history table might not exist yet - that's OK
             pass
 
         # Update the trip
         update_fields["version"] = version_number
-        update_response = (
-            supabase.table("trips")
-            .update(update_fields)
-            .eq("id", trip_id)
-            .execute()
-        )
+        update_response = supabase.table("trips").update(update_fields).eq("id", trip_id).execute()
 
         if not update_response.data or len(update_response.data) == 0:
             raise HTTPException(
@@ -2642,9 +2705,11 @@ async def update_trip_with_recalc(
                     task_id = task.id
 
                     # Update trip status
-                    supabase.table("trips").update({
-                        "status": TripStatus.PROCESSING.value,
-                    }).eq("id", trip_id).execute()
+                    supabase.table("trips").update(
+                        {
+                            "status": TripStatus.PROCESSING.value,
+                        }
+                    ).eq("id", trip_id).execute()
 
                     recalculation = RecalculationResponse(
                         task_id=task_id,
@@ -2681,7 +2746,9 @@ async def update_trip_with_recalc(
     except HTTPException:
         raise
     except Exception as e:
-        log_and_raise_http_error("update trip with recalc", e, "Failed to update trip. Please try again.")
+        log_and_raise_http_error(
+            "update trip with recalc", e, "Failed to update trip. Please try again."
+        )
 
 
 # ============================================================================
@@ -2737,12 +2804,14 @@ async def list_trip_versions(
         versions = []
         if versions_response.data:
             for v in versions_response.data:
-                versions.append(TripVersionSummary(
-                    version_number=v["version_number"],
-                    created_at=v["created_at"],
-                    change_summary=v.get("change_summary", ""),
-                    fields_changed=v.get("fields_changed", []),
-                ))
+                versions.append(
+                    TripVersionSummary(
+                        version_number=v["version_number"],
+                        created_at=v["created_at"],
+                        change_summary=v.get("change_summary", ""),
+                        fields_changed=v.get("fields_changed", []),
+                    )
+                )
 
         return TripVersionListResponse(
             trip_id=trip_id,
@@ -2785,11 +2854,7 @@ async def compare_trip_versions(
     try:
         # Verify trip exists and belongs to user
         trip_response = (
-            supabase.table("trips")
-            .select("id")
-            .eq("id", trip_id)
-            .eq("user_id", user_id)
-            .execute()
+            supabase.table("trips").select("id").eq("id", trip_id).eq("user_id", user_id).execute()
         )
 
         if not trip_response.data or len(trip_response.data) == 0:
@@ -2869,7 +2934,9 @@ async def compare_trip_versions(
         elif change_count == 1:
             summary = f"1 field changed between version {version_a} and version {version_b}"
         else:
-            summary = f"{change_count} fields changed between version {version_a} and version {version_b}"
+            summary = (
+                f"{change_count} fields changed between version {version_a} and version {version_b}"
+            )
 
         return VersionCompareResponse(
             trip_id=trip_id,
@@ -2882,10 +2949,14 @@ async def compare_trip_versions(
     except HTTPException:
         raise
     except Exception as e:
-        log_and_raise_http_error("compare versions", e, "Failed to compare versions. Please try again.")
+        log_and_raise_http_error(
+            "compare versions", e, "Failed to compare versions. Please try again."
+        )
 
 
-@router.post("/{trip_id}/versions/{version_number}/restore", response_model=TripVersionRestoreResponse)
+@router.post(
+    "/{trip_id}/versions/{version_number}/restore", response_model=TripVersionRestoreResponse
+)
 async def restore_trip_version(
     trip_id: str,
     version_number: int,
@@ -2912,11 +2983,7 @@ async def restore_trip_version(
     try:
         # Verify trip exists and belongs to user
         trip_response = (
-            supabase.table("trips")
-            .select("*")
-            .eq("id", trip_id)
-            .eq("user_id", user_id)
-            .execute()
+            supabase.table("trips").select("*").eq("id", trip_id).eq("user_id", user_id).execute()
         )
 
         if not trip_response.data or len(trip_response.data) == 0:
@@ -2947,18 +3014,20 @@ async def restore_trip_version(
         trip_data = version_data.get("trip_data", {})
 
         # Save current state as a new version entry
-        supabase.table("trip_versions").insert({
-            "trip_id": trip_id,
-            "version_number": current_version,
-            "trip_data": {
-                "traveler_details": current_trip.get("traveler_details"),
-                "destinations": current_trip.get("destinations", []),
-                "trip_details": current_trip.get("trip_details"),
-                "preferences": current_trip.get("preferences"),
-            },
-            "change_summary": f"State before restoring to version {version_number}",
-            "fields_changed": [],
-        }).execute()
+        supabase.table("trip_versions").insert(
+            {
+                "trip_id": trip_id,
+                "version_number": current_version,
+                "trip_data": {
+                    "traveler_details": current_trip.get("traveler_details"),
+                    "destinations": current_trip.get("destinations", []),
+                    "trip_details": current_trip.get("trip_details"),
+                    "preferences": current_trip.get("preferences"),
+                },
+                "change_summary": f"State before restoring to version {version_number}",
+                "fields_changed": [],
+            }
+        ).execute()
 
         # Restore the old version data
         new_version = current_version + 1
@@ -2976,17 +3045,25 @@ async def restore_trip_version(
         recalculation = None
         if current_trip.get("status") in ["completed", "failed"]:
             all_agents = [
-                "visa", "country", "weather", "currency",
-                "culture", "food", "attractions", "itinerary"
+                "visa",
+                "country",
+                "weather",
+                "currency",
+                "culture",
+                "food",
+                "attractions",
+                "itinerary",
             ]
             try:
                 from app.tasks.agent_jobs import execute_selective_recalc
 
                 task = execute_selective_recalc.delay(trip_id, all_agents)
 
-                supabase.table("trips").update({
-                    "status": TripStatus.PROCESSING.value,
-                }).eq("id", trip_id).execute()
+                supabase.table("trips").update(
+                    {
+                        "status": TripStatus.PROCESSING.value,
+                    }
+                ).eq("id", trip_id).execute()
 
                 detector = ChangeDetector()
                 recalculation = RecalculationResponse(
@@ -3009,4 +3086,6 @@ async def restore_trip_version(
     except HTTPException:
         raise
     except Exception as e:
-        log_and_raise_http_error("restore version", e, "Failed to restore version. Please try again.")
+        log_and_raise_http_error(
+            "restore version", e, "Failed to restore version. Please try again."
+        )

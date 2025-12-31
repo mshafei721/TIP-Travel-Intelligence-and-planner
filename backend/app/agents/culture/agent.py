@@ -180,16 +180,21 @@ class CultureAgent(BaseAgent):
 
         if isinstance(dress_code_data, dict):
             return DressCodeInfo(
-                casual=dress_code_data.get("casual") or dress_code_data.get("casual_guidelines", "Dress modestly"),
+                casual=dress_code_data.get("casual")
+                or dress_code_data.get("casual_guidelines", "Dress modestly"),
                 formal=dress_code_data.get("formal") or dress_code_data.get("formal_guidelines"),
-                religious_sites=dress_code_data.get("religious_sites") or dress_code_data.get("religious_site_requirements"),
-                beaches=dress_code_data.get("beaches") or dress_code_data.get("beach_swimwear_guidelines"),
+                religious_sites=dress_code_data.get("religious_sites")
+                or dress_code_data.get("religious_site_requirements"),
+                beaches=dress_code_data.get("beaches")
+                or dress_code_data.get("beach_swimwear_guidelines"),
                 general_notes=dress_code_data.get("general_notes"),
             )
 
         return DressCodeInfo(casual="Dress modestly")
 
-    def _normalize_religious_considerations(self, data: dict | list | None) -> tuple[str | None, list]:
+    def _normalize_religious_considerations(
+        self, data: dict | list | None
+    ) -> tuple[str | None, list]:
         """
         Normalize religious considerations from LLM output.
 
@@ -252,7 +257,10 @@ class CultureAgent(BaseAgent):
                 score += 0.1
 
         # Check for religious considerations (0.1)
-        if result.get("religious_considerations") and len(result.get("religious_considerations", [])) > 0:
+        if (
+            result.get("religious_considerations")
+            and len(result.get("religious_considerations", [])) > 0
+        ):
             score += 0.1
 
         # Check for taboos (0.1)
@@ -320,11 +328,17 @@ class CultureAgent(BaseAgent):
             greetings_comm = parsed_result.get("greetings_communication", {})
             if isinstance(greetings_comm, dict):
                 # LLM may wrap greeting data in a greetings_communication object
-                if not parsed_result.get("greeting_customs") and greetings_comm.get("greeting_customs"):
+                if not parsed_result.get("greeting_customs") and greetings_comm.get(
+                    "greeting_customs"
+                ):
                     parsed_result["greeting_customs"] = greetings_comm.get("greeting_customs")
-                if not parsed_result.get("communication_style") and greetings_comm.get("communication_style"):
+                if not parsed_result.get("communication_style") and greetings_comm.get(
+                    "communication_style"
+                ):
                     parsed_result["communication_style"] = greetings_comm.get("communication_style")
-                if not parsed_result.get("body_language_notes") and greetings_comm.get("body_language_notes"):
+                if not parsed_result.get("body_language_notes") and greetings_comm.get(
+                    "body_language_notes"
+                ):
                     parsed_result["body_language_notes"] = greetings_comm.get("body_language_notes")
 
             # Normalize dress code data from LLM output

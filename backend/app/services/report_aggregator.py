@@ -93,13 +93,7 @@ class ReportAggregator:
             TripInfo or None if trip not found
         """
         try:
-            response = (
-                self.supabase.table("trips")
-                .select("*")
-                .eq("id", trip_id)
-                .single()
-                .execute()
-            )
+            response = self.supabase.table("trips").select("*").eq("id", trip_id).single().execute()
 
             if not response.data:
                 return None
@@ -119,9 +113,7 @@ class ReportAggregator:
                 return_date=trip.get("return_date"),
                 travelers=trip.get("travelers", 1),
                 status=trip.get("status", "draft"),
-                created_at=datetime.fromisoformat(
-                    trip["created_at"].replace("Z", "+00:00")
-                ),
+                created_at=datetime.fromisoformat(trip["created_at"].replace("Z", "+00:00")),
             )
 
         except Exception as e:
@@ -273,9 +265,7 @@ class ReportAggregator:
                 title=row.get("title", section_type.title()),
                 content=row.get("content", {}),
                 confidence_score=confidence,
-                generated_at=datetime.fromisoformat(
-                    row["generated_at"].replace("Z", "+00:00")
-                ),
+                generated_at=datetime.fromisoformat(row["generated_at"].replace("Z", "+00:00")),
                 sources=row.get("sources", []),
             )
 

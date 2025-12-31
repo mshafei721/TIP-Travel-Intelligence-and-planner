@@ -380,7 +380,9 @@ async def nearby_places(
     except HTTPException:
         raise
     except Exception as e:
-        log_and_raise_http_error("find nearby places", e, "Failed to find nearby places. Please try again.")
+        log_and_raise_http_error(
+            "find nearby places", e, "Failed to find nearby places. Please try again."
+        )
 
 
 @router.get(

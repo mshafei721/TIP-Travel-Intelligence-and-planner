@@ -135,8 +135,12 @@ class ChangeDetector:
 
         # Handle both dict and TravelerDetails objects
         # Use by_alias=False to get snake_case keys for comparison
-        old_dict = old_td.model_dump(by_alias=False) if isinstance(old_td, TravelerDetails) else old_td
-        new_dict = new_td.model_dump(by_alias=False) if isinstance(new_td, TravelerDetails) else new_td
+        old_dict = (
+            old_td.model_dump(by_alias=False) if isinstance(old_td, TravelerDetails) else old_td
+        )
+        new_dict = (
+            new_td.model_dump(by_alias=False) if isinstance(new_td, TravelerDetails) else new_td
+        )
 
         # Check nationality
         if old_dict.get("nationality") != new_dict.get("nationality"):
@@ -275,8 +279,16 @@ class ChangeDetector:
 
         # Handle both dict and TripPreferences objects
         # Use by_alias=False to get snake_case keys for comparison
-        old_dict = old_prefs.model_dump(by_alias=False) if isinstance(old_prefs, TripPreferences) else old_prefs
-        new_dict = new_prefs.model_dump(by_alias=False) if isinstance(new_prefs, TripPreferences) else new_prefs
+        old_dict = (
+            old_prefs.model_dump(by_alias=False)
+            if isinstance(old_prefs, TripPreferences)
+            else old_prefs
+        )
+        new_dict = (
+            new_prefs.model_dump(by_alias=False)
+            if isinstance(new_prefs, TripPreferences)
+            else new_prefs
+        )
 
         # Check travel style
         old_style = old_dict.get("travel_style")
