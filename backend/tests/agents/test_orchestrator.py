@@ -34,6 +34,7 @@ class TestOrchestratorAgent:
         assert "visa" in orchestrator.available_agents
 
     @pytest.mark.asyncio()
+    @pytest.mark.integration
     async def test_orchestrator_generates_report_for_trip(self):
         """Test that orchestrator can generate a complete report"""
         orchestrator = OrchestratorAgent()
@@ -80,6 +81,7 @@ class TestOrchestratorAgent:
         assert result["sections"]["visa"] is not None
 
     @pytest.mark.asyncio()
+    @pytest.mark.integration
     async def test_orchestrator_handles_agent_failure_gracefully(self):
         """Test that orchestrator continues if one agent fails"""
         orchestrator = OrchestratorAgent()
