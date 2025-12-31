@@ -46,6 +46,7 @@ langchain-core>=0.1.0
 pytest>=8.0.0
 pytest-asyncio>=0.23.0
 pytest-cov>=5.0.0
+pytest-mock>=3.14.0  # Mocking for pytest
 pytest-celery>=1.0.0  # Celery testing utilities
 fakeredis>=2.21.0  # Mock Redis for tests
 black>=24.0.0
