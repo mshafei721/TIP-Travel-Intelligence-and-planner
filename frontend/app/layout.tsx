@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { DM_Sans, IBM_Plex_Mono } from 'next/font/google';
 import { ThemeProvider } from '@/components/providers/ThemeProvider';
+import { PostHogProvider } from '@/components/providers/PostHogProvider';
 import './globals.css';
 
 const dmSans = DM_Sans({
@@ -29,7 +30,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${dmSans.variable} ${ibmPlexMono.variable} antialiased`}>
-        <ThemeProvider>{children}</ThemeProvider>
+        <PostHogProvider>
+          <ThemeProvider>{children}</ThemeProvider>
+        </PostHogProvider>
       </body>
     </html>
   );

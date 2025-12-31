@@ -264,6 +264,13 @@ def validate_production_security() -> list[str]:
             if "localhost" in origin or "127.0.0.1" in origin:
                 issues.append(f"WARNING: CORS allows localhost origin: {origin}")
 
+        # Check Redis URL (should not be localhost in production)
+        if "localhost" in settings.REDIS_URL or "127.0.0.1" in settings.REDIS_URL:
+            issues.append("WARNING: REDIS_URL contains localhost in production")
+
+        if "localhost" in settings.CELERY_BROKER_URL or "127.0.0.1" in settings.CELERY_BROKER_URL:
+            issues.append("WARNING: CELERY_BROKER_URL contains localhost in production")
+
         # Check Sentry configuration
         if not settings.SENTRY_DSN:
             issues.append("INFO: SENTRY_DSN not configured - errors won't be tracked")

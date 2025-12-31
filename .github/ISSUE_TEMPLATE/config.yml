@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: General Questions
+    url: https://github.com/your-org/TIP-Travel-Intelligence-and-planner/discussions
+    about: Please ask and answer general questions here.
+  - name: Security Issues
+    url: mailto:security@tip-travel.com
+    about: Please report security vulnerabilities directly to our security team.

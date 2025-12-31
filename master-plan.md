@@ -456,6 +456,251 @@ k6 run --vus 5 --duration 60s tests/load/trip-creation.js
 **Deliverable:** Production-ready application with monitoring and security.
 
 ---
+Phase 5: Analytics, Observability, and User Feedback Loop (Week 10+)
+
+Goal: End-to-end telemetry (errors, performance, product analytics) plus a closed-loop user feedback intake (bugs + feature requests) with triage workflow.
+
+Task 5.1: Sentry Integration (Frontend + Backend)
+
+Issue: Production errors are not centralized, no stack traces, no release correlation
+Files:
+
+Frontend: frontend/sentry.client.config.ts, frontend/sentry.server.config.ts, frontend/next.config.js
+
+Backend: backend/app/main.py (or your Flask entry), backend/app/config.py
+
+# Frontend (Next.js) Sentry setup
+cd frontend
+npx @sentry/wizard@latest -i nextjs
+
+# Backend (Python/Flask) Sentry SDK
+cd backend
+pip install sentry-sdk[flask]
+
+
+Backend example (Flask):
+
+import sentry_sdk
+from sentry_sdk.integrations.flask import FlaskIntegration
+
+sentry_sdk.init(
+  dsn=os.environ.get("SENTRY_DSN"),
+  integrations=[FlaskIntegration()],
+  traces_sample_rate=float(os.environ.get("SENTRY_TRACES_SAMPLE_RATE", "0.1")),
+  profiles_sample_rate=float(os.environ.get("SENTRY_PROFILES_SAMPLE_RATE", "0.0")),
+  environment=os.environ.get("APP_ENV", "production"),
+  release=os.environ.get("APP_RELEASE", "unknown"),
+)
+
+
+Capture:
+
+Unhandled exceptions
+
+API error responses (4xx, 5xx) with context
+
+Frontend crashes + route context
+
+Performance traces for key flows
+
+Task 5.2: Sentry Releases, Source Maps, and Alerting
+
+Issue: Errors are hard to reproduce and not tied to deploy versions
+Files: frontend/next.config.js, .github/workflows/*.yml
+
+# Required env vars (CI)
+SENTRY_AUTH_TOKEN=xxx
+SENTRY_ORG=your-org
+SENTRY_PROJECT=your-project
+APP_RELEASE=$(git rev-parse --short HEAD)
+
+
+Alert policy (minimum viable):
+
+Page: spike in Error Rate over baseline
+
+Page: new issue with events > N in 30 minutes
+
+Warn: p95 web vitals degrade (if enabled)
+
+Rule: Alerts map to an owner and a response SLA (even if lightweight).
+
+Task 5.3: PostHog Integration (Product Analytics)
+
+Issue: No visibility on adoption, funnels, drop-offs, retention
+Files: frontend/app/layout.tsx (or root), frontend/lib/analytics/*
+
+# Frontend integration (wizard)
+cd frontend
+npx -y @posthog/wizard@latest
+
+# Add to frontend/.env.local
+NEXT_PUBLIC_POSTHOG_KEY=phc_xxx
+NEXT_PUBLIC_POSTHOG_HOST=https://app.posthog.com
+
+
+Track (standardized events):
+
+$pageview (auto)
+
+trip_created (properties: destination, days, travelers_count)
+
+report_generated (properties: duration_ms, success=true|false)
+
+payment_started, payment_completed (if applicable)
+
+feedback_submitted (properties: type=bug|feature, has_attachment)
+
+Task 5.4: Event Taxonomy + Dashboards (Make Analytics Actionable)
+
+Issue: Events become noise if naming and properties are inconsistent
+Files: frontend/lib/analytics/events.ts, docs/analytics/event-taxonomy.md
+
+export const EVENTS = {
+  TripCreated: "trip_created",
+  ReportGenerated: "report_generated",
+  FeedbackSubmitted: "feedback_submitted",
+} as const;
+
+// Example properties contract
+// report_generated: { duration_ms: number; success: boolean; error_code?: string }
+
+
+Dashboards to build in PostHog:
+
+Acquisition: new users, activation rate
+
+Funnel: landing → trip setup → report generation
+
+Reliability: report success rate, error occurrences by step
+
+Retention: D1, D7 retention for active planners
+
+Rule: No new feature ships without at least 1 measurable event.
+
+Task 5.5: User Feature Request + Bug Report (In-App Intake)
+
+Issue: Users have no structured channel to report problems or request enhancements
+Files:
+
+Frontend UI: frontend/components/feedback/FeedbackModal.tsx
+
+API client: frontend/lib/api/feedback.ts
+
+UI requirements (minimum viable):
+
+Entry points: footer link “Send Feedback” + error-state CTA “Report this issue”
+
+Type selector: Bug or Feature Request
+
+Fields:
+
+Title (required)
+
+Description (required)
+
+Email optional (or auto if logged-in)
+
+Screenshot/attachment optional
+
+Auto-attach context:
+
+app version (release)
+
+device/browser
+
+current route
+
+PostHog distinct_id (if available)
+
+Sentry event_id (if report triggered from an error screen)
+
+Task 5.6: Feedback API + Storage + Notifications
+
+Issue: Feedback must land somewhere persistent, searchable, and triageable
+Files: backend/app/api/feedback.py, backend/app/models/feedback.py, DB migrations (or Supabase SQL)
+
+Endpoint:
+
+POST /api/feedback
+
+Rate-limited (per IP and per user)
+
+Spam control (basic): throttling + optional captcha later
+
+Payload example:
+
+{
+  "type": "bug",
+  "title": "Trip creation fails on step 2",
+  "description": "After selecting dates, the Next button spins forever.",
+  "route": "/trip/create",
+  "app_release": "a1b2c3d",
+  "posthog_id": "ph_123",
+  "sentry_event_id": "abcd1234",
+  "attachments": []
+}
+
+
+Routing options (pick one and standardize):
+
+Create GitHub Issues via GitHub App or webhook
+
+Create Linear/Jira tickets via API
+
+Send to Slack channel #feedback-triage with structured fields
+
+Task 5.7: Triage Workflow (Operationalize the Intake)
+
+Issue: Feedback dies in a queue without ownership and rules
+Files: .github/ISSUE_TEMPLATE/*, docs/ops/triage.md
+
+Rules (practical):
+
+Bug: reproduce? yes/no within 24 to 48 hours
+
+Severity labels: sev1 (blocked), sev2 (major), sev3 (minor)
+
+Feature requests: tag with theme/* and impact/*
+
+Close-loop: optional automated email “Received” and “Shipped” later
+
+GitHub issue forms (example structure):
+
+Bug: steps to reproduce, expected vs actual, logs, screenshot
+
+Feature: user goal, proposed solution, alternatives, priority
+
+Task 5.8: Analytics Governance (Privacy, PII, and Cost Control)
+
+Issue: Analytics can accidentally collect PII and create compliance risk
+Files: docs/analytics/privacy.md, frontend/lib/analytics/sanitize.ts, backend/app/logging.py
+
+Minimum controls:
+
+Do not send raw user input fields (free text) to PostHog by default
+
+Redact tokens, emails, phone numbers from Sentry breadcrumbs
+
+Sampling:
+
+Sentry traces: 0.05 to 0.2 depending on traffic
+
+Session replay: off by default unless explicitly needed
+
+Explicit user consent toggle if required by your policy
+
+Environment Variables Audit
+Variable	Frontend	Backend	Prod	Status
+NEXT_PUBLIC_POSTHOG_KEY	Yes	-	Set	Required
+NEXT_PUBLIC_POSTHOG_HOST	Yes	-	Set	Required
+SENTRY_DSN	-	Yes	Set	Required
+NEXT_PUBLIC_SENTRY_DSN	Yes	-	Set	Required
+APP_RELEASE	Yes	Yes	Set in CI	Required
+SENTRY_TRACES_SAMPLE_RATE	-	Yes	Tune	Recommended
+
+Deliverable: A measurable product with production-grade error tracking, performance visibility, adoption funnels, and a user feedback mechanism that reliably produces actionable tickets.
+
 
 ## Cost Optimization Summary
 

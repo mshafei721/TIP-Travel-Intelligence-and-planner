@@ -120,3 +120,60 @@ def verify_jwt_token(
             detail="Invalid token",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+
+def optional_jwt_token(
+    request: Request,
+    authorization: Optional[str] = Header(None),
+) -> Optional[dict]:
+    """
+    Optionally verify JWT token from Authorization header.
+
+    Returns decoded token payload if present and valid, otherwise None.
+    Does not raise exceptions for missing or invalid tokens.
+
+    Args:
+        request: FastAPI request object (auto-injected)
+        authorization: Bearer token from header (optional)
+
+    Returns:
+        Optional[dict]: Decoded token payload containing user_id, or None
+    """
+    if not authorization:
+        return None
+
+    try:
+        # Extract token from "Bearer <token>"
+        parts = authorization.split()
+        if len(parts) != 2:
+            return None
+
+        scheme, token = parts
+        if scheme.lower() != "bearer":
+            return None
+
+        # Decode and verify token with explicit options
+        payload = jwt.decode(
+            token,
+            settings.SUPABASE_JWT_SECRET,
+            algorithms=["HS256"],
+            options={
+                "verify_aud": False,  # Supabase doesn't use aud claim
+                "verify_exp": True,   # Explicitly verify expiration
+                "require": ["sub", "exp"],  # Require these claims
+            },
+        )
+
+        # Extract and validate user_id
+        user_id = payload.get("sub")
+        if not user_id:
+            return None
+
+        # Set user_id on request state for rate limiting and logging
+        request.state.user_id = user_id
+
+        return {"user_id": user_id, **payload}
+
+    except (ValueError, ExpiredSignatureError, JWTClaimsError, JWTError):
+        # Return None for any token validation failures
+        return None

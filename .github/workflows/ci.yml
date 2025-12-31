@@ -120,11 +120,15 @@ jobs:
 
       - name: Report success
         if: |
-          needs.backend.result == 'success' &&
-          needs.frontend.result == 'success' &&
-          needs.integration.result == 'success'
+          (needs.backend.result == 'success' || needs.backend.result == 'skipped') &&
+          (needs.frontend.result == 'success' || needs.frontend.result == 'skipped') &&
+          (needs.integration.result == 'success' || needs.integration.result == 'skipped') &&
+          !(needs.backend.result == 'failure' || needs.frontend.result == 'failure' || needs.integration.result == 'failure')
         run: |
           echo "✅ All CI/CD checks passed!"
+          echo "Backend: ${{ needs.backend.result }}"
+          echo "Frontend: ${{ needs.frontend.result }}"
+          echo "Integration: ${{ needs.integration.result }}"
 
       - name: Report failure
         if: |
@@ -133,4 +137,7 @@ jobs:
           needs.integration.result == 'failure'
         run: |
           echo "❌ CI/CD checks failed"
+          echo "Backend: ${{ needs.backend.result }}"
+          echo "Frontend: ${{ needs.frontend.result }}"
+          echo "Integration: ${{ needs.integration.result }}"
           exit 1
